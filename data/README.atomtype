@@ -1,0 +1,10 @@
+The file "ATOMLIST" lists all the atoms that appear in the biological
+macromoleucles.  
+
+radii taken from J. Phys. Chem., 1996, 100 (18), pp 7384–7391 (all bondi except hydrogen) doug 1/2013
+
+The fields are seperated by single space.  
+
+* 1st field is the name of the atom type; 
+* 2nd field is the Van der Waals radius; 
+* 3rd field is the epsilon;

@@ -1,0 +1,22 @@
+ALA	-0.77
+ARG	-0.68
+LYS	-0.65
+LEU	-0.62
+MET	-0.50
+TRP	-0.45
+PHE	-0.41
+SER	-0.35
+GLN	-0.33
+GLU	-0.27
+CYS	-0.23
+ILE	-0.23
+TYR	-0.17
+ASP	-0.15
+VAL	-0.14
+THR	-0.11
+ASN	-0.07
+HIS	-0.06
+GLY	 0.00
+PRO	 3.00
+# Helix Formation delta delta Gs for the 20 naturally occuring amino acids
+# DeGrado & O'Neil   Science 1990 v 250 p 646-651

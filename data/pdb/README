@@ -1,0 +1,3 @@
+in the PDBHEADER, each line lists the supported pdb recordname.  the "******"
+header is specially created to separate the headers into groups that use
+identical parsing rules.

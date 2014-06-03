@@ -1,0 +1,11 @@
+# Solvation parameters with six atom types
+# taken from Juffer et al., Prot Sci - 1995 v 4 p 2499 Comparison of atomic solvation parametric sets ...
+# ..
+#	em86	sch1	we92	sch2	sch3	sch4	
+C	16		18		12		13		4		32.5
+O	-6		-9		-116	-7		-113	-17.5
+O-	-24		-37		-175	-112	-166	-280
+N	-6		-9		-116	-7		-113	-17.5
+N+	-50		-38		-186	-87		-169	-217.5
+S	21		5		-18		-3.6	-17		-9
+H	0		0		0		0		0		0
