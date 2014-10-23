@@ -3,10 +3,9 @@
 #include <string>
 #include <vector>
 using namespace std;
-#include "tnt.h"
-#include "vec.h"
-#include "cmat.h"
-#endif
+#include "tnt/tnt.h"
+#include "tnt/vec.h"
+#include "tnt/cmat.h"
 
 #ifndef TYPEDEF_H
 #define TYPEDEF_H
