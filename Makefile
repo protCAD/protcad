@@ -110,5 +110,6 @@ realclean: FORCE
 fullclean: FORCE
 	$(MAKE) realclean
 	rm -f $(BINDIR)/*
+	rm -r $(TOP)/*~
 	
 FORCE:
