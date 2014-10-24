@@ -1,0 +1,618 @@
+SHELL = /bin/sh
+
+.SUFFIXES:
+.SUFFIXES: .cc .o .h .f .a
+
+LIB_CC_OBJECTS = ran1.o ran.o point.o treeNode.o atom.o \
+	atomIterator.o residue.o chain.o residueTemplate.o \
+	allowedResidue.o secondaryStructure.o chainPosition.o \
+	ramachandranMap.o residueIterator.o chainModBuffer.o \
+	molecule.o protein.o ensemble.o CMath.o generalio.o \
+	ligand.o pdbData.o pdbReader.o pdbWriter.o amberVDW.o pmf.o \
+	microEnvDB.o microEnvironment.o aaBaseline.o amberElec.o rotamer.o \
+	rotamerLib.o annealer.o  \
+	deadEndEliminator.o PDBAtomRecord.o PDBInterface.o ruler.o line.o \
+	lineSegment.o unitSphere.o solvation.o helixPropensity.o ligandTemplate.o parse.o
+
+#LIB_F77_OBJECTS = bestfit.o
+
+#LIB_GRAF_OBJECTS = position.o lineObject.o myFXGLLine.o glviewWindow.o \
+	myFXGLSphere.o FXGLProtViewer.o FXRepackDialog.o \
+	gaDriver.o FXEditDialog.o
+	
+TARGETS = libprotcad hemePacker hetatmTester hetatmProtTest hemeBundlePacker \
+	biphenPacker nativeDesigner glycoHBondEnergy2 primalSoup chiralTransfer\
+	primalSheet chiralTest primalHelixLoopHelix chiralInteraction z_aligner\
+	dimerBuilder trimerBuilder originator repack zHelixVectorAligner y_aligner \
+	nitrileProjection downHillSimplex mutationDocker thrRotamer gcn4mutator \
+	serAntiDimer serDimer homoOligomer helphipsiscan turnBuilder DFscpacker\
+	helixangle deberdesign helixEval fiber ramachandran patchCalc curveHelix \
+	pentamerBuilder backboneMerge coords evenMC mapPhiPsi mapSequence m2Modeler\
+	calcHelixAngle m2Fit changeLoop skeleton mutateGFPSurface coilBuilder Energy\
+	lowestRotCUDA rotOpt rotOpthelix helixMeasure electroMeasure indigestible \
+	repulseEnergy attractEnergy digestible gastricAnalyzer counter positionAnalyzer \
+	denovoBuilder denovoBuilderSym test savingStateTest indigestibleSym digestibleSym \
+	pkaAve digestIndex resdigestIndex patternFinder chiralFlipper bbOpt condOpt fiveElements \
+	protOpt ionicEnergy acidMutator folding protEvolver dFinder \
+	protDock mergeComplex oligOpt structFinder structShaper \
+	pointMutator_ins impSolvent dielectric burialSurface carbonDensity intraSoluteEnergy \
+	chainBindingEnergy protOptSolvent foldingC aggreSim amberAnalyzer protEvolverBinding \
+	peptideBondSASA traj_deformation database_phipsi protFolder sideChainRandomizer \
+	simpleFolder protRandomizer dielectricFit foldingBindingEnergy ligandBindingEnergy \
+	solvationPDB bindingEnergy triadFinder
+
+#DEFS = -DHAVE_OPENGL=1 -D_ALLOWED_RESIDUE_DEBUG
+#DEFS = -DHAVE_OPENGL=1 -D__STL_USE_EXCEPTIONS
+#DEFS = -DHAVE_OPENGL=1 -D__STL_USE_EXCEPTIONS -DMICROENV_DEBUG_ATOM_TYPES -DATOM_TYPE_DEBUG \
+-DMICROENVDB_DEBUG
+
+DEFS = -DHAVE_OPENGL=1 -D__STL_USE_EXCEPTIONS -DMICROENV_DEBUG_ATOM_TYPES -DATOM_TYPE_DEBUG
+
+FLAG_OPT = -Wall -O -g -felide-constructors -Wno-deprecated
+FLAG_OPT2 = -Wall -O2 -g -Wno-deprecated
+FLAG_OPT3 = -Wall -O3  -g -felide-constructors -Wno-deprecated
+FLAG_PROF = -Wall -O3 -felide-constructors -pg -Wno-deprecated
+FLAG_DEBUG = -Wall -g2 -felide-constructors -Wno-deprecated
+FLAG_DEBUG2 = -Wall -g2 -ansi -pedantic -Wno-deprecated
+
+CFLAGS = $(FLAG_DEBUG2) $(DEFS)
+FFLAGS = -Wall -g 
+
+#INC_BASE = -I$(SVMTINCLUDE) -I$(srcdir)/ensemble -I$(srcdir)/io \
+#-I$(srcdir)/math -I$(srcdir)/database -I$(srcdir)/algorithm \
+#-I$(GALIBINCLUDE) -I$(TNTINCLUDE)
+
+INC_BASE = -I$(srcdir)/ensemble -I$(srcdir)/io \
+-I$(srcdir)/math -I$(srcdir)/database -I$(srcdir)/algorithm \
+-I$(GALIBINCLUDE) -I$(TNTINCLUDE)
+
+INC_GRAPHICS = -I$(srcdir)/graphics -I/usr/X11R6/include \
+iI$(GALIBINCLUDE) -I$(FOXINCLUDE)
+
+#LIB_BASE = -L$(LIBDIR) \
+#-lprotcad -ldoubleComplexTensor -ldoubleTensor -lboolTensor \
+#-ldoubleComplexSquare -ldoubleSquare \
+#-ldoubleComplexMatrix -ldoubleMatrix -lboolMatrix \
+#-ldoubleComplexVector -ldoubleVector -lboolVector -loffsetVector \
+#-ldoubleComplex -lsvmt_error -lm -lga -lstdc++
+
+LIB_BASE = -L$(LIBDIR) -lprotcad  -lc -lm -lstdc++
+
+LIB_GRAPHICS = -L/usr/X11R6/lib -lFOX \
+-lglut -lpthread -lGL -lGLU -lXi -lXmu \
+-lX11 -lga
+
+vpath %.h $(srcdir)/algorithm:$(srcdir)/ensemble:$(srcdir)/database:\
+	$(srcdir)/ensemble:$(srcdir)/graphics:$(srcdir)/io:\
+	$(srcdir)/math
+
+vpath %.cc $(srcdir)/algorithm:$(srcdir)/ensemble:$(srcdir)/database:\
+	$(srcdir)/ensemble:$(srcdir)/graphics:$(srcdir)/io:\
+	$(srcdir)/math:$(srcdir)/test:$(projdir)/McLendon/src:\
+	$(projdir)/glycophorin/src:$(projdir)/GXXG/src:\
+	$(projdir)/Synaptobrevin/src:$(projdir)/kchannel/src: \
+	$(projdir)/liang/src:$(projdir)/biphenyl/src:$(projdir)/jeff/src:\
+	$(projdir)/plaw/src:$(projdir)/alessandrotest
+
+vpath %.f $(srcdir)/math
+
+vpath %.a $(LIBDIR)
+
+vpath %.o $(TOP)/obj
+
+libprotcad.a: $(LIB_CC_OBJECTS) $(LIB_F77_OBJECTS)
+		cd  && ar rv libprotcad.a $?
+		ranlib /libprotcad.a
+		cp /libprotcad.a $(TOP)/lib
+
+libprotcadgraphics.a : $(LIB_GRAF_OBJECTS)
+		cd  && ar rv libprotcadgraphics.a $?
+		ranlib /libprotcadgraphics.a
+		cp /libprotcadgraphics.a $(TOP)/lib
+
+.cc.a:
+
+
+
+mutateGFPSurface : libprotcad.a mutateGFPSurface.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+solvationPDB : libprotcad.a solvationPDB.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+coilBuilder : libprotcad.a coilBuilder.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+	
+mutantMaker : libprotcad.a mutantMaker.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+functions : libprotcad.a functions.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+	
+traj_deformation : libprotcad.a traj_deformation.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+	
+database_phipsi : libprotcad.a database_phipsi.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+burialSurface : libprotcad.a burialSurface.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+	
+bindingEnergy : libprotcad.a bindingEnergy.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+	
+dielectricFit : libprotcad.a dielectricFit.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+protEvolverBinding : libprotcad.a protEvolverBinding.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+	
+foldingBindingEnergy : libprotcad.a foldingBindingEnergy.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+triadFinder : libprotcad.a triadFinder.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+	
+simpleFolder : libprotcad.a simpleFolder.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+	
+ligandBindingEnergy : libprotcad.a ligandBindingEnergy.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+	
+peptideBondSASA : libprotcad.a peptideBondSASA.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+	
+protRandomizer : libprotcad.a protRandomizer.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+pointMutator : libprotcad.a pointMutator.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+	
+carbonDensity : libprotcad.a carbonDensity.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+	
+intraSoluteEnergy : libprotcad.a intraSoluteEnergy.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+	
+amberAnalyzer : libprotcad.a amberAnalyzer.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+	
+protOptSolvent : libprotcad.a protOptSolvent.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+	
+protFolder : libprotcad.a protFolder.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+	
+foldingC : libprotcad.a foldingC.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+	
+chainBindingEnergy : libprotcad.a chainBindingEnergy.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+protEvolverHomo : libprotcad.a protEvolverHomo.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+	
+aggreSim : libprotcad.a aggreSim.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+pointMutator_ins : libprotcad.a pointMutator_ins.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+structShaper : libprotcad.a structShaper.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+protMover : libprotcad.a protMover.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+impSolvent : libprotcad.a impSolvent.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+dielectric : libprotcad.a dielectric.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+fiveElements : libprotcad.a fiveElements.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+protEvolver : libprotcad.a protEvolver.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+oligOpt : libprotcad.a oligOpt.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+structFinder : libprotcad.a structFinder.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+smartMutator : libprotcad.a smartMutator.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+folding : libprotcad.a folding.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+protDock : libprotcad.a protDock.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin	
+
+mergeComplex : libprotcad.a mergeComplex.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+rotOpt : libprotcad.a rotOpt.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+protOpt : libprotcad.a protOpt.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+protOpt0 : libprotcad.a protOpt0.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+dFinder : libprotcad.a dFinder.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+acidMutator : libprotcad.a acidMutator.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+wtOptimizer : libprotcad.a wtOptimizer.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+atomMap : libprotcad.a atomMap.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+	
+sideChainRandomizer : libprotcad.a sideChainRandomizer.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+ionicEnergy : libprotcad.a ionicEnergy.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+condOpt : libprotcad.a condOpt.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+bbOpt : libprotcad.a bbOpt.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+pkaAve : libprotcad.a pkaAve.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+attractEnergy : libprotcad.a attractEnergy.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+chiralFlipper : libprotcad.a chiralFlipper.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+savingStateTest : libprotcad.a savingStateTest.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+repulseEnergy : libprotcad.a repulseEnergy.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+digestIndex : libprotcad.a digestIndex.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+resdigestIndex : libprotcad.a resdigestIndex.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+denovoBuilder : libprotcad.a denovoBuilder.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+denovoBuilderSym : libprotcad.a denovoBuilderSym.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+patternFinder : libprotcad.a patternFinder.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+indigestible : libprotcad.a indigestible.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+indigestibleEvo : libprotcad.a indigestibleEvo.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+indigestibleSym : libprotcad.a indigestibleSym.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+positionAnalyzer : libprotcad.a positionAnalyzer.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+gastricAnalyzer : libprotcad.a gastricAnalyzer.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+digestible : libprotcad.a digestible.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+digestibleSym : libprotcad.a digestibleSym.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+test : libprotcad.a test.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+	
+rotOpthelix : libprotcad.a rotOpthelix.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+counter : libprotcad.a counter.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+helixMeasure : libprotcad.a helixMeasure.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+	
+skeleton : libprotcad.a skeleton.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+changeLoop : libprotcad.a changeLoop.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+calcHelixAngle : libprotcad.a calcHelixAngle.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+m2Fit : libprotcad.a m2Fit.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+m2Modeler : libprotcad.a m2Modeler.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+Energy : libprotcad.a Energy.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+lowestRotCUDA : libprotcad.a lowestRotCUDA.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+mapSequence : libprotcad.a mapSequence.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+mapPhiPsi : libprotcad.a mapPhiPsi.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+evenMC : libprotcad.a evenMC.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+coords: libprotcad.a coords.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+backboneMerge : libprotcad.a backboneMerge.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+pentamerBuilder : libprotcad.a pentamerBuilder.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+curveHelix : libprotcad.a curveHelix.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+patchCalc : libprotcad.a patchCalc.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+ramachandran : libprotcad.a ramachandran.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+fiber : libprotcad.a fiber.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+helixEval : libprotcad.a helixEval.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+deberdesign : libprotcad.a deberdesign.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+helixangle : libprotcad.a helixangle.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+deber : libprotcad.a deber.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+ms1Dimer : libprotcad.a ms1Dimer.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+serAntiDimer : libprotcad.a serAntiDimer.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+serDimer : libprotcad.a serDimer.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+DFscpacker : libprotcad.a DFscpacker.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+turnBuilder : libprotcad.a turnBuilder.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+helphipsiscan : libprotcad.a helphipsiscan.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+gcn4mutator : libprotcad.a gcn4mutator.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+homoOligomer : libprotcad.a homoOligomer.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+
+thrRotamer : libprotcad.a thrRotamer.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+mutationDocker : libprotcad.a mutationDocker.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+downHillSimplex : libprotcad.a downHillSimplex.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+zHelixVectorAligner : libprotcad.a zHelixVectorAligner.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+repack : libprotcad.a repack.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+originator : libprotcad.a originator.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+trimerBuilder : libprotcad.a trimerBuilder.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+dimerBuilder : libprotcad.a dimerBuilder.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+nitrileProjection : libprotcad.a nitrileProjection.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+y_aligner : libprotcad.a y_aligner.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+z_aligner : libprotcad.a z_aligner.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+chiralInteraction : libprotcad.a chiralInteraction.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+primalHelixLoopHelix : libprotcad.a primalHelixLoopHelix.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+glycoDockerGridRef : libprotcad.a glycoDockerGridRef.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+chiralTest : libprotcad.a chiralTest.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+primalSheet : libprotcad.a primalSheet.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+chiralTransfer : libprotcad.a chiralTransfer.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+primalSoup : libprotcad.a primalSoup.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+glycoHBondEnergy2 : libprotcad.a glycoHBondEnergy2.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+nativeDesigner : libprotcad.a nativeDesigner.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+trypsin : libprotcad.a trypsin.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin
+
+$(LIB_F77_OBJECTS): %.o: %.f
+	$(F77) -c $(FFLAGS) $^ -o /$@
+
+$(LIB_CC_OBJECTS): %.o: %.cc %.h
+	$(CXX) -c $(CFLAGS) $(INC_BASE) $< -o /$@
+
+$(LIB_GRAF_OBJECTS): %.o: %.cc %.h
+	$(CXX) -c $(CFLAGS) $(INC_BASE) $(INC_GRAPHICS) $< -o /$@
+
+zzyxyz: 
+	rm -f /*.o 
+	rm -f /*.a
+	rm -f $(LIBDIR)/*.a
