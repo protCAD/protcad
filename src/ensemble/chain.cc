@@ -1774,7 +1774,7 @@ double chain::getPositionIntraSoluteEnergy(UInt _residueIndex)
 	intraEnergy += itsResidues[_residueIndex]->intraSoluteEnergy();
 	for (UInt i = 0; i < itsResidues.size(); i++)
 	{
-		if ((int)i != _residueIndex)
+		if (i != _residueIndex)
 		{
 			withinCube = itsResidues[_residueIndex]->inCube(itsResidues[i], 16);
 			if (withinCube)
