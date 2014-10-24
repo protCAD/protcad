@@ -2,9 +2,8 @@ export TOP=$(PWD)
 export srcdir=$(TOP)/src
 export GALIBINCLUDE=$(TOP)/galib245
 export TNTINCLUDE=$(TOP)
-
 export ARCH=$(MACHTYPE)
-
+export BINDIR=$(TOP)/bin/$(ARCH)
 export LIBDIR=$(TOP)/lib/$(ARCH)
 
 export CXX = g++
@@ -106,5 +105,10 @@ clean: FORCE
 
 realclean: FORCE
 	$(MAKE) clean
-	rm -f $(LIBDIR)/*.a 
+	rm -f $(LIBDIR)/*.a
+
+fullclean: FORCE
+	$(MAKE) realclean
+	rm -f $(BINDIR)/*
+	
 FORCE:
