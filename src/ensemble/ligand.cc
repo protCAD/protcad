@@ -708,7 +708,7 @@ double ligand::intraEnergy()
     return TotalEnergy;
 }
 
-double ligand::getInterEnergy(ligand* _other)
+/*double ligand::getInterEnergy(ligand* _other)
 {
     double TotalEnergy=0;
     UInt atomSize=itsAtoms.size();
@@ -753,7 +753,7 @@ double ligand::getInterEnergy(ligand* _other)
     }//outside loop
         
     return TotalEnergy;
-}
+}*/
 
 //
 //   Surface Area and Volume Calculations

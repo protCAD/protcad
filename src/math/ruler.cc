@@ -85,7 +85,7 @@ void ruler::superimposeProteins ()
 	double newCoord1[6000];
 	double newCoord2[6000];
 	double newCoord3[6000];
-	double newWeights[2000];
+	//double newWeights[2000];
 	double rotmat[9];
 	double centroid1[3];
 	double centroid2[3];
@@ -99,7 +99,7 @@ void ruler::superimposeProteins ()
 		}
 		list1[i] = i+1;
 		list2[i] = i+1;
-		newWeights[i] = itsWeights[i];
+		//newWeights[i] = itsWeights[i];
 	}
 
 	//cout << "Reached waypoint 4" << endl;
