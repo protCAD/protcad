@@ -3,7 +3,7 @@ SHELL = /bin/sh
 .SUFFIXES:
 .SUFFIXES: .cc .o .h .f .a
 
-LIB_CC_OBJECTS = ran1.o ran.o point.o treeNode.o atom.o atomIterator.o residue.o chain.o residueTemplate.o allowedResidue.o secondaryStructure.o chainPosition.o residueIterator.o chainModBuffer.o molecule.o protein.o ensemble.o CMath.o generalio.o ligand.o pdbData.o pdbReader.o pdbWriter.o amberVDW.o aaBaseline.o amberElec.o rotamer.o rotamerLib.o annealer.o PDBAtomRecord.o PDBInterface.o ruler.o line.o lineSegment.o unitSphere.o solvation.o helixPropensity.o ligandTemplate.o parse.o
+LIB_CC_OBJECTS = ran1.o ran.o point.o treeNode.o atom.o atomIterator.o residue.o chain.o residueTemplate.o allowedResidue.o secondaryStructure.o chainPosition.o residueIterator.o chainModBuffer.o molecule.o protein.o ensemble.o CMath.o generalio.o ligand.o pdbData.o pdbReader.o pdbWriter.o amberVDW.o aaBaseline.o amberElec.o rotamer.o rotamerLib.o annealer.o PDBAtomRecord.o PDBInterface.o ruler.o line.o lineSegment.o unitSphere.o solvation.o helixPropensity.o ligandTemplate.o parse.o pmf.o microEnvDB.o microEnvironment.o ramachandranMap.o
 
 TARGETS = libprotcad y_aligner acidMutator protEvolver dFinder protDock mergeComplex structFinder structShaper dielectric intraSoluteEnergy chainBindingEnergy protOptSolvent aggreSim amberAnalyzer protEvolverBinding database_phipsi protFolder sideChainRandomizer simpleFolder dielectricFit foldingBindingEnergy ligandBindingEnergy bindingEnergy triadFinder
 
@@ -26,10 +26,9 @@ FFLAGS = -Wall -g
 
 INC_BASE = -I$(srcdir)/ensemble -I$(srcdir)/io \
 -I$(srcdir)/math -I$(srcdir)/database -I$(srcdir)/algorithm \
--I$(GALIBINCLUDE) -I$(TNTINCLUDE)
+-I$(TNTINCLUDE)
 
 INC_GRAPHICS = -I$(srcdir)/graphics -I/usr/X11R6/include \
-iI$(GALIBINCLUDE) -I$(FOXINCLUDE)
 
 LIB_BASE = -L$(LIBDIR) -lprotcad  -lc -lm -lstdc++
 
@@ -53,142 +52,142 @@ vpath %.f $(srcdir)/math
 
 vpath %.a $(LIBDIR)
 
-vpath %.o $(TOP)/obj/$(ARCH)
+vpath %.o $(TOP)/obj/
 
 libprotcad.a: $(LIB_CC_OBJECTS) $(LIB_F77_OBJECTS)
-		cd $(ARCH) && ar rv libprotcad.a $?
-		ranlib $(ARCH)/libprotcad.a
-		cp $(ARCH)/libprotcad.a $(TOP)/lib/$(ARCH)
+		ar rv libprotcad.a $?
+		ranlib libprotcad.a
+		cp libprotcad.a $(TOP)/lib/
 
 .cc.a:
 
 	
 mutantMaker : libprotcad.a mutantMaker.cc
 	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ ../bin/$(ARCH)
+	mv $@ ../bin
 
 database_phipsi : libprotcad.a database_phipsi.cc
 	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ ../bin/$(ARCH)
+	mv $@ ../bin
 
 bindingEnergy : libprotcad.a bindingEnergy.cc
 	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ ../bin/$(ARCH)
+	mv $@ ../bin
 	
 dielectricFit : libprotcad.a dielectricFit.cc
 	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ ../bin/$(ARCH)
+	mv $@ ../bin
 
 protEvolverBinding : libprotcad.a protEvolverBinding.cc
 	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ ../bin/$(ARCH)
+	mv $@ ../bin
 	
 foldingBindingEnergy : libprotcad.a foldingBindingEnergy.cc
 	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ ../bin/$(ARCH)
+	mv $@ ../bin
 
 triadFinder : libprotcad.a triadFinder.cc
 	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ ../bin/$(ARCH)
+	mv $@ ../bin
 	
 simpleFolder : libprotcad.a simpleFolder.cc
 	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ ../bin/$(ARCH)
+	mv $@ ../bin
 	
 ligandBindingEnergy : libprotcad.a ligandBindingEnergy.cc
 	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ ../bin/$(ARCH)
+	mv $@ ../bin
 	
 intraSoluteEnergy : libprotcad.a intraSoluteEnergy.cc
 	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ ../bin/$(ARCH)
+	mv $@ ../bin
 	
 amberAnalyzer : libprotcad.a amberAnalyzer.cc
 	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ ../bin/$(ARCH)
+	mv $@ ../bin
 	
 protOptSolvent : libprotcad.a protOptSolvent.cc
 	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ ../bin/$(ARCH)
+	mv $@ ../bin
 	
 protFolder : libprotcad.a protFolder.cc
 	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ ../bin/$(ARCH)
+	mv $@ ../bin
 	
 foldingC : libprotcad.a foldingC.cc
 	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ ../bin/$(ARCH)
+	mv $@ ../bin
 	
 chainBindingEnergy : libprotcad.a chainBindingEnergy.cc
 	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ ../bin/$(ARCH)
+	mv $@ ../bin
 
 protEvolverHomo : libprotcad.a protEvolverHomo.cc
 	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ ../bin/$(ARCH)
+	mv $@ ../bin
 	
 aggreSim : libprotcad.a aggreSim.cc
 	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ ../bin/$(ARCH)
+	mv $@ ../bin
 
 structShaper : libprotcad.a structShaper.cc
 	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ ../bin/$(ARCH)
+	mv $@ ../bin
 
 protMover : libprotcad.a protMover.cc
 	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ ../bin/$(ARCH)
+	mv $@ ../bin
 
 dielectric : libprotcad.a dielectric.cc
 	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ ../bin/$(ARCH)
+	mv $@ ../bin
 
 protEvolver : libprotcad.a protEvolver.cc
 	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ ../bin/$(ARCH)
+	mv $@ ../bin
 
 structFinder : libprotcad.a structFinder.cc
 	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ ../bin/$(ARCH)
+	mv $@ ../bin
 
 protDock : libprotcad.a protDock.cc
 	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ ../bin/$(ARCH)	
+	mv $@ ../bin	
 
 mergeComplex : libprotcad.a mergeComplex.cc
 	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ ../bin/$(ARCH)
+	mv $@ ../bin
 
 dFinder : libprotcad.a dFinder.cc
 	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ ../bin/$(ARCH)
+	mv $@ ../bin
 
 acidMutator : libprotcad.a acidMutator.cc
 	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ ../bin/$(ARCH)
+	mv $@ ../bin
 
 sideChainRandomizer : libprotcad.a sideChainRandomizer.cc
 	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ ../bin/$(ARCH)
+	mv $@ ../bin
 
 y_aligner : libprotcad.a y_aligner.cc
 	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ ../bin/$(ARCH)
+	mv $@ ../bin
 
 z_aligner : libprotcad.a z_aligner.cc
 	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ ../bin/$(ARCH)
+	mv $@ ../bin
 
 $(LIB_F77_OBJECTS): %.o: %.f
-	$(F77) -c $(FFLAGS) $^ -o $(ARCH)/$@
+	$(F77) -c $(FFLAGS) $^ -o $@
 
 $(LIB_CC_OBJECTS): %.o: %.cc %.h
-	$(CXX) -c $(CFLAGS) $(INC_BASE) $< -o $(ARCH)/$@
+	$(CXX) -c $(CFLAGS) $(INC_BASE) $< -o $@
 
 $(LIB_GRAF_OBJECTS): %.o: %.cc %.h
-	$(CXX) -c $(CFLAGS) $(INC_BASE) $(INC_GRAPHICS) $< -o $(ARCH)/$@
+	$(CXX) -c $(CFLAGS) $(INC_BASE) $(INC_GRAPHICS) $< -o $@
 
 zzyxyz: 
-	rm -f $(ARCH)/*.o 
-	rm -f $(ARCH)/*.a
+	rm -f *.o 
+	rm -f *.a
 	rm -f $(LIBDIR)/*.a

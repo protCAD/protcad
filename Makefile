@@ -1,10 +1,8 @@
 export TOP=$(PWD)
 export srcdir=$(TOP)/src
-export GALIBINCLUDE=$(TOP)/galib245
 export TNTINCLUDE=$(TOP)
-export ARCH=$(MACHTYPE)
-export BINDIR=$(TOP)/bin/$(ARCH)
-export LIBDIR=$(TOP)/lib/$(ARCH)
+export BINDIR=$(TOP)/bin
+export LIBDIR=$(TOP)/lib
 
 export CXX = g++
 export F77 = g77
@@ -100,7 +98,7 @@ z_aligner : FORCE
 	cd obj && $(MAKE) z_aligner
 
 clean: FORCE
-	rm -f bin/$(ARCH)/$(EXEC_TARGETS)
+	rm -f bin/$(EXEC_TARGETS)
 	cd obj && $(MAKE) zzyxyz
 
 realclean: FORCE
@@ -110,6 +108,5 @@ realclean: FORCE
 fullclean: FORCE
 	$(MAKE) realclean
 	rm -f $(BINDIR)/*
-	rm -r $(TOP)/*~
 	
 FORCE:
