@@ -1,8 +1,0 @@
-fortran
-src/algorithm
-src/database
-src/ensemble
-src/examples
-src/io
-src/math
-tnt
