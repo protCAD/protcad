@@ -168,7 +168,7 @@ public:
 	vector <double> getChargeDensity(UInt _chainIndex, UInt _residueIndex, UInt _atomIndex);
 	double calculateDielectric(UInt _chainIndex, UInt _residueIndex, UInt _atomIndex);
 	double calculateDielectric(chain* _chain, residue* _residue, atom* _atom);
-	double calculateSolvationEnergy(UInt _chainIndex, UInt _residueIndex, UInt _atomIndex) {return itsChains[_chainIndex]->itsResidues[_residueIndex]->calculateSolvationEnergy( _atomIndex);}
+    vector <double> calculateSolvationEnergy(UInt _chainIndex, UInt _residueIndex, UInt _atomIndex) {return itsChains[_chainIndex]->itsResidues[_residueIndex]->calculateSolvationEnergy( _atomIndex);}
 	double calculateChainIndependentDielectric(chain* _chain, residue* _residue, atom* _atom);
 	void updateDielectrics();
 	void updatePositionDielectrics(UInt _chainIndex, UInt _residueIndex);

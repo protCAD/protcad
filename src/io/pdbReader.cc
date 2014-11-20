@@ -28,7 +28,7 @@ molecule* pdbReader(const string& _pdbFile)
 	delete tempRes;
 	// Reset tempRes pointer to 0 for further use
 	tempRes = 0;
-	unsigned int ResType;
+	//unsigned int ResType;
 	unsigned int numatomsInRes = 0;
 
 	pdbAtom theData;
@@ -86,7 +86,7 @@ molecule* pdbReader(const string& _pdbFile)
 				{	tempRes = new residue(i);
 					pTheChain->add(tempRes);
 					nameFound = 1;
-					ResType = i;
+					//ResType = i;
 					currentResSeq =  theData.getResSeq();
 					tempRes->setResNum(currentResSeq);
 					break;

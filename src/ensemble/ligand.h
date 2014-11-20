@@ -117,7 +117,7 @@ public:
         int getAmberUnitedType(UInt _index);
         double getAmberElec(UInt _index);
         double intraEnergy();
-        double getInterEnergy(ligand* _other);
+        //double getInterEnergy(ligand* _other);
         static void setCutoffDistance( const double _cutoff ) { cutoffDistance = _cutoff; cutoffDistanceSquared = _cutoff*_cutoff; }
         
         // Volume and Surface Area

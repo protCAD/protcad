@@ -3033,7 +3033,8 @@ double residue::intraSoluteEnergy()
 	double intraEnergy = 0.0;
 	double vdwEnergy = 0.0;
 	double amberElecEnergy = 0.0;
-	double solvEnergy = 0.0;
+    double solventSolventEnergy = 0.0;
+    double proteinSolventEnergy = 0.0;
 	double dielectric;	
 	bool bonded;
 	
@@ -3042,8 +3043,9 @@ double residue::intraSoluteEnergy()
 		if (!itsAtoms[i]->getSilentStatus())
 		{
 			// ** get solvationEnergyScore
-			double tempSolvEnergy = this->calculateSolvationEnergy(i);
-			solvEnergy += tempSolvEnergy;
+            vector <double> tempSolvEnergy = this->calculateSolvationEnergy(i);
+            proteinSolventEnergy += tempSolvEnergy[0];
+            solventSolventEnergy += tempSolvEnergy[1];
 
 			for(UInt j=i+1; j<itsAtoms.size(); j++)
 			{
@@ -3090,20 +3092,22 @@ double residue::intraSoluteEnergy()
 	}
 
 	// total
-    intraEnergy = (vdwEnergy + amberElecEnergy) - solvEnergy;
+    intraEnergy = (vdwEnergy + amberElecEnergy) + (proteinSolventEnergy/solventSolventEnergy);
 	return intraEnergy;
 }
 
-double residue::calculateSolvationEnergy(UInt _atomIndex)
+vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
 {
 	//--requires update of dielectrics at protein level to be accurate.
+    vector <double> solvationEnergy(2);
 	double atomDielectric = itsAtoms[_atomIndex]->getDielectric();
-    double solventDielectric = 80.4;
     double charge = residueTemplate::itsAmberElec.getItsCharge(itsType, _atomIndex);
     double chargeSquared = charge*charge;
-    double proteinSolvent = -(chargeSquared/((atomDielectric*0.003)*4*9))*((solventDielectric-atomDielectric)/(solventDielectric+atomDielectric));
-    double solvationEnergy = proteinSolvent;
-	itsAtoms[_atomIndex]->setSolvationEnergy(solvationEnergy);
+    double proteinSolvent = -166*(atomDielectric/80)*(chargeSquared/9);
+    double solventSolvent = -166*(1/atomDielectric)*(0.64/2.5);
+    solvationEnergy[0] = proteinSolvent;
+    solvationEnergy[1] = solventSolvent;
+    itsAtoms[_atomIndex]->setSolvationEnergy(proteinSolvent);
 	return solvationEnergy;
 }
 		

@@ -3,13 +3,9 @@
 #include <string>
 #include <vector>
 using namespace std;
-#ifdef USE_SVMT
-#include "svmt.h"
-#else
 #include "tnt/tnt.h"
 #include "tnt/vec.h"
 #include "tnt/cmat.h"
-#endif
 
 #ifndef TYPEDEF_H
 #define TYPEDEF_H
