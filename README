@@ -23,7 +23,7 @@ export PATH=$PATH:$PROTCADDIR
 
 -New programs need to be added to two files called 'Makefile' in protcad/ and protcad/obj for compilation like example has been. 
 
--Additional examples are in the protcad/src/examples folder for reference and can be added to the test directory and MakeFiles for compilation.
+-Additional examples are in the protcad/src/examples folder for reference and can be added to the projects directory and MakeFiles for compilation.
 
 -New programs written are intended to follow the same directory structure and usage as example does.
 
