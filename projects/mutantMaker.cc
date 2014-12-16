@@ -12,15 +12,19 @@
 #include <string>
 #include "ensemble.h"
 #include "PDBInterface.h"
+#include <sstream>
+#include <iterator>
+#include <vector>
+
 
 void randomizeSideChain(protein* _prot, UInt _chainIndex, UInt _resIndex);
 
 int main (int argc, char* argv[])
 {
 	//--Program setup
-	if (argc !=3)
+    if (argc !=2)
 	{
-	cout << "mutantMaker <inFile.pdb> <outFile.pdb>" << endl;
+    cout << "mutantMaker <inFile.pdb>" << endl;
 	exit(1);
 	}
 	enum aminoAcid {A,R,N,D,Dh,C,Cx,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV};
@@ -40,9 +44,6 @@ int main (int argc, char* argv[])
 	amberElec::setScaleFactor(1.0);
 	solvation::setItsScaleFactor(0.0);
 	
-	//--Variables for loop
-	UInt resNum, chainNum = bundle->getNumChains();
-
 	//--h3lix
 	//UInt resID_A[] = {P,K,G,P,K,G,P,K,G,K,O,G,P,D,G,D,O,G,D,O,G,D,O,G,P,K,G,P,K,G};
 	//UInt resID_B[] = {P,D,G,D,O,G,D,O,G,D,O,G,P,D,G,K,O,G,P,D,G,P,D,G,P,D,G,D,O,G};
@@ -64,7 +65,7 @@ int main (int argc, char* argv[])
 	//UInt resID_A[] = {P,O,G,P,O,G,P,O,G,P,O,G,L,I,G,L,I,G,P,O,G,P,O,G,P,O,G,P,O,G};
 	//UInt resID_A[] = {P,O,G,P,O,G,P,O,G,P,I,G,L,I,G,L,I,G,P,O,G,P,O,G,P,O,G,P,O,G};
 	//UInt resID_A[] = {P,O,G,P,O,G,P,O,G,L,I,G,L,I,G,L,I,G,P,O,G,P,O,G,P,O,G,P,O,G};
-	UInt resID_A[] = {Q,R,L,R,L,R,L,E,N,V,G,S,N,K,G,A,R,L,R,L,R,L,G,G,V,V};
+    //UInt resID_A[] = {Q,R,L,R,L,R,L,E,N,V,G,S,N,K,G,A,R,L,R,L,R,L,G,G,V,V};
 	//UInt resID_A[] = {K,K,G,K,K,G,K,K,G,P,O,G,P,O,G,P,O,G,P,O,G,P,O,G,P,O,G};
 	//UInt resID_B[] = {D,D,G,D,D,G,D,D,G,P,O,G,P,O,G,P,O,G,P,O,G,P,O,G,P,O,G};
 
@@ -120,39 +121,212 @@ int main (int argc, char* argv[])
 	//--trpcage triad
 	//UInt resID_A[] = {N,D,He,I,Q,W,L,K,D,dQ,G,P,S,S,G,R,P,P,S,S};
 
+    vector<vector<UInt> > resIDs;
+    vector <UInt> v;
+
+    UInt resID1[] = {P,O,G,P,O,G,P,O,G,P,D,G,P,O,G,P,O,G,P,O,G,P,O,G,G};
+    v.insert (v.begin(), resID1, resID1 + sizeof(resID1)/sizeof(resID1[0]));
+    resIDs.push_back(v);
+    v.clear();
+    UInt resID2[] = {P,O,G,P,O,G,P,O,G,P,E,G,P,O,G,P,O,G,P,O,G,P,O,G,G};
+    v.insert (v.begin(), resID2, resID2 + sizeof(resID2)/sizeof(resID2[0]));
+    resIDs.push_back(v);
+    v.clear();
+    UInt resID3[] = {P,O,G,P,O,G,P,O,G,P,K,G,P,O,G,P,O,G,P,O,G,P,O,G,G};
+    v.insert (v.begin(), resID3, resID3 + sizeof(resID3)/sizeof(resID3[0]));
+    resIDs.push_back(v);
+    v.clear();
+    UInt resID4[] = {P,O,G,P,O,G,P,O,G,P,N,G,P,O,G,P,O,G,P,O,G,P,O,G,G};
+    v.insert (v.begin(), resID4, resID4 + sizeof(resID4)/sizeof(resID4[0]));
+    resIDs.push_back(v);
+    v.clear();
+    UInt resID5[] = {P,O,G,P,O,G,P,O,G,P,Q,G,P,O,G,P,O,G,P,O,G,P,O,G,G};
+    v.insert (v.begin(), resID5, resID5 + sizeof(resID5)/sizeof(resID5[0]));
+    resIDs.push_back(v);
+    v.clear();
+    UInt resID6[] = {P,O,G,P,O,G,P,O,G,P,R,G,P,O,G,P,O,G,P,O,G,P,O,G,G};
+    v.insert (v.begin(), resID6, resID6 + sizeof(resID6)/sizeof(resID6[0]));
+    resIDs.push_back(v);
+    v.clear();
+    /*UInt resID7[] = {G,F,O,G,A,A,G,R,T,G,P,O,G,P,S,G,I,S,G,P,O,G,P,O,G,P,O,G,P,O,G,V};
+    v.insert (v.begin(), resID7, resID7 + sizeof(resID7)/sizeof(resID7[0]));
+    resIDs.push_back(v);
+    v.clear();
+    UInt resID8[] = {G,S,O,G,A,Q,G,L,Q,G,P,R,G,L,O,G,T,O,G,P,O,G,P,O,G,P,O,G,P,O,G,V};
+    v.insert (v.begin(), resID8, resID8 + sizeof(resID8)/sizeof(resID8[0]));
+    resIDs.push_back(v);
+    v.clear();
+    UInt resID9[] = {G,G,K,G,D,A,G,A,O,G,E,R,G,P,O,G,L,A,G,P,O,G,P,O,G,P,O,G,P,O,G,V};
+    v.insert (v.begin(), resID9, resID9 + sizeof(resID9)/sizeof(resID9[0]));
+    resIDs.push_back(v);
+    v.clear();
+    UInt resID10[] = {G,D,A,G,A,O,G,E,R,G,P,O,G,L,A,G,A,O,G,P,O,G,P,O,G,P,O,G,P,O,G,V};
+    v.insert (v.begin(), resID10, resID10 + sizeof(resID10)/sizeof(resID10[0]));
+    resIDs.push_back(v);
+    v.clear();
+    UInt resID11[] = {G,A,O,G,E,R,G,P,O,G,L,A,G,A,O,G,L,R,G,P,O,G,P,O,G,P,O,G,P,O,G,V};
+    v.insert (v.begin(), resID11, resID11 + sizeof(resID11)/sizeof(resID11[0]));
+    resIDs.push_back(v);
+    v.clear();
+    UInt resID12[] = {G,E,R,G,P,O,G,L,A,G,A,O,G,L,R,G,G,A,G,P,O,G,P,O,G,P,O,G,P,O,G,V};
+    v.insert (v.begin(), resID12, resID12 + sizeof(resID12)/sizeof(resID12[0]));
+    resIDs.push_back(v);
+    v.clear();
+    UInt resID13[] = {G,P,O,G,L,A,G,A,O,G,L,R,G,G,A,G,P,O,G,P,O,G,P,O,G,P,O,G,P,O,G,V};
+    v.insert (v.begin(), resID13, resID13 + sizeof(resID13)/sizeof(resID13[0]));
+    resIDs.push_back(v);
+    v.clear();
+    UInt resID14[] = {G,L,A,G,A,O,G,L,R,G,G,A,G,P,O,G,P,E,G,P,O,G,P,O,G,P,O,G,P,O,G,V};
+    v.insert (v.begin(), resID14, resID14 + sizeof(resID14)/sizeof(resID14[0]));
+    resIDs.push_back(v);
+    v.clear();
+    UInt resID36[] = {G,P,O,G,A,O,G,P,L,G,I,A,G,I,T,G,A,R,G,L,A,G,P,O,G,P,O,G,P,O,G,P,O,G,G};
+    v.insert (v.begin(), resID36, resID36 + sizeof(resID36)/sizeof(resID36[0]));
+    resIDs.push_back(v);
+    v.clear();
+    UInt resID15[] = {G,P,R,G,N,R,G,E,R,G,S,E,G,S,O,G,He,O,G,Q,O,G,P,O,G,P,O,G,A,O,G,V};
+    v.insert (v.begin(), resID15, resID15 + sizeof(resID15)/sizeof(resID15[0]));
+    resIDs.push_back(v);
+    v.clear();
+    UInt resID16[] = {G,L,A,G,E,O,G,K,O,G,I,O,G,L,O,G,R,A,G,P,O,G,P,O,G,P,O,G,P,O,G,V};
+    v.insert (v.begin(), resID16, resID16 + sizeof(resID16)/sizeof(resID16[0]));
+    resIDs.push_back(v);
+    v.clear();
+    UInt resID17[] = {G,E,R,G,E,R,G,E,K,G,E,R,G,E,Q,G,R,D,G,P,O,G,P,O,G,P,O,G,P,O,G,V};
+    v.insert (v.begin(), resID17, resID17 + sizeof(resID17)/sizeof(resID17[0]));
+    resIDs.push_back(v);
+    v.clear();
+    UInt resID18[] = {G,P,O,G,P,O,G,P,O,G,K,R,G,K,O,G,P,O,G,P,O,G,P,O,G,G};
+    v.insert (v.begin(), resID18, resID18 + sizeof(resID18)/sizeof(resID18[0]));
+    resIDs.push_back(v);
+    v.clear();
+    UInt resID19[] = {G,P,O,G,P,O,G,R,O,G,K,R,G,K,O,G,P,O,G,P,O,G,P,O,G,G};
+    v.insert (v.begin(), resID19, resID19 + sizeof(resID19)/sizeof(resID19[0]));
+    resIDs.push_back(v);
+    v.clear();
+    UInt resID20[] = {G,P,O,G,P,O,G,R,O,G,K,R,G,K,Q,G,P,O,G,P,O,G,P,O,G,G};
+    v.insert (v.begin(), resID20, resID20 + sizeof(resID20)/sizeof(resID20[0]));
+    resIDs.push_back(v);
+    v.clear();
+    UInt resID21[] = {G,P,O,G,P,O,G,R,Q,G,K,R,G,K,O,G,P,O,G,P,O,G,P,O,G,G};
+    v.insert (v.begin(), resID21, resID21 + sizeof(resID21)/sizeof(resID21[0]));
+    resIDs.push_back(v);
+    v.clear();
+    UInt resID22[] = {G,P,O,G,P,O,G,R,O,G,K,R,G,K,Q,G,Q,K,G,P,O,G,P,O,G,G};
+    v.insert (v.begin(), resID22, resID22 + sizeof(resID22)/sizeof(resID22[0]));
+    resIDs.push_back(v);
+    v.clear();
+    UInt resID23[] = {G,P,O,G,P,O,G,P,O,G,R,K,G,R,O,G,P,O,G,P,O,G,P,O,G,G};
+    v.insert (v.begin(), resID23, resID23 + sizeof(resID23)/sizeof(resID23[0]));
+    resIDs.push_back(v);
+    v.clear();
+    UInt resID24[] = {G,P,O,G,P,O,G,R,O,G,R,K,G,R,O,G,P,O,G,P,O,G,P,O,G,G};
+    v.insert (v.begin(), resID24, resID24 + sizeof(resID24)/sizeof(resID24[0]));
+    resIDs.push_back(v);
+    v.clear();
+    UInt resID25[] = {G,P,O,G,R,O,G,R,K,G,R,O,G,V,R,G,P,R,G,P,O,G,P,O,G,P,O,G,P,O,G};
+    v.insert (v.begin(), resID25, resID25 + sizeof(resID25)/sizeof(resID25[0]));
+    resIDs.push_back(v);
+    v.clear();
+    UInt resID26[] = {G,P,O,G,R,O,G,A,A,G,A,O,G,V,R,G,P,R,G,P,O,G,P,O,G,P,O,G,P,O,G};
+    v.insert (v.begin(), resID26, resID26 + sizeof(resID26)/sizeof(resID26[0]));
+    resIDs.push_back(v);
+    v.clear();
+    UInt resID27[] = {G,P,O,G,A,O,G,R,K,G,R,O,G,V,A,G,P,A,G,P,O,G,P,O,G,P,O,G,P,O,G};
+    v.insert (v.begin(), resID27, resID27 + sizeof(resID27)/sizeof(resID27[0]));
+    resIDs.push_back(v);
+    v.clear();
+    UInt resID28[] = {G,P,O,G,R,O,G,K,R,G,K,T,G,L,K,G,D,I,G,P,O,G,P,O,G,P,O,G,P,O,G};
+    v.insert (v.begin(), resID28, resID28 + sizeof(resID28)/sizeof(resID28[0]));
+    resIDs.push_back(v);
+    v.clear();
+    UInt resID29[] = {G,P,O,G,L,O,G,M,L,G,Q,K,G,E,M,G,P,K,G,P,O,G,P,O,G,P,O,G,P,O,G};
+    v.insert (v.begin(), resID29, resID29 + sizeof(resID29)/sizeof(resID29[0]));
+    resIDs.push_back(v);
+    v.clear();
+    UInt resID30[] = {G,P,O,G,R,O,G,K,R,G,K,O,G,V,R,G,P,R,G,P,O,G,P,O,G,P,O,G,P,O,G};
+    v.insert (v.begin(), resID30, resID30 + sizeof(resID30)/sizeof(resID30[0]));
+    resIDs.push_back(v);
+    v.clear();
+    UInt resID31[] = {G,P,O,G,P,O,G,R,O,G,R,K,G,R,O,G,P,O,G,P,O,G,P,O,G,P,O,G,P,O,G};
+    v.insert (v.begin(), resID31, resID31 + sizeof(resID31)/sizeof(resID31[0]));
+    resIDs.push_back(v);
+    v.clear();
+    UInt resID32[] = {G,P,O,G,P,O,G,R,O,G,K,R,G,K,Q,G,Q,K,G,P,O,G,P,O,G,P,O,G,P,O,G};
+    v.insert (v.begin(), resID32, resID32 + sizeof(resID32)/sizeof(resID32[0]));
+    resIDs.push_back(v);
+    v.clear();
+    UInt resID33[] = {G,I,N,G,F,O,G,K,D,G,R,D,G,T,K,G,E,K,G,E,O,G,P,O,G,P,O,G,P,O,G,P,O,G,G};
+    v.insert (v.begin(), resID33, resID33 + sizeof(resID33)/sizeof(resID33[0]));
+    resIDs.push_back(v);
+    v.clear();
+    UInt resID34[] = {G,P,O,G,R,O,G,R,R,G,R,O,G,L,K,G,E,Q,G,P,O,G,P,O,G,P,O,G,P,O,G,Y};
+    v.insert (v.begin(), resID34, resID34 + sizeof(resID34)/sizeof(resID34[0]));
+    resIDs.push_back(v);
+    v.clear();
+    UInt resID35[] = {G,P,O,G,I,R,G,P,K,G,Q,K,G,E,O,G,L,O,G,P,O,G,P,O,G,P,O,G,P,O,G,Y};
+    v.insert (v.begin(), resID35, resID35 + sizeof(resID35)/sizeof(resID35[0]));
+    resIDs.push_back(v);
+    v.clear();*/
+
 	//--Mutate chains
-    for (UInt i = 0; i < chainNum; i ++)
-	{
-		resNum = bundle->getNumResidues(i);
-		for (UInt j = 0; j < resNum; j++)
-		{
-			bundle->activateForRepacking(i, j);
-			bundle->mutateWBC(i, j, resID_A[j]);
-			randomizeSideChain(bundle, i, j);
-		}
+    UInt chainNum;
+    delete thePDB;
+    for (UInt h = 0; h < resIDs.size(); h++)
+    {
+        PDBInterface* thePDB = new PDBInterface(infile);
+        ensemble* theEnsemble = thePDB->getEnsemblePointer();
+        molecule* pMol = theEnsemble->getMoleculePointer(0);
+        protein* bundle = static_cast<protein*>(pMol);
+        chainNum = bundle->getNumChains();
+        for (UInt i = 0; i < chainNum; i ++)
+        {
+            UInt resNum = bundle->getNumResidues(i);
+            for (UInt j = 0; j < resNum; j++)
+            {
+                if (j >= resIDs[h].size())
+                {
+                    bundle->removeResidue(i,j);
+                }
+                else
+                {
+                    bundle->activateForRepacking(i, j);
+                    bundle->mutateWBC(i, j, resIDs[h][j]);
+                    randomizeSideChain(bundle, i, j);
+                }
+            }
+        }
+        stringstream convert;
+        string countStr, outFile;
+        convert << h+1, countStr = convert.str();
+        outFile = countStr;
+        pdbWriter(bundle, outFile);
+        delete thePDB;
+        PDBInterface* thePDB2 = new PDBInterface(outFile);
+        ensemble* theEnsemble2 = thePDB2->getEnsemblePointer();
+        molecule* pMol2 = theEnsemble2->getMoleculePointer(0);
+        protein* bundle2 = static_cast<protein*>(pMol2);
+        bundle2->protOptSolvent(1000);
+        vector <double> Energy = bundle2->chainFoldingBindingEnergy(false);
+        cout << Energy[1] << endl;
+        Energy.clear();
+        pdbWriter(bundle2, outFile);
+        delete thePDB2;
     }
-
-
-	//--Write to file-----------------------------------------------------------------------------------
-	cout << endl << "Mutated!!" << endl << endl;
-	string outFile = argv[2];
-	pdbWriter(bundle, outFile);
 	return 0;
 }
 
-
 void randomizeSideChain(protein* _prot, UInt _chainIndex, UInt _resIndex)
-{	
-	UInt allowedRotsSize, randrot, restype;
-	UIntVec allowedRots;
-	restype = _prot->getTypeFromResNum(_chainIndex, _resIndex);
-	allowedRots = _prot->getAllowedRotamers(_chainIndex, _resIndex, restype, 0);
-	allowedRotsSize = allowedRots.size();
-	if (allowedRotsSize > 2)
-	{				
-		randrot = rand() % allowedRotsSize;
-		_prot->setRotamerWBC(_chainIndex, _resIndex, 0, allowedRots[randrot]);
-	}
-	return;
+{
+    UInt allowedRotsSize, randrot, restype;
+    UIntVec allowedRots;
+    restype = _prot->getTypeFromResNum(_chainIndex, _resIndex);
+    allowedRots = _prot->getAllowedRotamers(_chainIndex, _resIndex, restype, 0);
+    allowedRotsSize = allowedRots.size();
+    if (allowedRotsSize > 2)
+    {
+        randrot = rand() % allowedRotsSize;
+        _prot->setRotamerWBC(_chainIndex, _resIndex, 0, allowedRots[randrot]);
+    }
+    return;
 }
-

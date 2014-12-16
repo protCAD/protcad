@@ -86,7 +86,7 @@ public:
 	UInt getTypeFromResNum(UInt _chainIndex, UInt _resNum) { return itsChains[_chainIndex]->getTypeFromResNum(_resNum);}
 	string getTypeStringFromAtomNum(UInt _chainIndex, UInt _resNum, UInt _atomNum) { return itsChains[_chainIndex]->getTypeStringFromAtomNum(_resNum, _atomNum);}
 	string getTypeStringFromResNum(UInt _chainIndex, UInt _resNum) {return itsChains[_chainIndex]->getTypeStringFromResNum(_resNum);}
-	//void symmetryUnlinkChainAfromB(UInt _aIndex, UInt _bIndex);
+    void removeResidue(UInt _chainIndex, UInt _resNum) {return itsChains[_chainIndex]->removeResidue(_resNum);}
 
 	//--Mutations functions
 	void stripToGlycine();

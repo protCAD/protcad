@@ -5,7 +5,7 @@ SHELL = /bin/sh
 
 LIB_CC_OBJECTS = ran1.o ran.o point.o treeNode.o atom.o atomIterator.o residue.o chain.o residueTemplate.o allowedResidue.o secondaryStructure.o chainPosition.o residueIterator.o chainModBuffer.o molecule.o protein.o ensemble.o CMath.o generalio.o ligand.o pdbData.o pdbReader.o pdbWriter.o amberVDW.o aaBaseline.o amberElec.o rotamer.o rotamerLib.o annealer.o PDBAtomRecord.o PDBInterface.o ruler.o line.o lineSegment.o unitSphere.o solvation.o helixPropensity.o ligandTemplate.o parse.o pmf.o microEnvDB.o microEnvironment.o ramachandranMap.o
 
-TARGETS = libprotcad y_aligner acidMutator protEvolver dFinder mergeComplex structFinder structShaper intraSoluteEnergy protOptSolvent protEvolverBinding database_phipsi protFolder sideChainRandomizer dielectricFit foldingBindingEnergy ligandBindingEnergy bindingEnergy triadFinder protMover
+TARGETS = libprotcad y_aligner acidMutator protEvolver dFinder mergeComplex structFinder structShaper intraSoluteEnergy protOptSolvent protEvolverBinding database_phipsi protFolder sideChainRandomizer dielectricFit foldingBindingEnergy ligandBindingEnergy bindingEnergy triadFinder protMover fourEvolver
 
 #DEFS = -DHAVE_OPENGL=1 -D_ALLOWED_RESIDUE_DEBUG
 #DEFS = -DHAVE_OPENGL=1 -D__STL_USE_EXCEPTIONS
@@ -67,6 +67,10 @@ database_phipsi : libprotcad.a database_phipsi.cc
 	mv $@ ../bin/
 
 bindingEnergy : libprotcad.a bindingEnergy.cc
+	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	mv $@ ../bin/
+
+fourEvolver : libprotcad.a fourEvolver.cc
 	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
 	mv $@ ../bin/
 	
@@ -163,3 +167,4 @@ cleanlibs:
 	rm -f *.o 
 	rm -f *.a
 	rm -f $(LIBDIR)/*.a
+	rm -f $(LIBDIR)/*.o

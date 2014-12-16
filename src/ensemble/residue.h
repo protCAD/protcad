@@ -85,6 +85,7 @@ public:
         residue(const string& _aaType, const bool _hFlag, const bool _hPFlag);
 	residue(const UInt _itsType, const bool _hFlag, const bool _hPFlag);
 	~residue();
+    void removeResidue();
 
 private:
 	void initializeAtomsAndConnectivity();
@@ -306,6 +307,7 @@ public:
 	void printMainChain() const;
 	void printBranchPoints() const;
 	int getResNum() const {return itsResNum;}
+    static UInt getHowMany() {return howMany;}
 	void setResNum(const UInt _num) {itsResNum = _num;}
 	UInt getNumAtoms() const {return itsAtoms.size();}
 
@@ -332,8 +334,7 @@ public:
 	// static function cannot have const modifier
 	static void setupDataBase();
         static void setupDataBase(const bool _Hflag);
-	static void setupDataBase(const bool _Hflag, const bool _HPflag);
-	static UInt getHowMany() {return howMany;}
+    static void setupDataBase(const bool _Hflag, const bool _HPflag);
 	static double getCutoffDistance() {return cutoffDistance; }
 	static void setCutoffDistance( const double _cutoff ) { cutoffDistance = _cutoff; cutoffDistanceSquared = _cutoff*_cutoff; }
 

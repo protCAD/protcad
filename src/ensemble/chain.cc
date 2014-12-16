@@ -106,6 +106,17 @@ chain::~chain()
     howMany--;
 }
 
+void chain::removeResidue(UInt _resNum)
+{
+    itsResidues[_resNum]->removeResidue();
+    delete itsResidues[_resNum];
+    itsResidues.resize(itsResidues.size()-1);
+    delete itsChainPositions[_resNum];
+    itsChainPositions.resize(itsChainPositions.size()-1);
+    delete itsSecondaryStructures[_resNum];
+    itsSecondaryStructures.resize(itsSecondaryStructures.size()-1);
+}
+
 //***************testing junk*********************
 void chain::accessResZero()
 {
@@ -1592,7 +1603,7 @@ UInt chain::getNumHardClashes(chain* _other)
 	UInt numClashes = 0;
 	for (UInt i = 0; i < itsResidues.size(); i ++)
 	{
-		for (UInt j = 0; j < _other->getNumResidues(); j ++)
+        for (UInt j = 0; j < _other->getNumResidues(); j ++)
 		{
 			numClashes += itsResidues[i]->getNumHardClashes(_other->getResidue(j));
 		}

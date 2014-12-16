@@ -8,7 +8,7 @@ typedef vector<int>::iterator iterINT;
 typedef vector<vector<int> >:: iterator iterINTVEC;
 
 bool protein::calcSelfEnergy = true;
-UInt protein::howMany=0;
+UInt protein::howMany = 0;
 UInt protein::itsSolvationParam = 0;
 
 protein::protein() : molecule()
@@ -1462,6 +1462,7 @@ vector <double> protein::chainFoldingBindingEnergy(bool _unfold)
 {
 	double bindingEnergy, complexEnergy, intraChainEnergy = 0.0, LorD;
 	vector <double> Energy;
+    //cout << "complex" << endl;
 	complexEnergy = this->intraSoluteEnergy(true);
 	Energy.push_back(complexEnergy);
 	UInt resNum, restype, numChains = this->getNumChains();
@@ -1531,6 +1532,7 @@ vector <double> protein::chainFoldingBindingEnergy(bool _unfold)
 			}
 			this->chainOptSolvent(200, j);
 		}
+        //cout << "chain" << j << endl;
 		this->updateChainIndependentDielectrics(j);
 		intraChainEnergy += itsChains[j]->intraSoluteEnergy();
 	}

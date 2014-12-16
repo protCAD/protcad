@@ -55,7 +55,7 @@ public:
 	{ return itsResidues[_resIndex]->setCoords(_atomIndex, _coords);}
     UInt getNumAtoms(const UInt _resIndex)
         {return itsResidues[_resIndex]->getNumAtoms();}
-	UInt getNumResidues() {return itsResidues.size();}
+    UInt getNumResidues() {return itsResidues.size();}
 	int mapResNumToChainPosition(const int _resNum);
 private:
 	void activateChainPosition(const UInt _index);
@@ -82,6 +82,7 @@ public:
 	int getLastModificationPosition() { return itsLastTargetResidue; }
 	void randomizeSystem(ran& _ran);
 	void makeAllAlanine();
+    void removeResidue(UInt _resNum);
 
 	// single modification buffers
 	vector<chainModBuffer> performRandomMutation(ran& _ran);

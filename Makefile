@@ -9,12 +9,15 @@ export F77 = g77
 export MAKE = make
 
 LIB_TARGETS = lib
-EXEC_TARGETS = mutantMaker acidMutator protEvolver mergeComplex structFinder structShaper intraSoluteEnergy protOptSolvent protEvolverBinding database_phipsi protFolder sideChainRandomizer dielectricFit foldingBindingEnergy ligandBindingEnergy bindingEnergy triadFinder protMover z_aligner y_aligner
+EXEC_TARGETS = mutantMaker acidMutator protEvolver mergeComplex structFinder structShaper intraSoluteEnergy protOptSolvent protEvolverBinding database_phipsi protFolder sideChainRandomizer dielectricFit foldingBindingEnergy ligandBindingEnergy bindingEnergy triadFinder protMover z_aligner y_aligner fourEvolver
 
 all : $(LIB_TARGETS) $(EXEC_TARGETS)
 
 lib : FORCE
 	cd obj && $(MAKE) libprotcad.a
+
+fourEvolver : FORCE
+	cd obj && $(MAKE) fourEvolver
 
 sideChainRandomizer : FORCE
 	cd obj && $(MAKE) sideChainRandomizer

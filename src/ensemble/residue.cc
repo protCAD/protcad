@@ -310,6 +310,10 @@ residue::~residue()
 	howMany--;
 }
 
+void residue::removeResidue()
+{
+    howMany--;
+}
 
 // ************************************************************************
 // ************************************************************************
@@ -3092,7 +3096,8 @@ double residue::intraSoluteEnergy()
 	}
 
 	// total
-    intraEnergy = (vdwEnergy + amberElecEnergy) + (proteinSolventEnergy/solventSolventEnergy);
+    intraEnergy = vdwEnergy + amberElecEnergy + (proteinSolventEnergy - solventSolventEnergy);
+    cout << vdwEnergy << " " << amberElecEnergy << " " << proteinSolventEnergy << " " << solventSolventEnergy << endl;
 	return intraEnergy;
 }
 
@@ -3104,7 +3109,7 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
     double charge = residueTemplate::itsAmberElec.getItsCharge(itsType, _atomIndex);
     double chargeSquared = charge*charge;
     double proteinSolvent = -166*(atomDielectric/80)*(chargeSquared/9);
-    double solventSolvent = -166*(1/atomDielectric)*(0.64/2.5);
+    double solventSolvent = 0;//-166*(1/atomDielectric)*(0.8/4.5);
     solvationEnergy[0] = proteinSolvent;
     solvationEnergy[1] = solventSolvent;
     itsAtoms[_atomIndex]->setSolvationEnergy(proteinSolvent);
