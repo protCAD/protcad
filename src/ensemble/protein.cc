@@ -1229,14 +1229,6 @@ double protein::calculateDielectric(UInt _chainIndex, UInt _residueIndex, UInt _
 	waters = watervol/10.88;
 	waterpol = waters*1.4907;
 	dielectric = (1+4*3.14*((waters+chargeDensity[2])/10)/3728*(waterpol+chargeDensity[1]));
-	if (dielectric < 2.25)
-	{
-		dielectric = 2.25;
-	}
-	if (dielectric > 80.4)
-	{
-		dielectric = 80.4;
-	}
 	return dielectric;
 }
 
@@ -1262,18 +1254,10 @@ double protein::calculateDielectric(chain* _chain, residue* _residue, atom* _ato
 	waters = watervol/10.88;
 	waterpol = waters*1.4907;
 	dielectric = (1+4*3.14*((waters+chargeDensity[2])/10)/3728*(waterpol+chargeDensity[1]));
-	if (dielectric < 2.25)
-	{
-		dielectric = 2.25;
-	}
-	if (dielectric > 80.4)
-	{
-		dielectric = 80.4;
-	}
 	return dielectric;
 }
 
-double protein::calculateChainIndependentDielectric(chain* _chain, residue* _residue, atom* _atom)
+double protein::calculateChainIndependentDielectric(chain* _chain, residue* _residue, atom* _atom, UInt _atomIndex)
 {
 	vector <double> chargeDensity(3);
 	vector <double> _chargeDensity(3);
@@ -1291,14 +1275,11 @@ double protein::calculateChainIndependentDielectric(chain* _chain, residue* _res
 	waters = watervol/10.88;
 	waterpol = waters*1.4907;
 	dielectric = (1+4*3.14*((waters+chargeDensity[2])/10)/3728*(waterpol+chargeDensity[1]));
-	if (dielectric < 2.25)
-	{
-		dielectric = 2.25;
-	}
-	if (dielectric > 80.4)
-	{
-		dielectric = 80.4;
-	}
+    /*double charge = residueTemplate::itsAmberElec.getItsCharge(_residue->itsType, _atomIndex);
+    if (charge < 0.15 && charge > -0.15)
+    {
+        dielectric = 30;
+    }*/
 	return dielectric;
 }
 
@@ -1325,7 +1306,7 @@ void protein::updateChainIndependentDielectrics(UInt _chainIndex)
 	{
 		for(UInt j=0; j<itsChains[_chainIndex]->itsResidues[i]->itsAtoms.size(); j++)
 		{
-			dielectric = this->calculateChainIndependentDielectric(itsChains[_chainIndex], itsChains[_chainIndex]->itsResidues[i], itsChains[_chainIndex]->itsResidues[i]->itsAtoms[j]);
+            dielectric = this->calculateChainIndependentDielectric(itsChains[_chainIndex], itsChains[_chainIndex]->itsResidues[i], itsChains[_chainIndex]->itsResidues[i]->itsAtoms[j], j);
 			itsChains[_chainIndex]->itsResidues[i]->itsAtoms[j]->setDielectric(dielectric);
 		}
 	}
