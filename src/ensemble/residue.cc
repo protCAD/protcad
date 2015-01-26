@@ -3055,7 +3055,14 @@ double residue::intraSoluteEnergy()
 			{
 				if (!itsAtoms[j]->getSilentStatus())
 				{
-					bonded = isSeparatedByOneOrTwoBonds(i,j);
+                    if (itsType >= 53)
+                    {
+                        bonded = isSeparatedByFewBonds(i,j);
+                    }
+                    else
+                    {
+                        bonded = isSeparatedByOneOrTwoBonds(i,j);
+                    }
 					if (!bonded)
 					{
 						// ** get dielectric average and distance
@@ -3076,18 +3083,22 @@ double residue::intraSoluteEnergy()
 									index2 = dataBase[itsType].itsAtomEnergyTypeDefinitions[j][1];
 							}		
 							double tempvdwEnergy = residueTemplate::getVDWEnergySQ(index1,index2,distanceSquared);
+                            if (tempvdwEnergy > 0)
+                            {
+                                cout << i+1 << " " << j+1 << " " << tempvdwEnergy << endl;
+                            }
 							vdwEnergy += tempvdwEnergy;
 						}
 
-						// ** intra AMBER Electrostatics
-    		      				if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
-	  		     			{
-							UInt resType1 = itsType;
-							UInt atomType1 = i;
-							UInt resType2 = itsType;
-							UInt atomType2 = j;
-							double tempAmberElecEnergy = residueTemplate::getAmberElecSoluteEnergySQ(resType1, atomType1, resType2, atomType2, distanceSquared, dielectric);
-							amberElecEnergy += tempAmberElecEnergy;
+                        // ** intra AMBER Electrostatics
+                        if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
+                        {
+                            UInt resType1 = itsType;
+                            UInt atomType1 = i;
+                            UInt resType2 = itsType;
+                            UInt atomType2 = j;
+                            double tempAmberElecEnergy = residueTemplate::getAmberElecSoluteEnergySQ(resType1, atomType1, resType2, atomType2, distanceSquared, dielectric);
+                            amberElecEnergy += tempAmberElecEnergy;
 						}
 					}
 				}

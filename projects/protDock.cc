@@ -58,6 +58,7 @@ int main (int argc, char* argv[])
     convert << name, countstr = convert.str();
     string bestFile = countstr + ".tempBest.pdb";
     string outFile;
+    pdbWriter(bundle, bestFile);
 	delete thePDB;
 	
 	//--Loop for multiple simulations

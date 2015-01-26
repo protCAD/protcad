@@ -1,0 +1,200 @@
+!main chain atoms
+N CA C O
+!sidechain branch points
+CA
+!connectivity
+N	CA	H
+CA	C  	CB	HA
+C	O
+O
+CB	CG	HB2	HB3
+CG	ND1	CD2
+ND1	CE1	
+CD2	NE2	HD2
+CE1	NE2	HE1
+NE2	MG	
+MG	N1	N2	N3	N4	
+N4	C23	C27	C31
+N3	C34	C15	C23	
+N3	C22	C26	C30	
+C7	H16	H17	H18
+C34	C30	C3	C7		
+C27	C19	C34	C15	C23
+C19	H1	H2	H3
+C31	C35	C4	N4
+N4	C34	C15	C23
+C35	C12	C20	N1	C31
+N1	C20	C12	C35
+C27	C31	C29	C14	C21	N2
+C20	C24	N1	C22	C26	C3	C7	
+N3	C22	C26	
+C12	C8	C10	C29	C14	C21	N2
+C10	O3	O5	
+C8	C34	C15	C23	C29	C14	C21	H30
+O3	C12	C20	N1	C31		
+C24	C28	H33
+C33	C29	C14	C21	N2
+N2	C21	C25	C14	C33	C22	C25	
+C25	C29	N3	C4	C8	C31	O1						
+C26	C30	C29	C14	C21									
+C30	C34	C29	C14	C21	N2	MG
+C29	C33	C4	C8	C31	O1	C22	C26	C3
+C28	O4	H32
+C34	N3	C4	C8	C31	C7					
+C32	N1	C24	C28	C16
+C17	C25	H7	H8	H9						
+C18	C26	H4	H5	H6
+C16	C28	H10	H11	H12
+C15	C23	C34	H27	
+C14	C22	C33	H28	
+C13	C21	C32	N4	C29	C14	C21	N2			
+C11	O5	H13	H14	H15
+C10	O3	O5	
+C9	O2	O4	O5	C5
+O5	C18
+O4											
+O2
+C4	C8	C31	
+O1	C4			
+C12	C8	C10			
+C6	H20	H21		
+C5	C9	C1	H21	H22	
+C3	C7	C18	C22	C30	H23	H24
+C2	C6	C29	H31	
+C1	C24	H25	H26
+H1				
+H2				
+H3				
+H4				
+H5				
+H6				
+H7				
+H8				
+H9				
+H10				
+H11				
+H12				
+H13				
+H14				
+H15				
+H16				
+H17				
+H18				
+H19				
+H20				
+H21				
+H22				
+H23				
+H24				
+H25				
+H26				
+H27				
+H28				
+H29				
+H30				
+H31				
+H32				
+H33				
+!defined dihedral angles
+N	CA	CB	CG	ND1
+!atom types
+# column 1: atom name
+# column 2: AMBER all atom atomtype
+# column 3:	AMBER united atom atomtype
+# column 4: SUMMA atom type
+# column 5: SUMMA environment type
+# column 6: six-atom solvation type
+N		N		N		N		N		N
+CA		CT		CH		CA		C		C
+C		C		C		C		C		C
+O		O		O		O		O		O
+CB		CT		C2		C2'		C		C
+CG		CC		CC		CC		C		C
+ND1		NB		NB		N4		N		N
+CD2		CC		CG		CX2		C		C
+CE1		CC		CG		CX2		C		C
+NE2		NB		NB		N4		N		N
+C1              C3              C3		C3		C               C
+N1              N2              N2              N2		N               N
+O1              O               O               O 		O               O
+C2              C3              C3              C3		C               C
+N2              N2              N2              N2		N               N
+O2              O               O               O 		O               O
+C3              C3              C3              C3		C               C
+N3              N2              N2              N2		N               N
+O3              O               O               O 		O               O
+C4              C2              C2              C2		C               C
+N4              N2              N2              N2		N               N
+O4              O               O               O 		O               O
+C5              C3              C3              C3		C               C
+O5              O               O               O 		O               O
+C6              C2              C2              C2		C               C
+C7              C3              C3              C3              C               C
+C8              C3              C3              C3              C               C
+C9              C2              C2              C2              C               C
+C10             C2              C2              C2              C               C
+C11             C3              C3              C3              C               C
+C12             C2              C2              C2              C               C
+C13             C2              C2              C2              C               C
+C14             C2              C2              C2              C               C
+C15             C2              C2              C2              C               C
+C16             C3              C3              C3              C               C
+C17             C3              C3              C3              C               C
+C18             C3              C3              C3              C               C
+C19             C3              C3              C3              C               C
+C20             C2              C2              C2              C               C
+C21             C2              C2              C2              C               C
+C22             C2              C2              C2              C               C
+C23             C2              C2              C2              C               C
+C24             C3              C3              C3              C               C
+C25             C2              C2              C2              C               C
+C26             C2              C2              C2              C               C
+C27             C2              C2              C2              C               C
+C28             C3              C3              C3              C               C
+C29             C2              C2              C2              C               C
+C30             C2              C2              C2              C               C
+C31             C2              C2              C2              C               C
+C32             C2              C2              C2              C               C
+C33             C2              C2              C2              C               C
+C34             C2              C2              C2              C               C
+C35             C2              C2              C2              C               C
+MG              MG              MG              MG              C               C
+H		H		-		-		-		H
+HA		HC		-		-		-		H
+HB2		HC		-		-		-		H
+HB3		HC		-		-		-		H
+HD2		HC		-		-		-		H
+HE1		HC		-		-		-		H
+H1              HC		-		-		-		H
+H2              HC		-		-		-		H
+H3              HC		-		-		-		H
+H4              HC		-		-		-		H
+H5              HC		-		-		-		H
+H6              HC		-		-		-		H
+H7              HC		-		-		-		H
+H8              HC		-		-		-		H
+H9              HC		-		-		-		H
+H10             HC		-		-		-		H
+H11             HC		-		-		-		H
+H12             HC		-		-		-		H
+H13             HC		-		-		-		H
+H14             HC		-		-		-		H
+H15             HC		-		-		-		H
+H16             HC		-		-		-		H
+H17             HC		-		-		-		H
+H18             HC		-		-		-		H
+H19             HC		-		-		-		H
+H20             HC		-		-		-		H
+H21             HC		-		-		-		H
+H22             HC		-		-		-		H
+H23             HC		-		-		-		H
+H24             HC		-		-		-		H
+H25             HC		-		-		-		H
+H26             HC		-		-		-		H
+H27             HC		-		-		-		H
+H28             HC		-		-		-		H
+H29             HC		-		-		-		H
+H30             HC		-		-		-		H
+H31             HC		-		-		-		H
+H32             HC		-		-		-		H
+H33             HC		-		-		-		H
