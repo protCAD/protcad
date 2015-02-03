@@ -31,7 +31,7 @@ int main (int argc, char* argv[])
 		exit(1);
 	}
 	string infile = argv[1];
-    enum aminoAcid {A,R,N,D,Dh,C,Cx,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV};
+    enum aminoAcid {A,R,N,D,Dh,C,Cx,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,HCe,HCd};
     PDBInterface* thePDB = new PDBInterface(infile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
@@ -50,24 +50,37 @@ int main (int argc, char* argv[])
 
 	//--initialize variables for loop
     double Energy, pastEnergy, bestEnergy, rotx, roty, rotz, transx, transy, transz;
-    UInt name, totalsize = 200, nobetter, test,buffer;//, acceptedStep;
-
+    UInt name, totalsize = 250, nobetter, test,buffer;//, acceptedStep;
     name = rand() % 1000000;
     stringstream convert;
     string countstr;
     convert << name, countstr = convert.str();
     string bestFile = countstr + ".tempBest.pdb";
     string outFile;
-    pdbWriter(bundle, bestFile);
-	delete thePDB;
-	
+
+    //generate mutant
+    UInt chainNum = bundle->getNumChains();
+    UInt randres, randchain;
+    UInt activeResidues[] = {46,61,92,95};
+    UInt activeResiduesSize = sizeof(activeResidues)/sizeof(activeResidues[0]);
+    delete thePDB;
+
 	//--Loop for multiple simulations
     for (int a = 0; a < 100; a++)
 	{
-		PDBInterface* thePDB = new PDBInterface(infile);
+        PDBInterface* thePDB = new PDBInterface(infile);
 		ensemble* theEnsemble = thePDB->getEnsemblePointer();
 		molecule* pMol = theEnsemble->getMoleculePointer(0);
 		protein* bundle = static_cast<protein*>(pMol);
+        for (UInt i = 0; i < 3; i++)
+        {
+            randchain = rand() % chainNum;
+            randres = activeResidues[rand() % activeResiduesSize];
+            bundle->activateForRepacking(randchain, randres);
+            bundle->mutateWBC(randchain, randres, He);
+        }
+        bundle->protOptSolvent(200);
+        pdbWriter(bundle, bestFile);
         joinComplex(bundle);
         pastEnergy = bundle->interSoluteEnergy(true, 0, 1);
         nobetter = 0, test = 1, buffer = 0, bestEnergy = 1E10; //acceptedStep = 0,
@@ -76,7 +89,7 @@ int main (int argc, char* argv[])
 		{  
 			//--Move randomly constrained by energy and distance condition
             nobetter++, buffer++;
-            rotx = (rand() % 15)-7, roty = (rand() % 15)-7, rotz = (rand() % 15)-7;
+            rotx = (rand() % 7)-3, roty = (rand() % 7)-3, rotz = (rand() % 7)-3;
             transx = (rand() % 3)-1, transy = (rand() % 3)-1, transz = (rand() % 3)-1;
 
             do
@@ -89,7 +102,7 @@ int main (int argc, char* argv[])
 
                 //--Get new distance and Energy
                 Energy = bundle->interSoluteEnergy(true, 0, 1);
-                if ((Energy <= pastEnergy + (buffer/5)) && Energy < 0)
+                if ((Energy < pastEnergy + (buffer/5)) && Energy < 0)
                 {
                     //cout << Energy << endl;
                     if (Energy < bestEnergy)
@@ -135,7 +148,6 @@ int main (int argc, char* argv[])
         pdbWriter(model, outFile);
         cout << name << " " << bundle->interSoluteEnergy(true, 0, 1) << endl;
         delete theModelPDB;
-
 	}
 	cout << "Complete" << endl << endl;
 	return 0;
@@ -190,15 +202,15 @@ void joinComplex(protein* _bundle)
     dblVec substrate, ligandCentroid;
     double dx, dy, dz, mag, nx, ny, nz, energy = 0, dist = 1;
     energy = _bundle->interSoluteEnergy(true, 0, 1);
-    if (energy == 0)
+    if (energy > -1.0)
     {
         do
         {
-            substrate = carbonCentroid(_bundle, 1);
-            ligandCentroid = carbonCentroid(_bundle, 0);
-            dx = -(ligandCentroid[0]-substrate[0]);
-            dy = -(ligandCentroid[1]-substrate[1]);
-            dz = -(ligandCentroid[2]-substrate[2]);
+            substrate =  _bundle->getCoords(0, 47, 54);
+            ligandCentroid = _bundle->getCoords(1, 47, 54);
+            dx = (ligandCentroid[0]-substrate[0]);
+            dy = (ligandCentroid[1]-substrate[1]);
+            dz = (ligandCentroid[2]-substrate[2]);
             mag = sqrt(dx*dx+dy*dy+dz*dz);
             nx=dx/mag,ny=dy/mag,nz=dz/mag;
             dx=nx*dist;
@@ -207,7 +219,7 @@ void joinComplex(protein* _bundle)
             _bundle->translateChain(0, dx, dy, dz);
             energy = _bundle->interSoluteEnergy(true, 0, 1);
         }
-        while (energy == 0);
+        while (energy > -1.0);
     }
 }
 

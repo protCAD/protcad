@@ -24,7 +24,7 @@ int main (int argc, char* argv[])
 		cout << "protOptSolvent <inFile.pdb> <outFile.pdb>" << endl;
 		exit(1);
 	}
-	enum aminoAcid {A,R,N,D,Dh,C,Cx,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV};
+    enum aminoAcid {A,R,N,D,Dh,C,Cx,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,HC};
 	string infile = argv[1];
 	PDBInterface* thePDB = new PDBInterface(infile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();

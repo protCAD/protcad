@@ -3055,14 +3055,7 @@ double residue::intraSoluteEnergy()
 			{
 				if (!itsAtoms[j]->getSilentStatus())
 				{
-                    if (itsType >= 53)
-                    {
-                        bonded = isSeparatedByFewBonds(i,j);
-                    }
-                    else
-                    {
-                        bonded = isSeparatedByOneOrTwoBonds(i,j);
-                    }
+                    bonded = isSeparatedByOneOrTwoBonds(i,j);
 					if (!bonded)
 					{
 						// ** get dielectric average and distance
@@ -3083,10 +3076,6 @@ double residue::intraSoluteEnergy()
 									index2 = dataBase[itsType].itsAtomEnergyTypeDefinitions[j][1];
 							}		
 							double tempvdwEnergy = residueTemplate::getVDWEnergySQ(index1,index2,distanceSquared);
-                            if (tempvdwEnergy > 0)
-                            {
-                                cout << i+1 << " " << j+1 << " " << tempvdwEnergy << endl;
-                            }
 							vdwEnergy += tempvdwEnergy;
 						}
 
