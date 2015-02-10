@@ -30,8 +30,8 @@ int main (int argc, char* argv[])
 		exit(1);
 	}
 	string infile = argv[1];
-	enum aminoAcid {A,R,N,D,Dh,C,Cx,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV};
-	string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Q","E","Eh","Hd", "He","Hn","Hp","I","L","K","M","F","P","O","S","T","W","Y", "V","G","dA","dR","dN","dD","dDh","dC","dCx","dQ","dE","dEh","dHd","dHe","dHn","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV"};
+    enum aminoAcid {A,R,N,D,Dh,C,Cx,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,Hce,Hcd};
+    string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Q","E","Eh","Hd", "He","Hn","Hp","I","L","K","M","F","P","O","S","T","W","Y", "V","G","dA","dR","dN","dD","dDh","dC","dCx","dQ","dE","dEh","dHd","dHe","dHn","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV","Hce","Hcd"};
 	PDBInterface* thePDB = new PDBInterface(infile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
@@ -44,7 +44,7 @@ int main (int argc, char* argv[])
 	amberVDW::setScaleFactor(1.0);
 	amberVDW::setRadiusScaleFactor(1.0);
 	amberVDW::setLinearRepulsionDampeningOff();
-	amberElec::setScaleFactor(1.0);
+    amberElec::setScaleFactor(0.0);
 	solvation::setItsScaleFactor(0.0);
 	srand (time(NULL));
 
@@ -54,11 +54,11 @@ int main (int argc, char* argv[])
 	//UInt activeResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};
 	//UInt allowedLResidues[] = {A,N,D,Q,E,He,L,K,M,F,S,W,Y};
 	//UInt activeResidues[] = {1,4,5,6};
-	UInt allowedLResidues[] = {A,R,N,D,Q,E,He,L,K,M,S,T,Y,V,G};
-	UInt activeResidues[] = {1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,18,19,21,22,23,24,25,26,27,28,29,30,31};
+    UInt allowedLResidues[] = {Hce};
+    UInt activeResidues[] = {1,3,5,7,9,13,15,17,19,21,28,30,32,34,54,57,59,61,70,72,74,76,78,86,88,90,92,94,108,110,112,114,116,127,129,131,133,151,153,155,157,159,166,168,170,172,174,181,183,185};
 	//UInt allowedLResidues[] = {E,R,K,D,P,P};
 	//UInt activeResidues[] = {0,1,3,4,6,7,9,10,12,13,15,16,18,19,21,22,24,25,27,28};
-	UInt allowedDResidues[] = {dA,dR,dN,dD,dQ,dE,dHe,dL,dK,dM,dS,dT,dY,dV,G};
+    UInt allowedDResidues[] = {G};
 
 	double phi, bestEnergy, foldingEnergy, finalEnergy, posE, totalposE, aveposE;
 	UInt nobetter = 0, activeResiduesSize = sizeof(activeResidues)/sizeof(activeResidues[0]), activeChainsSize = sizeof(activeChains)/sizeof(activeChains[0]);
@@ -90,7 +90,7 @@ int main (int argc, char* argv[])
 			for (UInt j = 0; j < activeResiduesSize; j++)
 			{
 				bundle->activateForRepacking(activeChains[i], activeResidues[j]);
-				phi = bundle->getPhi(activeChains[i], activeResidues[j]);
+                /*phi = bundle->getPhi(activeChains[i], activeResidues[j]);
 				if (phi > 0 && phi < 180)
 				{
 					mutant = allowedDResidues[(rand() % dResidues)];
@@ -100,13 +100,13 @@ int main (int argc, char* argv[])
 				{
 					mutant = allowedLResidues[(rand() % lResidues)];
 					bundle->mutateWBC(activeChains[i], activeResidues[j], mutant);
-				}
+                }*/
 			}
-			randomizeSideChains(bundle, activeChains[i]);
+            //randomizeSideChains(bundle, activeChains[i]);
 			chainSequence = getChainSequence(bundle, activeChains[i]);
 			proteinSequence.push_back(chainSequence);
 		}
-		bundle->protOptSolvent(300);
+        //bundle->protOptSolvent(300);
 
 		//--Determine next mutation position
 		rescount = 0, totalposE = 0, mutantPosition.clear();
@@ -185,7 +185,7 @@ int main (int argc, char* argv[])
 				}
 				randomizeSideChains(bundle, activeChains[i]);
 			}
-			bundle->protOptSolvent(300);
+            bundle->protOptSolvent(1000);
 			protein* tempBundle = new protein(*bundle);
 			
 			//--Determine next mutation position

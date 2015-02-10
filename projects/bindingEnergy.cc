@@ -38,6 +38,7 @@ int main (int argc, char* argv[])
 	solvation::setItsScaleFactor(0.0);
 
 	vector <double> Energy = bundle->chainFoldingBindingEnergy(false);
-	cout << Energy[1];
+    double interEnergy = bundle->interSoluteEnergy(true, 0, 1);
+    cout << Energy[1] << " " << interEnergy << " " << Energy[0];
 	return 0;
 }

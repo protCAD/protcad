@@ -43,7 +43,7 @@ int main (int argc, char* argv[])
 	string outFile;
 
 	cout << endl << "\t*protOptSolvent*" << endl << endl << "Starting Energy is: " << _prot->intraSoluteEnergy(true) << endl << endl << "Optimization running..." << endl;
-    _prot->protOptSolvent(1000);
+    _prot->protOptSolvent(300);
 
 //--Print final energy and write a pdb file--------------------------------------------------------------
 	cout << endl << "Optimization is complete!" << endl;

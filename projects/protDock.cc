@@ -118,7 +118,6 @@ int main (int argc, char* argv[])
                     convert << acceptedStep, countstr = convert.str();
                     outFile = countstr + ".pdb";
                     pdbWriter(bundle, outFile);*/
-
                 }
 
                 //--Revert if no improvement
