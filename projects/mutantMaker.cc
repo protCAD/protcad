@@ -124,7 +124,7 @@ int main (int argc, char* argv[])
     vector<vector<UInt> > resIDs;
     vector <UInt> v;
 
-    UInt resID1[] = {G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G};
+    UInt resID1[] = {A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A};
     v.insert (v.begin(), resID1, resID1 + sizeof(resID1)/sizeof(resID1[0]));
     resIDs.push_back(v);
     v.clear();
@@ -306,7 +306,7 @@ int main (int argc, char* argv[])
         ensemble* theEnsemble2 = thePDB2->getEnsemblePointer();
         molecule* pMol2 = theEnsemble2->getMoleculePointer(0);
         protein* bundle2 = static_cast<protein*>(pMol2);
-        bundle2->protOptSolvent(300);
+        //bundle2->protOptSolvent(300);
         vector <double> Energy = bundle2->chainFoldingBindingEnergy(false);
         cout << Energy[1] << endl;
         Energy.clear();

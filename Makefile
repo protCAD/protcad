@@ -9,7 +9,7 @@ export F77 = g77
 export MAKE = make
 
 LIB_TARGETS = lib
-EXEC_TARGETS = mutantMaker acidMutator protEvolver mergeComplex structFinder structShaper intraSoluteEnergy protOptSolvent protEvolverBinding database_phipsi protFolder sideChainRandomizer dielectricFit foldingBindingEnergy ligandBindingEnergy bindingEnergy triadFinder protMover z_aligner y_aligner fourEvolver protDock
+EXEC_TARGETS = mutantMaker acidMutator protEvolver mergeComplex structFinder structShaper intraSoluteEnergy protOptSolvent protEvolverBinding database_phipsi protFolder sideChainRandomizer dielectricFit foldingBindingEnergy ligandBindingEnergy bindingEnergy triadFinder protMover z_aligner y_aligner fourEvolver protDock protMutator
 
 all : $(LIB_TARGETS) $(EXEC_TARGETS)
 
@@ -25,6 +25,8 @@ sideChainRandomizer : FORCE
 protDock : FORCE
 	cd obj && $(MAKE) protDock
 
+protMutator : FORCE
+	cd obj && $(MAKE) protMutator
 acidMutator : FORCE
 	cd obj && $(MAKE) acidMutator
 	

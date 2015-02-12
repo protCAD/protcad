@@ -17,6 +17,7 @@ projects/mutantMaker.cc
 projects/peptideBondSASA.cc
 projects/pointMutator.cc
 projects/protDock.cc
+projects/protMutator.cc
 projects/protEvolver.cc
 projects/protEvolverBinding.cc
 projects/protEvolverHomo.cc
