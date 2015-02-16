@@ -39,7 +39,7 @@ FFLAGS = -Wall -g
 
 INC_BASE = -I$(SRCDIR)/ensemble -I$(SRCDIR)/io \
 -I$(SRCDIR)/math -I$(SRCDIR)/database -I$(SRCDIR)/algorithm \
--I$(TNTINCLUDE) -I$(OBJDIR)
+-I$(TNTINCLUDE)
 
 LIB_BASE = -L$(OBJDIR) -lprotcad  -lc -lm -lstdc++
 
@@ -59,113 +59,115 @@ vpath %.o $(OBJDIR)
 
 all : $(LIB_TARGETS) $(TARGETS)
 
-lib : $(LIB_CC_OBJECTS) $(LIB_F77_OBJECTS)
+lib : libprotcad.a
+
+libprotcad.a : $(LIB_CC_OBJECTS) $(LIB_F77_OBJECTS)
 		cd $(OBJDIR) && ar rv libprotcad.a $?
 		cd $(OBJDIR) && ranlib libprotcad.a
-		
+
 mutantMaker : libprotcad.a mutantMaker.cc
-	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ $(BINDIR)
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && mv $@ $(BINDIR)
 
 database_phipsi : libprotcad.a database_phipsi.cc
-	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ $(BINDIR)
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && mv $@ $(BINDIR)
 
 bindingEnergy : libprotcad.a bindingEnergy.cc
-	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ $(BINDIR)
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && mv $@ $(BINDIR)
 
 fourEvolver : libprotcad.a fourEvolver.cc
-	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ $(BINDIR)
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && mv $@ $(BINDIR)
 	
 dielectricFit : libprotcad.a dielectricFit.cc
-	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ $(BINDIR)
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && mv $@ $(BINDIR)
 
 protEvolverBinding : libprotcad.a protEvolverBinding.cc
-	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ $(BINDIR)
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && mv $@ $(BINDIR)
 
 protMutator : libprotcad.a protMutator.cc
-	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ $(BINDIR)
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && mv $@ $(BINDIR)
 	
 foldingBindingEnergy : libprotcad.a foldingBindingEnergy.cc
-	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ $(BINDIR)
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && mv $@ $(BINDIR)
 
 triadFinder : libprotcad.a triadFinder.cc
-	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ $(BINDIR)
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && mv $@ $(BINDIR)
 	
 ligandBindingEnergy : libprotcad.a ligandBindingEnergy.cc
-	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ $(BINDIR)
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && mv $@ $(BINDIR)
 	
 intraSoluteEnergy : libprotcad.a intraSoluteEnergy.cc
-	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ $(BINDIR)
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && mv $@ $(BINDIR)
 	
 protOptSolvent : libprotcad.a protOptSolvent.cc
-	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ $(BINDIR)
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && mv $@ $(BINDIR)
 	
 protFolder : libprotcad.a protFolder.cc
-	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ $(BINDIR)
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && mv $@ $(BINDIR)
 	
 foldingC : libprotcad.a foldingC.cc
-	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ $(BINDIR)
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && mv $@ $(BINDIR)
 	
 protEvolverHomo : libprotcad.a protEvolverHomo.cc
-	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ $(BINDIR)
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && mv $@ $(BINDIR)
 
 structShaper : libprotcad.a structShaper.cc
-	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ $(BINDIR)
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && mv $@ $(BINDIR)
 
 protMover : libprotcad.a protMover.cc
-	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ $(BINDIR)
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && mv $@ $(BINDIR)
 
 protDock : libprotcad.a protDock.cc
-	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ $(BINDIR)
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && mv $@ $(BINDIR)
 
 protEvolver : libprotcad.a protEvolver.cc
-	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ $(BINDIR)
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && mv $@ $(BINDIR)
 
 structFinder : libprotcad.a structFinder.cc
-	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ $(BINDIR)	
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && mv $@ $(BINDIR)	
 
 mergeComplex : libprotcad.a mergeComplex.cc
-	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ $(BINDIR)
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && mv $@ $(BINDIR)
 
 dFinder : libprotcad.a dFinder.cc
-	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ $(BINDIR)
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && mv $@ $(BINDIR)
 
 acidMutator : libprotcad.a acidMutator.cc
-	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ $(BINDIR)
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && mv $@ $(BINDIR)
 
 sideChainRandomizer : libprotcad.a sideChainRandomizer.cc
-	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ $(BINDIR)
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && mv $@ $(BINDIR)
 
 y_aligner : libprotcad.a y_aligner.cc
-	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ $(BINDIR)
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && mv $@ $(BINDIR)
 
 z_aligner : libprotcad.a z_aligner.cc
-	$(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	mv $@ $(BINDIR)
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && mv $@ $(BINDIR)
 
 $(LIB_F77_OBJECTS): %.o: %.f
 	$(F77) -c $(FFLAGS) $^ -o $@
@@ -178,5 +180,4 @@ $(LIB_CC_OBJECTS): %.o: %.cc %.h
 clean: 
 	rm -f $(OBJDIR)/*.o 
 	rm -f $(OBJDIR)/*.a
-	rm -f $(OBJDIR)/Makefile
 	cd $(BINDIR) && rm -f $(TARGETS)
