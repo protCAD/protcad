@@ -86,7 +86,7 @@ public:
 	UInt getTypeFromResNum(UInt _chainIndex, UInt _resNum) { return itsChains[_chainIndex]->getTypeFromResNum(_resNum);}
 	string getTypeStringFromAtomNum(UInt _chainIndex, UInt _resNum, UInt _atomNum) { return itsChains[_chainIndex]->getTypeStringFromAtomNum(_resNum, _atomNum);}
 	string getTypeStringFromResNum(UInt _chainIndex, UInt _resNum) {return itsChains[_chainIndex]->getTypeStringFromResNum(_resNum);}
-	//void symmetryUnlinkChainAfromB(UInt _aIndex, UInt _bIndex);
+    void removeResidue(UInt _chainIndex, UInt _resNum) {return itsChains[_chainIndex]->removeResidue(_resNum);}
 
 	//--Mutations functions
 	void stripToGlycine();
@@ -169,7 +169,7 @@ public:
 	double calculateDielectric(UInt _chainIndex, UInt _residueIndex, UInt _atomIndex);
 	double calculateDielectric(chain* _chain, residue* _residue, atom* _atom);
     vector <double> calculateSolvationEnergy(UInt _chainIndex, UInt _residueIndex, UInt _atomIndex) {return itsChains[_chainIndex]->itsResidues[_residueIndex]->calculateSolvationEnergy( _atomIndex);}
-	double calculateChainIndependentDielectric(chain* _chain, residue* _residue, atom* _atom);
+    double calculateChainIndependentDielectric(chain* _chain, residue* _residue, atom* _atom, UInt _atomIndex);
 	void updateDielectrics();
 	void updatePositionDielectrics(UInt _chainIndex, UInt _residueIndex);
 	void updateChainIndependentDielectrics(UInt _chainIndex);
