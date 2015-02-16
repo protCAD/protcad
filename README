@@ -3,14 +3,14 @@ protCAD official development tree
 
 protCAD is an implementation of the protein design software library that originated in the Bill Degrado Lab and is currently maintained by The Vikas Nanda Lab.
 
-Computational Methods and their Applications for de novo Functional Protein Design and Memebrane Protein Solubilization Summa CM 2002
+-Computational Methods and their Applications for de novo Functional Protein Design and Memebrane Protein Solubilization Summa CM 2002
 
  Installation
 ===========================
 -Add protcad to your bash file and link in path as follows (in ubuntu edit .bashrc and add this to the end of file with directory of choosing)
 
 export PROTCADDIR=/home/username/protcad
-export PATH=$PATH:$PROTCADDIR
+export PATH=$PATH:$PROTCADDIR:$PROTCADDIR/bin
 
 -protCAD can be installed from the root directory of protcad (protcad/) by entering this statement into the terminal: make lib
 
@@ -22,11 +22,11 @@ export PATH=$PATH:$PROTCADDIR
 
 -In protcad/projects is an example program (example.cc) that can be compiled by typing this into the terminal in the protcad root directory: make example 
 
--New programs need to be added to two files called 'Makefile' in protcad/ and protcad/obj for compilation like example has been. 
+-New programs need to be added to the makefile called 'Makefile' in protcad/ for compilation, like example has been. 
 
--Additional examples are in the protcad/src/examples folder for reference and can be added to the projects directory and MakeFiles for compilation.
+-Additional examples are in the protcad/src/examples folder for reference and can be added to the projects directory and MakeFile for compilation.
 
--New programs written are intended to follow the same directory structure and usage as example does.
+-New programs written are intended to follow the same directory structure and usage as 'example' does.
 
 
  Development process
