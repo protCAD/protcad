@@ -37,8 +37,8 @@ int main (int argc, char* argv[])
 	amberElec::setScaleFactor(1.0);
 	solvation::setItsScaleFactor(0.0);
 
-	vector <double> Energy = bundle->chainFoldingBindingEnergy(false);
-    double interEnergy = bundle->interSoluteEnergy(true, 0, 1);
-    cout << Energy[1] << " " << interEnergy << " " << Energy[0];
+    vector <double> Energy = bundle->chainFoldingBindingEnergy(false);
+    //double interEnergy = bundle->interSoluteEnergy(true, 0, 1);
+    cout << Energy[1] << " " << Energy[0];
 	return 0;
 }

@@ -34,7 +34,7 @@ int main (int argc, char* argv[])
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* bundle = static_cast<protein*>(pMol);
 	bundle->silenceMessages();
-	residue::setCutoffDistance(10.0);
+    residue::setCutoffDistance(9.0);
 	pmf::setScaleFactor(0.0);
 	rotamer::setScaleFactor(0.0);
 	microEnvironment::setScaleFactor(0.0);
@@ -84,7 +84,7 @@ int main (int argc, char* argv[])
 
 	//--CoiledCoil
 	//UInt resID_A[] = {dE,V,Q,E,L,E,Q,K,V,Q,E,L,E,Q,K,V,Q,E,L,E,Q,K,V,Q,E,L,E,Q,K,V,dK};
-	//UInt resID_A[] = {R,M,K,Q,L,E,D,K,N,E,E,L,L,S,K,N,Y,He,L,E,N,E,N,A,R,L,K,K,L,I,G};
+    //UInt resID_A[] = {R,M,K,Q,L,E,D,K,N,E,E,L,L,S,K,N,Y,He,L,E,N,E,N,A,R,L,K,KEnergy.clear();,L,I,G};
 
 	//UInt resID_A[] = {M,V,S,K,G,E,E,D};
 	//UInt resID_A[] = {K,Y,L,E,D,M,G,G};
@@ -121,22 +121,24 @@ int main (int argc, char* argv[])
 	//--trpcage triad
 	//UInt resID_A[] = {N,D,He,I,Q,W,L,K,D,dQ,G,P,S,S,G,R,P,P,S,S};
 
+     //UInt resID1[] = {Q,K,L,V,Cx,F,A,E,N,V,G,S,N,K,G,A,I,Cx,G,L,M,V,G,G,V,V};
+
     vector<vector<UInt> > resIDs;
     vector <UInt> v;
 
-    UInt resID1[] = {A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A};
+    UInt resID1[] = {P,D,G,P,D,G,K,O,G,K,O,G,K,O,G,P,D,G,D,O,G,D,O,G,P,D,G,P,D,G};
     v.insert (v.begin(), resID1, resID1 + sizeof(resID1)/sizeof(resID1[0]));
     resIDs.push_back(v);
     v.clear();
-    /*UInt resID2[] = {P,O,G,P,O,G,P,O,G,P,E,G,P,O,G,P,O,G,P,O,G,P,O,G,G};
+    UInt resID2[] = {K,O,G,K,O,G,K,O,G,D,O,G,P,D,G,P,D,G,K,O,G,P,K,G,P,K,G,K,O,G};
     v.insert (v.begin(), resID2, resID2 + sizeof(resID2)/sizeof(resID2[0]));
     resIDs.push_back(v);
     v.clear();
-    UInt resID3[] = {P,O,G,P,O,G,P,O,G,P,K,G,P,O,G,P,O,G,P,O,G,P,O,G,G};
+    UInt resID3[] = {P,D,G,P,D,G,P,D,G,P,D,G,K,O,G,P,K,G,K,O,G,D,O,G,D,O,G,D,O,G};
     v.insert (v.begin(), resID3, resID3 + sizeof(resID3)/sizeof(resID3[0]));
     resIDs.push_back(v);
     v.clear();
-    UInt resID4[] = {P,O,G,P,O,G,P,O,G,P,N,G,P,O,G,P,O,G,P,O,G,P,O,G,G};
+    /*UInt resID4[] = {P,O,G,P,O,G,P,O,G,P,N,G,P,O,G,P,O,G,P,O,G,P,O,G,G};
     v.insert (v.begin(), resID4, resID4 + sizeof(resID4)/sizeof(resID4[0]));
     resIDs.push_back(v);
     v.clear();
@@ -272,7 +274,7 @@ int main (int argc, char* argv[])
 	//--Mutate chains
     UInt chainNum;
     delete thePDB;
-    for (UInt h = 0; h < resIDs.size(); h++)
+    for (UInt h = 0; h < 1; h++)
     {
         PDBInterface* thePDB = new PDBInterface(infile);
         ensemble* theEnsemble = thePDB->getEnsemblePointer();
@@ -284,14 +286,14 @@ int main (int argc, char* argv[])
             UInt resNum = bundle->getNumResidues(i);
             for (UInt j = 0; j < resNum; j++)
             {
-                if (j >= resIDs[h].size())
+                if (j >= resIDs[i].size())
                 {
                     bundle->removeResidue(i,j);
                 }
                 else
                 {
                     bundle->activateForRepacking(i, j);
-                    bundle->mutateWBC(i, j, resIDs[h][j]);
+                    bundle->mutateWBC(i, j, resIDs[i][j]);
                     randomizeSideChain(bundle, i, j);
                 }
             }
@@ -306,10 +308,9 @@ int main (int argc, char* argv[])
         ensemble* theEnsemble2 = thePDB2->getEnsemblePointer();
         molecule* pMol2 = theEnsemble2->getMoleculePointer(0);
         protein* bundle2 = static_cast<protein*>(pMol2);
-        //bundle2->protOptSolvent(300);
-        vector <double> Energy = bundle2->chainFoldingBindingEnergy(false);
-        cout << Energy[1] << endl;
-        Energy.clear();
+        bundle2->protOptSolvent(200);
+        double Energy = bundle2->intraSoluteEnergy(false);
+        cout << Energy << endl;
         pdbWriter(bundle2, outFile);
         delete thePDB2;
     }

@@ -11,7 +11,7 @@ export MAKE = make
 
 SHELL = /bin/sh
 
-TARGETS = mutantMaker acidMutator protEvolver mergeComplex structFinder structShaper intraSoluteEnergy protOptSolvent protEvolverBinding database_phipsi protFolder sideChainRandomizer dielectricFit foldingBindingEnergy ligandBindingEnergy bindingEnergy triadFinder protMover z_aligner y_aligner fourEvolver protDock protMutator
+TARGETS = mutantMaker acidMutator protEvolver mergeComplex structFinder structShaper intraSoluteEnergy protOptSolvent protEvolverBinding database_phipsi protFolder sideChainRandomizer dielectricFit foldingBindingEnergy ligandBindingEnergy bindingEnergy triadFinder protMover z_aligner y_aligner fourEvolver protDock protMutator protNetwork dielectric
 
 .SUFFIXES:
 .SUFFIXES: .cc .o .h .f .a
@@ -66,6 +66,14 @@ libprotcad.a : $(LIB_CC_OBJECTS) $(LIB_F77_OBJECTS)
 		cd $(OBJDIR) && ranlib libprotcad.a
 
 mutantMaker : libprotcad.a mutantMaker.cc
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && mv $@ $(BINDIR)
+
+dielectric : libprotcad.a dielectric.cc
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && mv $@ $(BINDIR)
+
+protNetwork : libprotcad.a protNetwork.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
 	cd $(OBJDIR) && mv $@ $(BINDIR)
 
@@ -180,4 +188,5 @@ $(LIB_CC_OBJECTS): %.o: %.cc %.h
 clean: 
 	rm -f $(OBJDIR)/*.o 
 	rm -f $(OBJDIR)/*.a
+	rm -f protCAD*
 	cd $(BINDIR) && rm -f $(TARGETS)
