@@ -1,13 +1,11 @@
 //*******************************************************************************************************
 //*******************************************************************************************************
 //*************************************                      ********************************************
-//*************************************    protOptSolvent    ********************************************
+//*************************************      getSequence     ********************************************
 //*************************************                      ********************************************
 //*******************************************************************************************************
-//******** -sidechain and backbone optimization with a burial-based scaling of electrostatics- **********
+//********************************* -get sequence from pdb file- ****************************************
 //*******************************************************************************************************
-
-/////// Just specify a infile and outfile, it will optimize to a generally effective minimum.
 
 //--Program setup----------------------------------------------------------------------------------------
 #include <iostream>
@@ -21,10 +19,11 @@ int main (int argc, char* argv[])
 	//--Running parameters
     if (argc !=2)
 	{
-        cout << "protOptSolvent <inFile.pdb>" << endl;
+        cout << "getSequence <inFile.pdb>" << endl;
 		exit(1);
 	}
     enum aminoAcid {A,R,N,D,Dh,C,Cx,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,HC};
+    string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Q","E","Eh","Hd", "He","Hn","Hp","I","L","K","M","F","P","O","S","T","W","Y", "V","G","dA","dR","dN","dD","dDh","dC","dCx","dQ","dE","dEh","dHd","dHe","dHn","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV","Hce"};
 	string infile = argv[1];
 	PDBInterface* thePDB = new PDBInterface(infile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
@@ -40,13 +39,18 @@ int main (int argc, char* argv[])
 	amberVDW::setLinearRepulsionDampeningOff();
 	amberElec::setScaleFactor(1.0);
 	solvation::setItsScaleFactor(0.0);
-	string outFile;
 
-    _prot->protOptSolvent(500);
-
-//--Print final energy and write a pdb file--------------------------------------------------------------
-    outFile = infile;
-    pdbWriter(_prot, outFile);
+    UInt numChains = _prot->getNumChains();
+    for (UInt i = 0; i < numChains; i++)
+    {
+        UInt numRes = _prot->getNumResidues(i);
+        for (UInt j = 0; j < numRes; j++)
+        {
+            UInt restype = _prot->getTypeFromResNum(i,j);
+            cout << aminoAcidString[restype];
+        }
+        cout << endl;
+    }
 	return 0;
 }
 

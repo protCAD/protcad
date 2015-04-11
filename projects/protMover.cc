@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
     	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* bundle = static_cast<protein*>(pMol);
 
-	// antiparallel_beta test.pdb 5 0 -38.5 180 0 0 test2.pdb
+
 
 	double transx, transy, transz, rotx, roty, rotz;
 

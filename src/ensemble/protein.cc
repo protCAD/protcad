@@ -2869,11 +2869,11 @@ void protein::protOptSolvent(UInt _plateau)
 	//--Initialize variables for loop and calculate starting energy-------------------------------------
 	double deltaTheta = 0, totalpreposE = 0, avepreposE = -1E10;
 	double Energy, preposE, currentposE, pastEnergy = this->intraSoluteEnergy(true);
-	UInt randchain, randres, randrestype, allowedRotsize, randrot, number = 0, nobetter = 0;
+    UInt randchain, randres, randrestype, allowedRotsize, randrot, number = 0, nobetter = 0;
 	UInt resNum, randtype, chainNum = this->getNumChains(), rotbetter = 0;
 	vector < vector <double> > currentRot;
 	int thisone;
-	UIntVec allowedRots;
+    UIntVec allowedRots;
 	srand (time(NULL));
 
 	//--Run optimizaiton loop to energetic minima, determined by _plateau-------------------------------
@@ -2927,15 +2927,16 @@ void protein::protOptSolvent(UInt _plateau)
 		{
 			//--Get current rotamer and allowed
 			currentRot = this->getSidechainDihedrals(randchain, randres);
-			allowedRots = this->getAllowedRotamers(randchain, randres, randrestype, 0);
-			allowedRotsize = (allowedRots.size()/3), rotbetter++, rotbetter++;
+            allowedRots = this->getAllowedRotamers(randchain, randres, randrestype, 0);
+            allowedRotsize = (allowedRots.size()/3), rotbetter++, rotbetter++;
 
 			//--Try 1/3 of allowed rotamers keep first improvement or revert to previous angles
 			for (UInt j = 0; j < allowedRotsize; j ++)
 			{
-				randrot = rand() % allowedRots.size();
-				this->setRotamerWBC(randchain, randres, 0, allowedRots[randrot]);
+                randrot = rand() % allowedRots.size();
+                this->setRotamerWBC(randchain, randres, 0, allowedRots[randrot]);
 				currentposE = this->getPositionSoluteEnergy(randchain, randres, true);
+
 				if (currentposE < (preposE - .05))
 				{
 					Energy = this->intraSoluteEnergy(true);

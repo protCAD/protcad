@@ -20,7 +20,7 @@ int main (int argc, char* argv[])
 	exit(1);
 	}
 
-	enum aminoAcid {A, R, N, D, Dh, C, Q, E, Eh, G, H, I, L, K, M, F, P, S, T, W, Y, V, dA, dR, dN, dD, dDh, dC, dQ, dE, dEh, dH, dI, dL, dK, dM, dF, dP, dS, dT, dW, dY, dV};
+    enum aminoAcid {A,R,N,D,Dh,C,Cx,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,HC};
 	string infile = argv[1];
 	PDBInterface* thePDB = new PDBInterface(infile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
@@ -40,7 +40,7 @@ int main (int argc, char* argv[])
 
 	//--Mutate sequence of inFile-----------------------------------------------------------------------
 	UInt chainNum = bundle->getNumChains();
-	int resID[] = {Dh, Eh, dDh, dEh};
+    int resID[] = {A, Dh, Eh, dDh, dEh};
 	for (UInt i = 0; i < chainNum; i ++)
 	{
 		UInt resNum = bundle->getNumResidues(i);
@@ -48,25 +48,9 @@ int main (int argc, char* argv[])
 		{	
 			UInt restype = bundle->getTypeFromResNum(i, j);
 			bundle->activateForRepacking(i, j);
-			if (restype == D)
+            if (restype != G)
 			{
 				bundle->mutate(i, j, resID[0]);
-			}
-			if (restype == E)
-			{
-				bundle->mutate(i, j, resID[1]);
-			}
-			if (restype == dD)
-			{
-				bundle->mutate(i, j, resID[2]);
-			}
-			if (restype == dE)
-			{
-				bundle->mutate(i, j, resID[3]);
-			}
-			if (restype != D && restype != E && restype != dD && restype != dE)
-			{
-				bundle->mutate(i, j, restype);
 			}
 		}
 	}

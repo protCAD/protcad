@@ -48,7 +48,7 @@ int main (int argc, char* argv[])
     //--parameters
     int chains[] = {0};
 	int chainsSize = sizeof(chains)/sizeof(chains[0]);
-    int residues[] = {1,3,5,7,9,13,15,17,19,21,28,30,32,34,57,59,61,70,72,74,76,78,86,88,90,92,94,108,110,112,114,116,127,129,131,133,151,153,155,157,159,166,168,170,172,174,181,183,185};//{78,116,54,110,133,112,3,1,21,30,166};
+    int residues[] = {1,3,5,7,9,13,15,17,19,21,28,30,32,34,36,54,57,59,61,70,72,74,76,78,86,88,90,92,94,108,110,112,114,116,127,129,131,133,151,153,155,157,159,161,166,168,170,172,174,181,183,185};//{78,116,54,110,133,112,3,1,21,30,166};
 	int residuesSize = sizeof(residues)/sizeof(residues[0]);
     int resID[] = {Hce};
 	int resIDsize = sizeof(resID)/sizeof(resID[0]);
@@ -57,8 +57,8 @@ int main (int argc, char* argv[])
 
     //--variables
     UInt mutant, restype;
-    double pastEnergy, Energy;
-    vector < vector <double> > currentRot;
+    double pastEnergy, Energy, bestAngle, angle;
+    vector < vector <double> > currentRot, bestRot;
     UIntVec allowedRots;
     cout << endl << "pdb " << "residue " << "site " << "mutant " << "energy " << endl;
 
@@ -85,29 +85,32 @@ int main (int argc, char* argv[])
 
                     //--find lowest Rotamer and optimize neighbors
                     allowedRots = bundle->getAllowedRotamers(chains[l], residues[i], restype, 0);
-                    for (UInt a = 0; a < 3; a++)
+                    pastEnergy = bundle->intraSoluteEnergy(true);
+                    for (UInt m = 0; m < allowedRots.size(); m ++)
                     {
-                        pastEnergy = bundle->intraSoluteEnergy(true);
-                        for (UInt j = 0; j < allowedRots.size(); j ++)
+                        bundle->setRotamerWBC(chains[l], residues[i], 0, allowedRots[m]);
+                        currentRot = bundle->getSidechainDihedrals(chains[l], residues[i]);
+                        angle = 0;
+                        for (UInt n = 0; n < 8; n++)
                         {
-                            currentRot = bundle->getSidechainDihedrals(chains[l], residues[i]);
-                            bundle->setRotamerWBC(chains[l], residues[i], 0, allowedRots[j]);
-                            Energy = bundle->intraSoluteEnergy(false);
+                            angle = angle+45;
+                            bundle->setChi(chains[l], residues[i], 1, 0, angle);
+                            Energy = bundle->intraSoluteEnergy(true);
                             if (Energy < pastEnergy)
                             {
                                 pastEnergy = Energy;
+                                bestAngle = angle;
+                                bestRot = currentRot;
                             }
-                            else
-                            {
-                                bundle->setSidechainDihedralAngles(chains[l], residues[i], currentRot);
-                            }
+                            bundle->setChi(chains[l], residues[i], 1, 0, (angle*-1));
                         }
-                        bundle->protOptSolvent(200);
                     }
+                    bundle->setSidechainDihedralAngles(chains[l], residues[i], bestRot);
+                    bundle->setChi(chains[l], residues[i], 1, 0, bestAngle);
 				}
 
                 //--print pdb and data to output
-                Energy = bundle->intraSoluteEnergy(false);
+                Energy = bundle->intraSoluteEnergy(true);
 				count++;
 				stringstream convert; 
 				string countstr;

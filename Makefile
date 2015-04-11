@@ -11,7 +11,7 @@ export MAKE = make
 
 SHELL = /bin/sh
 
-TARGETS = mutantMaker acidMutator protEvolver mergeComplex structFinder structShaper intraSoluteEnergy protOptSolvent protEvolverBinding database_phipsi protFolder sideChainRandomizer dielectricFit foldingBindingEnergy ligandBindingEnergy bindingEnergy triadFinder protMover z_aligner y_aligner fourEvolver protDock protMutator protNetwork dielectric
+TARGETS = mutantMaker acidMutator protEvolver mergeComplex structFinder structShaper intraSoluteEnergy protOptSolvent protEvolverBinding database_phipsi protFolder sideChainRandomizer dielectricFit foldingBindingEnergy ligandBindingEnergy bindingEnergy triadFinder protMover z_aligner y_aligner fourEvolver protDock protMutator protNetwork dielectric getSequence
 
 .SUFFIXES:
 .SUFFIXES: .cc .o .h .f .a
@@ -33,8 +33,10 @@ FLAG_OPT3 = -Wall -O3  -g -felide-constructors -Wno-deprecated
 FLAG_PROF = -Wall -O3 -felide-constructors -pg -Wno-deprecated
 FLAG_DEBUG = -Wall -g2 -felide-constructors -Wno-deprecated
 FLAG_DEBUG2 = -Wall -g2 -ansi -pedantic -Wno-deprecated
+FLAG_OPTMAX = -Wall -O2 -ftree-vectorize -march=native -mtune=native -pipe -msse3 -Wno-deprecated
+FLAG_OPTMAXMPI = -Wall -O2 -fopenmp -march=native -mtune=native -pipe -msse3 -Wno-deprecated
 
-CFLAGS = $(FLAG_DEBUG2) $(DEFS)
+CFLAGS = $(FLAG_OPTMAXMPI) $(DEFS)
 FFLAGS = -Wall -g 
 
 INC_BASE = -I$(SRCDIR)/ensemble -I$(SRCDIR)/io \
@@ -74,6 +76,10 @@ dielectric : libprotcad.a dielectric.cc
 	cd $(OBJDIR) && mv $@ $(BINDIR)
 
 protNetwork : libprotcad.a protNetwork.cc
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && mv $@ $(BINDIR)
+
+getSequence : libprotcad.a getSequence.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
 	cd $(OBJDIR) && mv $@ $(BINDIR)
 

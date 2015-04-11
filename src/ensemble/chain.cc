@@ -156,17 +156,17 @@ void chain::activateChainPosition(UInt _indexInChain)
 		UInt initialNumAllowedRes = newCP->getNumAllowedRes();
 		vector<UInt> notAllowedSet;
 		notAllowedSet.resize(0);
-		for (UInt i=0; i< initialNumAllowedRes; i++)
-		{
-			UInt identity = newCP->itsAllowedResidues[i].getIdentity();
-			UInt numBptInPossibleRes = residue::getNumBpt(identity);
+        //for (UInt i=0; i< initialNumAllowedRes; i++) // this prevents using branchpoints as dihedral pivot points for complex residues, so commented out.  doug p. 2015
+        //{
+            //UInt identity = newCP->itsAllowedResidues[i].getIdentity();
+            //UInt numBptInPossibleRes = residue::getNumBpt(identity);
 			//cout << "numBptInPossibleRes = " << numBptInPossibleRes << endl;
-			if ( numBptInPossibleRes != numBpt )
-			{
-				notAllowedSet.push_back(identity);
-			}
+            //if ( numBptInPossibleRes != numBpt )
+            //{
+            //	notAllowedSet.push_back(identity);
+            //}
 
-		}
+        //}
 		/*for (UInt i=0; i<notAllowedSet.size(); i++)
 		{
 			cout << "noAllowedSet[" << i << "] = " << notAllowedSet[i] << endl;
@@ -315,7 +315,8 @@ void chain::mutate(const UInt _indexInChain, const UInt _aaType)
     {   // Now check if this position is allowed to be mutated
         // to this residue type
         if (itsChainPositions[_indexInChain]->residueIsAllowed(_aaType))
-        {   residue* pOldRes = itsResidues[_indexInChain];
+        {
+            residue* pOldRes = itsResidues[_indexInChain];
             //buffer everything
             bufferResidueIntoUndoBuffer(_indexInChain);
             // mutate to new residue and place new pointer in chain

@@ -17,6 +17,9 @@
 #include <sstream>
 #include "ensemble.h"
 #include "PDBInterface.h"
+
+void buildAntiParallelBetaBarrel (protein* _prot, double _pitch);
+
 int main (int argc, char* argv[])
 {
 	//--Running parameters
@@ -42,8 +45,6 @@ int main (int argc, char* argv[])
 	stringstream convertphi, convertpsi;
 	string inFile = argv[1], outFile = argv[2];
 	string phistr, psistr;
-    UInt chainNum, resNum, restype;
-    double phi, psi;
 
 
 	//secondary structure library////////////////////////////////////////////////////////////////////////
@@ -74,7 +75,7 @@ int main (int argc, char* argv[])
 	//folded
 	alphaL[0] = phisL[0], alphaL[1] = psisL[0];
 	three10L[0] = phisL[0], three10L[1] = psisL[1];
-	//turns
+    //turns2.5
 	aTurn1L[0] = phisL[1], aTurn1L[1] = psisL[0];
 	aTurn2L[0] = phisL[2], aTurn2L[1] = psisL[0];
 	aTurn3L[0] = phisL[2], aTurn3L[1] = psisL[1];
@@ -127,39 +128,77 @@ int main (int argc, char* argv[])
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	//--loop
-	PDBInterface* theFramePDB = new PDBInterface(inFile);
-	ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
-	molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
-	protein* frame = static_cast<protein*>(frameMol);
-	frame->silenceMessages();
-	chainNum = frame->getNumChains();
+    //--loop
+    PDBInterface* theFramePDB = new PDBInterface(inFile);
+    ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
+    molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
+    protein* frame = static_cast<protein*>(frameMol);
+    frame->silenceMessages();
 
-	for (UInt i = 0; i < chainNum; i++)
-	{
-		resNum = frame->getNumResidues(i);
-		for (UInt j = 0; j < resNum; j++)
-		{
+#pragma omp parallel for
+    for (UInt j = 0; j < 100; j ++)
+    {
+        double pastEnergy = frame->intraSoluteEnergy(true), Energy;
+        double angle=0;
+        angle = angle+45;
+        frame->setChi(0, 116, 1, 0, angle);
+        Energy = frame->intraSoluteEnergy(true);
+        if (Energy < pastEnergy)
+        {
+            pastEnergy = Energy;
+            pdbWriter(frame, outFile);
+        }
+        else
+        {
+            frame->setChi(0, 116, 1, 0, -angle);
+        }
+    }
 
-            if (j >= 22)
-			{
+    //buildAntiParallelBetaBarrel(frame, 20);
 
-                phi = frame->getPhi(i,j);
-                frame->setDihedral(i, j, (phi*-1), 0, 0);
-                psi = frame->getPsi(i,j);
-                frame->setDihedral(i, j, (psi*-1), 1, 0);
-                restype = frame->getTypeFromResNum(i,j);
-                frame->activateForRepacking(i, j);
-                frame->mutateWBC(i, j, (restype+27));
-                //randomizeSideChain(frame, i, j);
-			}
-
-		}
-	}
-	pdbWriter(frame, outFile);
 
 //--Print end and write a pdb file--------------------------------------------------------------
 	cout << endl << "Structure reshaped!!" << endl << endl;
 	return 0;
 }
 
+void buildAntiParallelBetaBarrel (protein* _prot, double _pitch)
+{
+    UInt chainNum = _prot->getNumChains();
+    UInt resNum;
+    double angle = 0.0, rot1 = 0.0, rot2 = 0.0, dist = 0.0;
+    //_prot->coilcoil(_pitch);
+    for (UInt i = 0; i < chainNum; i++)
+    {
+        //--mod structure
+        resNum = _prot->getNumResidues(i);
+        for (UInt j = 0; j < resNum; j++)
+        {
+            _prot->setDihedral(i, j, -135, 0, 0);
+            _prot->setDihedral(i, j, 135, 1, 0);
+        }
+
+        _prot->translateChain(i, 5, 2, dist);
+        //_prot->rotateChain(i, Z_axis, 60);
+        //_prot->rotateChain(i, Y_axis, 30);
+        //_prot->rotateChain(i, X_axis, 20);
+        //_prot->translateChain(i, cos(angle)*12, sin(angle)*12, dist);
+
+        /*--set params for next chain
+        if (rot1 == 0.0)
+        {
+            rot1 = 0.0;
+            rot2 = 0.0;
+        }
+        else
+        {
+            rot1 = 0.0;
+            rot2 = 0.0;
+        }
+        angle = angle+29.5;*/
+
+    }
+
+    return;
+}
+// antiparallel_beta test.pdb 5 0 -38.5 180 0 0 test2.pdb
