@@ -3031,17 +3031,8 @@ double residue::intraEnergy()
 
 double residue::intraSoluteEnergy()
 {	
-	double distanceSquared;
-	int index1;
-	int index2;
 	double intraEnergy = 0.0;
-	double vdwEnergy = 0.0;
-	double amberElecEnergy = 0.0;
-    double solventSolventEnergy = 0.0;
-    double proteinSolventEnergy = 0.0;
-	double dielectric;	
-	bool bonded;
-	
+    #pragma omp parallel for reduction(+:intraEnergy)
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
 		if (!itsAtoms[i]->getSilentStatus())
@@ -3050,37 +3041,38 @@ double residue::intraSoluteEnergy()
 			{
 				if (!itsAtoms[j]->getSilentStatus())
 				{
-                    bonded = isSeparatedByOneOrTwoBonds(i,j);
+                    bool bonded = isSeparatedByOneOrTwoBonds(i,j);
 					if (!bonded)
 					{
                         // ** get distance
-						distanceSquared = itsAtoms[i]->distanceSquared(itsAtoms[j]);
+                        double distanceSquared = itsAtoms[i]->distanceSquared(itsAtoms[j]);
 
 						// ** intra AMBER vdW
 						if (residueTemplate::itsAmberVDW.getScaleFactor() != 0.0 )
 						{
+                            int index1, index2;
 							if (hydrogensOn)
 							{
-									index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][0];
-									index2 = dataBase[itsType].itsAtomEnergyTypeDefinitions[j][0];
+                                    index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][0];
+                                    index2 = dataBase[itsType].itsAtomEnergyTypeDefinitions[j][0];
 							}
 							else
 							{
-									index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][1];
-									index2 = dataBase[itsType].itsAtomEnergyTypeDefinitions[j][1];
+                                    index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][1];
+                                    index2 = dataBase[itsType].itsAtomEnergyTypeDefinitions[j][1];
 							}		
 							double tempvdwEnergy = residueTemplate::getVDWEnergySQ(index1,index2,distanceSquared);
-							vdwEnergy += tempvdwEnergy;
+                            intraEnergy += tempvdwEnergy;
 						}
 
                         // ** intra AMBER Electrostatics
                         if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
                         {
                             // ** get solvationEnergyScore and dielectric
-                            dielectric = (itsAtoms[i]->getDielectric() + itsAtoms[j]->getDielectric())/2;
+                            double dielectric = (itsAtoms[i]->getDielectric() + itsAtoms[j]->getDielectric())/2;
                             vector <double> tempSolvEnergy = this->calculateSolvationEnergy(i);
-                            proteinSolventEnergy += tempSolvEnergy[0];
-                            solventSolventEnergy += tempSolvEnergy[1];
+                            intraEnergy += tempSolvEnergy[0];
+                            intraEnergy -= tempSolvEnergy[1];
 
                             // **calc coulombic energy
                             UInt resType1 = itsType;
@@ -3088,17 +3080,14 @@ double residue::intraSoluteEnergy()
                             UInt resType2 = itsType;
                             UInt atomType2 = j;
                             double tempAmberElecEnergy = residueTemplate::getAmberElecSoluteEnergySQ(resType1, atomType1, resType2, atomType2, distanceSquared, dielectric);
-                            amberElecEnergy += tempAmberElecEnergy;
+                            intraEnergy += tempAmberElecEnergy;
 						}
 					}
 				}
 			}
 		}
 	}
-
-	// total
-    intraEnergy = vdwEnergy + amberElecEnergy + (proteinSolventEnergy - solventSolventEnergy);
-	return intraEnergy;
+    return intraEnergy;
 }
 
 vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
@@ -3286,15 +3275,9 @@ double residue::interEnergy(residue* _other)
 
 double residue::interSoluteEnergy(residue* _other)
 {
-	double distanceSquared;
-	int index1;
-	int index2;
-	double interEnergy = 0.0;
-	double vdwEnergy = 0.0;
-	double amberElecEnergy = 0.0;
-	double dielectric;
-	bool bonded;
 
+	double interEnergy = 0.0;
+    #pragma omp parallel for reduction(+:interEnergy)
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
 		if (!itsAtoms[i]->getSilentStatus())
@@ -3303,28 +3286,30 @@ double residue::interSoluteEnergy(residue* _other)
 			{
 				if (!_other->itsAtoms[j]->getSilentStatus())
 				{
-					bonded = isSeparatedByOneOrTwoBonds(i,_other,j);
+                    bool bonded = isSeparatedByOneOrTwoBonds(i,_other,j);
 					if (!bonded)
 					{
-						distanceSquared = itsAtoms[i]->inCubeWithDistSQ(_other->itsAtoms[j], cutoffDistanceSquared);
+                        double distanceSquared = itsAtoms[i]->inCubeWithDistSQ(_other->itsAtoms[j], cutoffDistanceSquared);
 						if (distanceSquared != 0.0 && distanceSquared != 999.0 && distanceSquared <= cutoffDistanceSquared)
 						{
 							// ** inter AMBER Electrostatics
 							if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
 							{
                                 // ** get dielectric average
-                                dielectric = (itsAtoms[i]->getDielectric() + _other->itsAtoms[j]->getDielectric())/2;
+                                double dielectric = (itsAtoms[i]->getDielectric() + _other->itsAtoms[j]->getDielectric())/2;
 								UInt resType1 = itsType;
 								UInt resType2 = _other->itsType;
 								UInt index1 = i;
 								UInt index2 = j;
 	 							double tempAmberElecEnergy = residueTemplate::getAmberElecSoluteEnergySQ(resType1, index1, resType2, index2, distanceSquared, dielectric);
-								amberElecEnergy += tempAmberElecEnergy;
+                                interEnergy += tempAmberElecEnergy;
 							}
 
 							// ** inter AMBER vdW
 							if (residueTemplate::itsAmberVDW.getScaleFactor() != 0.0)
-							{	if (hydrogensOn)
+                            {
+                                int index1, index2;
+                                if (hydrogensOn)
 								{	index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][0];
 									index2 = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[j][0];
 								}
@@ -3333,7 +3318,7 @@ double residue::interSoluteEnergy(residue* _other)
 									index2 = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[j][1];
 								}
 								double tempvdwEnergy = residueTemplate::getVDWEnergySQ(index1, index2, distanceSquared);
-								vdwEnergy += tempvdwEnergy;
+                                interEnergy += tempvdwEnergy;
 							}
 						}
 					}
@@ -3341,7 +3326,6 @@ double residue::interSoluteEnergy(residue* _other)
 			}
 		}
 	}
-	interEnergy = vdwEnergy + amberElecEnergy;
 	return interEnergy;
 }
 

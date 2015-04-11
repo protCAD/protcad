@@ -1285,14 +1285,13 @@ double protein::calculateChainIndependentDielectric(chain* _chain, residue* _res
 
 void protein::updateDielectrics()
 {
-	double dielectric;
 	for(UInt i=0; i<itsChains.size(); i++)
 	{
 		for(UInt j=0; j<itsChains[i]->itsResidues.size(); j++)
 		{
 			for(UInt k=0; k<itsChains[i]->itsResidues[j]->itsAtoms.size(); k++)
 			{
-				dielectric = this->calculateDielectric(itsChains[i], itsChains[i]->itsResidues[j], itsChains[i]->itsResidues[j]->itsAtoms[k]);
+                double dielectric = this->calculateDielectric(itsChains[i], itsChains[i]->itsResidues[j], itsChains[i]->itsResidues[j]->itsAtoms[k]);
 				itsChains[i]->itsResidues[j]->itsAtoms[k]->setDielectric(dielectric);
 			}
 		}
