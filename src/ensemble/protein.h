@@ -127,6 +127,7 @@ public:
 	
 	//--Optimization functions
     void protOptSolvent(UInt _plateau); // --Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics-- dpike
+    void protOptSolventN(UInt _plateau);
 	void chainOptSolvent(UInt _plateau, UInt _chainIndex);
 	void optimizeSmallRotations(UInt _steps, double _stepSize);
 	void optimizeSmallRotations(vector <UIntVec> _positions, UInt _steps, double _stepSize);
@@ -177,7 +178,7 @@ public:
 	double intraEnergy(UInt _chain1, UInt _chain2);
 	double getPositionEnergy(vector <int> _position);
 	double getPositionSoluteEnergy(vector <int> _position);
-	double getPositionEnergy(vector <UInt> _position);
+    double getPositionEnergy(vector <UInt> _position);
 	double getRotamerEnergy(UInt _chain, UInt _residue) { return itsChains[_chain]->rotamerEnergy(_residue); }
 	double getPositionEnergy(UInt _chainIndex, UInt _residueIndex);
 	double getPositionSoluteEnergy(UInt _chainIndex, UInt _residueIndex, bool _updateDielectrics);
@@ -214,7 +215,7 @@ public:
 	void rotateChain(UInt _chain, const axis _axis, const double _theta);
 
 	//--Rotamer functions
-	void setRotamerNotAllowed(const UInt _chainIndex, const UInt _resIndex, const UInt _resType, const UInt _bpt, const UInt _rotamer);
+    void setRotamerNotAllowed(const UInt _chainIndex, const UInt _resIndex, const UInt _resType, const UInt _bpt, const UInt _rotamer);
 	void listAllowedRotamers(UInt _chain, UInt _resIndex);
 	void setRotamer(const UInt _chainIndex, const UInt _resIndex, const UInt _bpt, const UInt _rotamer);
 	void setRotamerWBC(const UInt _chainIndex, const UInt _resIndex, const UInt _bpt, const UInt _rotamer);

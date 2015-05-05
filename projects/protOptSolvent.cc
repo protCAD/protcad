@@ -40,9 +40,9 @@ int main (int argc, char* argv[])
 	amberVDW::setLinearRepulsionDampeningOff();
 	amberElec::setScaleFactor(1.0);
 	solvation::setItsScaleFactor(0.0);
-	string outFile;
+    string outFile = infile + "opt.pdb";
 
-    _prot->protOptSolvent(500);
+    _prot->protOptSolventN(500);
 
 //--Print final energy and write a pdb file--------------------------------------------------------------
     outFile = infile;

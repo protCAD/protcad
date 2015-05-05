@@ -46,7 +46,7 @@ int main (int argc, char* argv[])
     delete thePDB;
 	
     //--parameters
-    int set1[] = {1,3,21,30,54,59,61,72,78,90,92,110,112,116,129,133,166,174,181};
+    int set1[] = {116,21};//{1,3,21,30,54,59,61,72,78,90,92,110,112,116,129,133,166,174,181};
     int set1Size = sizeof(set1)/sizeof(set1[0]);
     int resID[] = {Hce};
 
@@ -76,41 +76,45 @@ int main (int argc, char* argv[])
             int restype = bundle->getTypeFromResNum(0, set1[i]);
 
             //--find lowest Rotamer and optimize neighbors
-            for (UInt k = 0; k < 2; k++)
+            for (UInt a = 0; a < 3; a++)
             {
-                pastEnergy = 1E10;
-                int res;
-                if (k == 0)
+                for (UInt k = 0; k < 2; k++)
                 {
-                    res = set1[i];
-                }
-                else
-                {
-                    res = set1[j];
-                }
-                allowedRots = bundle->getAllowedRotamers(0, res, restype, 0);
-                pastEnergy = bundle->intraSoluteEnergy(true);
-                for (UInt m = 0; m < allowedRots.size(); m ++)
-                {
-                    bundle->setRotamerWBC(0, res, 0, allowedRots[m]);
-                    currentRot = bundle->getSidechainDihedrals(0, res);
-                    angle = 0;
-                    for (UInt n = 0; n < 8; n++)
+                    pastEnergy = 1E10;
+                    int res;
+                    if (k == 0)
                     {
-                        angle = angle+45;
-                        bundle->setChi(0, res, 1, 0, angle);
-                        Energy = bundle->intraSoluteEnergy(true);
-                        if (Energy < pastEnergy)
-                        {
-                            pastEnergy = Energy;
-                            bestAngle = angle;
-                            bestRot = currentRot;
-                        }
-                        bundle->setChi(0, res, 1, 0, (angle*-1));
+                        res = set1[i];
                     }
+                    else
+                    {
+                        res = set1[j];
+                    }
+                    allowedRots = bundle->getAllowedRotamers(0, res, restype, 0);
+                    pastEnergy = bundle->intraSoluteEnergy(true);
+                    for (UInt m = 0; m < allowedRots.size(); m ++)
+                    {
+                        bundle->setRotamerWBC(0, res, 0, allowedRots[m]);
+                        currentRot = bundle->getSidechainDihedrals(0, res);
+                        angle = 0;
+                        for (UInt n = 0; n < 8; n++)
+                        {
+                            angle = angle+45;
+                            bundle->setChi(0, res, 1, 0, angle);
+                            Energy = bundle->intraSoluteEnergy(true);
+                            if (Energy < pastEnergy)
+                            {
+                                pastEnergy = Energy;
+                                bestAngle = angle;
+                                bestRot = currentRot;
+                            }
+                            bundle->setChi(0, res, 1, 0, (angle*-1));
+                        }
+                    }
+                    bundle->setSidechainDihedralAngles(0, res, bestRot);
+                    bundle->setChi(0, res, 1, 0, bestAngle);
                 }
-                bundle->setSidechainDihedralAngles(0, res, bestRot);
-                bundle->setChi(0, res, 1, 0, bestAngle);
+                bundle->protOptSolvent(200);
             }
 
             //--print pdb and data to output

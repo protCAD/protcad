@@ -126,31 +126,31 @@ int main (int argc, char* argv[])
     vector<vector<UInt> > resIDs;
     vector <UInt> v;
 
-    UInt resID1[] = {P,D,G,P,D,G,K,O,G,K,O,G,K,O,G,P,D,G,D,O,G,D,O,G,P,D,G,P,D,G};
+    UInt resID1[] = {G,Y,V,Q,E,R,T,I,F,F,K,D,D,G,N,Y,K,T,R,A,E,He,K,F,E,G,D,T,L,V,N,R,I,E,L,K,G,I,D,F,K,E,D,G,N,I,L,G,Q,K,L,E,Y,N,Y,N,S,V,N,V,Y,I,M,A,D,K,Q,K,N,G,I,K,V,N,F,K,I,R,V,N,I,E,D,G,S,V,Q,L,A,D,F,Y,Q,Q,N,T,P,I,G,D,G,P,V,L,L,P,D,N,Q,Y,L,S,T,Q,S,A,He,S,K,D,P,N,E,K,R,D,N,M,V,L,L,E,F,V,T,A,A,G,I,T,A,S,K,G,E,E,L,F,T,G,V,V,P,I,L,V,E,L,D,G,D,V,N,G,Q,K,F,S,V,S,G,E,G,E,G,D,A,T,Y,G,K,L,T,L,K,F,I,S,T,T};
     v.insert (v.begin(), resID1, resID1 + sizeof(resID1)/sizeof(resID1[0]));
     resIDs.push_back(v);
     v.clear();
-    UInt resID2[] = {K,O,G,K,O,G,K,O,G,D,O,G,P,D,G,P,D,G,K,O,G,P,K,G,P,K,G,K,O,G};
+    UInt resID2[] = {G,Y,V,Q,E,V,T,I,F,F,K,D,D,G,N,Y,K,T,R,A,E,He,K,F,E,G,D,T,L,V,N,R,I,E,L,K,G,I,D,F,K,E,D,G,N,I,L,G,Q,K,L,E,Y,N,Y,N,S,V,N,V,Y,I,M,A,D,K,Q,K,N,G,I,K,V,N,F,K,I,R,V,N,I,E,D,G,S,V,Q,L,A,D,F,Y,Q,Q,N,T,P,I,G,D,G,P,V,L,L,P,D,N,Q,Y,L,S,T,Q,S,A,He,S,K,D,P,N,E,K,R,D,N,M,V,L,L,A,F,V,T,A,A,G,I,T,A,S,K,G,E,E,L,F,T,G,V,V,P,I,L,V,E,L,D,G,D,V,N,G,Q,K,F,S,V,S,G,E,G,E,G,D,A,T,Y,G,K,L,T,L,K,F,I,S,T,T};
     v.insert (v.begin(), resID2, resID2 + sizeof(resID2)/sizeof(resID2[0]));
     resIDs.push_back(v);
     v.clear();
-    UInt resID3[] = {P,D,G,P,D,G,P,D,G,P,D,G,K,O,G,P,K,G,K,O,G,D,O,G,D,O,G,D,O,G};
+    UInt resID3[] = {G,Y,V,L,E,V,T,I,F,F,K,D,D,G,N,Y,K,I,R,A,E,He,K,F,E,G,D,T,L,V,A,R,I,E,L,K,G,I,D,F,K,E,D,G,N,I,L,G,Q,K,L,E,Y,N,Y,N,S,V,N,V,Y,I,M,A,D,K,Q,K,N,G,I,K,V,N,F,K,I,R,V,N,I,E,D,G,S,V,Q,L,A,D,F,Y,L,Q,A,T,P,I,G,D,G,P,V,L,L,P,D,N,Q,Y,L,S,I,Q,A,A,He,S,K,D,P,N,E,K,R,D,N,M,V,L,L,A,F,V,T,A,A,G,I,T,A,S,K,G,E,E,L,F,T,G,V,V,P,I,L,V,E,L,D,G,D,V,N,G,Q,K,F,S,V,S,G,E,G,E,G,D,A,T,Y,G,K,L,T,L,K,F,I,S,T,T};
     v.insert (v.begin(), resID3, resID3 + sizeof(resID3)/sizeof(resID3[0]));
     resIDs.push_back(v);
     v.clear();
-    /*UInt resID4[] = {P,O,G,P,O,G,P,O,G,P,N,G,P,O,G,P,O,G,P,O,G,P,O,G,G};
+    UInt resID4[] = {G,Y,V,L,E,V,T,I,F,F,K,D,D,G,N,Y,K,I,R,A,E,He,K,F,E,G,D,T,F,V,A,R,I,E,L,K,G,I,D,F,K,E,D,G,N,I,L,G,Q,K,L,E,Y,N,Y,N,S,V,N,L,Y,I,M,A,D,K,Q,K,N,G,I,K,V,N,F,K,I,R,V,N,I,E,D,G,S,V,Q,L,A,D,F,Y,L,Q,A,T,P,I,G,D,G,P,V,L,L,P,D,N,Q,Y,L,S,I,Q,A,A,He,S,K,D,P,N,E,K,R,D,N,M,V,L,L,A,F,L,T,A,A,G,I,T,A,S,K,G,E,E,L,F,T,G,V,V,P,I,L,V,E,L,D,G,D,V,N,G,Q,K,F,S,V,S,G,E,G,E,G,D,A,T,Y,G,K,L,T,L,K,F,I,Y,T,T};
     v.insert (v.begin(), resID4, resID4 + sizeof(resID4)/sizeof(resID4[0]));
     resIDs.push_back(v);
     v.clear();
-    UInt resID5[] = {P,O,G,P,O,G,P,O,G,P,Q,G,P,O,G,P,O,G,P,O,G,P,O,G,G};
+    UInt resID5[] = {G,Y,V,L,E,V,T,I,F,F,K,D,D,G,N,Y,K,I,R,A,E,He,K,F,E,G,D,T,F,V,A,R,I,E,L,K,G,I,D,F,K,E,D,G,N,I,L,G,Q,K,L,E,Y,N,Y,N,S,V,N,L,Y,I,M,A,D,K,Q,K,N,G,I,K,V,N,F,K,I,R,V,N,I,E,D,G,S,V,Q,L,A,D,F,Y,L,Q,A,T,P,I,G,D,G,P,V,L,L,P,D,N,Q,Y,L,S,I,Q,A,A,He,S,K,D,P,N,E,K,R,D,N,M,V,L,L,A,F,L,T,A,A,G,I,T,A,S,K,G,E,E,L,F,T,G,V,V,P,I,L,V,E,L,D,G,D,V,N,G,Q,K,F,S,V,S,G,E,G,E,G,D,A,T,Y,G,K,L,T,L,K,F,I,Y,T,T};
     v.insert (v.begin(), resID5, resID5 + sizeof(resID5)/sizeof(resID5[0]));
     resIDs.push_back(v);
     v.clear();
-    UInt resID6[] = {P,O,G,P,O,G,P,O,G,P,R,G,P,O,G,P,O,G,P,O,G,P,O,G,G};
+    UInt resID6[] = {G,Y,V,L,E,V,T,I,F,F,K,D,D,G,N,F,K,I,R,A,E,He,K,F,E,G,D,T,F,V,A,R,I,E,L,K,G,I,D,F,K,E,D,G,N,I,L,G,Q,K,Y,E,Y,N,Y,N,S,V,N,L,Y,I,M,A,D,K,Q,K,N,G,I,K,V,N,F,K,I,R,V,N,I,E,D,G,S,V,Q,L,A,D,F,Y,L,Q,A,T,P,I,G,D,G,P,V,L,L,P,D,N,Q,Y,L,S,I,Q,A,A,He,S,K,D,P,N,E,K,R,D,N,M,V,L,L,A,F,L,T,A,A,G,I,T,A,S,K,G,E,E,L,F,T,G,V,V,P,I,L,V,E,L,D,G,D,V,N,G,Q,K,F,S,V,S,G,E,G,E,G,D,A,T,Y,G,K,L,T,L,K,F,I,Y,T,T};
     v.insert (v.begin(), resID6, resID6 + sizeof(resID6)/sizeof(resID6[0]));
     resIDs.push_back(v);
     v.clear();
-    UInt resID7[] = {G,F,O,G,A,A,G,R,T,G,P,O,G,P,S,G,I,S,G,P,O,G,P,O,G,P,O,G,P,O,G,V};
+    /*UInt resID7[] = {G,F,O,G,A,A,G,R,T,G,P,O,G,P,S,G,I,S,G,P,O,G,P,O,G,P,O,G,P,O,G,V};
     v.insert (v.begin(), resID7, resID7 + sizeof(resID7)/sizeof(resID7[0]));
     resIDs.push_back(v);
     v.clear();
@@ -274,7 +274,7 @@ int main (int argc, char* argv[])
 	//--Mutate chains
     UInt chainNum;
     delete thePDB;
-    for (UInt h = 0; h < 1; h++)
+    for (UInt h = 0; h < resIDs.size(); h++)
     {
         PDBInterface* thePDB = new PDBInterface(infile);
         ensemble* theEnsemble = thePDB->getEnsemblePointer();
@@ -308,7 +308,7 @@ int main (int argc, char* argv[])
         ensemble* theEnsemble2 = thePDB2->getEnsemblePointer();
         molecule* pMol2 = theEnsemble2->getMoleculePointer(0);
         protein* bundle2 = static_cast<protein*>(pMol2);
-        bundle2->protOptSolvent(200);
+        bundle2->protOptSolvent(500);
         double Energy = bundle2->intraSoluteEnergy(false);
         cout << Energy << endl;
         pdbWriter(bundle2, outFile);

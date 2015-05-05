@@ -48,8 +48,8 @@ int main (int argc, char* argv[])
     //--parameters
     int chains[] = {0};
 	int chainsSize = sizeof(chains)/sizeof(chains[0]);
-    int residues[] = {1,3,5,7,9,13,15,17,19,21,28,30,32,34,36,54,57,59,61,70,72,74,76,78,86,88,90,92,94,108,110,112,114,116,127,129,131,133,151,153,155,157,159,161,166,168,170,172,174,181,183,185};//{78,116,54,110,133,112,3,1,21,30,166};
-	int residuesSize = sizeof(residues)/sizeof(residues[0]);
+    int residues[] = {129};//61,30,9,129//{1,3,5,7,9,13,15,17,19,21,28,30,32,34,36,54,57,59,61,70,72,74,76,78,86,88,90,92,94,108,110,112,114,116,127,129,131,133,151,153,155,157,159,161,166,169,172,174,181,183,185};
+    int residuesSize = sizeof(residues)/sizeof(residues[0]);
     int resID[] = {Hce};
 	int resIDsize = sizeof(resID)/sizeof(resID[0]);
     int replicates = 1;

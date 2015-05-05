@@ -3032,7 +3032,6 @@ double residue::intraEnergy()
 double residue::intraSoluteEnergy()
 {	
 	double intraEnergy = 0.0;
-    #pragma omp parallel for reduction(+:intraEnergy)
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
 		if (!itsAtoms[i]->getSilentStatus())
@@ -3072,7 +3071,7 @@ double residue::intraSoluteEnergy()
                             double dielectric = (itsAtoms[i]->getDielectric() + itsAtoms[j]->getDielectric())/2;
                             vector <double> tempSolvEnergy = this->calculateSolvationEnergy(i);
                             intraEnergy += tempSolvEnergy[0];
-                            intraEnergy -= tempSolvEnergy[1];
+                            //intraEnergy -= tempSolvEnergy[1];
 
                             // **calc coulombic energy
                             UInt resType1 = itsType;
@@ -3098,7 +3097,7 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
     double charge = residueTemplate::itsAmberElec.getItsCharge(itsType, _atomIndex);
     double chargeSquared = charge*charge;
     double proteinSolvent = -166*(atomDielectric/80)*(chargeSquared/9);
-    double solventSolvent = -166*(atomDielectric/80)*(0.16/9);
+    double solventSolvent = proteinSolvent - (-166*(1/80)*(0.64/9));
     solvationEnergy[0] = proteinSolvent;
     solvationEnergy[1] = solventSolvent;
     itsAtoms[_atomIndex]->setSolvationEnergy(proteinSolvent);
@@ -3277,7 +3276,6 @@ double residue::interSoluteEnergy(residue* _other)
 {
 
 	double interEnergy = 0.0;
-    #pragma omp parallel for reduction(+:interEnergy)
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
 		if (!itsAtoms[i]->getSilentStatus())

@@ -2960,6 +2960,110 @@ void protein::protOptSolvent(UInt _plateau)
 	return;
 }
 
+void protein::protOptSolventN(UInt _plateau)
+{	// Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics and corresponding implicit solvation score
+    //    _plateau: the number of consecutive optimization cycles without an energy decrease.
+    //	    	     (250 is recommended for a full minimization without excessive calculation)
+    // -pike 2013
+
+    //--Initialize variables for loop and calculate starting energy-------------------------------------
+    double deltaTheta = 0, totalpreposE = 0, avepreposE = -1E10;
+    double Energy, preposE, currentposE, pastEnergy = this->intraSoluteEnergy(true);
+    UInt randchain, randres, randrestype, allowedRotsize, randrot, number = 0, nobetter = 0;
+    UInt resNum, randtype, chainNum = this->getNumChains(), rotbetter = 0;
+    vector < vector <double> > currentRot;
+    int thisone;
+    UIntVec allowedRots;
+    srand (time(NULL));
+
+    //--Run optimizaiton loop to energetic minima, determined by _plateau-------------------------------
+    do
+    {
+        //--Generate random residue
+        randchain = rand() % chainNum;
+        resNum = this->getNumResidues(randchain);
+        do
+        { randres = rand() % resNum;
+        } while (randres == 116 || randres == 21);
+
+        randrestype = this->getTypeFromResNum(randchain, randres);
+        preposE = this->getPositionSoluteEnergy(randchain, randres, true);
+        if (randrestype == 0 || randrestype == 19 || randrestype == 20 || randrestype == 26 || randrestype == 27 || randrestype == 46 || randrestype == 47)
+        {
+            nobetter++;
+        }
+        else
+        {
+            nobetter++, nobetter++;
+        }
+
+        //--backbone optimization----------------------------------------------------------------------
+        if (rotbetter > _plateau && preposE > avepreposE)
+        {
+            //--choose phi or psi and angle, for a local transformation
+            randtype = rand() % 2;
+            do
+            { deltaTheta = ((rand() % 3) -1);
+            } while (deltaTheta == 0);
+
+            //--transform angles while energy improves, until energy degrades, then revert one step
+            do
+            {
+                this->setDihedralLocal(randchain, randres, deltaTheta, randtype);
+                currentposE = this->getPositionSoluteEnergy(randchain, randres, true), thisone = 0;
+                //--Energy test
+                if (currentposE < (preposE - .05))
+                {
+                    Energy = this->intraSoluteEnergy(true);
+                    if (Energy < pastEnergy)
+                    {
+                        //cout << Energy << endl;
+                        nobetter = 0, thisone = 1, pastEnergy = Energy, preposE = currentposE;
+                    }
+                }
+            } while (thisone == 1);
+            this->setDihedralLocal(randchain, randres, (deltaTheta*-1), randtype);
+        }
+
+        //--Rotamer optimization-----------------------------------------------------------------------
+        if (preposE > avepreposE)
+        {
+            //--Get current rotamer and allowed
+            currentRot = this->getSidechainDihedrals(randchain, randres);
+            allowedRots = this->getAllowedRotamers(randchain, randres, randrestype, 0);
+            allowedRotsize = (allowedRots.size()/3), rotbetter++, rotbetter++;
+
+            //--Try 1/3 of allowed rotamers keep first improvement or revert to previous angles
+            for (UInt j = 0; j < allowedRotsize; j ++)
+            {
+                randrot = rand() % allowedRots.size();
+                this->setRotamerWBC(randchain, randres, 0, allowedRots[randrot]);
+                currentposE = this->getPositionSoluteEnergy(randchain, randres, true);
+
+                if (currentposE < (preposE - .05))
+                {
+                    Energy = this->intraSoluteEnergy(true);
+                    if (Energy < pastEnergy)
+                    {
+                        //cout << Energy << endl;
+                        rotbetter--, rotbetter--, nobetter = 0, pastEnergy = Energy, preposE = currentposE;
+                        break;
+                    }
+                }
+                this->setSidechainDihedralAngles(randchain, randres, currentRot);
+            }
+        }
+
+        //--check status of optimization---------------------------------------------------------------
+        if (number == _plateau)
+        {
+            number = 0, totalpreposE = 0;
+        }
+        number++, number++, totalpreposE = (totalpreposE + preposE), avepreposE = (totalpreposE/number);
+    } while (nobetter < _plateau * 1.2);
+    return;
+}
+
 /*double protein::getUnfoldedStateEnergy()
 {
 
