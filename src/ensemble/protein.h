@@ -166,6 +166,7 @@ public:
 	double interSoluteEnergy(bool _updateDielectrics, UInt _chain1, UInt _chain2);
 	vector <double> chainFoldingBindingEnergy(UInt _ligandChain);
 	vector <double> chainFoldingBindingEnergy(bool _unfold);
+	vector <double> chainBindingEnergy();
 	double bindingPositionSoluteEnergy(UInt _chain, UInt _residue, UInt _otherChain);
 	vector <double> getChargeDensity(UInt _chainIndex, UInt _residueIndex, UInt _atomIndex);
 	double calculateDielectric(UInt _chainIndex, UInt _residueIndex, UInt _atomIndex);
