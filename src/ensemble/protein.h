@@ -136,6 +136,7 @@ public:
 	vector <UIntVec> rotamerDEE();
 	vector <UIntVec> rotamerDEE(vector <UIntVec> _activePositions);
 	void optimizeRotamers();
+	void optimizeRotamersPN();
 	void optimizeRotamers(vector <UIntVec> _positions);
 	void optimizeRotamers(vector <UIntVec> _positions, vector <UIntVec> _rotamerArray);
 	
