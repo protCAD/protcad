@@ -194,4 +194,4 @@ clean:
 	rm -f $(OBJDIR)/*.o 
 	rm -f $(OBJDIR)/*.a
 	rm -f protCAD*
-	#cd $(BINDIR) && rm -f $(TARGETS)
+	cd $(BINDIR) && rm -f $(TARGETS)
