@@ -3068,7 +3068,7 @@ double residue::intraSoluteEnergy()
                         if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
                         {
                             // ** get solvationEnergyScore and dielectric
-                            double dielectric = (itsAtoms[i]->getDielectric() + itsAtoms[j]->getDielectric())/2;
+                            double dielectric = (itsAtoms[i]->getDielectric() + itsAtoms[j]->getDielectric()) * 0.5;
                             vector <double> tempSolvEnergy = this->calculateSolvationEnergy(i);
                             intraEnergy += tempSolvEnergy[0];
                             //intraEnergy -= tempSolvEnergy[1];
@@ -3096,8 +3096,8 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
 	double atomDielectric = itsAtoms[_atomIndex]->getDielectric();
     double charge = residueTemplate::itsAmberElec.getItsCharge(itsType, _atomIndex);
     double chargeSquared = charge*charge;
-    double proteinSolvent = -166*(atomDielectric/80)*(chargeSquared/9);
-    double solventSolvent = proteinSolvent - (-166*(1/80)*(0.64/9));
+    double proteinSolvent = atomDielectric * chargeSquared * -0.230555556;
+    double solventSolvent = 0;//proteinSolvent - (-166*(1/80)*(0.64/9));
     solvationEnergy[0] = proteinSolvent;
     solvationEnergy[1] = solventSolvent;
     itsAtoms[_atomIndex]->setSolvationEnergy(proteinSolvent);
@@ -3294,7 +3294,7 @@ double residue::interSoluteEnergy(residue* _other)
 							if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
 							{
                                 // ** get dielectric average
-                                double dielectric = (itsAtoms[i]->getDielectric() + _other->itsAtoms[j]->getDielectric())/2;
+                                double dielectric = (itsAtoms[i]->getDielectric() + _other->itsAtoms[j]->getDielectric()) * 0.5;
 								UInt resType1 = itsType;
 								UInt resType2 = _other->itsType;
 								UInt index1 = i;

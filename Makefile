@@ -33,10 +33,9 @@ FLAG_OPT3 = -Wall -O3  -g -felide-constructors -Wno-deprecated
 FLAG_PROF = -Wall -O3 -felide-constructors -pg -Wno-deprecated
 FLAG_DEBUG = -Wall -g2 -felide-constructors -Wno-deprecated
 FLAG_DEBUG2 = -Wall -g2 -ansi -pedantic -Wno-deprecated
-FLAG_OPTMAX = -Wall -O2 -ftree-vectorize -march=native -mtune=native -pipe -msse3 -Wno-deprecated
-FLAG_OPTMAXMPI = -Wall -O2 -fopenmp -march=native -mtune=native -pipe -msse3 -Wno-deprecated
+FLAG_OPTMAX = -Wall -O2 -ftree-vectorize -march=native -mtune=native -pipe -msse3 -Wno-deprecated -fopenmp
 
-CFLAGS = $(FLAG_OPTMAXMPI) $(DEFS)
+CFLAGS = $(FLAG_OPTMAX) $(DEFS)
 FFLAGS = -Wall -g 
 
 INC_BASE = -I$(SRCDIR)/ensemble -I$(SRCDIR)/io \
@@ -195,4 +194,4 @@ clean:
 	rm -f $(OBJDIR)/*.o 
 	rm -f $(OBJDIR)/*.a
 	rm -f protCAD*
-	cd $(BINDIR) && rm -f $(TARGETS)
+	#cd $(BINDIR) && rm -f $(TARGETS)

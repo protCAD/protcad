@@ -1226,9 +1226,9 @@ double protein::calculateDielectric(UInt _chainIndex, UInt _residueIndex, UInt _
 		chargeDensity[2] += _chargeDensity[2];
 	}
 	watervol = 3728-chargeDensity[0];
-	waters = watervol/10.88;
-	waterpol = waters*1.4907;
-	dielectric = (1+4*3.14*((waters+chargeDensity[2])/10)/3728*(waterpol+chargeDensity[1]));
+    waters = watervol * 0.0919117647; //converted div to mult "watervol/10.88"
+    waterpol = waters*1.4907;
+    dielectric = (1+12.56*((waters+chargeDensity[2]) * 0.1) * 0.00026824034 * (waterpol+chargeDensity[1])); //combined sums and converted div to mult "(1+4*3.14*((waters+chargeDensity[2])/10)/3728*(waterpol+chargeDensity[1]))"
 	return dielectric;
 }
 
@@ -1251,9 +1251,9 @@ double protein::calculateDielectric(chain* _chain, residue* _residue, atom* _ato
 		chargeDensity[2] += _chargeDensity[2];
 	}
 	watervol = 3728-chargeDensity[0];
-	waters = watervol/10.88;
-	waterpol = waters*1.4907;
-	dielectric = (1+4*3.14*((waters+chargeDensity[2])/10)/3728*(waterpol+chargeDensity[1]));
+    waters = watervol * 0.0919117647; //converted div to mult "watervol/10.88"
+    waterpol = waters*1.4907;
+    dielectric = (1+12.56*((waters+chargeDensity[2]) * 0.1) * 0.00026824034 * (waterpol+chargeDensity[1])); //combined sums and converted div to mult "(1+4*3.14*((waters+chargeDensity[2])/10)/3728*(waterpol+chargeDensity[1]))"
 	return dielectric;
 }
 
@@ -1272,14 +1272,9 @@ double protein::calculateChainIndependentDielectric(chain* _chain, residue* _res
 	chargeDensity[0] += _chargeDensity[0];
 	chargeDensity[1] += _chargeDensity[1];
 	watervol = 3728-chargeDensity[0];
-	waters = watervol/10.88;
-	waterpol = waters*1.4907;
-	dielectric = (1+4*3.14*((waters+chargeDensity[2])/10)/3728*(waterpol+chargeDensity[1]));
-    /*double charge = residueTemplate::itsAmberElec.getItsCharge(_residue->itsType, _atomIndex);
-    if (charge < 0.15 && charge > -0.15)
-    {
-        dielectric = 30;
-    }*/
+    waters = watervol * 0.0919117647; //converted div to mult "watervol/10.88"
+    waterpol = waters*1.4907;
+    dielectric = (1+12.56*((waters+chargeDensity[2]) * 0.1) * 0.00026824034 * (waterpol+chargeDensity[1])); //combined sums and converted div to mult "(1+4*3.14*((waters+chargeDensity[2])/10)/3728*(waterpol+chargeDensity[1]))"
 	return dielectric;
 }
 
@@ -2825,7 +2820,7 @@ void protein::chainOptSolvent(UInt _plateau, UInt _chainIndex)
 			//--Get current rotamer and allowed
 			currentRot = this->getSidechainDihedrals(_chainIndex, randres);
 			allowedRots = this->getAllowedRotamers(_chainIndex, randres, randrestype, 0);
-			allowedRotsize = (allowedRots.size()/3), rotbetter++, rotbetter++;
+            allowedRotsize = (allowedRots.size() * 0.33), rotbetter++, rotbetter++;
 
 			//--Try 1/3 of allowed rotamers keep first improvement or revert to previous angles
 			for (UInt j = 0; j < allowedRotsize; j ++)
@@ -2927,7 +2922,7 @@ void protein::protOptSolvent(UInt _plateau)
 			//--Get current rotamer and allowed
 			currentRot = this->getSidechainDihedrals(randchain, randres);
             allowedRots = this->getAllowedRotamers(randchain, randres, randrestype, 0);
-            allowedRotsize = (allowedRots.size()/3), rotbetter++, rotbetter++;
+            allowedRotsize = (allowedRots.size() * 0.33), rotbetter++, rotbetter++;
 
 			//--Try 1/3 of allowed rotamers keep first improvement or revert to previous angles
 			for (UInt j = 0; j < allowedRotsize; j ++)
@@ -2998,7 +2993,7 @@ void protein::protOptSolventN(UInt _plateau)
         }
 
         //--backbone optimization----------------------------------------------------------------------
-        if (rotbetter > _plateau && preposE > avepreposE)
+        /*if (rotbetter > _plateau && preposE > avepreposE)
         {
             //--choose phi or psi and angle, for a local transformation
             randtype = rand() % 2;
@@ -3023,7 +3018,7 @@ void protein::protOptSolventN(UInt _plateau)
                 }
             } while (thisone == 1);
             this->setDihedralLocal(randchain, randres, (deltaTheta*-1), randtype);
-        }
+        }*/
 
         //--Rotamer optimization-----------------------------------------------------------------------
         if (preposE > avepreposE)
@@ -3031,7 +3026,7 @@ void protein::protOptSolventN(UInt _plateau)
             //--Get current rotamer and allowed
             currentRot = this->getSidechainDihedrals(randchain, randres);
             allowedRots = this->getAllowedRotamers(randchain, randres, randrestype, 0);
-            allowedRotsize = (allowedRots.size()/3), rotbetter++, rotbetter++;
+            allowedRotsize = (allowedRots.size() * 0.33), rotbetter++, rotbetter++;
 
             //--Try 1/3 of allowed rotamers keep first improvement or revert to previous angles
             for (UInt j = 0; j < allowedRotsize; j ++)

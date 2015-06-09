@@ -9,6 +9,7 @@ projects/folding.cc
 projects/foldingBindingEnergy.cc
 projects/foldingC.cc
 projects/fourEvolver.cc
+projects/getSequence.cc
 projects/intraSoluteEnergy.cc
 projects/ligandBindingEnergy.cc
 projects/mergeComplex.cc
