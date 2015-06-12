@@ -27,16 +27,13 @@ int main (int argc, char* argv[])
 	rotamer::setScaleFactor(0.0);
 	microEnvironment::setScaleFactor(0.0);
 	amberVDW::setScaleFactor(1.0);
-	amberVDW::setRadiusScaleFactor(1.0);
+    amberVDW::setRadiusScaleFactor(0.90);
 	amberVDW::setLinearRepulsionDampeningOff();
 	amberElec::setScaleFactor(1.0);
 	solvation::setItsScaleFactor(0.0);
 
-	t=clock();
 	double intra = bundle->intraSoluteEnergy(true);
-	t=clock()-t;
-	cout << endl << "Total intraSoluteEnergy is: " << intra << endl;
-	cout << "Time to run: " << ((float)t)/CLOCKS_PER_SEC << endl << endl;
+    cout << intra << endl;
 	
 	return 0;
 }

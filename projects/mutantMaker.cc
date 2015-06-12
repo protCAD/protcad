@@ -39,7 +39,7 @@ int main (int argc, char* argv[])
 	rotamer::setScaleFactor(0.0);
 	microEnvironment::setScaleFactor(0.0);
 	amberVDW::setScaleFactor(1.0);
-	amberVDW::setRadiusScaleFactor(1.0);
+    amberVDW::setRadiusScaleFactor(0.95);
 	amberVDW::setLinearRepulsionDampeningOff();
 	amberElec::setScaleFactor(1.0);
 	solvation::setItsScaleFactor(0.0);
@@ -129,7 +129,7 @@ int main (int argc, char* argv[])
     UInt resID1[] = {G,Y,V,Q,E,R,T,I,F,F,K,D,D,G,N,Y,K,T,R,A,E,He,K,F,E,G,D,T,L,V,N,R,I,E,L,K,G,I,D,F,K,E,D,G,N,I,L,G,Q,K,L,E,Y,N,Y,N,S,V,N,V,Y,I,M,A,D,K,Q,K,N,G,I,K,V,N,F,K,I,R,V,N,I,E,D,G,S,V,Q,L,A,D,F,Y,Q,Q,N,T,P,I,G,D,G,P,V,L,L,P,D,N,Q,Y,L,S,T,Q,S,A,He,S,K,D,P,N,E,K,R,D,N,M,V,L,L,E,F,V,T,A,A,G,I,T,A,S,K,G,E,E,L,F,T,G,V,V,P,I,L,V,E,L,D,G,D,V,N,G,Q,K,F,S,V,S,G,E,G,E,G,D,A,T,Y,G,K,L,T,L,K,F,I,S,T,T};
     v.insert (v.begin(), resID1, resID1 + sizeof(resID1)/sizeof(resID1[0]));
     resIDs.push_back(v);
-    v.clear();
+    v.clear();/*
     UInt resID2[] = {G,Y,V,Q,E,V,T,I,F,F,K,D,D,G,N,Y,K,T,R,A,E,He,K,F,E,G,D,T,L,V,N,R,I,E,L,K,G,I,D,F,K,E,D,G,N,I,L,G,Q,K,L,E,Y,N,Y,N,S,V,N,V,Y,I,M,A,D,K,Q,K,N,G,I,K,V,N,F,K,I,R,V,N,I,E,D,G,S,V,Q,L,A,D,F,Y,Q,Q,N,T,P,I,G,D,G,P,V,L,L,P,D,N,Q,Y,L,S,T,Q,S,A,He,S,K,D,P,N,E,K,R,D,N,M,V,L,L,A,F,V,T,A,A,G,I,T,A,S,K,G,E,E,L,F,T,G,V,V,P,I,L,V,E,L,D,G,D,V,N,G,Q,K,F,S,V,S,G,E,G,E,G,D,A,T,Y,G,K,L,T,L,K,F,I,S,T,T};
     v.insert (v.begin(), resID2, resID2 + sizeof(resID2)/sizeof(resID2[0]));
     resIDs.push_back(v);
@@ -150,7 +150,7 @@ int main (int argc, char* argv[])
     v.insert (v.begin(), resID6, resID6 + sizeof(resID6)/sizeof(resID6[0]));
     resIDs.push_back(v);
     v.clear();
-    /*UInt resID7[] = {G,F,O,G,A,A,G,R,T,G,P,O,G,P,S,G,I,S,G,P,O,G,P,O,G,P,O,G,P,O,G,V};
+    UInt resID7[] = {G,F,O,G,A,A,G,R,T,G,P,O,G,P,S,G,I,S,G,P,O,G,P,O,G,P,O,G,P,O,G,V};
     v.insert (v.begin(), resID7, resID7 + sizeof(resID7)/sizeof(resID7[0]));
     resIDs.push_back(v);
     v.clear();
@@ -270,8 +270,10 @@ int main (int argc, char* argv[])
     v.insert (v.begin(), resID35, resID35 + sizeof(resID35)/sizeof(resID35[0]));
     resIDs.push_back(v);
     v.clear();*/
-
-	//--Mutate chains
+    UInt activeResidues[] = {1,3,5,7,9,13,15,17,19,21,28,30,32,34,36,54,57,59,61,70,72,74,76,78,86,88,90,92,94,108,110,112,114,116,127,129,131,133,151,153,155,157,159,161,166,172,174,181,183,185};
+    UInt activeResiduesSize = sizeof(activeResidues)/sizeof(activeResidues[0]);
+    bool mutants;
+    //--Mutate chains
     UInt chainNum;
     delete thePDB;
     for (UInt h = 0; h < resIDs.size(); h++)
@@ -286,29 +288,41 @@ int main (int argc, char* argv[])
             UInt resNum = bundle->getNumResidues(i);
             for (UInt j = 0; j < resNum; j++)
             {
-                if (j >= resIDs[i].size())
+                mutants = false;
+                for (UInt l = 0; l < activeResiduesSize; l++)
                 {
-                    bundle->removeResidue(i,j);
+                    if (j == activeResidues[l])
+                    {
+                        mutants = true;
+                        break;
+                    }
                 }
-                else
+                if (!mutants)
                 {
-                    bundle->activateForRepacking(i, j);
-                    bundle->mutateWBC(i, j, resIDs[i][j]);
-                    randomizeSideChain(bundle, i, j);
+                    if (j >= resIDs[i].size())
+                    {
+                        bundle->removeResidue(i,j);
+                    }
+                    else
+                    {
+                        bundle->activateForRepacking(i, j);
+                        bundle->mutateWBC(i, j, resIDs[i][j]);
+                        randomizeSideChain(bundle, i, j);
+                    }
                 }
             }
         }
         stringstream convert;
         string countStr, outFile;
         convert << h+1, countStr = convert.str();
-        outFile = countStr;
+        outFile = infile + ".opt";
         pdbWriter(bundle, outFile);
         delete thePDB;
         PDBInterface* thePDB2 = new PDBInterface(outFile);
         ensemble* theEnsemble2 = thePDB2->getEnsemblePointer();
         molecule* pMol2 = theEnsemble2->getMoleculePointer(0);
         protein* bundle2 = static_cast<protein*>(pMol2);
-        bundle2->protOptSolvent(500);
+        bundle2->protOptSolventN(500);
         double Energy = bundle2->intraSoluteEnergy(false);
         cout << Energy << endl;
         pdbWriter(bundle2, outFile);

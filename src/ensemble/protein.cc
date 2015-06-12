@@ -2979,7 +2979,7 @@ void protein::protOptSolventN(UInt _plateau)
         resNum = this->getNumResidues(randchain);
         do
         { randres = rand() % resNum;
-        } while (randres == 116 || randres == 21);
+        } while (randres == 9 && randres == 30 && randres == 61 && randres == 129);
 
         randrestype = this->getTypeFromResNum(randchain, randres);
         preposE = this->getPositionSoluteEnergy(randchain, randres, true);

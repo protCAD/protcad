@@ -55,18 +55,18 @@ int main (int argc, char* argv[])
 	//UInt allowedLResidues[] = {A,N,D,Q,E,He,L,K,M,F,S,W,Y};
 	//UInt activeResidues[] = {1,4,5,6};
     UInt allowedLResidues[] = {W,Y,V,I,L,M,F,A};
-    UInt activeResidues[] = {1,3,5,7,9,13,15,17,19,28,30,32,34,36,54,57,59,61,70,72,74,76,78,86,88,90,92,94,108,110,112,114,127,129,131,133,151,153,155,157,159,161,166,169,172,174,181,183,185};
+    UInt activeResidues[] = {1,3,5,7,13,15,17,19,21,28,32,34,36,54,57,59,70,72,74,76,78,86,88,90,92,94,108,110,112,114,116,127,131,133,151,153,155,157,159,161,166,169,172,174,181,183,185};
 	//UInt allowedLResidues[] = {E,R,K,D,P,P};
 	//UInt activeResidues[] = {0,1,3,4,6,7,9,10,12,13,15,16,18,19,21,22,24,25,27,28};
     UInt allowedDResidues[] = {G};
 
-    double phi, bestEnergy, pastEnergy, finalEnergy, posE, totalposE, aveposE, Energy;
+    double phi, bestEnergy, pastEnergy, finalEnergy, Energy;
 	UInt nobetter = 0, activeResiduesSize = sizeof(activeResidues)/sizeof(activeResidues[0]), activeChainsSize = sizeof(activeChains)/sizeof(activeChains[0]);
 	UInt dResidues = sizeof(allowedDResidues)/sizeof(allowedDResidues[0]), lResidues = sizeof(allowedLResidues)/sizeof(allowedLResidues[0]);
     UInt name, mutant, numResidues, plateau = (lResidues*activeResiduesSize*activeChainsSize), fib = 0;
 	vector < UInt > mutantPosition, chainSequence, sequencePosition;
 	vector < vector < UInt > > proteinSequence, finalSequence;
-	UInt randres, randchain, rescount = 0;
+    UInt randres, randchain;
 	stringstream convert;
 	string startstr, outFile;
 	name = rand() % 1000000;
@@ -108,31 +108,16 @@ int main (int argc, char* argv[])
         bundle->protOptSolventN(300);
 
 		//--Determine next mutation position
-		rescount = 0, totalposE = 0, mutantPosition.clear();
-		for (UInt i = 0; i < activeChainsSize; i++)
-		{
-			for (UInt j = 0; j < activeResiduesSize; j++)
-			{
-				rescount++;
-                posE = bundle->getPositionSoluteEnergy(activeChains[i], activeResidues[j], true);
-				totalposE = totalposE + posE;
-			}
-		}
-		aveposE = totalposE/rescount;
-		posE = -1E10;
-		do
-		{
-			randres = activeResidues[rand() % activeResiduesSize];
-			if (activeChainsSize > 1)
-			{
-				randchain = activeChains[rand() % activeChainsSize];
-			}
-			else
-			{
-				randchain = activeChains[0];
-			}
-            posE = bundle->getPositionSoluteEnergy(randchain, randres, true);
-		}while (posE <= aveposE);
+        mutantPosition.clear();
+        randres = activeResidues[rand() % activeResiduesSize];
+        if (activeChainsSize > 1)
+        {
+            randchain = activeChains[rand() % activeChainsSize];
+        }
+        else
+        {
+            randchain = activeChains[0];
+        }
 		mutantPosition.push_back(randchain);
 		mutantPosition.push_back(randres);
 		pdbWriter(bundle, tempModel);
@@ -144,6 +129,7 @@ int main (int argc, char* argv[])
 		delete thePDB;
 		
 		//--Run single evolution loop till hitting plateau
+        //#pragma omp parallel while
 		do
 		{  
 			PDBInterface* thePDB = new PDBInterface(infile);
@@ -176,7 +162,7 @@ int main (int argc, char* argv[])
 							bundle->mutateWBC(mutantPosition[0],mutantPosition[1], mutant);
 						}
 					}
-                    else if (j != 21 && j != 116)
+                    else if (j != 9 && j != 30 && j != 61 && j != 129)
 					{
 						bundle->mutateWBC(activeChains[i],j, proteinSequence[i][j]);
 					}
@@ -187,31 +173,16 @@ int main (int argc, char* argv[])
 			protein* tempBundle = new protein(*bundle);
 			
 			//--Determine next mutation position
-			rescount = 0, totalposE = 0, mutantPosition.clear();
-			for (UInt i = 0; i < activeChainsSize; i++)
-			{
-				for (UInt j = 0; j < activeResiduesSize; j++)
-				{
-					rescount++;
-                    posE = bundle->getPositionSoluteEnergy(activeChains[i], activeResidues[j], true);
-					totalposE = totalposE + posE;
-				}
-			}
-			aveposE = totalposE/rescount;
-			posE = -1E10;
-			do
-			{
-				randres = activeResidues[rand() % activeResiduesSize];
-				if (activeChainsSize > 1)
-				{
-					randchain = activeChains[rand() % activeChainsSize];
-				}
-				else
-				{
-					randchain = activeChains[0];
-				}
-                posE = bundle->getPositionSoluteEnergy(randchain, randres, true);
-			}while (posE <= aveposE);
+            mutantPosition.clear();
+            randres = activeResidues[rand() % activeResiduesSize];
+            if (activeChainsSize > 1)
+            {
+                randchain = activeChains[rand() % activeChainsSize];
+            }
+            else
+            {
+                randchain = activeChains[0];
+            }
 			mutantPosition.push_back(randchain);
 			mutantPosition.push_back(randres);
 
@@ -279,7 +250,7 @@ void randomizeSideChains(protein* _prot, UInt _chainIndex)
 		restype = _prot->getTypeFromResNum(_chainIndex, j);
 		allowedRots = _prot->getAllowedRotamers(_chainIndex, j, restype, 0);
 		allowedRotsSize = allowedRots.size();
-        if (allowedRotsSize > 2 && j != 21 && j != 116)
+        if (allowedRotsSize > 2 && j != 9 && j != 30 && j != 61 && j != 129)
 		{
 			randrot = rand() % allowedRotsSize;
 			_prot->setRotamerWBC(_chainIndex, j, 0, allowedRots[randrot]);

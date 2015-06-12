@@ -38,7 +38,7 @@ int main (int argc, char* argv[])
     rotamer::setScaleFactor(0.0);
     microEnvironment::setScaleFactor(0.0);
     amberVDW::setScaleFactor(1.0);
-    amberVDW::setRadiusScaleFactor(1.0);
+    amberVDW::setRadiusScaleFactor(0.95);
     amberVDW::setLinearRepulsionDampeningOff();
     amberElec::setScaleFactor(1.0);
     solvation::setItsScaleFactor(0.0);
@@ -46,7 +46,7 @@ int main (int argc, char* argv[])
     delete thePDB;
 	
     //--parameters
-    int set1[] = {116,21};//{1,3,21,30,54,59,61,72,78,90,92,110,112,116,129,133,166,174,181};
+    int set1[] = {10,30,61,130};//{1,3,21,30,54,59,61,72,78,90,92,110,112,116,129,133,166,174,181};
     int set1Size = sizeof(set1)/sizeof(set1[0]);
     int resID[] = {Hce};
 
@@ -62,71 +62,90 @@ int main (int argc, char* argv[])
 	{
         for (int j = i+1; j < set1Size; j++)
 		{
-            PDBInterface* thePDB = new PDBInterface(infile);
-            ensemble* theEnsemble = thePDB->getEnsemblePointer();
-            molecule* pMol = theEnsemble->getMoleculePointer(0);
-            protein* bundle = static_cast<protein*>(pMol);
-
-            //--make point mutation(s)
-            bundle->activateForRepacking(0, set1[i]);
-            bundle->activateForRepacking(0, set1[j]);
-            bundle->mutate(0, set1[i], mutant);
-            bundle->mutate(0, set1[j], mutant);
-
-            int restype = bundle->getTypeFromResNum(0, set1[i]);
-
-            //--find lowest Rotamer and optimize neighbors
-            for (UInt a = 0; a < 3; a++)
+            for (int k = j+1; k < set1Size; k++)
             {
-                for (UInt k = 0; k < 2; k++)
+                #pragma omp parallel for
+                for (int l = k+1; l < set1Size; l++)
                 {
-                    pastEnergy = 1E10;
-                    int res;
-                    if (k == 0)
-                    {
-                        res = set1[i];
-                    }
-                    else
-                    {
-                        res = set1[j];
-                    }
-                    allowedRots = bundle->getAllowedRotamers(0, res, restype, 0);
-                    pastEnergy = bundle->intraSoluteEnergy(true);
-                    for (UInt m = 0; m < allowedRots.size(); m ++)
-                    {
-                        bundle->setRotamerWBC(0, res, 0, allowedRots[m]);
-                        currentRot = bundle->getSidechainDihedrals(0, res);
-                        angle = 0;
-                        for (UInt n = 0; n < 8; n++)
-                        {
-                            angle = angle+45;
-                            bundle->setChi(0, res, 1, 0, angle);
-                            Energy = bundle->intraSoluteEnergy(true);
-                            if (Energy < pastEnergy)
-                            {
-                                pastEnergy = Energy;
-                                bestAngle = angle;
-                                bestRot = currentRot;
-                            }
-                            bundle->setChi(0, res, 1, 0, (angle*-1));
-                        }
-                    }
-                    bundle->setSidechainDihedralAngles(0, res, bestRot);
-                    bundle->setChi(0, res, 1, 0, bestAngle);
-                }
-                bundle->protOptSolvent(200);
-            }
+                    PDBInterface* thePDB = new PDBInterface(infile);
+                    ensemble* theEnsemble = thePDB->getEnsemblePointer();
+                    molecule* pMol = theEnsemble->getMoleculePointer(0);
+                    protein* bundle = static_cast<protein*>(pMol);
 
-            //--print pdb and data to output
-            Energy = bundle->intraSoluteEnergy(true);
-            stringstream convert1, convert2;
-            string set1Str, set2Str;
-            convert1 << set1[i]+1, convert2 << set1[j]+1;
-            set1Str = convert1.str(), set2Str = convert2.str();
-            string outFile = set1Str + "_" + set2Str + ".pdb";
-            pdbWriter(bundle, outFile);
-            cout << outFile << " " << Energy << endl;
-            delete thePDB;
+                    //--make point mutation(s)
+                    bundle->activateForRepacking(0, set1[i]);
+                    bundle->activateForRepacking(0, set1[j]);
+                    bundle->activateForRepacking(0, set1[k]);
+                    bundle->activateForRepacking(0, set1[l]);
+                    bundle->mutate(0, set1[i], mutant);
+                    bundle->mutate(0, set1[j], mutant);
+                    bundle->mutate(0, set1[k], mutant);
+                    bundle->mutate(0, set1[l], mutant);
+
+                    int restype = bundle->getTypeFromResNum(0, set1[i]);
+
+                    //--find lowest Rotamer and optimize neighbors
+                    for (UInt a = 0; a < 2; a++)
+                    {
+                        for (UInt b = 0; b < 4; b++)
+                        {
+                            pastEnergy = 1E10;
+                            int res;
+                            if (b == 0)
+                            {
+                                res = set1[i];
+                            }
+                            if (b == 1)
+                            {
+                                res = set1[j];
+                            }
+                            if (b == 2)
+                            {
+                                res = set1[k];
+                            }
+                            if (b == 3)
+                            {
+                                res = set1[l];
+                            }
+                            allowedRots = bundle->getAllowedRotamers(03, res, restype, 0);
+                            pastEnergy = bundle->intraSoluteEnergy(true);
+                            for (UInt m = 0; m < allowedRots.size(); m ++)
+                            {
+                                bundle->setRotamerWBC(0, res, 0, allowedRots[m]);
+                                currentRot = bundle->getSidechainDihedrals(0, res);
+                                angle = 0;
+                                for (UInt n = 0; n < 8; n++)
+                                {
+                                    angle = angle+45;
+                                    bundle->setChi(0, res, 1, 0, angle);
+                                    Energy = bundle->intraSoluteEnergy(true);
+                                    if (Energy < pastEnergy)
+                                    {
+                                        pastEnergy = Energy;
+                                        bestAngle = angle;
+                                        bestRot = currentRot;
+                                    }
+                                    bundle->setChi(0, res, 1, 0, (angle*-1));
+                                }
+                            }
+                            bundle->setSidechainDihedralAngles(0, res, bestRot);
+                            bundle->setChi(0, res, 1, 0, bestAngle);
+                        }
+                        //bundle->protOptSolvent(200);
+                    }
+
+                    //--print pdb and data to output
+                    Energy = bundle->intraSoluteEnergy(true);
+                    stringstream convert1, convert2, convert3, convert4;
+                    string set1Str, set2Str, set3Str, set4Str;
+                    convert1 << set1[i]+1, convert2 << set1[j]+1, convert3 << set1[k]+1, convert4 << set1[l]+1;
+                    set1Str = convert1.str(), set2Str = convert2.str(), set3Str = convert3.str(), set4Str = convert4.str();
+                    string outFile = set1Str + "_" + set2Str + "_" + set3Str + "_" + set4Str +".pdb";
+                    pdbWriter(bundle, outFile);
+                    cout << outFile << " " << Energy << endl;
+                    delete thePDB;
+                }
+            }
         }
 	}
 	return 0;
