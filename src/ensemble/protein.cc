@@ -2962,8 +2962,9 @@ void protein::protOptSolventN(UInt _plateau)
     // -pike 2013
 
     //--Initialize variables for loop and calculate starting energy-------------------------------------
+    bool dielectrics = false;
     double deltaTheta = 0, totalpreposE = 0, avepreposE = -1E10;
-    double Energy, preposE, currentposE, pastEnergy = this->intraSoluteEnergy(true);
+    double Energy, preposE, currentposE, pastEnergy = this->intraSoluteEnergy(dielectrics);
     UInt randchain, randres, randrestype, allowedRotsize, randrot, number = 0, nobetter = 0;
     UInt resNum, randtype, chainNum = this->getNumChains(), rotbetter = 0;
     vector < vector <double> > currentRot;
@@ -2982,7 +2983,7 @@ void protein::protOptSolventN(UInt _plateau)
         } while (randres == 9 && randres == 30 && randres == 61 && randres == 129);
 
         randrestype = this->getTypeFromResNum(randchain, randres);
-        preposE = this->getPositionSoluteEnergy(randchain, randres, true);
+        preposE = this->getPositionSoluteEnergy(randchain, randres, dielectrics);
         if (randrestype == 0 || randrestype == 19 || randrestype == 20 || randrestype == 26 || randrestype == 27 || randrestype == 46 || randrestype == 47)
         {
             nobetter++;
@@ -2993,7 +2994,7 @@ void protein::protOptSolventN(UInt _plateau)
         }
 
         //--backbone optimization----------------------------------------------------------------------
-        /*if (rotbetter > _plateau && preposE > avepreposE)
+        if (rotbetter > _plateau && preposE > avepreposE)
         {
             //--choose phi or psi and angle, for a local transformation
             randtype = rand() % 2;
@@ -3005,11 +3006,11 @@ void protein::protOptSolventN(UInt _plateau)
             do
             {
                 this->setDihedralLocal(randchain, randres, deltaTheta, randtype);
-                currentposE = this->getPositionSoluteEnergy(randchain, randres, true), thisone = 0;
+                currentposE = this->getPositionSoluteEnergy(randchain, randres, dielectrics), thisone = 0;
                 //--Energy test
                 if (currentposE < (preposE - .05))
                 {
-                    Energy = this->intraSoluteEnergy(true);
+                    Energy = this->intraSoluteEnergy(dielectrics);
                     if (Energy < pastEnergy)
                     {
                         //cout << Energy << endl;
@@ -3018,7 +3019,7 @@ void protein::protOptSolventN(UInt _plateau)
                 }
             } while (thisone == 1);
             this->setDihedralLocal(randchain, randres, (deltaTheta*-1), randtype);
-        }*/
+        }
 
         //--Rotamer optimization-----------------------------------------------------------------------
         if (preposE > avepreposE)
@@ -3033,11 +3034,11 @@ void protein::protOptSolventN(UInt _plateau)
             {
                 randrot = rand() % allowedRots.size();
                 this->setRotamerWBC(randchain, randres, 0, allowedRots[randrot]);
-                currentposE = this->getPositionSoluteEnergy(randchain, randres, true);
+                currentposE = this->getPositionSoluteEnergy(randchain, randres, dielectrics);
 
                 if (currentposE < (preposE - .05))
                 {
-                    Energy = this->intraSoluteEnergy(true);
+                    Energy = this->intraSoluteEnergy(dielectrics);
                     if (Energy < pastEnergy)
                     {
                         //cout << Energy << endl;

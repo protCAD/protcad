@@ -42,9 +42,9 @@ int main (int argc, char* argv[])
     rotamer::setScaleFactor(0.0);
     microEnvironment::setScaleFactor(0.0);
     amberVDW::setScaleFactor(1.0);
-    amberVDW::setRadiusScaleFactor(0.9);
+    amberVDW::setRadiusScaleFactor(0.95);
     amberVDW::setLinearRepulsionDampeningOff();
-    amberElec::setScaleFactor(1.0);
+    amberElec::setScaleFactor(0.0);
     solvation::setItsScaleFactor(0.0);
     srand (time(NULL));
 
@@ -55,11 +55,12 @@ int main (int argc, char* argv[])
 	//UInt allowedLResidues[] = {A,N,D,Q,E,He,L,K,M,F,S,W,Y};
 	//UInt activeResidues[] = {1,4,5,6};
     UInt allowedLResidues[] = {W,Y,V,I,L,M,F,A};
-    UInt activeResidues[] = {1,3,5,7,13,15,17,19,21,28,32,34,36,54,57,59,70,72,74,76,78,86,88,90,92,94,108,110,112,114,116,127,131,133,151,153,155,157,159,161,166,169,172,174,181,183,185};
+    UInt activeResidues[] = {1,3,5,7,13,15,17,19,21,28,32,34,36,54,57,59,70,72,74,76,78,86,88,90,92,94,108,110,112,114,116,127,131,133,151,153,155,157,159,161,166,168,172,174,181,183,185,187};
 	//UInt allowedLResidues[] = {E,R,K,D,P,P};
 	//UInt activeResidues[] = {0,1,3,4,6,7,9,10,12,13,15,16,18,19,21,22,24,25,27,28};
     UInt allowedDResidues[] = {G};
 
+    bool dielectrics = false;
     double phi, bestEnergy, pastEnergy, finalEnergy, Energy;
 	UInt nobetter = 0, activeResiduesSize = sizeof(activeResidues)/sizeof(activeResidues[0]), activeChainsSize = sizeof(activeChains)/sizeof(activeChains[0]);
 	UInt dResidues = sizeof(allowedDResidues)/sizeof(allowedDResidues[0]), lResidues = sizeof(allowedLResidues)/sizeof(allowedLResidues[0]);
@@ -123,7 +124,7 @@ int main (int argc, char* argv[])
 		pdbWriter(bundle, tempModel);
 
 		//--set Energy startpoint
-        Energy = bundle->intraSoluteEnergy(true);
+        Energy = bundle->intraSoluteEnergy(dielectrics);
         pastEnergy = Energy;
         bestEnergy = Energy;
 		delete thePDB;
@@ -187,7 +188,7 @@ int main (int argc, char* argv[])
 			mutantPosition.push_back(randres);
 
 			//--Energy test and determination of next mutant position
-            Energy = bundle->intraSoluteEnergy(true);
+            Energy = bundle->intraSoluteEnergy(dielectrics);
             if (Energy < (pastEnergy+fib))
 			{
                 if (Energy < bestEnergy)
@@ -219,7 +220,7 @@ int main (int argc, char* argv[])
 			chainSequence = getChainSequence(model, activeChains[i]);
 			finalSequence.push_back(chainSequence);
 		}
-        Energy = model->intraSoluteEnergy(true);
+        Energy = model->intraSoluteEnergy(dielectrics);
         finalEnergy = Energy;
         cout << name << " " << finalEnergy << " ";
 		for (UInt i = 0; i < activeChainsSize; i++)
