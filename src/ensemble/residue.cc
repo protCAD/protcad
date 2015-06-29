@@ -3071,7 +3071,7 @@ double residue::intraSoluteEnergy()
                             double dielectric = (itsAtoms[i]->getDielectric() + itsAtoms[j]->getDielectric()) * 0.5;
                             vector <double> tempSolvEnergy = this->calculateSolvationEnergy(i);
                             intraEnergy += tempSolvEnergy[0];
-                            //intraEnergy -= tempSolvEnergy[1];
+                            intraEnergy -= tempSolvEnergy[1];
 
                             // **calc coulombic energy
                             UInt resType1 = itsType;
@@ -3094,13 +3094,16 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
 	//--requires update of dielectrics at protein level to be accurate.
     vector <double> solvationEnergy(2);
 	double atomDielectric = itsAtoms[_atomIndex]->getDielectric();
+    int waters = itsAtoms[_atomIndex]->getNumberofWaters();
     double charge = residueTemplate::itsAmberElec.getItsCharge(itsType, _atomIndex);
     double chargeSquared = charge*charge;
-    double proteinSolvent = atomDielectric * chargeSquared * -0.230555556;
-    double solventSolvent = 0;//proteinSolvent - (-166*(1/80)*(0.64/9));
+    double Temperature = 25;
+    double waterDielectric = 80.04;
+    double proteinSolvent = (atomDielectric/waterDielectric) * chargeSquared * -0.230555556;
+    double solventEntropy = Temperature*0.0019872041*log(pow(0.5,waters));
     solvationEnergy[0] = proteinSolvent;
-    solvationEnergy[1] = solventSolvent;
-    itsAtoms[_atomIndex]->setSolvationEnergy(proteinSolvent);
+    solvationEnergy[1] = solventEntropy;
+    itsAtoms[_atomIndex]->setSolvationEnergy(proteinSolvent-solventEntropy);
 	return solvationEnergy;
 }
 		

@@ -127,7 +127,7 @@ public:
 	
 	//--Optimization functions
     void protOptSolvent(UInt _plateau); // --Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics-- dpike
-    void protOptSolventN(UInt _plateau);
+    void protOptSolvent(UInt _plateau, bool _backbone);  // --Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics-- dpike
 	void chainOptSolvent(UInt _plateau, UInt _chainIndex);
 	void optimizeSmallRotations(UInt _steps, double _stepSize);
 	void optimizeSmallRotations(vector <UIntVec> _positions, UInt _steps, double _stepSize);
@@ -167,10 +167,10 @@ public:
 	vector <double> chainFoldingBindingEnergy(bool _unfold);
 	double bindingPositionSoluteEnergy(UInt _chain, UInt _residue, UInt _otherChain);
 	vector <double> getChargeDensity(UInt _chainIndex, UInt _residueIndex, UInt _atomIndex);
-	double calculateDielectric(UInt _chainIndex, UInt _residueIndex, UInt _atomIndex);
-	double calculateDielectric(chain* _chain, residue* _residue, atom* _atom);
+    vector <double> calculateDielectric(UInt _chainIndex, UInt _residueIndex, UInt _atomIndex);
+    vector <double> calculateDielectric(chain* _chain, residue* _residue, atom* _atom);
     vector <double> calculateSolvationEnergy(UInt _chainIndex, UInt _residueIndex, UInt _atomIndex) {return itsChains[_chainIndex]->itsResidues[_residueIndex]->calculateSolvationEnergy( _atomIndex);}
-    double calculateChainIndependentDielectric(chain* _chain, residue* _residue, atom* _atom, UInt _atomIndex);
+    vector <double> calculateChainIndependentDielectric(chain* _chain, residue* _residue, atom* _atom, UInt _atomIndex);
 	void updateDielectrics();
 	void updatePositionDielectrics(UInt _chainIndex, UInt _residueIndex);
 	void updateChainIndependentDielectrics(UInt _chainIndex);

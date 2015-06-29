@@ -1207,17 +1207,19 @@ vector <double> protein::getChargeDensity(UInt _chainIndex, UInt _residueIndex, 
 	return chargeDensity;
 }
 
-double protein::calculateDielectric(UInt _chainIndex, UInt _residueIndex, UInt _atomIndex)
+vector <double> protein::calculateDielectric(UInt _chainIndex, UInt _residueIndex, UInt _atomIndex)
 {
 	vector <double> chargeDensity(2);
 	vector <double> _chargeDensity(2);
+    vector <double> dielectric(2);
+    dielectric[0] = 0.0;
+    dielectric[1] = 0.0;
 	chargeDensity[0] = 0.0;
 	chargeDensity[1] = 0.0;
 	chargeDensity[2] = 0.0;
 	double watervol = 0.0;
 	double waters = 0.0;
 	double waterpol = 0.0;
-	double dielectric;
 	for(UInt i=0; i<itsChains.size(); i++)
 	{
 		_chargeDensity = itsChains[_chainIndex]->calculateDielectric(itsChains[i], _residueIndex, _atomIndex);
@@ -1228,21 +1230,24 @@ double protein::calculateDielectric(UInt _chainIndex, UInt _residueIndex, UInt _
 	watervol = 3728-chargeDensity[0];
     waters = watervol * 0.0919117647; //converted div to mult "watervol/10.88"
     waterpol = waters*1.4907;
-    dielectric = (1+12.56*((waters+chargeDensity[2]) * 0.1) * 0.00026824034 * (waterpol+chargeDensity[1])); //combined sums and converted div to mult "(1+4*3.14*((waters+chargeDensity[2])/10)/3728*(waterpol+chargeDensity[1]))"
-	return dielectric;
+    dielectric[0] = (1+12.56*((waters+chargeDensity[2]) * 0.1) * 0.00026824034 * (waterpol+chargeDensity[1])); //combined sums and converted div to mult "(1+4*3.14*((waters+chargeDensity[2])/10)/3728*(waterpol+chargeDensity[1]))"
+    dielectric[1] = waters;
+    return dielectric;
 }
 
-double protein::calculateDielectric(chain* _chain, residue* _residue, atom* _atom)
+vector <double> protein::calculateDielectric(chain* _chain, residue* _residue, atom* _atom)
 {
 	vector <double> chargeDensity(3);
 	vector <double> _chargeDensity(3);
+    vector <double> dielectric(2);
+    dielectric[0] = 0.0;
+    dielectric[1] = 0.0;
 	chargeDensity[0] = 0.0;
 	chargeDensity[1] = 0.0;
 	chargeDensity[2] = 0.0;
 	double watervol = 0.0;
 	double waters = 0.0;
 	double waterpol = 0.0;
-	double dielectric;
 	for(UInt i=0; i<itsChains.size(); i++)
 	{
 		_chargeDensity = _chain->calculateDielectric(itsChains[i], _residue, _atom);
@@ -1253,41 +1258,49 @@ double protein::calculateDielectric(chain* _chain, residue* _residue, atom* _ato
 	watervol = 3728-chargeDensity[0];
     waters = watervol * 0.0919117647; //converted div to mult "watervol/10.88"
     waterpol = waters*1.4907;
-    dielectric = (1+12.56*((waters+chargeDensity[2]) * 0.1) * 0.00026824034 * (waterpol+chargeDensity[1])); //combined sums and converted div to mult "(1+4*3.14*((waters+chargeDensity[2])/10)/3728*(waterpol+chargeDensity[1]))"
-	return dielectric;
+    dielectric[0] = (1+12.56*((waters+chargeDensity[2]) * 0.1) * 0.00026824034 * (waterpol+chargeDensity[1])); //combined sums and converted div to mult "(1+4*3.14*((waters+chargeDensity[2])/10)/3728*(waterpol+chargeDensity[1]))"
+    dielectric[1] = waters;
+    return dielectric;
 }
 
-double protein::calculateChainIndependentDielectric(chain* _chain, residue* _residue, atom* _atom, UInt _atomIndex)
+vector <double> protein::calculateChainIndependentDielectric(chain* _chain, residue* _residue, atom* _atom, UInt _atomIndex)
 {
 	vector <double> chargeDensity(3);
 	vector <double> _chargeDensity(3);
+    vector <double> dielectric(2);
+    dielectric[0] = 0.0;
+    dielectric[1] = 0.0;
 	chargeDensity[0] = 0.0;
 	chargeDensity[1] = 0.0;
 	chargeDensity[2] = 0.0;
 	double watervol = 0.0;
 	double waters = 0.0;
-	double waterpol = 0.0;
-	double dielectric;
+    double waterpol = 0.0;
 	_chargeDensity = _chain->calculateDielectric(_chain, _residue, _atom);
 	chargeDensity[0] += _chargeDensity[0];
 	chargeDensity[1] += _chargeDensity[1];
 	watervol = 3728-chargeDensity[0];
     waters = watervol * 0.0919117647; //converted div to mult "watervol/10.88"
     waterpol = waters*1.4907;
-    dielectric = (1+12.56*((waters+chargeDensity[2]) * 0.1) * 0.00026824034 * (waterpol+chargeDensity[1])); //combined sums and converted div to mult "(1+4*3.14*((waters+chargeDensity[2])/10)/3728*(waterpol+chargeDensity[1]))"
-	return dielectric;
+    dielectric[0] = (1+12.56*((waters+chargeDensity[2]) * 0.1) * 0.00026824034 * (waterpol+chargeDensity[1])); //combined sums and converted div to mult "(1+4*3.14*((waters+chargeDensity[2])/10)/3728*(waterpol+chargeDensity[1]))"
+    dielectric[1] = waters;
+    return dielectric;
 }
 
 void protein::updateDielectrics()
 {
+    vector <double> dielectric;
+    dielectric[0] = 0.0;
+    dielectric[1] = 0.0;
 	for(UInt i=0; i<itsChains.size(); i++)
 	{
 		for(UInt j=0; j<itsChains[i]->itsResidues.size(); j++)
 		{
 			for(UInt k=0; k<itsChains[i]->itsResidues[j]->itsAtoms.size(); k++)
 			{
-                double dielectric = this->calculateDielectric(itsChains[i], itsChains[i]->itsResidues[j], itsChains[i]->itsResidues[j]->itsAtoms[k]);
-				itsChains[i]->itsResidues[j]->itsAtoms[k]->setDielectric(dielectric);
+                dielectric = this->calculateDielectric(itsChains[i], itsChains[i]->itsResidues[j], itsChains[i]->itsResidues[j]->itsAtoms[k]);
+                itsChains[i]->itsResidues[j]->itsAtoms[k]->setDielectric(dielectric[0]);
+                itsChains[i]->itsResidues[j]->itsAtoms[k]->setNumberofWaters(dielectric[1]);
 			}
 		}
 	}
@@ -1295,20 +1308,26 @@ void protein::updateDielectrics()
 
 void protein::updateChainIndependentDielectrics(UInt _chainIndex)
 {
-	double dielectric;
+    vector <double> dielectric;
+    dielectric[0] = 0.0;
+    dielectric[1] = 0.0;
 	for(UInt i=0; i<itsChains[_chainIndex]->itsResidues.size(); i++)
 	{
 		for(UInt j=0; j<itsChains[_chainIndex]->itsResidues[i]->itsAtoms.size(); j++)
 		{
             dielectric = this->calculateChainIndependentDielectric(itsChains[_chainIndex], itsChains[_chainIndex]->itsResidues[i], itsChains[_chainIndex]->itsResidues[i]->itsAtoms[j], j);
-			itsChains[_chainIndex]->itsResidues[i]->itsAtoms[j]->setDielectric(dielectric);
+            itsChains[_chainIndex]->itsResidues[i]->itsAtoms[j]->setDielectric(dielectric[0]);
+            itsChains[_chainIndex]->itsResidues[i]->itsAtoms[j]->setNumberofWaters(dielectric[1]);
+
 		}
 	}
 }
 
 void protein::updatePositionDielectrics(UInt _chainIndex, UInt _residueIndex)
 {
-	double dielectric;
+    vector <double> dielectric;
+    dielectric[0] = 0.0;
+    dielectric[1] = 0.0;
 	bool withinCube;
 	for(UInt i=0; i<itsChains.size(); i++)
 	{
@@ -1320,7 +1339,8 @@ void protein::updatePositionDielectrics(UInt _chainIndex, UInt _residueIndex)
 				for(UInt k=0; k<itsChains[i]->itsResidues[j]->itsAtoms.size(); k++)
 				{
 					dielectric = this->calculateDielectric(itsChains[i], itsChains[i]->itsResidues[j], itsChains[i]->itsResidues[j]->itsAtoms[k]);
-					itsChains[i]->itsResidues[j]->itsAtoms[k]->setDielectric(dielectric);
+                    itsChains[i]->itsResidues[j]->itsAtoms[k]->setDielectric(dielectric[0]);
+                    itsChains[i]->itsResidues[j]->itsAtoms[k]->setNumberofWaters(dielectric[1]);
 				}
 			}
 		}
@@ -2955,14 +2975,18 @@ void protein::protOptSolvent(UInt _plateau)
 	return;
 }
 
-void protein::protOptSolventN(UInt _plateau)
+void protein::protOptSolvent(UInt _plateau, bool _backbone)
 {	// Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics and corresponding implicit solvation score
     //    _plateau: the number of consecutive optimization cycles without an energy decrease.
     //	    	     (250 is recommended for a full minimization without excessive calculation)
     // -pike 2013
 
     //--Initialize variables for loop and calculate starting energy-------------------------------------
-    bool dielectrics = false;
+    bool dielectrics = true;
+    if (residueTemplate::itsAmberElec.getScaleFactor() == 0.0)
+    {
+        dielectrics = false;
+    }
     double deltaTheta = 0, totalpreposE = 0, avepreposE = -1E10;
     double Energy, preposE, currentposE, pastEnergy = this->intraSoluteEnergy(dielectrics);
     UInt randchain, randres, randrestype, allowedRotsize, randrot, number = 0, nobetter = 0;
@@ -2978,23 +3002,18 @@ void protein::protOptSolventN(UInt _plateau)
         //--Generate random residue
         randchain = rand() % chainNum;
         resNum = this->getNumResidues(randchain);
-        do
-        { randres = rand() % resNum;
-        } while (randres == 9 && randres == 30 && randres == 61 && randres == 129);
-
+        randres = rand() % resNum;
         randrestype = this->getTypeFromResNum(randchain, randres);
         preposE = this->getPositionSoluteEnergy(randchain, randres, dielectrics);
         if (randrestype == 0 || randrestype == 19 || randrestype == 20 || randrestype == 26 || randrestype == 27 || randrestype == 46 || randrestype == 47)
-        {
-            nobetter++;
+        {nobetter++;
         }
         else
-        {
-            nobetter++, nobetter++;
+        {nobetter++,nobetter++;
         }
 
         //--backbone optimization----------------------------------------------------------------------
-        if (rotbetter > _plateau && preposE > avepreposE)
+        if (rotbetter > _plateau && preposE > avepreposE && _backbone)
         {
             //--choose phi or psi and angle, for a local transformation
             randtype = rand() % 2;
@@ -3055,7 +3074,7 @@ void protein::protOptSolventN(UInt _plateau)
         {
             number = 0, totalpreposE = 0;
         }
-        number++, number++, totalpreposE = (totalpreposE + preposE), avepreposE = (totalpreposE/number);
+        number++,number++, totalpreposE = (totalpreposE + preposE), avepreposE = (totalpreposE/number);
     } while (nobetter < _plateau * 1.2);
     return;
 }

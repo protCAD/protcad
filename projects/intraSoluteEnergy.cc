@@ -27,13 +27,13 @@ int main (int argc, char* argv[])
 	rotamer::setScaleFactor(0.0);
 	microEnvironment::setScaleFactor(0.0);
 	amberVDW::setScaleFactor(1.0);
-    amberVDW::setRadiusScaleFactor(0.90);
+    amberVDW::setRadiusScaleFactor(0.95);
 	amberVDW::setLinearRepulsionDampeningOff();
     amberElec::setScaleFactor(1.0);
 	solvation::setItsScaleFactor(0.0);
 
 	double intra = bundle->intraSoluteEnergy(true);
-    cout << intra << endl;
+    cout << intra << " ";
 	
 	return 0;
 }

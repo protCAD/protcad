@@ -44,7 +44,7 @@ int main (int argc, char* argv[])
     amberVDW::setScaleFactor(1.0);
     amberVDW::setRadiusScaleFactor(0.95);
     amberVDW::setLinearRepulsionDampeningOff();
-    amberElec::setScaleFactor(0.0);
+    amberElec::setScaleFactor(1.0);
     solvation::setItsScaleFactor(0.0);
     srand (time(NULL));
 
@@ -54,13 +54,13 @@ int main (int argc, char* argv[])
 	//UInt activeResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};
 	//UInt allowedLResidues[] = {A,N,D,Q,E,He,L,K,M,F,S,W,Y};
 	//UInt activeResidues[] = {1,4,5,6};
-    UInt allowedLResidues[] = {W,Y,V,I,L,M,F,A};
-    UInt activeResidues[] = {1,3,5,7,13,15,17,19,21,28,32,34,36,54,57,59,70,72,74,76,78,86,88,90,92,94,108,110,112,114,116,127,131,133,151,153,155,157,159,161,166,168,172,174,181,183,185,187};
+    UInt allowedLResidues[] = {A,R,N,D,C,Q,E,He,I,L,K,M,F,P,S,T,W,Y,V,G};
+    UInt activeResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128};
 	//UInt allowedLResidues[] = {E,R,K,D,P,P};
 	//UInt activeResidues[] = {0,1,3,4,6,7,9,10,12,13,15,16,18,19,21,22,24,25,27,28};
     UInt allowedDResidues[] = {G};
 
-    bool dielectrics = false;
+    bool dielectrics = true;
     double phi, bestEnergy, pastEnergy, finalEnergy, Energy;
 	UInt nobetter = 0, activeResiduesSize = sizeof(activeResidues)/sizeof(activeResidues[0]), activeChainsSize = sizeof(activeChains)/sizeof(activeChains[0]);
 	UInt dResidues = sizeof(allowedDResidues)/sizeof(allowedDResidues[0]), lResidues = sizeof(allowedLResidues)/sizeof(allowedLResidues[0]);
@@ -106,7 +106,7 @@ int main (int argc, char* argv[])
 			chainSequence = getChainSequence(bundle, activeChains[i]);
 			proteinSequence.push_back(chainSequence);
 		}
-        bundle->protOptSolventN(300);
+        bundle->protOptSolvent(200, false);
 
 		//--Determine next mutation position
         mutantPosition.clear();
@@ -163,14 +163,14 @@ int main (int argc, char* argv[])
 							bundle->mutateWBC(mutantPosition[0],mutantPosition[1], mutant);
 						}
 					}
-                    else if (j != 9 && j != 30 && j != 61 && j != 129)
+                    else
 					{
 						bundle->mutateWBC(activeChains[i],j, proteinSequence[i][j]);
 					}
 				}
 				randomizeSideChains(bundle, activeChains[i]);
 			}
-            bundle->protOptSolventN(300);
+            bundle->protOptSolvent(200, false);
 			protein* tempBundle = new protein(*bundle);
 			
 			//--Determine next mutation position
@@ -251,7 +251,7 @@ void randomizeSideChains(protein* _prot, UInt _chainIndex)
 		restype = _prot->getTypeFromResNum(_chainIndex, j);
 		allowedRots = _prot->getAllowedRotamers(_chainIndex, j, restype, 0);
 		allowedRotsSize = allowedRots.size();
-        if (allowedRotsSize > 2 && j != 9 && j != 30 && j != 61 && j != 129)
+        if (allowedRotsSize > 2)
 		{
 			randrot = rand() % allowedRotsSize;
 			_prot->setRotamerWBC(_chainIndex, j, 0, allowedRots[randrot]);

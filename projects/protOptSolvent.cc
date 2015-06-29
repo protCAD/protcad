@@ -42,7 +42,7 @@ int main (int argc, char* argv[])
 	solvation::setItsScaleFactor(0.0);
     string outFile = infile;
 
-    _prot->protOptSolventN(500);
+    _prot->protOptSolvent(200, false);
 
 //--Print final energy and write a pdb file--------------------------------------------------------------
     outFile = infile;
