@@ -1212,8 +1212,6 @@ vector <double> protein::calculateDielectric(UInt _chainIndex, UInt _residueInde
 	vector <double> chargeDensity(2);
 	vector <double> _chargeDensity(2);
     vector <double> dielectric(2);
-    dielectric[0] = 0.0;
-    dielectric[1] = 0.0;
 	chargeDensity[0] = 0.0;
 	chargeDensity[1] = 0.0;
 	chargeDensity[2] = 0.0;
@@ -1227,7 +1225,7 @@ vector <double> protein::calculateDielectric(UInt _chainIndex, UInt _residueInde
 		chargeDensity[1] += _chargeDensity[1];
 		chargeDensity[2] += _chargeDensity[2];
 	}
-	watervol = 3728-chargeDensity[0];
+    watervol = 3728-chargeDensity[0];
     waters = watervol * 0.0919117647; //converted div to mult "watervol/10.88"
     waterpol = waters*1.4907;
     dielectric[0] = (1+12.56*((waters+chargeDensity[2]) * 0.1) * 0.00026824034 * (waterpol+chargeDensity[1])); //combined sums and converted div to mult "(1+4*3.14*((waters+chargeDensity[2])/10)/3728*(waterpol+chargeDensity[1]))"
@@ -1255,7 +1253,7 @@ vector <double> protein::calculateDielectric(chain* _chain, residue* _residue, a
 		chargeDensity[1] += _chargeDensity[1];
 		chargeDensity[2] += _chargeDensity[2];
 	}
-	watervol = 3728-chargeDensity[0];
+    watervol = 3728-chargeDensity[0];
     waters = watervol * 0.0919117647; //converted div to mult "watervol/10.88"
     waterpol = waters*1.4907;
     dielectric[0] = (1+12.56*((waters+chargeDensity[2]) * 0.1) * 0.00026824034 * (waterpol+chargeDensity[1])); //combined sums and converted div to mult "(1+4*3.14*((waters+chargeDensity[2])/10)/3728*(waterpol+chargeDensity[1]))"
@@ -1279,7 +1277,7 @@ vector <double> protein::calculateChainIndependentDielectric(chain* _chain, resi
 	_chargeDensity = _chain->calculateDielectric(_chain, _residue, _atom);
 	chargeDensity[0] += _chargeDensity[0];
 	chargeDensity[1] += _chargeDensity[1];
-	watervol = 3728-chargeDensity[0];
+    watervol = 3728-chargeDensity[0];
     waters = watervol * 0.0919117647; //converted div to mult "watervol/10.88"
     waterpol = waters*1.4907;
     dielectric[0] = (1+12.56*((waters+chargeDensity[2]) * 0.1) * 0.00026824034 * (waterpol+chargeDensity[1])); //combined sums and converted div to mult "(1+4*3.14*((waters+chargeDensity[2])/10)/3728*(waterpol+chargeDensity[1]))"
@@ -1289,9 +1287,7 @@ vector <double> protein::calculateChainIndependentDielectric(chain* _chain, resi
 
 void protein::updateDielectrics()
 {
-    vector <double> dielectric;
-    dielectric[0] = 0.0;
-    dielectric[1] = 0.0;
+    vector <double> dielectric(2);
 	for(UInt i=0; i<itsChains.size(); i++)
 	{
 		for(UInt j=0; j<itsChains[i]->itsResidues.size(); j++)
@@ -1308,9 +1304,7 @@ void protein::updateDielectrics()
 
 void protein::updateChainIndependentDielectrics(UInt _chainIndex)
 {
-    vector <double> dielectric;
-    dielectric[0] = 0.0;
-    dielectric[1] = 0.0;
+    vector <double> dielectric(2);
 	for(UInt i=0; i<itsChains[_chainIndex]->itsResidues.size(); i++)
 	{
 		for(UInt j=0; j<itsChains[_chainIndex]->itsResidues[i]->itsAtoms.size(); j++)
@@ -1325,9 +1319,7 @@ void protein::updateChainIndependentDielectrics(UInt _chainIndex)
 
 void protein::updatePositionDielectrics(UInt _chainIndex, UInt _residueIndex)
 {
-    vector <double> dielectric;
-    dielectric[0] = 0.0;
-    dielectric[1] = 0.0;
+    vector <double> dielectric(2);
 	bool withinCube;
 	for(UInt i=0; i<itsChains.size(); i++)
 	{

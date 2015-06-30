@@ -3097,10 +3097,10 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
     int waters = itsAtoms[_atomIndex]->getNumberofWaters();
     double charge = residueTemplate::itsAmberElec.getItsCharge(itsType, _atomIndex);
     double chargeSquared = charge*charge;
-    double Temperature = 25;
-    double waterDielectric = 80.04;
-    double proteinSolvent = (atomDielectric/waterDielectric) * chargeSquared * -0.230555556;
-    double solventEntropy = Temperature*0.0019872041*log(pow(0.5,waters));
+    double Temperature = 4;
+    double waterDielectric = 85;
+    double proteinSolvent = -166 * (atomDielectric/waterDielectric) * (chargeSquared/9);
+    double solventEntropy = (Temperature*0.0019872041*log(pow(0.5,waters)));
     solvationEnergy[0] = proteinSolvent;
     solvationEnergy[1] = solventEntropy;
     itsAtoms[_atomIndex]->setSolvationEnergy(proteinSolvent-solventEntropy);
