@@ -1238,8 +1238,6 @@ vector <double> protein::calculateDielectric(chain* _chain, residue* _residue, a
 	vector <double> chargeDensity(3);
 	vector <double> _chargeDensity(3);
     vector <double> dielectric(2);
-    dielectric[0] = 0.0;
-    dielectric[1] = 0.0;
 	chargeDensity[0] = 0.0;
 	chargeDensity[1] = 0.0;
 	chargeDensity[2] = 0.0;
@@ -1266,8 +1264,6 @@ vector <double> protein::calculateChainIndependentDielectric(chain* _chain, resi
 	vector <double> chargeDensity(3);
 	vector <double> _chargeDensity(3);
     vector <double> dielectric(2);
-    dielectric[0] = 0.0;
-    dielectric[1] = 0.0;
 	chargeDensity[0] = 0.0;
 	chargeDensity[1] = 0.0;
 	chargeDensity[2] = 0.0;

@@ -3067,7 +3067,7 @@ double residue::intraSoluteEnergy()
                         // ** intra AMBER Electrostatics
                         if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
                         {
-                            // ** get solvationEnergyScore and dielectric
+                            // ** get solvationEnergy and dielectric
                             double dielectric = (itsAtoms[i]->getDielectric() + itsAtoms[j]->getDielectric()) * 0.5;
                             vector <double> tempSolvEnergy = this->calculateSolvationEnergy(i);
                             intraEnergy += tempSolvEnergy[0];
@@ -3100,7 +3100,7 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
     double Temperature = 4;
     double waterDielectric = 85;
     double proteinSolvent = -166 * (atomDielectric/waterDielectric) * (chargeSquared/9);
-    double solventEntropy = (Temperature*0.0019872041*log(pow(0.5,waters)));
+    double solventEntropy = Temperature*0.0019872041*log(pow(0.5,(waters)));
     solvationEnergy[0] = proteinSolvent;
     solvationEnergy[1] = solventEntropy;
     itsAtoms[_atomIndex]->setSolvationEnergy(proteinSolvent-solventEntropy);
