@@ -3125,6 +3125,7 @@ vector <double> residue::calculateDielectric(residue* _other, UInt _atomIndex)
 		{
 			atoms++;
 			atomEnergyType = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[i][1];
+            if (atomEnergyType == 4) charges += 0.49, volumes += 23.2; //magnesium
 			if (atomEnergyType == 11) charges += 1.382, volumes += 8.7;
 			if (atomEnergyType == 12 || atomEnergyType == 15) charges += 1.382, volumes += 8.7;
 			if (atomEnergyType == 13) charges += 1.836, volumes += 23.2;

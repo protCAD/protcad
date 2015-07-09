@@ -1225,7 +1225,7 @@ vector <double> protein::calculateDielectric(UInt _chainIndex, UInt _residueInde
 		chargeDensity[1] += _chargeDensity[1];
 		chargeDensity[2] += _chargeDensity[2];
 	}
-    watervol = 3728-chargeDensity[0];
+    watervol = 3728-chargeDensity[0]; //3728
     waters = watervol * 0.0919117647; //converted div to mult "watervol/10.88"
     waterpol = waters*1.4907;
     dielectric[0] = (1+12.56*((waters+chargeDensity[2]) * 0.1) * 0.00026824034 * (waterpol+chargeDensity[1])); //combined sums and converted div to mult "(1+4*3.14*((waters+chargeDensity[2])/10)/3728*(waterpol+chargeDensity[1]))"

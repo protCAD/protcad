@@ -126,98 +126,98 @@ int main (int argc, char* argv[])
     vector<vector<UInt> > resIDs;
     vector <UInt> v;
 
-    UInt resID1[] = {G,Y,V,Q,E,R,T,I,F,F,K,D,D,G,N,Y,K,T,R,A,E,He,K,F,E,G,D,T,L,V,N,R,I,E,L,K,G,I,D,F,K,E,D,G,N,I,L,G,Q,K,L,E,Y,N,Y,N,S,V,N,V,Y,I,M,A,D,K,Q,K,N,G,I,K,V,N,F,K,I,R,V,N,I,E,D,G,S,V,Q,L,A,D,F,Y,Q,Q,N,T,P,I,G,D,G,P,V,L,L,P,D,N,Q,Y,L,S,T,Q,S,A,He,S,K,D,P,N,E,K,R,D,N,M,V,L,L,E,F,V,T,A,A,G,I,T,A,S,K,G,E,E,L,F,T,G,V,V,P,I,L,V,E,L,D,G,D,V,N,G,Q,K,F,S,V,S,G,E,G,E,G,D,A,T,Y,G,K,L,T,L,K,F,I,S,T,T};
+    UInt resID1[] = {P,O,G,P,O,G,P,O,G,V,O,G,P,O,G,P,O,G,P,O,G,P,O,G};
     v.insert (v.begin(), resID1, resID1 + sizeof(resID1)/sizeof(resID1[0]));
     resIDs.push_back(v);
-    v.clear();/*
-    UInt resID2[] = {G,Y,V,Q,E,V,T,I,F,F,K,D,D,G,N,Y,K,T,R,A,E,He,K,F,E,G,D,T,L,V,N,R,I,E,L,K,G,I,D,F,K,E,D,G,N,I,L,G,Q,K,L,E,Y,N,Y,N,S,V,N,V,Y,I,M,A,D,K,Q,K,N,G,I,K,V,N,F,K,I,R,V,N,I,E,D,G,S,V,Q,L,A,D,F,Y,Q,Q,N,T,P,I,G,D,G,P,V,L,L,P,D,N,Q,Y,L,S,T,Q,S,A,He,S,K,D,P,N,E,K,R,D,N,M,V,L,L,A,F,V,T,A,A,G,I,T,A,S,K,G,E,E,L,F,T,G,V,V,P,I,L,V,E,L,D,G,D,V,N,G,Q,K,F,S,V,S,G,E,G,E,G,D,A,T,Y,G,K,L,T,L,K,F,I,S,T,T};
+    v.clear();
+    UInt resID2[] = {P,O,G,P,O,G,P,O,G,M,O,G,P,O,G,P,O,G,P,O,G,P,O,G};
     v.insert (v.begin(), resID2, resID2 + sizeof(resID2)/sizeof(resID2[0]));
     resIDs.push_back(v);
     v.clear();
-    UInt resID3[] = {G,Y,V,L,E,V,T,I,F,F,K,D,D,G,N,Y,K,I,R,A,E,He,K,F,E,G,D,T,L,V,A,R,I,E,L,K,G,I,D,F,K,E,D,G,N,I,L,G,Q,K,L,E,Y,N,Y,N,S,V,N,V,Y,I,M,A,D,K,Q,K,N,G,I,K,V,N,F,K,I,R,V,N,I,E,D,G,S,V,Q,L,A,D,F,Y,L,Q,A,T,P,I,G,D,G,P,V,L,L,P,D,N,Q,Y,L,S,I,Q,A,A,He,S,K,D,P,N,E,K,R,D,N,M,V,L,L,A,F,V,T,A,A,G,I,T,A,S,K,G,E,E,L,F,T,G,V,V,P,I,L,V,E,L,D,G,D,V,N,G,Q,K,F,S,V,S,G,E,G,E,G,D,A,T,Y,G,K,L,T,L,K,F,I,S,T,T};
+    UInt resID3[] = {P,O,G,P,O,G,P,O,G,I,O,G,P,O,G,P,O,G,P,O,G,P,O,G};
     v.insert (v.begin(), resID3, resID3 + sizeof(resID3)/sizeof(resID3[0]));
     resIDs.push_back(v);
     v.clear();
-    UInt resID4[] = {G,Y,V,L,E,V,T,I,F,F,K,D,D,G,N,Y,K,I,R,A,E,He,K,F,E,G,D,T,F,V,A,R,I,E,L,K,G,I,D,F,K,E,D,G,N,I,L,G,Q,K,L,E,Y,N,Y,N,S,V,N,L,Y,I,M,A,D,K,Q,K,N,G,I,K,V,N,F,K,I,R,V,N,I,E,D,G,S,V,Q,L,A,D,F,Y,L,Q,A,T,P,I,G,D,G,P,V,L,L,P,D,N,Q,Y,L,S,I,Q,A,A,He,S,K,D,P,N,E,K,R,D,N,M,V,L,L,A,F,L,T,A,A,G,I,T,A,S,K,G,E,E,L,F,T,G,V,V,P,I,L,V,E,L,D,G,D,V,N,G,Q,K,F,S,V,S,G,E,G,E,G,D,A,T,Y,G,K,L,T,L,K,F,I,Y,T,T};
+    UInt resID4[] = {P,O,G,P,O,G,P,O,G,Y,O,G,P,O,G,P,O,G,P,O,G,P,O,G};
     v.insert (v.begin(), resID4, resID4 + sizeof(resID4)/sizeof(resID4[0]));
     resIDs.push_back(v);
     v.clear();
-    UInt resID5[] = {G,Y,V,L,E,V,T,I,F,F,K,D,D,G,N,Y,K,I,R,A,E,He,K,F,E,G,D,T,F,V,A,R,I,E,L,K,G,I,D,F,K,E,D,G,N,I,L,G,Q,K,L,E,Y,N,Y,N,S,V,N,L,Y,I,M,A,D,K,Q,K,N,G,I,K,V,N,F,K,I,R,V,N,I,E,D,G,S,V,Q,L,A,D,F,Y,L,Q,A,T,P,I,G,D,G,P,V,L,L,P,D,N,Q,Y,L,S,I,Q,A,A,He,S,K,D,P,N,E,K,R,D,N,M,V,L,L,A,F,L,T,A,A,G,I,T,A,S,K,G,E,E,L,F,T,G,V,V,P,I,L,V,E,L,D,G,D,V,N,G,Q,K,F,S,V,S,G,E,G,E,G,D,A,T,Y,G,K,L,T,L,K,F,I,Y,T,T};
+    UInt resID5[] = {P,O,G,P,O,G,P,O,G,W,O,G,P,O,G,P,O,G,P,O,G,P,O,G};
     v.insert (v.begin(), resID5, resID5 + sizeof(resID5)/sizeof(resID5[0]));
     resIDs.push_back(v);
     v.clear();
-    UInt resID6[] = {G,Y,V,L,E,V,T,I,F,F,K,D,D,G,N,F,K,I,R,A,E,He,K,F,E,G,D,T,F,V,A,R,I,E,L,K,G,I,D,F,K,E,D,G,N,I,L,G,Q,K,Y,E,Y,N,Y,N,S,V,N,L,Y,I,M,A,D,K,Q,K,N,G,I,K,V,N,F,K,I,R,V,N,I,E,D,G,S,V,Q,L,A,D,F,Y,L,Q,A,T,P,I,G,D,G,P,V,L,L,P,D,N,Q,Y,L,S,I,Q,A,A,He,S,K,D,P,N,E,K,R,D,N,M,V,L,L,A,F,L,T,A,A,G,I,T,A,S,K,G,E,E,L,F,T,G,V,V,P,I,L,V,E,L,D,G,D,V,N,G,Q,K,F,S,V,S,G,E,G,E,G,D,A,T,Y,G,K,L,T,L,K,F,I,Y,T,T};
+    UInt resID6[] = {P,O,G,P,O,G,P,O,G,P,R,G,P,O,G,P,O,G,P,O,G,P,O,G};
     v.insert (v.begin(), resID6, resID6 + sizeof(resID6)/sizeof(resID6[0]));
     resIDs.push_back(v);
     v.clear();
-    UInt resID7[] = {G,F,O,G,A,A,G,R,T,G,P,O,G,P,S,G,I,S,G,P,O,G,P,O,G,P,O,G,P,O,G,V};
+    UInt resID7[] = {P,O,G,P,O,G,P,O,G,P,M,G,P,O,G,P,O,G,P,O,G,P,O,G};
     v.insert (v.begin(), resID7, resID7 + sizeof(resID7)/sizeof(resID7[0]));
     resIDs.push_back(v);
     v.clear();
-    UInt resID8[] = {G,S,O,G,A,Q,G,L,Q,G,P,R,G,L,O,G,T,O,G,P,O,G,P,O,G,P,O,G,P,O,G,V};
+    UInt resID8[] = {P,O,G,P,O,G,P,O,G,P,I,G,P,O,G,P,O,G,P,O,G,P,O,G};
     v.insert (v.begin(), resID8, resID8 + sizeof(resID8)/sizeof(resID8[0]));
     resIDs.push_back(v);
     v.clear();
-    UInt resID9[] = {G,G,K,G,D,A,G,A,O,G,E,R,G,P,O,G,L,A,G,P,O,G,P,O,G,P,O,G,P,O,G,V};
+    UInt resID9[] = {P,O,G,P,O,G,P,O,G,P,Q,G,P,O,G,P,O,G,P,O,G,P,O,G};
     v.insert (v.begin(), resID9, resID9 + sizeof(resID9)/sizeof(resID9[0]));
     resIDs.push_back(v);
     v.clear();
-    UInt resID10[] = {G,D,A,G,A,O,G,E,R,G,P,O,G,L,A,G,A,O,G,P,O,G,P,O,G,P,O,G,P,O,G,V};
+    UInt resID10[] = {P,O,G,P,O,G,P,O,G,P,A,G,P,O,G,P,O,G,P,O,G,P,O,G};
     v.insert (v.begin(), resID10, resID10 + sizeof(resID10)/sizeof(resID10[0]));
     resIDs.push_back(v);
     v.clear();
-    UInt resID11[] = {G,A,O,G,E,R,G,P,O,G,L,A,G,A,O,G,L,R,G,P,O,G,P,O,G,P,O,G,P,O,G,V};
+    UInt resID11[] = {P,O,G,P,O,G,P,O,G,P,V,G,P,O,G,P,O,G,P,O,G,P,O,G};
     v.insert (v.begin(), resID11, resID11 + sizeof(resID11)/sizeof(resID11[0]));
     resIDs.push_back(v);
     v.clear();
-    UInt resID12[] = {G,E,R,G,P,O,G,L,A,G,A,O,G,L,R,G,G,A,G,P,O,G,P,O,G,P,O,G,P,O,G,V};
+    UInt resID12[] = {P,O,G,P,O,G,P,O,G,P,E,G,P,O,G,P,O,G,P,O,G,P,O,G};
     v.insert (v.begin(), resID12, resID12 + sizeof(resID12)/sizeof(resID12[0]));
     resIDs.push_back(v);
     v.clear();
-    UInt resID13[] = {G,P,O,G,L,A,G,A,O,G,L,R,G,G,A,G,P,O,G,P,O,G,P,O,G,P,O,G,P,O,G,V};
+    UInt resID13[] = {P,O,G,P,O,G,P,O,G,P,T,G,P,O,G,P,O,G,P,O,G,P,O,G};
     v.insert (v.begin(), resID13, resID13 + sizeof(resID13)/sizeof(resID13[0]));
     resIDs.push_back(v);
     v.clear();
-    UInt resID14[] = {G,L,A,G,A,O,G,L,R,G,G,A,G,P,O,G,P,E,G,P,O,G,P,O,G,P,O,G,P,O,G,V};
+    UInt resID14[] = {P,O,G,P,O,G,P,O,G,P,C,G,P,O,G,P,O,G,P,O,G,P,O,G};
     v.insert (v.begin(), resID14, resID14 + sizeof(resID14)/sizeof(resID14[0]));
     resIDs.push_back(v);
     v.clear();
-    UInt resID36[] = {G,P,O,G,A,O,G,P,L,G,I,A,G,I,T,G,A,R,G,L,A,G,P,O,G,P,O,G,P,O,G,P,O,G,G};
+    UInt resID36[] = {P,O,G,P,O,G,P,O,G,P,K,G,P,O,G,P,O,G,P,O,G,P,O,G};
     v.insert (v.begin(), resID36, resID36 + sizeof(resID36)/sizeof(resID36[0]));
     resIDs.push_back(v);
     v.clear();
-    UInt resID15[] = {G,P,R,G,N,R,G,E,R,G,S,E,G,S,O,G,He,O,G,Q,O,G,P,O,G,P,O,G,A,O,G,V};
+    UInt resID15[] = {P,O,G,P,O,G,P,O,G,P,He,G,P,O,G,P,O,G,P,O,G,P,O,G};
     v.insert (v.begin(), resID15, resID15 + sizeof(resID15)/sizeof(resID15[0]));
     resIDs.push_back(v);
     v.clear();
-    UInt resID16[] = {G,L,A,G,E,O,G,K,O,G,I,O,G,L,O,G,R,A,G,P,O,G,P,O,G,P,O,G,P,O,G,V};
+    UInt resID16[] = {P,O,G,P,O,G,P,O,G,P,S,G,P,O,G,P,O,G,P,O,G,P,O,G};
     v.insert (v.begin(), resID16, resID16 + sizeof(resID16)/sizeof(resID16[0]));
     resIDs.push_back(v);
     v.clear();
-    UInt resID17[] = {G,E,R,G,E,R,G,E,K,G,E,R,G,E,Q,G,R,D,G,P,O,G,P,O,G,P,O,G,P,O,G,V};
+    UInt resID17[] = {P,O,G,P,O,G,P,O,G,P,D,G,P,O,G,P,O,G,P,O,G,P,O,G};
     v.insert (v.begin(), resID17, resID17 + sizeof(resID17)/sizeof(resID17[0]));
     resIDs.push_back(v);
     v.clear();
-    UInt resID18[] = {G,P,O,G,P,O,G,P,O,G,K,R,G,K,O,G,P,O,G,P,O,G,P,O,G,G};
+    UInt resID18[] = {P,O,G,P,O,G,P,O,G,P,G,G,P,O,G,P,O,G,P,O,G,P,O,G};
     v.insert (v.begin(), resID18, resID18 + sizeof(resID18)/sizeof(resID18[0]));
     resIDs.push_back(v);
     v.clear();
-    UInt resID19[] = {G,P,O,G,P,O,G,R,O,G,K,R,G,K,O,G,P,O,G,P,O,G,P,O,G,G};
+    UInt resID19[] = {P,O,G,P,O,G,P,O,G,P,L,G,P,O,G,P,O,G,P,O,G,P,O,G};
     v.insert (v.begin(), resID19, resID19 + sizeof(resID19)/sizeof(resID19[0]));
     resIDs.push_back(v);
     v.clear();
-    UInt resID20[] = {G,P,O,G,P,O,G,R,O,G,K,R,G,K,Q,G,P,O,G,P,O,G,P,O,G,G};
+    UInt resID20[] = {P,O,G,P,O,G,P,O,G,P,N,G,P,O,G,P,O,G,P,O,G,P,O,G};
     v.insert (v.begin(), resID20, resID20 + sizeof(resID20)/sizeof(resID20[0]));
     resIDs.push_back(v);
     v.clear();
-    UInt resID21[] = {G,P,O,G,P,O,G,R,Q,G,K,R,G,K,O,G,P,O,G,P,O,G,P,O,G,G};
+    UInt resID21[] = {P,O,G,P,O,G,P,O,G,P,Y,G,P,O,G,P,O,G,P,O,G,P,O,G};
     v.insert (v.begin(), resID21, resID21 + sizeof(resID21)/sizeof(resID21[0]));
     resIDs.push_back(v);
     v.clear();
-    UInt resID22[] = {G,P,O,G,P,O,G,R,O,G,K,R,G,K,Q,G,Q,K,G,P,O,G,P,O,G,G};
+    UInt resID22[] = {P,O,G,P,O,G,P,O,G,P,W,G,P,O,G,P,O,G,P,O,G,P,O,G};
     v.insert (v.begin(), resID22, resID22 + sizeof(resID22)/sizeof(resID22[0]));
     resIDs.push_back(v);
-    v.clear();
+    v.clear();/*
     UInt resID23[] = {G,P,O,G,P,O,G,P,O,G,R,K,G,R,O,G,P,O,G,P,O,G,P,O,G,G};
     v.insert (v.begin(), resID23, resID23 + sizeof(resID23)/sizeof(resID23[0]));
     resIDs.push_back(v);
@@ -289,14 +289,14 @@ int main (int argc, char* argv[])
             for (UInt j = 0; j < resNum; j++)
             {
                 mutants = false;
-                for (UInt l = 0; l < activeResiduesSize; l++)
+                /*for (UInt l = 0; l < activeResiduesSize; l++)
                 {
                     if (j == activeResidues[l])
                     {
                         mutants = true;
                         break;
                     }
-                }
+                }*/
                 if (!mutants)
                 {
                     if (j >= resIDs[i].size())
@@ -306,7 +306,7 @@ int main (int argc, char* argv[])
                     else
                     {
                         bundle->activateForRepacking(i, j);
-                        bundle->mutateWBC(i, j, resIDs[i][j]);
+                        bundle->mutateWBC(i, j, resIDs[h][j]);
                         randomizeSideChain(bundle, i, j);
                     }
                 }
@@ -315,14 +315,14 @@ int main (int argc, char* argv[])
         stringstream convert;
         string countStr, outFile;
         convert << h+1, countStr = convert.str();
-        outFile = infile + ".opt";
+        outFile = countStr + ".mut.pdb";
         pdbWriter(bundle, outFile);
         delete thePDB;
         PDBInterface* thePDB2 = new PDBInterface(outFile);
         ensemble* theEnsemble2 = thePDB2->getEnsemblePointer();
         molecule* pMol2 = theEnsemble2->getMoleculePointer(0);
         protein* bundle2 = static_cast<protein*>(pMol2);
-        bundle2->protOptSolventN(500);
+        bundle2->protOptSolvent(500, false);
         double Energy = bundle2->intraSoluteEnergy(false);
         cout << Energy << endl;
         pdbWriter(bundle2, outFile);
