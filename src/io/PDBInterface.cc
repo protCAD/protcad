@@ -273,56 +273,17 @@ void PDBInterface::categorizeLines()
 		}
 		cout << "PDBInterface didn't recognize the header " << header << endl;
 	}
-        
-	/* 
-	//USEFUL STRING COMPARISON CODE
-	int where;
-	where = string1.find(string2);
-	// const npos in the string class is a non-valid position
-	if  (where == string::npos)
-	// means i didn't find it!
-	*/
 
 }
 
 void PDBInterface::parseHetatmLine()
 {
-	//cout << "\nIn parseHetatmLine..." << hetatmLines.size() << " <--- number of hetatm lines\n";
-		
-	string tempstring,chainIDtemp="EMPTY";
-        
-	if (!pItsEnsemble){pItsEnsemble = new ensemble();}
-        //cout << "Done making a new ensemble"<<endl;
-    
-        ligand* pTheLigand= new ligand();
-	for(UInt i=0; i<hetatmLines.size(); i++)
-	{
-                tempstring=theLines[hetatmLines[i]];
-		PDBAtomRecord tempRecord(tempstring);
-                atom* ligAtom= new atom(tempRecord,itsHetatmFlag);
-                
-                if((ligAtom->getLigChainID()) != chainIDtemp)
-                {
-                    chainIDtemp=ligAtom->getLigChainID();
-                    if(ligandSet.size()!=0){pTheLigand= new ligand();}
-                    ligandSet.push_back(pTheLigand);
-                    //cout << "Number of ligands so far= " << ligandSet.size() << endl;
-                }
-                //cout << "Calling add(atom)" << endl;
-                pTheLigand->add(ligAtom);
-        }
+    //cout << "\nIn parseHetatmLine..." << hetatmLines.size() << " <--- number of hetatm lines\n";
 
-        UInt numLigands=ligandSet.size();
-        UInt ligCounter=0;
-        
-        while(ligCounter<numLigands)
-        {
-            ligandSet[ligCounter]->MatchToTemplate();
-            pItsEnsemble->add((ligandSet[ligCounter]));
-            
-            //ligandSet[ligCounter]->printAmberTypes();
-            ligCounter++;
-        }
+    string tempstring,chainIDtemp="EMPTY";
+
+    if (!pItsEnsemble){pItsEnsemble = new ensemble();}
+        //cout << "Done making a new ensemble"<<endl;
 }
 
 void PDBInterface::parseAtomLine()
@@ -1102,7 +1063,7 @@ void PDBInterface::parseAtomLine(const bool _Hflag, const bool _HPflag)
 			lastICode = currentICode;
 			currentChainID = currentRecord.getChainID();
 			lastChainID = currentChainID;
-			currentAltLoc = currentRecord.getAltLoc();
+            currentAltLoc = currentRecord.getAltLoc();
 			lastAltLoc = currentAltLoc;
 			resbegin.push_back(i);
 			resChainID.push_back(currentChainID);

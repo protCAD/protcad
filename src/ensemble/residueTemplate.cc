@@ -1,11 +1,9 @@
 #include "residueTemplate.h"
 
-pmf residueTemplate::itsPMF("PMF_hires_symmetric.dat");
 amberVDW residueTemplate::itsAmberVDW(0);
 amberElec residueTemplate::itsAmberElec(0);
 aaBaseline residueTemplate::itsAABaseline(0);
 UInt residueTemplate::howManyTemplates = 0;
-solvation residueTemplate::itsSolvation;
 helixPropensity residueTemplate::itsHelixPropensity;
 residueTemplate::residueTemplate()
 {
@@ -312,46 +310,12 @@ void residueTemplate::convertAtomTypeStringsToIndices(const StrVec& _strVect)
 #ifdef ATOM_TYPE_DEBUG
 		//	cout << " " << _strVect[2] << " : " << amberUnitedAtomInt;
 #endif
-			int summaAtomTypeInt = itsPMF.getIndexFromNameString(_strVect[3],0);
-			tempVector.push_back(summaAtomTypeInt);
-#ifdef ATOM_TYPE_DEBUG
-		//	cout << " " << _strVect[3] << " : " << summaAtomTypeInt;
-#endif
-			int summaAtomEnvTypeInt = itsPMF.getIndexFromNameString(_strVect[4],1);
-			tempVector.push_back(summaAtomEnvTypeInt);
-#ifdef ATOM_TYPE_DEBUG
-		//	cout << " " << _strVect[4] << " : " << summaAtomEnvTypeInt << endl;
-#endif
-			int sixAtomSolvationTypeInt = itsSolvation.getIndexFromNameString(_strVect[5]);
-			tempVector.push_back(sixAtomSolvationTypeInt);
-			itsAtomEnergyTypeDefinitions.push_back(tempVector);
 			return;
 		}
 	}
 #ifdef ATOM_TYPE_DEBUG
 	//cout << endl;
 #endif
-}
-
-double residueTemplate::getPMFEnergy(const int _type1, const int _type2, const double _distance)
-{
-	if( _type1 >= 0 && _type2 >= 0)
-		{	//cout << _type1 << " " << _type2 << endl;
-			return itsPMF.getEnergy(UInt(_type1),UInt(_type2), _distance);
-		}
-	return 0.0;
-}
-
-// begin ligand/residue amberElec Code
-
-double residueTemplate::getAmberElecEnergySQ(const int _resType1, const int _atomType1, const double _ligAtomCharge, const double _distanceSquared)
-{
-      if (_resType1 >= 0 && _atomType1 >= 0)
-        {
-            return itsAmberElec.getEnergySQ(UInt(_resType1), UInt(_atomType1), _ligAtomCharge, _distanceSquared);
-        }
-    
-    return 0.0;
 }
 
 double residueTemplate::getAmberElecEnergy(const int _resType1, const int _atomType1, const double _ligAtomCharge, const double _distance)
@@ -468,10 +432,6 @@ void residueTemplate::printAtomEnergyTypeDefinitions() const
 	cout << endl;
 }
 
-double residueTemplate::getSolvationEnergy(double _surfaceArea, UInt _atomType, UInt _paramSet)
-{
-	return itsSolvation.getSolvationEnergy(_surfaceArea, _atomType, _paramSet);
-}
 
 /************************************************************************/
 /************************************************************************/

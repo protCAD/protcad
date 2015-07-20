@@ -23,14 +23,11 @@ int main (int argc, char* argv[])
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* bundle = static_cast<protein*>(pMol);
 	residue::setCutoffDistance(9.0);
-	pmf::setScaleFactor(0.0);
 	rotamer::setScaleFactor(0.0);
-	microEnvironment::setScaleFactor(0.0);
 	amberVDW::setScaleFactor(1.0);
     amberVDW::setRadiusScaleFactor(0.95);
 	amberVDW::setLinearRepulsionDampeningOff();
     amberElec::setScaleFactor(1.0);
-	solvation::setItsScaleFactor(0.0);
 
 	double intra = bundle->intraSoluteEnergy(true);
     cout << intra << " ";

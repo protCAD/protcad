@@ -25,13 +25,9 @@ void atomIterator::initializeLigand()
 	numAtomsInCurrent=0;
 	itsCurrentAtomIndex = 0;
 
-	if((numAtomsInCurrent=pInputLigand->itsAtoms.size())){
-		pItsCurrentAtom =pInputLigand->itsAtoms[itsCurrentAtomIndex];
-	}
-	else{
+
 		cout <<"numAtomsInCurrent != ligand size in initializeLigand() in AtomIterator.cc"<<endl;
 		pItsCurrentAtom=0;
-	}
 	//cout <<"pItsCurrentAtom serial= " << pItsCurrentAtom->getSerialNumber() << endl;
 	//cout << "Done with initializeLigand()..." << endl;
 } 
@@ -112,22 +108,8 @@ void atomIterator::increment()
 }
 
 bool atomIterator::updateCurrentAtomIndex()
-{	
-        //ligands
-        if(hetatmFlag)
-        {
-            if (itsCurrentAtomIndex < numAtomsInCurrent-1)
-            {
-                    itsCurrentAtomIndex++;
-                    pItsCurrentAtom = (pInputLigand->itsAtoms[itsCurrentAtomIndex]);
-                    return true;
-            }
-            else return false;
-        }
-        
+{	    
         //proteins
-        else
-        {
             if (itsCurrentAtomIndex < numAtomsInCurrent-1)
             {
 		itsCurrentAtomIndex++;
@@ -135,7 +117,6 @@ bool atomIterator::updateCurrentAtomIndex()
 		return true;
             }
             else return false;
-        }
 }
 
 bool atomIterator::updateCurrentResidueIndex()

@@ -23,9 +23,7 @@
 #ifndef PDBWRITER_H
 #include "pdbWriter.h"
 #endif
-#ifndef LIGAND_H
-#include "ligand.h"
-#endif
+
 #ifndef ATOMITERATOR_H
 class atomIterator;
 #endif

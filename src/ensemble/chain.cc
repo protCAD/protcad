@@ -150,10 +150,10 @@ void chain::activateChainPosition(UInt _indexInChain)
 		itsChainPositions[_indexInChain] = newCP;
 		//now let's make sure that only alpha amino acids are allowed for an alpha
 		//only beta for a beta, etc.
-		UInt resTypeIndex = itsResidues[_indexInChain]->getTypeIndex();
-		UInt numBpt = residue::getNumBpt(resTypeIndex);
+        //UInt resTypeIndex = itsResidues[_indexInChain]->getTypeIndex();
+        //UInt numBpt = residue::getNumBpt(resTypeIndex);
 		//cout << "Num branchpoints in actual residue ==" << numBpt << endl;
-		UInt initialNumAllowedRes = newCP->getNumAllowedRes();
+        //UInt initialNumAllowedRes = newCP->getNumAllowedRes();
 		vector<UInt> notAllowedSet;
 		notAllowedSet.resize(0);
         //for (UInt i=0; i< initialNumAllowedRes; i++) // this prevents using branchpoints as dihedral pivot points for complex residues, so commented out.  doug p. 2015
@@ -1640,20 +1640,6 @@ double chain::getInterEnergy(const UInt _residue1, chain* _other, const UInt _re
 	}
 }
 
-double chain::getInterEnergy(ligand* _other)
-{
-    double interEnergy=0.0;
-    
-    for(UInt i=0; i<itsResidues.size(); i++)
-    {
-    
-        double tempE=itsResidues[i]->interEnergy(_other);
-        interEnergy+=tempE;
-    }
-    
-    return interEnergy;
-}
-
 double chain::intraEnergy()
 {	double intraEnergy = 0.0;
 	//cout << "chain::intraEnergy";
@@ -1668,7 +1654,7 @@ double chain::intraEnergy()
 		//cout << rotE << " ";
 		double interE = 0.0;
 		for(UInt j=i+1; j<itsResidues.size(); j++)
-		{	interE += itsResidues[i]->interEnergy(itsResidues[j]);
+        {	interE += itsResidues[i]->interEnergy(itsResidues[j]);
 		}
 		intraEnergy += interE;
 		//cout << interE << " ";
@@ -2181,32 +2167,6 @@ double chain::tabulateSurfaceArea(UInt _residueIndex, UInt _atomIndex)
 		cout << "ERROR in chain::tabulateSurfaceArea ... residue index out of range." << endl;
 	}
 	return surfaceArea;
-}
-
-double chain::tabulateSolvationEnergy(UInt _param)
-{
-	double solvationEnergy = 0.0;
-	for (UInt i = 0; i < itsResidues.size(); i++)
-	{
-		solvationEnergy += itsResidues[i]->tabulateSolvationEnergy(_param);
-	}
-
-	return solvationEnergy;
-}
-
-double chain::tabulateSolvationEnergy(UInt _residue, UInt _param)
-{
-	double solvationEnergy = 0.0;
-	if (_residue >= 0 && _residue < itsResidues.size() )
-	{
-		solvationEnergy = itsResidues[_residue]->tabulateSolvationEnergy(_param);
-	}
-	else
-	{
-		cout << "ERROR in chain::tabulateSolvationEnergy ... residue index out of range." << endl;
-	}
-
-	return solvationEnergy;
 }
 	
 void chain::removeIntraChainSpherePoints()

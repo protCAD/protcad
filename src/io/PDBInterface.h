@@ -10,7 +10,6 @@
 #include "ensemble.h"
 #include "molecule.h"
 #include "protein.h"
-#include "ligand.h"
 //#include "residue.h"
 //#include "atom.h"
 
@@ -92,7 +91,6 @@ class PDBInterface
 		vector<UInt> userLines;
 		vector<UInt> energyLines;
                 
-                vector<ligand*> ligandSet;
 
 };
 #endif

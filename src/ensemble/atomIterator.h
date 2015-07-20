@@ -4,7 +4,6 @@
 #include <iostream>
 #include "typedef.h"
 #include "protein.h"
-#include "ligand.h"
 
 #ifndef ATOMITERATOR_H
 #define ATOMITERATOR_H
