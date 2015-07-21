@@ -14,7 +14,7 @@ SHELL = /bin/sh
 TARGETS = mutantMaker acidMutator protEvolver mergeComplex structFinder structShaper intraSoluteEnergy protOptSolvent protEvolverBinding database_phipsi protFolder sideChainRandomizer dielectricFit foldingBindingEnergy ligandBindingEnergy bindingEnergy triadFinder protMover z_aligner y_aligner fourEvolver protDock protMutator protNetwork dielectric getSequence
 
 .SUFFIXES:
-.SUFFIXES: .cc .o .h .f .a
+.SUFFIXES: .cc .o .h .a
 
 LIB_TARGETS = lib
 
@@ -181,10 +181,6 @@ y_aligner : libprotcad.a y_aligner.cc
 z_aligner : libprotcad.a z_aligner.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
 	cd $(OBJDIR) && mv $@ $(BINDIR)
-
-$(LIB_F77_OBJECTS): %.o: %.f
-	$(F77) -c $(FFLAGS) $^ -o $@
-	mv $@ $(OBJDIR)
 
 $(LIB_CC_OBJECTS): %.o: %.cc %.h
 	$(CXX) -c $(CFLAGS) $(INC_BASE) $< -o $@
