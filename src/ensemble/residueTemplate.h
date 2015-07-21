@@ -4,7 +4,6 @@
 #include "amberElec.h"
 #include "aaBaseline.h"
 #include "typedef.h"
-#include "solvation.h"
 #include "helixPropensity.h"
 
 #ifndef RESIDUETEMPLATE_H
@@ -111,7 +110,6 @@ public:
 	static aaBaseline itsAABaseline;
 	static bool atomEnergyTypeDefinitonsBuilt;
 	static helixPropensity itsHelixPropensity;
-	static solvation itsSolvation;
 };
 
 #endif

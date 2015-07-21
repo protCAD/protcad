@@ -4,7 +4,6 @@ amberVDW residueTemplate::itsAmberVDW(0);
 amberElec residueTemplate::itsAmberElec(0);
 aaBaseline residueTemplate::itsAABaseline(0);
 UInt residueTemplate::howManyTemplates = 0;
-solvation residueTemplate::itsSolvation;
 helixPropensity residueTemplate::itsHelixPropensity;
 residueTemplate::residueTemplate()
 {
@@ -444,11 +443,6 @@ void residueTemplate::printAtomEnergyTypeDefinitions() const
 		cout << endl;
 	}	
 	cout << endl;
-}
-
-double residueTemplate::getSolvationEnergy(double _surfaceArea, UInt _atomType, UInt _paramSet)
-{
-	return itsSolvation.getSolvationEnergy(_surfaceArea, _atomType, _paramSet);
 }
 
 /************************************************************************/

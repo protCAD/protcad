@@ -293,36 +293,6 @@ void PDBInterface::parseHetatmLine()
         
 	if (!pItsEnsemble){pItsEnsemble = new ensemble();}
         //cout << "Done making a new ensemble"<<endl;
-    
-        ligand* pTheLigand= new ligand();
-	for(UInt i=0; i<hetatmLines.size(); i++)
-	{
-                tempstring=theLines[hetatmLines[i]];
-		PDBAtomRecord tempRecord(tempstring);
-                atom* ligAtom= new atom(tempRecord,itsHetatmFlag);
-                
-                if((ligAtom->getLigChainID()) != chainIDtemp)
-                {
-                    chainIDtemp=ligAtom->getLigChainID();
-                    if(ligandSet.size()!=0){pTheLigand= new ligand();}
-                    ligandSet.push_back(pTheLigand);
-                    //cout << "Number of ligands so far= " << ligandSet.size() << endl;
-                }
-                //cout << "Calling add(atom)" << endl;
-                pTheLigand->add(ligAtom);
-        }
-
-        UInt numLigands=ligandSet.size();
-        UInt ligCounter=0;
-        
-        while(ligCounter<numLigands)
-        {
-            ligandSet[ligCounter]->MatchToTemplate();
-            pItsEnsemble->add((ligandSet[ligCounter]));
-            
-            //ligandSet[ligCounter]->printAmberTypes();
-            ligCounter++;
-        }
 }
 
 void PDBInterface::parseAtomLine()

@@ -37,7 +37,6 @@ int main (int argc, char* argv[])
     amberVDW::setRadiusScaleFactor(1.0);
 	amberVDW::setLinearRepulsionDampeningOff();
     amberElec::setScaleFactor(1.0);
-	solvation::setItsScaleFactor(0.0);
     string outFile = infile;
 
     _prot->protOptSolvent(500, true);
