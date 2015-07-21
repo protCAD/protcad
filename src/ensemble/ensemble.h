@@ -11,6 +11,7 @@
 #include "typedef.h"
 #include "molecule.h"
 //#include "CMath.h"
+#include "microEnvironment.h"
 
 #ifndef ENSEMBLE_H
 #define ENSEMBLE_H
@@ -53,6 +54,12 @@ public:
 	void rejectModification();
 	void setupSystem(ran& _ran);
 	void saveState(string& _filename);
+        
+        // Begin Jeff Ligand/Protein Energy Code
+        void optimizeRotamers(protein* _prot, ligand* _lig);
+        void optimizeRotamers(protein* _prot, vector<ligand*> _ligVec);
+        void optimizeRotamers(vector<protein*> _protVec, vector<ligand*> _ligVec);
+        // End Jeff Ligand/Protein Energy Code
 
 
 private:
@@ -68,6 +75,7 @@ private:
 	vector < vector < vector < UInt > > > itsMolAndChainLinkageMap;
 
 	int chooseMolecule(ran& _ran);
+	microEnvironment* pItsMicroEnvironment;
 	//variable declarations
 	vector<molecule*> itsMolecules;
 	int itsLastModifiedMolecule;

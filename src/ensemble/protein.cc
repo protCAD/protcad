@@ -2598,6 +2598,47 @@ double protein::tabulateSurfaceArea(UInt _chainIndex, UInt _residueIndex, UInt _
 	return surfaceArea;
 }
 
+double protein::tabulateSolvationEnergy()
+{
+	double solvationEnergy = 0.0;
+	for (UInt i = 0; i < itsChains.size(); i ++)
+	{
+		solvationEnergy += itsChains[i]->tabulateSolvationEnergy(itsSolvationParam);
+	}
+
+	return solvationEnergy;
+}
+
+double protein::tabulateSolvationEnergy(UInt _chain)
+{
+	double solvationEnergy = 0.0;
+	if (_chain >=0 && _chain < itsChains.size() )
+	{
+		solvationEnergy = itsChains[_chain]->tabulateSolvationEnergy(itsSolvationParam);
+	}
+	else
+	{
+		cout << "ERROR in tabulateSolvationEnergy ... chain index out of range." << endl;
+	}
+
+	return solvationEnergy;
+}
+
+double protein::tabulateSolvationEnergy(UInt _chain, UInt _residue)
+{
+	double solvationEnergy = 0.0;
+	if (_chain >= 0 && _chain < itsChains.size() )
+	{
+		solvationEnergy = itsChains[_chain]->tabulateSolvationEnergy(_residue, itsSolvationParam);
+	}
+	else
+	{
+		cout << "ERROR in tabulateSolvationEnergy ... chain index out of range." << endl;
+	}
+
+	return solvationEnergy;
+}
+
 double protein::getItsSolvationParam()
 {
 	return itsSolvationParam;
@@ -3665,6 +3706,357 @@ vector < double >  protein::getRotationEnergySurface(UIntVec  _active, UInt _ste
 	}
 	return _bestChiArray;
 }
+
+
+
+
+
+
+//
+//Begin jeff ligand code
+//
+
+void protein::optimizeRotamers(ligand* _lig)
+{
+
+        //variable declarations
+        vector < UIntVec > activePositions;
+	vector < UIntVec > rotamerArray;
+	activePositions.resize(0);
+	rotamerArray.resize(0);
+
+
+        for (UInt i = 0; i < itsIndependentChainsMap.size(); i++)
+	{
+		UInt indChain = itsIndependentChainsMap[i];
+		UIntVec activeRes = itsChains[indChain]->getActiveResidues();
+
+                //cout << "Chain: " << i << " has " << activeRes.size() << " active residues." << endl;
+
+                for (UInt j = 0; j < activeRes.size(); j++)
+		{
+			UIntVec tempRot = itsChains[indChain]->getAllowedRotamers(activeRes[j], getTypeFromResNum(indChain, activeRes[j]), 0);
+
+                        if (tempRot.size() > 1)
+			{
+                                UIntVec position;
+				position.resize(0);
+				position.push_back(indChain);
+				position.push_back(activeRes[j]);
+				activePositions.push_back(position);
+			}
+		}
+	}
+	if (activePositions.size() > 0)
+	{
+		rotamerArray = rotamerDEE(activePositions); // ignore this for now
+                // we'll have to make this ligand-friendly later
+
+                //Variable Declarations
+                vector < UIntVec > tempActivePositions;
+		tempActivePositions.resize(0);
+		vector < UIntVec > tempRotamerArray;
+		tempRotamerArray.resize(0);
+
+
+                //Run through and activate all positions that are allowed
+                for (UInt i = 0; i < activePositions.size(); i ++)
+		{
+			if (rotamerArray[i].size() > 1)
+			{
+				tempRotamerArray.push_back(rotamerArray[i]);
+				tempActivePositions.push_back(activePositions[i]);
+			}
+			else if (rotamerArray[i].size() == 1)
+			{
+				setRotamer(activePositions[i][0], activePositions[i][1], 0, rotamerArray[i][0]);
+			}
+		}
+
+
+                // Now optimizeRotamers for each position
+		if (tempRotamerArray.size() != 0)
+		{
+			optimizeRotamers(tempActivePositions, tempRotamerArray,_lig); //FIX THIS FUNCTION!
+		}
+
+
+		else  // only one solution from DEE - map that onto the protein
+		{
+			for (UInt i = 0; i < activePositions.size(); i ++)
+			{
+				setRotamer(activePositions[i][0], activePositions[i][1], 0, rotamerArray[i][0]);
+			}
+		}
+	}
+	else
+	{
+		cout << "ERROR:  no positions to optimize rotamers for." << endl;
+	}
+	return;
+}
+
+void protein::optimizeRotamers(vector <UIntVec> _activePositions, vector <UIntVec> _rotamerArray,ligand* _lig)
+{
+	double lowestEnergy = 1E10;
+	UIntVec currentRotamerArray;
+	currentRotamerArray.resize(0);
+	UIntVec bestRotamerArray;
+	// initialize bestRotamerArray
+	bestRotamerArray.resize(0);
+	for (UInt i = 0; i < _rotamerArray.size(); i ++)
+	{
+		bestRotamerArray.push_back(_rotamerArray[i][0]);
+	}
+	// run through rotamer combinations ...
+	for (UInt i = 0; i < _rotamerArray[0].size(); i ++)
+	{
+		UInt index = 0;
+		setRotamer(_activePositions[0][0], _activePositions[0][1], 0, _rotamerArray[0][i]);
+		if (_activePositions.size() != 1) // if the first is not the only position
+		{
+			currentRotamerArray.push_back(_rotamerArray[0][i]);
+			bestRotamerArray = getEnergySurface(_activePositions, _rotamerArray, currentRotamerArray, bestRotamerArray, index + 1, lowestEnergy,_lig);
+			currentRotamerArray.pop_back();
+		}
+	}
+	// set protein to best rotamer set
+	if (bestRotamerArray.size() == _activePositions.size())
+	{
+		for (UInt i = 0; i < _activePositions.size(); i ++)
+		{
+			setRotamer(_activePositions[i][0], _activePositions[i][1], 0, bestRotamerArray[i]);
+		}
+		// optimizeSmallRotations(_activePositions);
+	}
+	else
+	{
+		cout << "ERROR in optimizeRotamers... size of best array doesnt match the number of active positions" << endl;
+	}
+	return;
+}
+
+UIntVec protein::getEnergySurface(vector <UIntVec> _activePositions, vector <UIntVec> _rotamerArray, UIntVec _currentArray, UIntVec _bestArray, UInt _index, double& _lowestEnergy, ligand* _lig)
+{
+	if (_index < _activePositions.size())
+	{
+		for (UInt i = 0; i < _rotamerArray[_index].size(); i ++)
+		{
+			setRotamer(_activePositions[_index][0], _activePositions[_index][1], 0, _rotamerArray[_index][i]);
+			_currentArray.push_back(_rotamerArray[_index][i]);
+			_bestArray = getEnergySurface(_activePositions, _rotamerArray, _currentArray, _bestArray, _index + 1, _lowestEnergy,_lig);
+			_currentArray.pop_back();
+		}
+		return _bestArray;
+	}
+	else
+	{
+		double energy = intraEnergy()+getInterEnergy(_lig);
+		if (messagesActive)
+		{
+			for (UInt i = 0; i < _currentArray.size(); i ++ )
+			{
+				cout << _currentArray[i] << " ";
+			}
+			cout << "\tLOW:  " << _lowestEnergy << " CUR:  " << energy << endl;
+		}
+		if (_lowestEnergy > energy)
+		{
+			_lowestEnergy = energy;
+			_bestArray = _currentArray;
+		}
+		return _bestArray;
+	}
+}
+
+double protein::getInterEnergy(ligand* _other)
+{
+    double InterEnergy=0.0;
+
+    for(UInt i=0; i<itsChains.size();i++)
+    {
+        double tempE= getInterEnergy(i,_other);
+        InterEnergy+=tempE;
+    }
+
+    return InterEnergy;
+}
+
+double protein::getInterEnergy(vector<ligand*> _ligVec)
+{
+    double totalEnergy=0.0;
+
+    for(UInt i=0; i< _ligVec.size(); i++)
+    {
+        totalEnergy+=getInterEnergy(_ligVec[i]);
+    }
+
+    return totalEnergy;
+}
+
+double protein::getInterEnergy(UInt _chain, ligand* _other)
+{
+    double interEnergy= itsChains[_chain]->getInterEnergy(_other);
+    return interEnergy;
+}
+
+//  THESE FUNCTIONS HANDLE vector<ligand*> arguments.... will combine into above functions later
+
+void protein::optimizeRotamers(vector<ligand*> _ligVec)
+{
+
+        //variable declarations
+        vector < UIntVec > activePositions;
+	vector < UIntVec > rotamerArray;
+	activePositions.resize(0);
+	rotamerArray.resize(0);
+
+
+        for (UInt i = 0; i < itsIndependentChainsMap.size(); i++)
+	{
+		UInt indChain = itsIndependentChainsMap[i];
+		UIntVec activeRes = itsChains[indChain]->getActiveResidues();
+
+                //cout << "Chain: " << i << " has " << activeRes.size() << " active residues." << endl;
+
+                for (UInt j = 0; j < activeRes.size(); j++)
+		{
+			UIntVec tempRot = itsChains[indChain]->getAllowedRotamers(activeRes[j], getTypeFromResNum(indChain, activeRes[j]), 0);
+
+                        if (tempRot.size() > 1)
+			{
+                                UIntVec position;
+				position.resize(0);
+				position.push_back(indChain);
+				position.push_back(activeRes[j]);
+				activePositions.push_back(position);
+			}
+		}
+	}
+	if (activePositions.size() > 0)
+	{
+		rotamerArray = rotamerDEE(activePositions); // ignore this for now
+                // we'll have to make this ligand-friendly later
+
+                //Variable Declarations
+                vector < UIntVec > tempActivePositions;
+		tempActivePositions.resize(0);
+		vector < UIntVec > tempRotamerArray;
+		tempRotamerArray.resize(0);
+
+
+                //Run through and activate all positions that are allowed
+                for (UInt i = 0; i < activePositions.size(); i ++)
+		{
+			if (rotamerArray[i].size() > 1)
+			{
+				tempRotamerArray.push_back(rotamerArray[i]);
+				tempActivePositions.push_back(activePositions[i]);
+			}
+			else if (rotamerArray[i].size() == 1)
+			{
+				setRotamer(activePositions[i][0], activePositions[i][1], 0, rotamerArray[i][0]);
+			}
+		}
+
+
+                // Now optimizeRotamers for each position
+		if (tempRotamerArray.size() != 0)
+		{
+			optimizeRotamers(tempActivePositions, tempRotamerArray,_ligVec); //FIX THIS FUNCTION!
+		}
+
+
+		else  // only one solution from DEE - map that onto the protein
+		{
+			for (UInt i = 0; i < activePositions.size(); i ++)
+			{
+				setRotamer(activePositions[i][0], activePositions[i][1], 0, rotamerArray[i][0]);
+			}
+		}
+	}
+	else
+	{
+		cout << "ERROR:  no positions to optimize rotamers for." << endl;
+	}
+	return;
+}
+
+void protein::optimizeRotamers(vector <UIntVec> _activePositions, vector <UIntVec> _rotamerArray,vector<ligand*> _ligVec)
+{
+	double lowestEnergy = 1E10;
+	UIntVec currentRotamerArray;
+	currentRotamerArray.resize(0);
+	UIntVec bestRotamerArray;
+	// initialize bestRotamerArray
+	bestRotamerArray.resize(0);
+	for (UInt i = 0; i < _rotamerArray.size(); i ++)
+	{
+		bestRotamerArray.push_back(_rotamerArray[i][0]);
+	}
+	// run through rotamer combinations ...
+	for (UInt i = 0; i < _rotamerArray[0].size(); i ++)
+	{
+		UInt index = 0;
+		setRotamer(_activePositions[0][0], _activePositions[0][1], 0, _rotamerArray[0][i]);
+		if (_activePositions.size() != 1) // if the first is not the only position
+		{
+			currentRotamerArray.push_back(_rotamerArray[0][i]);
+			bestRotamerArray = getEnergySurface(_activePositions, _rotamerArray, currentRotamerArray, bestRotamerArray, index + 1, lowestEnergy,_ligVec);
+			currentRotamerArray.pop_back();
+		}
+	}
+	// set protein to best rotamer set
+	if (bestRotamerArray.size() == _activePositions.size())
+	{
+		for (UInt i = 0; i < _activePositions.size(); i ++)
+		{
+			setRotamer(_activePositions[i][0], _activePositions[i][1], 0, bestRotamerArray[i]);
+		}
+		// optimizeSmallRotations(_activePositions);
+	}
+	else
+	{
+		cout << "ERROR in optimizeRotamers... size of best array doesnt match the number of active positions" << endl;
+	}
+	return;
+}
+
+UIntVec protein::getEnergySurface(vector <UIntVec> _activePositions, vector <UIntVec> _rotamerArray, UIntVec _currentArray, UIntVec _bestArray, UInt _index, double& _lowestEnergy, vector<ligand*> _ligVec)
+{
+	if (_index < _activePositions.size())
+	{
+		for (UInt i = 0; i < _rotamerArray[_index].size(); i ++)
+		{
+			setRotamer(_activePositions[_index][0], _activePositions[_index][1], 0, _rotamerArray[_index][i]);
+			_currentArray.push_back(_rotamerArray[_index][i]);
+			_bestArray = getEnergySurface(_activePositions, _rotamerArray, _currentArray, _bestArray, _index + 1, _lowestEnergy,_ligVec);
+			_currentArray.pop_back();
+		}
+		return _bestArray;
+	}
+	else
+	{
+		double energy = intraEnergy()+getInterEnergy(_ligVec);
+		if (messagesActive)
+		{
+			for (UInt i = 0; i < _currentArray.size(); i ++ )
+			{
+				cout << _currentArray[i] << " ";
+			}
+			cout << "\tLOW:  " << _lowestEnergy << " CUR:  " << energy << endl;
+		}
+		if (_lowestEnergy > energy)
+		{
+			_lowestEnergy = energy;
+			_bestArray = _currentArray;
+		}
+		return _bestArray;
+	}
+}
+//
+//End jeff ligand code
+//
 
 double protein::getHBondEnergy(const UInt _chain1, const UInt _res1, const UInt _chain2, const UInt _res2)
 {

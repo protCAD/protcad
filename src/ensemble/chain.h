@@ -15,6 +15,10 @@
 class atomIterator;
 #endif
 
+#ifndef LIGAND_H
+#include "ligand.h"
+#endif
+
 #ifndef CHAIN_H
 #define CHAIN_H
 //#warning "chain.h read in"
@@ -194,6 +198,7 @@ public:
 	double getInterEnergy(const UInt _res1, chain* _other, const UInt _res2);
 	double getInterEnergy(const UInt _residue1, const UInt _atom1, chain* _other, const UInt _residue2, const UInt _atom2);
         
+     double getInterEnergy(ligand* _other);
 	double BBEnergy();
 
 	double getSelfEnergy(UInt _residueIndex);

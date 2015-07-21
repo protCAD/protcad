@@ -2,7 +2,6 @@
 // contents: class ensemble implementation
 
 #include "ensemble.h"
-#include "residue.h"
 
 double ensemble::itscutoffDistance=6.0;
 
@@ -14,6 +13,22 @@ ensemble::ensemble()
 	itsLastModifiedMolecule = -1;
 	itsIndMolAndChainList.resize(0);
 	itsMolAndChainLinkageMap.resize(0);
+	// default microEnvironment for scoring
+	//cout << "making a new microEnvironment..." <<endl;
+     //   cout << "happy" << endl;
+	pItsMicroEnvironment = new microEnvironment(4.6,3);
+      //  cout << "still happy" << endl;
+	//cout << "done with making a new microEnvironment..." <<endl;
+	if (pItsMicroEnvironment)
+	{	pItsMicroEnvironment->setDistanceDependenceOff();
+	}
+	else
+	{	cout << "Error reported from default ensemble constructor;";
+		cout << endl << "  Unable to build microEnvironment Database";
+		cout << endl;
+		exit(1);
+	}
+	//cout <<"Exiting default ensemble constructor..."<<endl;
 }
 
 ensemble::~ensemble()
@@ -21,6 +36,7 @@ ensemble::~ensemble()
 	for (UInt i=0; i < itsMolecules.size(); i++)
 	{	delete itsMolecules[i];
 	}
+	delete pItsMicroEnvironment;
 }
 
 void ensemble::add(molecule* _pMolecule)
@@ -43,6 +59,7 @@ void ensemble::remove(molecule* _pMolecule)
 			return;
 		}
 	}
+	blork();
 	cout << "ERROR in ensemble::remove(molecule* ...)\n\tMolecule not found in this ensemble." << endl;
 	return;
 }
@@ -308,12 +325,23 @@ double ensemble::energy()
 		itsEnergy += pairwisePart;
 		cout << "PairwisePart = " << pairwisePart << " ";
 	}
+	// This is the microenvironment energy
+	double nonPairwisePart;
+	if (pItsMicroEnvironment->getScaleFactor() != 0.0)
+	{
+		for (UInt i=0; i<itsMolecules.size(); i++)
+		{	nonPairwisePart = pItsMicroEnvironment->calculateEnergy(itsMolecules[i]);
+			itsEnergy += nonPairwisePart;
+			cout << "nonPairwisePart = " << nonPairwisePart << " ";
+		}
+	}
 	return itsEnergy;
 }
 
 void ensemble::setAllEnsembleCutoffDistance()
 {
     residue::setCutoffDistance(itscutoffDistance);
+    ligand::setCutoffDistance(itscutoffDistance);
 }
 
 
@@ -345,6 +373,28 @@ int ensemble::chooseMolecule(ran& _ran)
 		cout << "No molecules in ensemble!" << endl;
 		return -1;
 	}
+}
+
+	
+void ensemble::blork()
+{
+	cout << "                        .--." << endl;
+	cout << "                        |/'-\\ " << endl;
+	cout << "                    __ _( '\\'" << endl;
+	cout << "                _.-'  |  __(," << endl;
+	cout << "              .' _.-'  \\/   %;" << endl;
+	cout << "             /\\.'      /   ;%," << endl;
+	cout << "             \\/ '.__.-'    '#;" << endl;
+	cout << "             |     /        ;%," << endl;
+	cout << "              \\   ||         '`" << endl;
+	cout << "               \\  ||       BLORK!!!!" << endl;
+	cout << "               |  ))" << endl;
+	cout << "               |  ||" << endl;
+	cout << "               |__||_" << endl;
+	cout << "               | '.__)" << endl;
+	cout << "                '._)" << endl;
+	cout << endl;
+	return;
 }	
 
 molecule* ensemble::getMoleculePointer (UInt _index)
@@ -354,3 +404,39 @@ molecule* ensemble::getMoleculePointer (UInt _index)
 	}
 	return 0;
 }
+
+// Begin Jeff Ligand/Protein Energy Code
+//
+// This code will optimize the rotamers of a protein using both the intra energy
+// within the protein and the inter energy between the protein and nearby ligands
+//
+
+void ensemble::optimizeRotamers(protein* _prot, ligand* _lig)
+{
+    _prot->optimizeRotamers(_lig);
+    return;
+}
+
+void ensemble::optimizeRotamers(protein* _prot, vector<ligand*> _ligVec)
+{
+    for(UInt i=0; i<_ligVec.size(); i++)
+    {
+        optimizeRotamers(_prot,_ligVec[i]);
+    }
+    
+    return;
+}
+    
+void ensemble::optimizeRotamers(vector<protein*> _protVec, vector<ligand*> _ligVec)
+{
+    for(UInt j=0; j<_protVec.size(); j++)
+    {
+        for(UInt i=0; i<_ligVec.size(); i++)
+        {
+            optimizeRotamers(_protVec[j],_ligVec[i]);
+        }
+    }
+    return;
+}
+
+// End Jeff Ligand/Protein Energy Code

@@ -3003,6 +3003,15 @@ double residue::intraEnergy()
 							amberElecEnergy += tempAmberElecEnergy;
 						}
 					}
+					// ** intra PMF
+					if (residueTemplate::itsPMF.getScaleFactor() != 0.0)
+					{
+
+						double distance = sqrt(distanceSquared);
+						index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][2];
+						index2 = dataBase[itsType].itsAtomEnergyTypeDefinitions[j][2];
+						pmfEnergy += residueTemplate::getPMFEnergy(index1, index2, distance);
+					}
 				}
 			}
 		}
@@ -3242,6 +3251,15 @@ double residue::interEnergy(residue* _other)
 								vdwEnergy += tempvdwEnergy;
 							}
 						}
+
+						// ** inter PMF
+						if (residueTemplate::itsPMF.getScaleFactor() != 0.0)
+						{
+							double distance = sqrt(distanceSquared);
+							index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][2];
+							index2 = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[j][2];
+							pmfEnergy += residueTemplate::getPMFEnergy(index1, index2, distance);
+						}
 					}
 				}
 			}
@@ -3370,6 +3388,81 @@ double residue::BBEnergy(residue* _other)
 	interEnergy =  vdwEnergy + amberElecEnergy;
 	return interEnergy;
 }
+
+//begin jeff ligand energy code
+double residue::interEnergy(ligand* _other)
+{
+	double distanceSquared;
+	int index1;
+	int index2;
+	double interEnergy = 0.0;
+	double vdwEnergy = 0.0;
+        double amberElecEnergy= 0.0;
+	bool withinCutoff;
+	
+        for(UInt i=0; i<itsAtoms.size(); i++)
+	{
+		if (!itsAtoms[i]->getSilentStatus())
+		{
+			for(UInt j=0; j<_other->atomCount(); j++)
+			{
+				if (!_other->getAtom(j)->getSilentStatus())
+				{
+					withinCutoff = itsAtoms[i]->inCutoffSQ(_other->getAtom(j), cutoffDistance, cutoffDistanceSquared);
+					if (withinCutoff)
+					{
+						distanceSquared = itsAtoms[i]->distanceSquared(_other->getAtom(j));
+                                                
+                                                // ** inter AMBER elec
+                                                if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
+                                                {
+                                                            UInt resType1 = itsType;
+                                                            UInt index1 = i;
+                                                            double ligAtomCharge= _other->getAmberElec(j);
+                                                            
+                                                            double tempAmberElecEnergy = residueTemplate::getAmberElecEnergySQ(resType1, index1, ligAtomCharge, distanceSquared);
+                                                            amberElecEnergy += tempAmberElecEnergy;
+                                                }
+
+                                                // ** inter AMBER vdW
+                                                if (residueTemplate::itsAmberVDW.getScaleFactor() != 0.0)
+                                                {	
+                                                    if (hydrogensOn)
+                                                    {	
+                                                        index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][0];
+                                                        index2 = _other->getAmberAllType(j);
+                                                    }
+                                                    else
+                                                    {	
+                                                        index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][1];
+                                                        index2 =  _other->getAmberUnitedType(j);
+                                                    }
+
+                                                    double tempvdwEnergy = residueTemplate::getVDWEnergySQ(index1, index2, distanceSquared);
+                                                    vdwEnergy += tempvdwEnergy;
+                                                }
+
+						// ** inter PMF
+                                                /*if (residueTemplate::itsPMF.getScaleFactor() != 0.0)
+                                                {
+                                                    double distance = sqrt(distanceSquared);
+                                                    index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][2];
+                                                    index2 = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[j][2];
+                                                    pmfEnergy += residueTemplate::getPMFEnergy(index1, index2, distance);
+                                                }*/
+						
+						
+					}//cutoff loop
+				}//ligand silent loop
+			}//ligand loop
+		}//residue silent loop
+	}//residue loop
+
+	interEnergy =vdwEnergy;
+	
+	return interEnergy;
+}
+//end jeff insert for ligand code
 
 double residue::calculateHCA_O_hBondEnergy(residue* _other)
 {
@@ -4156,6 +4249,20 @@ double residue::tabulateSurfaceArea(UInt _atomIndex)
 	double surfaceArea;
 	surfaceArea = itsAtoms[_atomIndex]->calculateExposedSASA();
 	return surfaceArea;
+}
+
+double residue::tabulateSolvationEnergy(UInt _param)
+{
+    double solvationEnergy = 0.0;
+    int atomType;
+
+    for (UInt i = 0; i < itsAtoms.size(); i ++)
+    {
+        double surfaceArea = itsAtoms[i]->calculateExposedSASA();
+        atomType = dataBase[itsType].getAtomEnergyTypeDefinition(i,4);
+        solvationEnergy += residueTemplate::getSolvationEnergy(surfaceArea, atomType, _param);
+    }
+    return solvationEnergy;
 }
 
 dblVec residue::getBackBoneCentroid()

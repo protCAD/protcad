@@ -1,10 +1,28 @@
 #include "protein.h"
+#include "ligand.h"
 #include "pdbWriter.h"
 //#include "svmt.h"
 #include <iomanip>
 #include <iostream>
 #include <fstream>
 
+
+unsigned int pdbWriter(vector<protein*> _protVec, vector<ligand*> _ligVec, const string& _pdbFile)
+{
+    ofstream outFile(_pdbFile.c_str());
+    outFile.close();  // These two lines to solve an appending problem
+    outFile.close(); 
+    for(UInt i=0; i<_protVec.size(); i++)
+    {
+        pdbWriter(_protVec[i],_pdbFile);
+    }
+
+    for (UInt j=0; j<_ligVec.size(); j++)
+    {
+        pdbWriter(_ligVec[j],_pdbFile);
+    }
+    return 0;
+}
 
 unsigned int pdbWriter(protein* _pProtein, const string& _pdbFile)
 {	ofstream outFile( _pdbFile.c_str());

@@ -49,6 +49,7 @@ protected:
 	friend class residue;
 	friend class atomIterator;
 	friend class unitSphere;
+        friend class ligand;
 
 // ***********************************************************************
 // ***********************************************************************

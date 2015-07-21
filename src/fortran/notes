@@ -1,0 +1,18 @@
+con9.0 : this version only looks at (and outputs) the difference
+	between pairwise and non-pairwise
+
+con9.1 : this version will be modified back to the original to
+	actually calculate the energies using the random mixing
+	approximation for testing of the misfolds.
+
+
+B series: same idea as above, only the categorization of atoms into
+environment types directly follows chemical lines: C, N, O, S
+
+con9.2 : a version of con9.1 which simply gives a 'bad' energy for
+	a cluster which is never seen
+
+The following series of programs is based upon the series above.  These versions
+however have been significantly rewritten to use less memory by condensing the
+large arrays holding energy, etc. and allowing a mapping from another array.
+

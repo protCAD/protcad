@@ -22,6 +22,10 @@
 #include "molecule.h"
 #endif
 
+#ifndef LIGAND_H
+#include "ligand.h"
+#endif
+
 
 class residueTemplate;
 
@@ -237,6 +241,7 @@ public:
 	double getIntraEnergy(const UInt atom1, residue* _other, const UInt atom2);
 	double interEnergy(residue* _other);
 	double interSoluteEnergy(residue* _other);
+     double interEnergy(ligand* _other);
 	double getSelfEnergy(residue* _other);
 	double calculateHCA_O_hBondEnergy(residue* _other);
 	double BBEnergy();
