@@ -32,9 +32,7 @@ int main (int argc, char* argv[])
 	protein* _prot = static_cast<protein*>(pMol);
 	_prot->silenceMessages();
 	residue::setCutoffDistance(9.0);
-    pmf::setScaleFactor(0.0);
 	rotamer::setScaleFactor(0.0);
-    microEnvironment::setScaleFactor(0.0);
 	amberVDW::setScaleFactor(1.0);
     amberVDW::setRadiusScaleFactor(1.0);
 	amberVDW::setLinearRepulsionDampeningOff();
