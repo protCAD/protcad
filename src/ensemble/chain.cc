@@ -1640,20 +1640,6 @@ double chain::getInterEnergy(const UInt _residue1, chain* _other, const UInt _re
 	}
 }
 
-double chain::getInterEnergy(ligand* _other)
-{
-    double interEnergy=0.0;
-    
-    for(UInt i=0; i<itsResidues.size(); i++)
-    {
-    
-        double tempE=itsResidues[i]->interEnergy(_other);
-        interEnergy+=tempE;
-    }
-    
-    return interEnergy;
-}
-
 double chain::intraEnergy()
 {	double intraEnergy = 0.0;
 	//cout << "chain::intraEnergy";
@@ -2181,32 +2167,6 @@ double chain::tabulateSurfaceArea(UInt _residueIndex, UInt _atomIndex)
 		cout << "ERROR in chain::tabulateSurfaceArea ... residue index out of range." << endl;
 	}
 	return surfaceArea;
-}
-
-double chain::tabulateSolvationEnergy(UInt _param)
-{
-	double solvationEnergy = 0.0;
-	for (UInt i = 0; i < itsResidues.size(); i++)
-	{
-		solvationEnergy += itsResidues[i]->tabulateSolvationEnergy(_param);
-	}
-
-	return solvationEnergy;
-}
-
-double chain::tabulateSolvationEnergy(UInt _residue, UInt _param)
-{
-	double solvationEnergy = 0.0;
-	if (_residue >= 0 && _residue < itsResidues.size() )
-	{
-		solvationEnergy = itsResidues[_residue]->tabulateSolvationEnergy(_param);
-	}
-	else
-	{
-		cout << "ERROR in chain::tabulateSolvationEnergy ... residue index out of range." << endl;
-	}
-
-	return solvationEnergy;
 }
 	
 void chain::removeIntraChainSpherePoints()
