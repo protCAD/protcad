@@ -3003,15 +3003,6 @@ double residue::intraEnergy()
 							amberElecEnergy += tempAmberElecEnergy;
 						}
 					}
-					// ** intra PMF
-					if (residueTemplate::itsPMF.getScaleFactor() != 0.0)
-					{
-
-						double distance = sqrt(distanceSquared);
-						index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][2];
-						index2 = dataBase[itsType].itsAtomEnergyTypeDefinitions[j][2];
-						pmfEnergy += residueTemplate::getPMFEnergy(index1, index2, distance);
-					}
 				}
 			}
 		}
@@ -3250,15 +3241,6 @@ double residue::interEnergy(residue* _other)
 								double tempvdwEnergy = residueTemplate::getVDWEnergySQ(index1, index2, distanceSquared);
 								vdwEnergy += tempvdwEnergy;
 							}
-						}
-
-						// ** inter PMF
-						if (residueTemplate::itsPMF.getScaleFactor() != 0.0)
-						{
-							double distance = sqrt(distanceSquared);
-							index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][2];
-							index2 = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[j][2];
-							pmfEnergy += residueTemplate::getPMFEnergy(index1, index2, distance);
 						}
 					}
 				}

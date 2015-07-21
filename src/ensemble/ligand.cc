@@ -11,7 +11,6 @@ UInt ligand::howMany=0;
 bool ligand::dataBaseBuilt = false;
 ligandTemplate ligand::itsLigTemplate;
 
-pmf ligand::itsPMF("PMF_hires_symmetric.dat");
 amberVDW ligand::itsAmberVDW(0);
 //amberElec ligand::itsAmberElec(0);
 solvation ligand::itsSolvation;

@@ -46,10 +46,6 @@
 #include "solvation.h"
 #endif
 
-#ifndef PMF_H
-#include "pmf.h"
-#endif
-
 #ifndef ATOMITERATOR_H
 class atomIterator;
 #endif
@@ -176,7 +172,6 @@ private:
         // Energy modeling variables
 	vector<UInt> itsAtomEnergyTypeIndex;
 	static int itsCurrentEnergyType;  //IS THIS USED????
-	static pmf itsPMF;
 	//static amberElec itsAmberElec;
 	static amberVDW itsAmberVDW;
 	static solvation itsSolvation;

@@ -1,6 +1,5 @@
 #include "assert.h"
 #include "atom.h"
-#include "pmf.h"
 #include "amberVDW.h"
 #include "amberElec.h"
 #include "aaBaseline.h"
@@ -106,8 +105,7 @@ public:
 		
 	// Energy modeling
 	UIntVec itsAtomEnergyTypeIndex;
-	static int itsCurrentEnergyType;
-	static pmf itsPMF;
+    static int itsCurrentEnergyType;
 	static amberElec itsAmberElec;
 	static amberVDW itsAmberVDW;
 	static aaBaseline itsAABaseline;
