@@ -70,7 +70,10 @@ public:
 	UInt getNumHardClashes(const UInt _chainIndex) {return itsChains[_chainIndex]->getNumHardClashes(); }
 	
 	//--Organization functions
+    void updateNumAtoms();
+    void buildDistanceMatrix();
 	void initializeModificationMethods();
+
 	void resetAllBuffers();
 	static void silenceMessages() {messagesActive = false; }
 	void accessChainZeroResZero();
@@ -266,6 +269,7 @@ private:
 	static bool messagesActive;
 	static bool calcSelfEnergy;
 	static UInt howMany;
+    UInt itsNumAtoms;
 	static UInt itsSolvationParam;
 	vector<chain*> itsChains;
 	vector<UInt> itsIndependentChainsMap;

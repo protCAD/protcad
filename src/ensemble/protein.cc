@@ -1298,6 +1298,42 @@ void protein::updateDielectrics()
 	}
 }
 
+void protein::updateNumAtoms()
+{
+    UInt numAtoms;
+    for(UInt i=0; i<itsChains.size(); i++)
+    {
+        for(UInt j=0; j<itsChains[i]->itsResidues.size(); j++)
+        {
+            numAtoms += getNumAtoms(i,j);
+        }
+    }
+    itsNumAtoms = numAtoms;
+}
+
+void protein::buildDistanceMatrix()
+{
+    //build triangular matrix for atom-atom pairs (half matrix)
+    double** distances = new double*[itsNumAtoms];
+    for(UInt i=0; i<itsNumAtoms; ++i)
+    {
+        distances[i]=new double[i+1];
+    }
+
+    //populate matrix with all distances
+    UInt atomIndex =0;
+    for(UInt i=0; i<itsChains.size(); i++)
+    {
+        for(UInt j=0; j<itsChains[i]->itsResidues.size(); j++)
+        {
+            for(UInt k=0; k<itsChains[i]->itsResidues[j]->itsAtoms.size(); k++)
+            {
+                atomIndex++;
+            }
+        }
+    }
+}
+
 void protein::updateChainIndependentDielectrics(UInt _chainIndex)
 {
     vector <double> dielectric(2);
