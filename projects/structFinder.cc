@@ -28,14 +28,11 @@ int main (int argc, char* argv[])
 	protein* bundle = static_cast<protein*>(pMol);
 	bundle->silenceMessages();
 	residue::setCutoffDistance(8.0);
-	pmf::setScaleFactor(0.0);
 	rotamer::setScaleFactor(0.0);
-	microEnvironment::setScaleFactor(0.0);
 	amberVDW::setScaleFactor(1.0);
 	amberVDW::setRadiusScaleFactor(0.95);
 	amberVDW::setLinearRepulsionDampeningOff();
 	amberElec::setScaleFactor(0.0);
-	solvation::setItsScaleFactor(0.0);
 	
 	cout << endl << "\t*StructFinder*" << endl;
 	cout << endl <<"Generate phi psi angles for modeling" << endl;

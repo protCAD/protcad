@@ -38,14 +38,11 @@ int main (int argc, char* argv[])
 	protein* bundle = static_cast<protein*>(pMol);
 	bundle->silenceMessages();
 	residue::setCutoffDistance(9.0);
-	pmf::setScaleFactor(0.0);
 	rotamer::setScaleFactor(0.0);
-	microEnvironment::setScaleFactor(0.0);
 	amberVDW::setScaleFactor(1.0);
 	amberVDW::setRadiusScaleFactor(1.0);
 	amberVDW::setLinearRepulsionDampeningOff();
 	amberElec::setScaleFactor(1.0);
-	solvation::setItsScaleFactor(0.0);
 	srand (time(NULL));
 
 	//--inputs for mutation
@@ -63,7 +60,7 @@ int main (int argc, char* argv[])
 	double phi, bestEnergy, foldingEnergy, posE, totalposE, aveposE;
 	UInt nobetter = 0, activeResiduesSize = sizeof(activeResidues)/sizeof(activeResidues[0]), activeChainsSize = sizeof(activeChains)/sizeof(activeChains[0]);
 	UInt dResidues = sizeof(allowedDResidues)/sizeof(allowedDResidues[0]), lResidues = sizeof(allowedLResidues)/sizeof(allowedLResidues[0]);
-	UInt name, mutant, numResidues, plateau = (lResidues*activeResiduesSize*activeChainsSize*1.5), fib = 0;
+    UInt name, mutant = 0, numResidues, plateau = (lResidues*activeResiduesSize*activeChainsSize*1.5), fib = 0;
 	vector < UInt > mutantPosition, chainSequence, sequencePosition;
 	vector < vector < UInt > > proteinSequence, finalSequence;
 	vector < double > Energy(2);

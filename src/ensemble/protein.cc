@@ -1301,38 +1301,74 @@ void protein::updateDielectrics()
 void protein::updateChainIndependentDielectrics(UInt _chainIndex)
 {
     vector <double> dielectric(2);
-	for(UInt i=0; i<itsChains[_chainIndex]->itsResidues.size(); i++)
-	{
-		for(UInt j=0; j<itsChains[_chainIndex]->itsResidues[i]->itsAtoms.size(); j++)
-		{
+    for(UInt i=0; i<itsChains[_chainIndex]->itsResidues.size(); i++)
+    {
+        for(UInt j=0; j<itsChains[_chainIndex]->itsResidues[i]->itsAtoms.size(); j++)
+        {
             dielectric = this->calculateChainIndependentDielectric(itsChains[_chainIndex], itsChains[_chainIndex]->itsResidues[i], itsChains[_chainIndex]->itsResidues[i]->itsAtoms[j], j);
             itsChains[_chainIndex]->itsResidues[i]->itsAtoms[j]->setDielectric(dielectric[0]);
             itsChains[_chainIndex]->itsResidues[i]->itsAtoms[j]->setNumberofWaters(dielectric[1]);
 
-		}
-	}
+        }
+    }
 }
 
 void protein::updatePositionDielectrics(UInt _chainIndex, UInt _residueIndex)
 {
     vector <double> dielectric(2);
-	bool withinCube;
-	for(UInt i=0; i<itsChains.size(); i++)
-	{
-		for(UInt j=0; j<itsChains[i]->itsResidues.size(); j++)
-		{
-			withinCube = itsChains[_chainIndex]->itsResidues[_residueIndex]->inCube(itsChains[i]->itsResidues[j], 16);
-			if (withinCube)
-			{
-				for(UInt k=0; k<itsChains[i]->itsResidues[j]->itsAtoms.size(); k++)
-				{
-					dielectric = this->calculateDielectric(itsChains[i], itsChains[i]->itsResidues[j], itsChains[i]->itsResidues[j]->itsAtoms[k]);
+    bool withinCube;
+    for(UInt i=0; i<itsChains.size(); i++)
+    {
+        for(UInt j=0; j<itsChains[i]->itsResidues.size(); j++)
+        {
+            withinCube = itsChains[_chainIndex]->itsResidues[_residueIndex]->inCube(itsChains[i]->itsResidues[j], 16);
+            if (withinCube)
+            {
+                for(UInt k=0; k<itsChains[i]->itsResidues[j]->itsAtoms.size(); k++)
+                {
+                    dielectric = this->calculateDielectric(itsChains[i], itsChains[i]->itsResidues[j], itsChains[i]->itsResidues[j]->itsAtoms[k]);
                     itsChains[i]->itsResidues[j]->itsAtoms[k]->setDielectric(dielectric[0]);
                     itsChains[i]->itsResidues[j]->itsAtoms[k]->setNumberofWaters(dielectric[1]);
-				}
-			}
-		}
-	}
+                }
+            }
+        }
+    }
+}
+
+void protein::updateNumAtoms()
+{
+    UInt numAtoms = 0;
+    for(UInt i=0; i<itsChains.size(); i++)
+    {
+        for(UInt j=0; j<itsChains[i]->itsResidues.size(); j++)
+        {
+            numAtoms += getNumAtoms(i,j);
+        }
+    }
+    itsNumAtoms = numAtoms;
+}
+
+void protein::buildDistanceMatrix()
+{
+    //build triangular matrix for atom-atom pairs (half matrix)
+    double** distances = new double*[itsNumAtoms];
+    for(UInt i=0; i<itsNumAtoms; ++i)
+    {
+        distances[i]=new double[i+1];
+    }
+
+    //populate matrix with all distances
+    UInt atomIndex =0;
+    for(UInt i=0; i<itsChains.size(); i++)
+    {
+        for(UInt j=0; j<itsChains[i]->itsResidues.size(); j++)
+        {
+            for(UInt k=0; k<itsChains[i]->itsResidues[j]->itsAtoms.size(); k++)
+            {
+                atomIndex++;
+            }
+        }
+    }
 }
 
 double protein::BBEnergy()
