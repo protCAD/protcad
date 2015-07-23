@@ -31,14 +31,11 @@ int main (int argc, char* argv[])
 	enum aminoAcid {A,R,N,D,Dh,C,Cx,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV};
 	//string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Q","E","Eh","Hd", "He","Hn","Hp","I","L","K","M","F","P","O","S","T","W","Y", "V","G","dA","dR","dN","dD","dDh","dC","dCx","dQ","dE","dEh","dHd","dHe","dHn","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV"};
 	residue::setCutoffDistance(8.0);
-	pmf::setScaleFactor(0.0);
 	rotamer::setScaleFactor(0.0);
-	microEnvironment::setScaleFactor(0.0);
 	amberVDW::setScaleFactor(1.0);
 	amberVDW::setRadiusScaleFactor(1.0);
 	amberVDW::setLinearRepulsionDampeningOff();
 	amberElec::setScaleFactor(1.0);
-	solvation::setItsScaleFactor(0.0);
 	srand (time(NULL));
 
 	//secondary structure library////////////////////////////////////////////////////////////////////////
@@ -124,12 +121,12 @@ int main (int argc, char* argv[])
 
 	//--Initialize variables for loop
 	string inFile = argv[1], startstr, endstr, outFile, frameFile, countstr;
-	UInt resNum, foldPosition, name, restype, DorL, test, count, fib = 0, plateau, nobetter;
+    UInt resNum, foldPosition, name, restype, DorL, test = 0, count, fib = 0, plateau, nobetter;
 	stringstream convert;
 	name = rand() % 1000000;
 	convert << name, startstr = convert.str();
 	string tempModel = startstr + "_temp.pdb";
-	double newphi, newpsi, randphi, randpsi, pastEnergy, Energy, bestEnergy;
+    double newphi = 0.0, newpsi = 0.0, randphi, randpsi, pastEnergy, Energy, bestEnergy;
 
 	//--loop
 	for (int a = 1; a < 100; a++)

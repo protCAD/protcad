@@ -11,7 +11,7 @@ export MAKE = make
 
 SHELL = /bin/sh
 
-TARGETS = mutantMaker acidMutator protEvolver mergeComplex structFinder structShaper intraSoluteEnergy protOptSolvent protEvolverBinding database_phipsi protFolder sideChainRandomizer dielectricFit foldingBindingEnergy ligandBindingEnergy bindingEnergy triadFinder protMover z_aligner y_aligner fourEvolver protDock protMutator protNetwork dielectric getSequence
+TARGETS = mutantMaker acidMutator protEvolver mergeComplex structFinder structShaper intraSoluteEnergy protOptSolvent protEvolverBinding database_phipsi protFolder sideChainRandomizer dielectricFit foldingBindingEnergy ligandBindingEnergy bindingEnergy triadFinder protMover z_aligner y_aligner protDock protMutator protNetwork dielectric getSequence
 
 .SUFFIXES:
 .SUFFIXES: .cc .o .h .a
@@ -87,10 +87,6 @@ database_phipsi : libprotcad.a database_phipsi.cc
 	cd $(OBJDIR) && mv $@ $(BINDIR)
 
 bindingEnergy : libprotcad.a bindingEnergy.cc
-	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && mv $@ $(BINDIR)
-
-fourEvolver : libprotcad.a fourEvolver.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
 	cd $(OBJDIR) && mv $@ $(BINDIR)
 	

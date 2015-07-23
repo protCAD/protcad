@@ -35,14 +35,11 @@ int main (int argc, char* argv[])
 	protein* bundle = static_cast<protein*>(pMol);
 	bundle->silenceMessages();
     residue::setCutoffDistance(9.0);
-	pmf::setScaleFactor(0.0);
 	rotamer::setScaleFactor(0.0);
-	microEnvironment::setScaleFactor(0.0);
 	amberVDW::setScaleFactor(1.0);
     amberVDW::setRadiusScaleFactor(0.95);
 	amberVDW::setLinearRepulsionDampeningOff();
     amberElec::setScaleFactor(0.0);
-	solvation::setItsScaleFactor(0.0);
 	
 	//--h3lix
 	//UInt resID_A[] = {P,K,G,P,K,G,P,K,G,K,O,G,P,D,G,D,O,G,D,O,G,D,O,G,P,K,G,P,K,G};
@@ -270,8 +267,8 @@ int main (int argc, char* argv[])
     v.insert (v.begin(), resID35, resID35 + sizeof(resID35)/sizeof(resID35[0]));
     resIDs.push_back(v);
     v.clear();*/
-    UInt activeResidues[] = {1,3,5,7,9,13,15,17,19,21,28,30,32,34,36,54,57,59,61,70,72,74,76,78,86,88,90,92,94,108,110,112,114,116,127,129,131,133,151,153,155,157,159,161,166,168,172,174,181,183,185,187};
-    UInt activeResiduesSize = sizeof(activeResidues)/sizeof(activeResidues[0]);
+    //UInt activeResidues[] = {1,3,5,7,9,13,15,17,19,21,28,30,32,34,36,54,57,59,61,70,72,74,76,78,86,88,90,92,94,108,110,112,114,116,127,129,131,133,151,153,155,157,159,161,166,168,172,174,181,183,185,187};
+    //UInt activeResiduesSize = sizeof(activeResidues)/sizeof(activeResidues[0]);
     bool mutants;
     //--Mutate chains
     UInt chainNum;

@@ -29,9 +29,8 @@ int main (int argc, char* argv[])
 	amberVDW::setLinearRepulsionDampeningOff();
     amberElec::setScaleFactor(1.0);
 
-    /*double intra = bundle->intraSoluteEnergy(true);
-    cout << intra << " ";*/
-    bundle->buildAtomMatrices();
+    double intra = bundle->intraSoluteEnergy(true);
+    cout << intra << " ";
 	
 	return 0;
 }

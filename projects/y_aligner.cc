@@ -17,7 +17,7 @@ int main (int argc, char* argv[])
 	center = center * -1.0;
 	prot->translate(center);
 	double bestProjection = 100000;
-	double bestPhi, bestTheta, bestPsi;
+    double bestPhi = 0.0, bestTheta = 0.0, bestPsi = 0.0;
 
 	double phimin = -180.0; double phimax = 180.0; double step = 20.0;
 	double thetamin = -180.0; double thetamax = 180.0;

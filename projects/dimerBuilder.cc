@@ -14,8 +14,8 @@ int main(int argc, char* argv[])
 	//read in the input file
 	string inFile = argv[1];
 	PDBInterface* thePDB = new PDBInterface(inFile);
-    	ensemble* theEnsemble = thePDB->getEnsemblePointer();
-    	molecule* pMol = theEnsemble->getMoleculePointer(0);
+    ensemble* theEnsemble = thePDB->getEnsemblePointer();
+    molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* bundle = static_cast<protein*>(pMol);
 
 	double radius, face, pitch;
