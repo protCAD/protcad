@@ -352,7 +352,7 @@ void PDBInterface::parseAtomLine()
 	counter = 1;
 	string lastResName;
 	string currentResName;
-	int lastResSeq;
+    int lastResSeq = 0;
 	int currentResSeq;
 	string lastICode;
 	string currentICode;
@@ -689,7 +689,7 @@ void PDBInterface::parseAtomLine(const bool _Hflag)
 	counter = 1;
 	string lastResName;
 	string currentResName;
-	int lastResSeq;
+    int lastResSeq = 0;
 	int currentResSeq;
 	string lastICode;
 	string currentICode;
@@ -876,12 +876,11 @@ void PDBInterface::parseAtomLine(const bool _Hflag)
 		residue* pTheResidue = new residue(theType,Hflags[i]);
 		pTheResidue->setResNum(resnums[i]);
 		chain* pCurrentChain = 0;
-		char theChainID;
 		// OK, now which chain do we add this to?
 		for (UInt j=0; j<vecChainPointers.size(); j++)
 		{
 			const char* pTheChainID  = resChainID[i].c_str();
-			theChainID = *pTheChainID;
+            char theChainID = *pTheChainID;
 			if ( theChainID == (vecChainPointers[j])->getChainID())
 			{	pCurrentChain = vecChainPointers[j];
 				break;
@@ -895,8 +894,8 @@ void PDBInterface::parseAtomLine(const bool _Hflag)
 		}
 		else
 		{
-			cout << "Wasn't able to find chain named: ";
-			cout << theChainID << endl;
+            cout << "Wasn't able to find chain";
+            //cout << theChainID << endl;
 			cout << "Please fix your pdb file!" << endl;
 			cout << "Further behavior unpredictable  - Stopping" << endl;
 			terminate();	
@@ -1033,7 +1032,7 @@ void PDBInterface::parseAtomLine(const bool _Hflag, const bool _HPflag)
 	counter = 1;
 	string lastResName;
 	string currentResName;
-	int lastResSeq;
+    int lastResSeq = 0;
 	int currentResSeq;
 	string lastICode;
 	string currentICode;
@@ -1220,12 +1219,11 @@ void PDBInterface::parseAtomLine(const bool _Hflag, const bool _HPflag)
 		residue* pTheResidue = new residue(theType,Hflags[i]);
 		pTheResidue->setResNum(resnums[i]);
 		chain* pCurrentChain = 0;
-		char theChainID;
 		// OK, now which chain do we add this to?
 		for (UInt j=0; j<vecChainPointers.size(); j++)
 		{
 			const char* pTheChainID  = resChainID[i].c_str();
-			theChainID = *pTheChainID;
+            char theChainID = *pTheChainID;
 			if ( theChainID == (vecChainPointers[j])->getChainID())
 			{	pCurrentChain = vecChainPointers[j];
 				break;
@@ -1239,8 +1237,8 @@ void PDBInterface::parseAtomLine(const bool _Hflag, const bool _HPflag)
 		}
 		else
 		{
-			cout << "Wasn't able to find chain named: ";
-			cout << theChainID << endl;
+            cout << "Wasn't able to find chain";
+            //cout << theChainID << endl;
 			cout << "Please fix your pdb file!" << endl;
 			cout << "Further behavior unpredictable  - Stopping" << endl;
 			terminate();	

@@ -1865,7 +1865,7 @@ double residue::getPsi()
 
 double residue::getAngle(UInt angleType)
 {
-	double tempdouble;
+    double tempdouble = 0.0;
 	if (angleType == 0) //phi
 	{	
 		if (pItsPrevRes != 0)

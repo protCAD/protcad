@@ -150,10 +150,10 @@ void chain::activateChainPosition(UInt _indexInChain)
 		itsChainPositions[_indexInChain] = newCP;
 		//now let's make sure that only alpha amino acids are allowed for an alpha
 		//only beta for a beta, etc.
-		UInt resTypeIndex = itsResidues[_indexInChain]->getTypeIndex();
-		UInt numBpt = residue::getNumBpt(resTypeIndex);
+        //UInt resTypeIndex = itsResidues[_indexInChain]->getTypeIndex();
+        //UInt numBpt = residue::getNumBpt(resTypeIndex);
 		//cout << "Num branchpoints in actual residue ==" << numBpt << endl;
-		UInt initialNumAllowedRes = newCP->getNumAllowedRes();
+        //UInt initialNumAllowedRes = newCP->getNumAllowedRes();
 		vector<UInt> notAllowedSet;
 		notAllowedSet.resize(0);
         //for (UInt i=0; i< initialNumAllowedRes; i++) // this prevents using branchpoints as dihedral pivot points for complex residues, so commented out.  doug p. 2015
