@@ -70,8 +70,8 @@ public:
 	UInt getNumHardClashes(const UInt _chainIndex) {return itsChains[_chainIndex]->getNumHardClashes(); }
 	
 	//--Organization functions
-    void updateNumAtoms();
-    void buildDistanceMatrix();
+    void updateTotalNumResidues();
+    void buildResidueMatrices();
 	void initializeModificationMethods();
 
 	void resetAllBuffers();
@@ -238,8 +238,6 @@ public:
 	double getChi (const UInt _chainIndex, const UInt _resIndex, const UInt _bpt, const UInt _chi) { return itsChains[_chainIndex]->getChi(_resIndex, _bpt, _chi); }
 	vector < vector <double> >  getSidechainDihedrals(UInt _chainIndex, UInt _indexInChain) {return itsChains[_chainIndex]->getSidechainDihedralAngles(_indexInChain);}
 	void setSidechainDihedralAngles(UInt _chainIndex, UInt _indexInChain, vector< vector<double> > Angles);
-	//void findLowestRotamer(vector <int> _position);
-	//void findLowestRotamerWithSymmetry(vector <int> _position);
 		
 	//--Surface area functions
 	double getVolume(UInt _method);
@@ -269,7 +267,9 @@ private:
 	static bool messagesActive;
 	static bool calcSelfEnergy;
 	static UInt howMany;
-    UInt itsNumAtoms;
+    UInt itsNumResidues;
+    UInt** moved;
+    double** energies;
 	static UInt itsSolvationParam;
 	vector<chain*> itsChains;
 	vector<UInt> itsIndependentChainsMap;

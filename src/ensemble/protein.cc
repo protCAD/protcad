@@ -1335,38 +1335,34 @@ void protein::updatePositionDielectrics(UInt _chainIndex, UInt _residueIndex)
     }
 }
 
-void protein::updateNumAtoms()
+void protein::updateTotalNumResidues()
 {
-    UInt numAtoms = 0;
+    UInt numResidues = 0;
     for(UInt i=0; i<itsChains.size(); i++)
     {
-        for(UInt j=0; j<itsChains[i]->itsResidues.size(); j++)
-        {
-            numAtoms += getNumAtoms(i,j);
-        }
+        numResidues += getNumResidues(i);
     }
-    itsNumAtoms = numAtoms;
+    itsNumResidues = numResidues;
 }
 
-void protein::buildDistanceMatrix()
+void protein::buildResidueMatrices()
 {
-    //build triangular matrix for atom-atom pairs (half matrix)
-    double** distances = new double*[itsNumAtoms];
-    for(UInt i=0; i<itsNumAtoms; ++i)
+    //build triangular matrix (half matrix) for residue-residue pairs
+    moved = new UInt*[itsNumResidues];
+    energies = new double*[itsNumResidues];
+    for(UInt i=0; i<itsNumResidues; i++)
     {
-        distances[i]=new double[i+1];
+        moved[i]=new UInt[i+1];
+        energies[i]=new double[i+1];
     }
 
-    //populate matrix with all distances
-    UInt atomIndex =0;
-    for(UInt i=0; i<itsChains.size(); i++)
+    //populate matrices with zeros for first calculation
+    for(UInt i=0; i<itsNumResidues; i++)
     {
-        for(UInt j=0; j<itsChains[i]->itsResidues.size(); j++)
+        for(UInt j=0; j<i+1; j++)
         {
-            for(UInt k=0; k<itsChains[i]->itsResidues[j]->itsAtoms.size(); k++)
-            {
-                atomIndex++;
-            }
+            moved[i][j] = 0;
+            energies[i][j] = 0.0;
         }
     }
 }
