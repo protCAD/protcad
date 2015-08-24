@@ -1356,14 +1356,40 @@ void protein::buildResidueMatrices()
         energies[i]=new double[i+1];
     }
 
-    //populate matrices with zeros for first calculation
-    for(UInt i=0; i<itsNumResidues; i++)
+    //populate matrices with starting energies and not moved zeros
+    this->updateDielectrics();
+    UInt i = 0, j = 0, chaini, chainj, resi, resj;
+    residueIterator resIt1(this);
+    for (; !(resIt1.last()); resIt1++)
     {
-        for(UInt j=0; j<i+1; j++)
+        atomIterator resIt2(this);
+        for (; !(resIt1.last()) || (resIt1.last()); resIt2++)
         {
+            chaini = resIt1.getChainIndex(), resi = resIt1.getResidueIndex();
+            chainj = resIt2.getChainIndex(), resj = resIt2.getResidueIndex();
+            if (chaini == chainj)
+            {
+                if (resi == resj)
+                {
+                    energies[i][j] = itsChains[chaini]->itsResidues[resi]->getNeighborResiduePairSoluteEnergy(itsChains[chainj]->itsResidues[resj], true);
+                }
+                else if (resj == resi+1)
+                {
+                    energies[i][j] = itsChains[chaini]->itsResidues[resi]->getNeighborResiduePairSoluteEnergy(itsChains[chainj]->itsResidues[resj], false);
+                }
+                else
+                {
+                    energies[i][j] = itsChains[chaini]->itsResidues[resi]->getDistalResiduePairSoluteEnergy(itsChains[chainj]->itsResidues[resj]);
+                }
+            }
+            else
+            {
+                energies[i][j] = itsChains[chaini]->itsResidues[resi]->getDistalResiduePairSoluteEnergy(itsChains[chainj]->itsResidues[resj]);
+            }
             moved[i][j] = 0;
-            energies[i][j] = 0.0;
+            j++;
         }
+        i++;
     }
 }
 

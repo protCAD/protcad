@@ -3020,6 +3020,129 @@ double residue::intraEnergy()
 	return intraEnergy;
 }
 
+double residue::getDistalResiduePairSoluteEnergy(residue* _other)
+{
+    double distalEnergy = 0.0;
+    for(UInt i=0; i<itsAtoms.size(); i++)
+    {
+        if (!itsAtoms[i]->getSilentStatus())
+        {
+            for(UInt j=0; j<_other->itsAtoms.size(); j++)
+            {
+                if (!_other->itsAtoms[j]->getSilentStatus())
+                {
+                    // if backbone nitrogens are greater than 20 Angstroms apart don't do any further calculations, else continue
+                    double distanceSquared;
+                    if (i == 0 && j == 0)
+                    {
+                        distanceSquared = itsAtoms[i]->inCubeWithDistSQ(_other->itsAtoms[j], 400);
+                        if (distanceSquared > 400)
+                        {
+                            return 0.0;
+                        }
+                    }
+                    else
+                    {
+                       distanceSquared = itsAtoms[i]->inCubeWithDistSQ(_other->itsAtoms[j], cutoffDistanceSquared);
+                    }
+                    if (distanceSquared <= cutoffDistanceSquared)
+                    {
+                        // ** inter AMBER Electrostatics
+                        if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
+                        {
+                            // ** get dielectric average
+                            double dielectric = (itsAtoms[i]->getDielectric() + _other->itsAtoms[j]->getDielectric()) * 0.5;
+                            UInt resType1 = itsType;
+                            UInt resType2 = _other->itsType;
+                            UInt index1 = i;
+                            UInt index2 = j;
+                            double tempAmberElecEnergy = residueTemplate::getAmberElecSoluteEnergySQ(resType1, index1, resType2, index2, distanceSquared, dielectric);
+                            distalEnergy += tempAmberElecEnergy;
+                        }
+
+                        // ** inter AMBER vdW
+                        if (residueTemplate::itsAmberVDW.getScaleFactor() != 0.0)
+                        {
+                            int index1, index2;
+                            if (hydrogensOn)
+                            {	index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][0];
+                                index2 = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[j][0];
+                            }
+                            else
+                            {	index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][1];
+                                index2 = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[j][1];
+                            }
+                            double tempvdwEnergy = residueTemplate::getVDWEnergySQ(index1, index2, distanceSquared);
+                            distalEnergy += tempvdwEnergy;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return distalEnergy;
+}
+
+double residue::getNeighborResiduePairSoluteEnergy(residue* _other, bool self)
+{
+    double neighborEnergy = 0.0;
+    for(UInt i=0; i<itsAtoms.size(); i++)
+    {
+        if (!itsAtoms[i]->getSilentStatus())
+        {
+            if (self)
+            {
+                vector <double> tempSolvEnergy = this->calculateSolvationEnergy(i);
+                neighborEnergy += tempSolvEnergy[0];
+                neighborEnergy -= tempSolvEnergy[1];
+            }
+            for(UInt j=0; j<_other->itsAtoms.size(); j++)
+            {
+                if (!_other->itsAtoms[j]->getSilentStatus())
+                {
+                    bool bonded = isSeparatedByOneOrTwoBonds(i,_other,j);
+                    if (!bonded)
+                    {
+                        double distanceSquared = itsAtoms[i]->inCubeWithDistSQ(_other->itsAtoms[j], cutoffDistanceSquared);
+                        if (distanceSquared <= cutoffDistanceSquared)
+                        {
+                            // ** inter AMBER Electrostatics
+                            if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
+                            {
+                                // ** get dielectric average
+                                double dielectric = (itsAtoms[i]->getDielectric() + _other->itsAtoms[j]->getDielectric()) * 0.5;
+                                UInt resType1 = itsType;
+                                UInt resType2 = _other->itsType;
+                                UInt index1 = i;
+                                UInt index2 = j;
+                                double tempAmberElecEnergy = residueTemplate::getAmberElecSoluteEnergySQ(resType1, index1, resType2, index2, distanceSquared, dielectric);
+                                neighborEnergy += tempAmberElecEnergy;
+                            }
+
+                            // ** inter AMBER vdW
+                            if (residueTemplate::itsAmberVDW.getScaleFactor() != 0.0)
+                            {
+                                int index1, index2;
+                                if (hydrogensOn)
+                                {	index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][0];
+                                    index2 = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[j][0];
+                                }
+                                else
+                                {	index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][1];
+                                    index2 = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[j][1];
+                                }
+                                double tempvdwEnergy = residueTemplate::getVDWEnergySQ(index1, index2, distanceSquared);
+                                neighborEnergy += tempvdwEnergy;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return neighborEnergy;
+}
+
 double residue::intraSoluteEnergy()
 {	
 	double intraEnergy = 0.0;
