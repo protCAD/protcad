@@ -1348,6 +1348,7 @@ void protein::updateTotalNumResidues()
 void protein::buildResidueMatrices()
 {
     //build triangular matrix (half matrix) for residue-residue pairs
+    updateTotalNumResidues();
     moved = new UInt*[itsNumResidues];
     energies = new double*[itsNumResidues];
     for(UInt i=0; i<itsNumResidues; i++)
@@ -1357,40 +1358,49 @@ void protein::buildResidueMatrices()
     }
 
     //populate matrices with starting energies and not moved zeros
-    this->updateDielectrics();
-    UInt i = 0, j = 0, chaini, chainj, resi, resj;
-    residueIterator resIt1(this);
-    for (; !(resIt1.last()); resIt1++)
+    if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
     {
-        atomIterator resIt2(this);
-        for (; !(resIt1.last()) || (resIt1.last()); resIt2++)
-        {
-            chaini = resIt1.getChainIndex(), resi = resIt1.getResidueIndex();
-            chainj = resIt2.getChainIndex(), resj = resIt2.getResidueIndex();
-            if (chaini == chainj)
-            {
-                if (resi == resj)
-                {
-                    energies[i][j] = itsChains[chaini]->itsResidues[resi]->getNeighborResiduePairSoluteEnergy(itsChains[chainj]->itsResidues[resj], true);
-                }
-                else if (resj == resi+1)
-                {
-                    energies[i][j] = itsChains[chaini]->itsResidues[resi]->getNeighborResiduePairSoluteEnergy(itsChains[chainj]->itsResidues[resj], false);
-                }
-                else
-                {
-                    energies[i][j] = itsChains[chaini]->itsResidues[resi]->getDistalResiduePairSoluteEnergy(itsChains[chainj]->itsResidues[resj]);
-                }
-            }
-            else
-            {
-                energies[i][j] = itsChains[chaini]->itsResidues[resi]->getDistalResiduePairSoluteEnergy(itsChains[chainj]->itsResidues[resj]);
-            }
-            moved[i][j] = 0;
-            j++;
-        }
-        i++;
+        this->updateDielectrics();
     }
+    double residuePairEnergy, totalEnergy = 0.0;
+    UInt i = 0, j = 0, chaini, chainj, resi, resj;
+    for (chaini = 0; chaini < itsChains.size(); chaini++)
+    {
+        for (resi = 0; resi < itsChains[chaini]->itsResidues.size(); resi++)
+        {
+            for (chainj = 0; chainj < chaini+1; chainj++)
+            {
+                for (resj = 0; resj < resi+1; resj++)
+                {
+                    if (chaini == chainj)
+                    {
+                        if (resi == resj)
+                        {
+                            residuePairEnergy = itsChains[chaini]->itsResidues[resi]->intraSoluteEnergy();
+                        }
+                        else if (resj == resi+1 || resj == resi-1)
+                        {
+                            residuePairEnergy = itsChains[chaini]->itsResidues[resi]->getNeighborResiduePairSoluteEnergy(itsChains[chainj]->itsResidues[resj]);
+                        }
+                        else
+                        {
+                            residuePairEnergy = itsChains[chaini]->itsResidues[resi]->getDistalResiduePairSoluteEnergy(itsChains[chainj]->itsResidues[resj]);
+                        }
+                    }
+                    else
+                    {
+                        residuePairEnergy = itsChains[chaini]->itsResidues[resi]->getDistalResiduePairSoluteEnergy(itsChains[chainj]->itsResidues[resj]);
+                    }
+                    //energies[i][j] = residuePairEnergy;
+                    totalEnergy += residuePairEnergy;
+                    //moved[i][j] = 0;
+                    j++;
+                }
+            }
+            i++;
+        }  
+    }
+    cout << totalEnergy << endl;
 }
 
 double protein::BBEnergy()

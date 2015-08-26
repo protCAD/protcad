@@ -35,7 +35,7 @@ class protein : public molecule
 {
 public:
 	friend class atomIterator;
-	friend class residueIterator;
+    friend class residueIterator;
 	friend class ruler;
 
 //--Functions--------------------------------------------------------------------------------------------	

@@ -3083,20 +3083,14 @@ double residue::getDistalResiduePairSoluteEnergy(residue* _other)
     return distalEnergy;
 }
 
-double residue::getNeighborResiduePairSoluteEnergy(residue* _other, bool self)
+double residue::getNeighborResiduePairSoluteEnergy(residue* _other)
 {
     double neighborEnergy = 0.0;
     for(UInt i=0; i<itsAtoms.size(); i++)
     {
         if (!itsAtoms[i]->getSilentStatus())
         {
-            if (self)
-            {
-                vector <double> tempSolvEnergy = this->calculateSolvationEnergy(i);
-                neighborEnergy += tempSolvEnergy[0];
-                neighborEnergy -= tempSolvEnergy[1];
-            }
-            for(UInt j=0; j<_other->itsAtoms.size(); j++)
+            for(UInt j = 0; j<_other->itsAtoms.size(); j++)
             {
                 if (!_other->itsAtoms[j]->getSilentStatus())
                 {
@@ -3150,6 +3144,13 @@ double residue::intraSoluteEnergy()
 	{
 		if (!itsAtoms[i]->getSilentStatus())
 		{
+            if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
+            {
+                // ** get solvationEnergy
+                vector <double> tempSolvEnergy = this->calculateSolvationEnergy(i);
+                intraEnergy += tempSolvEnergy[0];
+                intraEnergy -= tempSolvEnergy[1];
+            }
 			for(UInt j=i+1; j<itsAtoms.size(); j++)
 			{
 				if (!itsAtoms[j]->getSilentStatus())
@@ -3183,9 +3184,6 @@ double residue::intraSoluteEnergy()
                         {
                             // ** get solvationEnergy and dielectric
                             double dielectric = (itsAtoms[i]->getDielectric() + itsAtoms[j]->getDielectric()) * 0.5;
-                            vector <double> tempSolvEnergy = this->calculateSolvationEnergy(i);
-                            intraEnergy += tempSolvEnergy[0];
-                            intraEnergy -= tempSolvEnergy[1];
 
                             // **calc coulombic energy
                             UInt resType1 = itsType;

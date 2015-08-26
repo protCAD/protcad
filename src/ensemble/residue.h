@@ -239,7 +239,7 @@ public:
 	double interEnergy(residue* _other);
 	double interSoluteEnergy(residue* _other);
     double getDistalResiduePairSoluteEnergy(residue* _other);
-    double getNeighborResiduePairSoluteEnergy(residue* _other, bool self);
+    double getNeighborResiduePairSoluteEnergy(residue* _other);
 	double getSelfEnergy(residue* _other);
 	double calculateHCA_O_hBondEnergy(residue* _other);
 	double BBEnergy();

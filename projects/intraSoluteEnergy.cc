@@ -15,7 +15,7 @@
 //--Program setup-------------------------------------------------------------
 int main (int argc, char* argv[])
 {	
-    //clock_t t;
+    clock_t t;
 	string infile = argv[1];
 	enum aminoAcid {A, R, N, D, Dh, C, Q, E, Eh, G, H, O, I, L, K, M, F, P, S, T, W, Y, V, dA, dR, dN, dD, dDh, dC, dQ, dE, dEh, dH, dO, dI, dL, dK, dM, dF, dP, dS, dT, dW, dY, dV};
 	PDBInterface* thePDB = new PDBInterface(infile);
@@ -25,13 +25,15 @@ int main (int argc, char* argv[])
 	residue::setCutoffDistance(9.0);
 	rotamer::setScaleFactor(0.0);
 	amberVDW::setScaleFactor(1.0);
-    amberVDW::setRadiusScaleFactor(0.95);
+    amberVDW::setRadiusScaleFactor(1.0);
 	amberVDW::setLinearRepulsionDampeningOff();
     amberElec::setScaleFactor(1.0);
 
-    bundle->buildResidueMatrices();
-    //double intra = bundle->intraSoluteEnergy(true);
-    //cout << intra << " ";
+    t=clock();
+    double intra = bundle->intraSoluteEnergy(true);
+    t=clock()-t;
+    cout << intra << endl;
+    cout << "Time to run: " << ((float)t)/CLOCKS_PER_SEC << endl << endl;
 	
 	return 0;
 }
