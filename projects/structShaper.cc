@@ -19,6 +19,7 @@
 #include "PDBInterface.h"
 
 void buildAntiParallelBetaBarrel (protein* _prot, double _pitch);
+void buildAntiParallelHelixDimer (protein* _prot, double _radius, double _phase, double _coil);
 
 int main (int argc, char* argv[])
 {
@@ -132,7 +133,9 @@ int main (int argc, char* argv[])
     protein* frame = static_cast<protein*>(frameMol);
     frame->silenceMessages();
 
-#pragma omp parallel for
+    buildAntiParallelHelixDimer(frame, 4.0, 0, 179);
+    pdbWriter(frame, outFile);
+/*#pragma omp parallel for
     for (UInt j = 0; j < 100; j ++)
     {
         double pastEnergy = frame->intraSoluteEnergy(true), Energy;
@@ -151,12 +154,23 @@ int main (int argc, char* argv[])
         }
     }
 
-    //buildAntiParallelBetaBarrel(frame, 20);
+    buildAntiParallelBetaBarrel(frame, 20);*/
 
 
 //--Print end and write a pdb file--------------------------------------------------------------
 	cout << endl << "Structure reshaped!!" << endl << endl;
 	return 0;
+}
+
+
+void buildAntiParallelHelixDimer (protein* _prot, double _radius, double _phase, double _coil)
+{
+    _prot->rotate(Z_axis, _phase);
+    _prot->translate(0.0, _radius, 1.8);
+    _prot->rotate(1, Z_axis, 180);
+    _prot->rotate(1, Y_axis, 180);
+    _prot->coilcoil(_coil);
+    return;
 }
 
 void buildAntiParallelBetaBarrel (protein* _prot, double _pitch)

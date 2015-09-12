@@ -3008,7 +3008,7 @@ void protein::protOptSolvent(UInt _plateau, bool _backbone)
     UInt resNum, randtype, chainNum = this->getNumChains(), rotbetter = 0;
     vector < vector <double> > currentRot;
     int thisone;
-    UIntVec allowedRots;
+    vector <UIntVec> allowedRots;
     srand (time(NULL));
 
     //--Run optimizaiton loop to energetic minima, determined by _plateau-------------------------------
@@ -3060,27 +3060,31 @@ void protein::protOptSolvent(UInt _plateau, bool _backbone)
         {
             //--Get current rotamer and allowed
             currentRot = this->getSidechainDihedrals(randchain, randres);
-            allowedRots = this->getAllowedRotamers(randchain, randres, randrestype, 0);
-            allowedRotsize = (allowedRots.size() * 0.33), rotbetter++, rotbetter++;
+            allowedRots = this->getAllowedRotamers(randchain, randres, randrestype);
+            rotbetter++, rotbetter++;
 
-            //--Try 1/3 of allowed rotamers keep first improvement or revert to previous angles
-            for (UInt j = 0; j < allowedRotsize; j ++)
+            //--Try a max of 1/3 of allowed rotamers per branchpoint and keep first improvement or revert to previous angles
+            for (UInt b = 0; b < residue::getNumBpt(randrestype); b++)
             {
-                randrot = rand() % allowedRots.size();
-                this->setRotamerWBC(randchain, randres, 0, allowedRots[randrot]);
-                currentposE = this->getPositionSoluteEnergy(randchain, randres, dielectrics);
-
-                if (currentposE < (preposE - .05))
+                allowedRotsize = allowedRots[b].size()*0.33;
+                for (UInt j = 0; j < allowedRotsize; j ++)
                 {
-                    Energy = this->intraSoluteEnergy(dielectrics);
-                    if (Energy < pastEnergy)
+                    randrot = rand() % allowedRots[b].size();
+                    this->setRotamerWBC(randchain, randres, b, allowedRots[b][randrot]);
+                    currentposE = this->getPositionSoluteEnergy(randchain, randres, dielectrics);
+
+                    if (currentposE < (preposE - .05))
                     {
-                        //cout << Energy << endl;
-                        rotbetter--, rotbetter--, nobetter = 0, pastEnergy = Energy, preposE = currentposE;
-                        break;
+                        Energy = this->intraSoluteEnergy(dielectrics);
+                        if (Energy < pastEnergy)
+                        {
+                            //cout << Energy << endl;
+                            rotbetter--, rotbetter--, nobetter = 0, pastEnergy = Energy, preposE = currentposE;
+                            break;
+                        }
                     }
+                    this->setSidechainDihedralAngles(randchain, randres, currentRot);
                 }
-                this->setSidechainDihedralAngles(randchain, randres, currentRot);
             }
         }
 

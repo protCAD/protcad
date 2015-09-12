@@ -105,6 +105,20 @@ UIntVec chainPosition::getAllowedRotamers(UInt _aaType, UInt _bpt)
 	else allowedRotamers.resize(0);
 	return allowedRotamers[0];
 }
+
+vector <UIntVec> chainPosition::getAllowedRotamers(UInt _aaType)
+{
+    vector <UIntVec> allowedRotamers;
+    allowedRotamers.resize(0);
+    for (UInt i=0; i<itsAllowedResidues.size(); i++)
+    {
+        if (_aaType == itsAllowedResidues[i].getIdentity())
+        {
+            allowedRotamers = itsAllowedResidues[i].getAllowedRotamers();
+        }
+    }
+    return allowedRotamers;
+}
 	
 		
 	

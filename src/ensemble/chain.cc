@@ -1189,6 +1189,23 @@ UIntVec chain::getAllowedRotamers(const UInt _indexInChain, const UInt _aaType, 
 	return allowedRotamers;
 }
 
+vector <UIntVec> chain::getAllowedRotamers(const UInt _indexInChain, const UInt _aaType)
+{
+    vector <UIntVec> allowedRotamers;
+    allowedRotamers.resize(0);
+    if ( _indexInChain >=0 && _indexInChain < itsChainPositions.size() )
+    {
+        allowedRotamers = itsChainPositions[_indexInChain]->getAllowedRotamers(_aaType);
+    }
+    else
+    {
+        cout << "Error in chain::getAllowedRotamers." << endl;
+        cout << " position " << _indexInChain << " is out of range on chain." << endl;
+    }
+
+    return allowedRotamers;
+}
+
 UIntVec chain::getResAllowed(const UInt _indexInChain)
 {
 	UIntVec allowedResidues;

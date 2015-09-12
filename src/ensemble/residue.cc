@@ -21,8 +21,8 @@
 typedef vector<atom*>::iterator iterATOM;
 vector<residueTemplate> residue::dataBase;
 bool residue::dataBaseBuilt = false;
-double residue::cutoffDistance = 10.0;
-double residue::cutoffDistanceSquared = 100.0;
+double residue::cutoffDistance = 9.0;
+double residue::cutoffDistanceSquared = 81.0;
 void residue::setupDataBase()
 {	if (!dataBaseBuilt)
 	{	residue* dummyRes = new residue(1);

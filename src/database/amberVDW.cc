@@ -2,7 +2,7 @@
 
 double amberVDW::itsScaleFactor = 1.0;
 double amberVDW::itsRadiusScaleFactor = 1.0;
-bool amberVDW::linearRepulsionDampening = true;
+bool amberVDW::linearRepulsionDampening = false;
 double amberVDW::itsAttractionScaleFactor = 1.0;
 double amberVDW::itsRepulsionScaleFactor = 1.0;
 
