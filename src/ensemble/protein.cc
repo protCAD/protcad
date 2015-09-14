@@ -2,7 +2,7 @@
 // contents: class protein implementation
 
 #include "protein.h"
-bool protein::messagesActive = true;
+bool protein::messagesActive = false;
 typedef vector<UInt>::iterator iterUINT;
 typedef vector<int>::iterator iterINT;
 typedef vector<vector<int> >:: iterator iterINTVEC;

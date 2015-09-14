@@ -1,11 +1,13 @@
 //*******************************************************************************************************
 //*******************************************************************************************************
-//**************************************                       ******************************************
-//**************************************    simpleFolder 1.0   ******************************************
-//**************************************                       ******************************************
+//************************************                      *********************************************
+//************************************  protRandomizer 1.0  *********************************************
+//************************************                      *********************************************
 //*******************************************************************************************************
+//*******************  -randomize side chain and set backbone to random-coil - **************************
 //*******************************************************************************************************
 
+/////// Just specify a infile and outfile, it will output modified structure.
 
 //--Program setup----------------------------------------------------------------------------------------
 #include <iostream>
@@ -15,40 +17,40 @@
 #include <sstream>
 #include "ensemble.h"
 #include "PDBInterface.h"
+
+void randomizeSideChain(protein* _prot, UInt _chainIndex, UInt _resIndex);
+
 int main (int argc, char* argv[])
 {
 	//--Running parameters
-	if (argc !=2)
+	if (argc !=3)
 	{
-		cout << "simpleFolder <inFile.pdb>" << endl;
+		cout << "protRandomizer <inFile.pdb> <outFile.pdb>" << endl;
 		exit(1);
 	}
 	enum aminoAcid {A,R,N,D,Dh,C,Cx,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV};
 	//string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Q","E","Eh","Hd", "He","Hn","Hp","I","L","K","M","F","P","O","S","T","W","Y", "V","G","dA","dR","dN","dD","dDh","dC","dCx","dQ","dE","dEh","dHd","dHe","dHn","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV"};
-	string infile = argv[1];
-	PDBInterface* thePDB = new PDBInterface(infile);
-	ensemble* theEnsemble = thePDB->getEnsemblePointer();
-	molecule* pMol = theEnsemble->getMoleculePointer(0);
-	protein* bundle = static_cast<protein*>(pMol);
-	bundle->silenceMessages();
 	residue::setCutoffDistance(10.0);
-	pmf::setScaleFactor(0.0);
 	rotamer::setScaleFactor(0.0);
-	microEnvironment::setScaleFactor(0.0);
 	amberVDW::setScaleFactor(1.0);
 	amberVDW::setRadiusScaleFactor(1.0);
-	amberVDW::itsAttractionScaleFactor = 0.0;
-	amberVDW::itsRepulsionScaleFactor = 1.0;
 	amberVDW::setLinearRepulsionDampeningOff();
-	amberElec::setScaleFactor(0.0);
-	solvation::setItsScaleFactor(0.0);
+	amberElec::setScaleFactor(1.0);
 	srand (time(NULL));
 
-	//secondary structure library///////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////////////
+	//--Initialize variables for loop
+	stringstream convertphi, convertpsi;
+	string inFile = argv[1], outFile = argv[2];
+	string phistr, psistr;
+	UInt chainNum, resNum, restype;
+
+
+	//secondary structure library////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	////Variables////////////////////////////
 	vector <double> phisL(3), phisD(3), phisLD(6), psisL(4), psisD(4), psisLD(8);
-	vector <double> coilL(2), coilD(2), alphaL(2), alphaD(2), three10L(2), three10D(2), aTurn1L(2), aTurn2L(2), aTurn3L(2), aTurn1D(2), aTurn2D(2), aTurn3D(2);
+	vector <double> randCoilL(2), randCoilD(2), coilL(2), coilD(2), alphaL(2), alphaD(2), three10L(2), three10D(2), aTurn1L(2), aTurn2L(2), aTurn3L(2), aTurn1D(2), aTurn2D(2), aTurn3D(2);
 	vector <double> ppL(2), ppD(2), pBetaL(2), pBetaD(2), aBetaL(2), aBetaD(2), bTurn1L(2), bTurn2L(2), bTurn3L(2), bTurn1D(2), bTurn2D(2), bTurn3D(2);
 	vector < vector <double> > Lfolds(12);
 	vector < vector <double> > Dfolds(12);
@@ -62,6 +64,10 @@ int main (int argc, char* argv[])
 	psisLD[0] = psisL[0], psisLD[1] = psisD[0], psisLD[2] = psisL[1], psisLD[3] = psisD[1], psisLD[4] = psisL[2], psisLD[5] = psisD[2], psisLD[6] = psisL[3], psisLD[7] = psisD[3];
 
 	////L Motifs////////////////////////////
+	//Random Coil
+	randCoilL[0] = -81.43;
+	randCoilL[1] = 79.65;
+
 	//Alpha-type
 	//unfolded
 	coilL[0] = phisL[1], coilL[1] = psisL[1];
@@ -85,6 +91,9 @@ int main (int argc, char* argv[])
 	bTurn3L[0] = phisL[2], bTurn3L[1] = psisL[2];
 
 	////D Motifs//////////////////////////////
+	//Random Coil
+	randCoilD[0] = 81.43, randCoilL[1] = -79.65;
+
 	//Alpha-type
 	//unfolded
 	coilD[0] = phisD[1], coilD[1] = psisD[1];
@@ -114,51 +123,54 @@ int main (int argc, char* argv[])
 	////D folds/////////////////////////////////
 	Dfolds[0] = alphaD, Dfolds[1] = ppD, Dfolds[2] = pBetaD, Dfolds[3] = aBetaD, Dfolds[4] = coilD, Dfolds[5] = bTurn2D;
 	Dfolds[6] = bTurn3D, Dfolds[7] = bTurn1D, Dfolds[8] = aTurn1D, Dfolds[9] = three10D, Dfolds[10] = aTurn2D, Dfolds[11] = aTurn2D;
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	//--loop variables
-	double controlE = bundle->intraEnergy(), Energy;
-	UInt count = 0, randres, randangle, restype, LorD;
-	string endstr, outFile;
-	
-	//--fold loop
-	PDBInterface* thePDB = new PDBInterface(infile);
-	ensemble* theEnsemble = thePDB->getEnsemblePointer();
-	molecule* pMol = theEnsemble->getMoleculePointer(0);
-	protein* bundle = static_cast<protein*>(pMol);
-	bundle->silenceMessages();
-	for (UInt j = 0; j < 10; j++)
+	/////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	//--loop
+	PDBInterface* theFramePDB = new PDBInterface(inFile);
+	ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
+	molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
+	protein* frame = static_cast<protein*>(frameMol);
+	frame->silenceMessages();
+	chainNum = frame->getNumChains();
+	for (UInt i = 0; i < chainNum; i++)
 	{
-		count++;
-		for (UInt k = 0; k < 5; k++)
+		resNum = frame->getNumResidues(i);
+		for (UInt j = 0; j < resNum; j++)
 		{
-			restype = bundle->getTypeFromResNum(0, k);
-			if (restype != G && j > 5)
+			randomizeSideChain(frame, i, j);
+			restype = frame->getTypeFromResNum(i, j);
+			if (restype < 27)
 			{
-				break;
+				frame->setDihedral(i, j, -81.43, 0, 0);
+				frame->setDihedral(i, j, 79.65, 1, 0);
 			}
-			if ((restype == G && j <= 5) || restype != G)
+			else
 			{
-				bundle->setDihedral(0, k, Lfolds[j][0], 0, 0);
-				bundle->setDihedral(0, k, Lfolds[j][1], 1, 0);
-			}
-			if (restype == G && j > 5)
-			{
-				bundle->setDihedral(0, k, Dfolds[j-5][0], 0, 0);
-				bundle->setDihedral(0, k, Dfolds[j-5][1], 1, 0);
-			}
-			Energy = bundle->intraEnergy()-controlE;
-			cout << count << " " << Energy << " " << endl;
-			if (Energy < 500)
-			{
-				stringstream convert;
-				convert << count, endstr = convert.str();
-				outFile = "angle_" + endstr + ".pdb";
-				pdbWriter(bundle, outFile);
+				frame->setDihedral(i, j, 81.43, 0, 0);
+				frame->setDihedral(i, j, -79.65, 1, 0);
 			}
 		}
 	}
+	pdbWriter(frame, outFile);
+
+//--Print end and write a pdb file--------------------------------------------------------------
+	cout << endl << "Structure randomized!!" << endl << endl;
 	return 0;
 }
 
+void randomizeSideChain(protein* _prot, UInt _chainIndex, UInt _resIndex)
+{
+	UInt allowedRotsSize, randrot, restype;
+	UIntVec allowedRots;
+	restype = _prot->getTypeFromResNum(_chainIndex, _resIndex);
+	allowedRots = _prot->getAllowedRotamers(_chainIndex, _resIndex, restype, 0);
+	allowedRotsSize = allowedRots.size();
+	if (allowedRotsSize > 2)
+	{
+		randrot = rand() % allowedRotsSize;
+		_prot->setRotamerWBC(_chainIndex, _resIndex, 0, allowedRots[randrot]);
+	}
+	return;
+}

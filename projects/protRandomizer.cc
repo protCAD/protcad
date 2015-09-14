@@ -127,6 +127,8 @@ int main (int argc, char* argv[])
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	bool backbone = false;
+
 	//--loop
 	PDBInterface* theFramePDB = new PDBInterface(inFile);
 	ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
@@ -141,16 +143,19 @@ int main (int argc, char* argv[])
 		{
 			randomizeSideChain(frame, i, j);
 			restype = frame->getTypeFromResNum(i, j);
-			if (restype < 27)
+			if (backbone)
 			{
-				frame->setDihedral(i, j, -81.43, 0, 0);
-				frame->setDihedral(i, j, 79.65, 1, 0);
-			}
-			else
-			{
-				frame->setDihedral(i, j, 81.43, 0, 0);
-				frame->setDihedral(i, j, -79.65, 1, 0);
-			}
+				if (restype < 27)
+				{
+					frame->setDihedral(i, j, -81.43, 0, 0);
+					frame->setDihedral(i, j, 79.65, 1, 0);
+				}
+				else
+				{
+					frame->setDihedral(i, j, 81.43, 0, 0);
+					frame->setDihedral(i, j, -79.65, 1, 0);
+				}
+			}	
 		}
 	}
 	pdbWriter(frame, outFile);
