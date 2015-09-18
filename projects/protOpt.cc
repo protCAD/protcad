@@ -9,8 +9,6 @@
 
 /////// Just specify a infile and outfile, it will optimize to a generally effective minimum.
 
-#include <iostream>
-#include <string>
 #include "ensemble.h"
 #include "PDBInterface.h"
 int main (int argc, char* argv[])

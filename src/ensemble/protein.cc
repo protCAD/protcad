@@ -3017,7 +3017,10 @@ void protein::protOptSolvent(UInt _plateau, bool _backbone)
         //--Generate random residue
         randchain = rand() % chainNum;
         resNum = this->getNumResidues(randchain);
-        randres = rand() % resNum;
+        do
+        {
+            randres = rand() % resNum;
+        }while (randres == 46 || randres == 47 || randres == 61 || randres == 92 || randres == 95);
         randrestype = this->getTypeFromResNum(randchain, randres);
         preposE = this->getPositionSoluteEnergy(randchain, randres, dielectrics);
         if (randrestype == 0 || randrestype == 19 || randrestype == 20 || randrestype == 26 || randrestype == 27 || randrestype == 46 || randrestype == 47)
