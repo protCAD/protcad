@@ -1,10 +1,10 @@
 //******************************************************************************************************* 
 //*******************************************************************************************************
-//******************************	___  ____ ____ ___ ____ _ _  _  _  _   *******************************
-//******************************	|__] |__/ |  |  |  |___ | |\ |  |__|   *******************************
-//******************************	|    |  \ |__|  |  |___ | | \| o|  |   *******************************
-//******************************   							    *******************************
-//******************************		class protein is defined		    *******************************
+//******************************	___  ____ ____ ___ ____ _ _  _  _  _   ******************************
+//******************************	|__] |__/ |  |  |  |___ | |\ |  |__|   ******************************
+//******************************	|    |  \ |__|  |  |___ | | \| o|  |   ******************************
+//******************************   							               ******************************
+//******************************		class protein is defined		   ******************************
 //*******************************************************************************************************
 //*******************************************************************************************************
 
@@ -159,7 +159,7 @@ public:
 	double getResPairEnergy(const UInt _chain1, const UInt _res1, const UInt _chain2, const UInt _res2);
 	double getIntraEnergy(const UInt _chainIndex1, const UInt _resIndex1, const UInt _atomIndex1, const UInt _chainIndex2, const UInt _resIndex2, const UInt _atomIndex2);
 	double getPairwiseResidueEnergy(const UInt _chain1, const UInt _res1, const UInt _chain2, const UInt _res2);
-	double getDielectric(UInt _chainIndex, UInt _resIndex, UInt _atomIndex) {return itsChains[_chainIndex]->itsResidues[_resIndex]->itsAtoms[_atomIndex]->getDielectric();}
+    double getDielectric(UInt _chainIndex, UInt _resIndex, UInt _atomIndex) {return itsChains[_chainIndex]->itsResidues[_resIndex]->itsAtoms[_atomIndex]->getDielectric();}
 	double intraEnergy();
 	double intraSoluteEnergy(bool _updateDielectrics);
 	double interSoluteEnergy(bool _updateDielectrics, UInt _chain1, UInt _chain2);
@@ -269,8 +269,8 @@ private:
 	static bool calcSelfEnergy;
 	static UInt howMany;
     UInt itsNumResidues;
-    UInt** moved;
-    double** energies;
+    vector <UInt> moved;
+    vector <double> energies;
 	static UInt itsSolvationParam;
 	vector<chain*> itsChains;
 	vector<UInt> itsIndependentChainsMap;

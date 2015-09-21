@@ -3020,9 +3020,9 @@ double residue::intraEnergy()
 	return intraEnergy;
 }
 
-double residue::getDistalResiduePairSoluteEnergy(residue* _other)
+double residue::getResiduePairSoluteEnergy(residue* _other)
 {
-    double distalEnergy = 0.0;
+    double pairEnergy = 0.0;
     for(UInt i=0; i<itsAtoms.size(); i++)
     {
         if (!itsAtoms[i]->getSilentStatus())
@@ -3041,63 +3041,12 @@ double residue::getDistalResiduePairSoluteEnergy(residue* _other)
                             return 0.0;
                         }
                     }
-                    else
-                    {
-                       distanceSquared = itsAtoms[i]->inCubeWithDistSQ(_other->itsAtoms[j], cutoffDistanceSquared);
-                    }
-                    if (distanceSquared <= cutoffDistanceSquared)
-                    {
-                        // ** inter AMBER Electrostatics
-                        if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
-                        {
-                            // ** get dielectric average
-                            double dielectric = (itsAtoms[i]->getDielectric() + _other->itsAtoms[j]->getDielectric()) * 0.5;
-                            UInt resType1 = itsType;
-                            UInt resType2 = _other->itsType;
-                            UInt index1 = i;
-                            UInt index2 = j;
-                            double tempAmberElecEnergy = residueTemplate::getAmberElecSoluteEnergySQ(resType1, index1, resType2, index2, distanceSquared, dielectric);
-                            distalEnergy += tempAmberElecEnergy;
-                        }
 
-                        // ** inter AMBER vdW
-                        if (residueTemplate::itsAmberVDW.getScaleFactor() != 0.0)
-                        {
-                            int index1, index2;
-                            if (hydrogensOn)
-                            {	index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][0];
-                                index2 = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[j][0];
-                            }
-                            else
-                            {	index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][1];
-                                index2 = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[j][1];
-                            }
-                            double tempvdwEnergy = residueTemplate::getVDWEnergySQ(index1, index2, distanceSquared);
-                            distalEnergy += tempvdwEnergy;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return distalEnergy;
-}
-
-double residue::getNeighborResiduePairSoluteEnergy(residue* _other)
-{
-    double neighborEnergy = 0.0;
-    for(UInt i=0; i<itsAtoms.size(); i++)
-    {
-        if (!itsAtoms[i]->getSilentStatus())
-        {
-            for(UInt j = 0; j<_other->itsAtoms.size(); j++)
-            {
-                if (!_other->itsAtoms[j]->getSilentStatus())
-                {
+                    // calculate energy if not bonded atoms
                     bool bonded = isSeparatedByOneOrTwoBonds(i,_other,j);
                     if (!bonded)
                     {
-                        double distanceSquared = itsAtoms[i]->inCubeWithDistSQ(_other->itsAtoms[j], cutoffDistanceSquared);
+                        distanceSquared = itsAtoms[i]->inCubeWithDistSQ(_other->itsAtoms[j], cutoffDistanceSquared);
                         if (distanceSquared <= cutoffDistanceSquared)
                         {
                             // ** inter AMBER Electrostatics
@@ -3110,7 +3059,7 @@ double residue::getNeighborResiduePairSoluteEnergy(residue* _other)
                                 UInt index1 = i;
                                 UInt index2 = j;
                                 double tempAmberElecEnergy = residueTemplate::getAmberElecSoluteEnergySQ(resType1, index1, resType2, index2, distanceSquared, dielectric);
-                                neighborEnergy += tempAmberElecEnergy;
+                                pairEnergy += tempAmberElecEnergy;
                             }
 
                             // ** inter AMBER vdW
@@ -3126,7 +3075,7 @@ double residue::getNeighborResiduePairSoluteEnergy(residue* _other)
                                     index2 = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[j][1];
                                 }
                                 double tempvdwEnergy = residueTemplate::getVDWEnergySQ(index1, index2, distanceSquared);
-                                neighborEnergy += tempvdwEnergy;
+                                pairEnergy += tempvdwEnergy;
                             }
                         }
                     }
@@ -3134,7 +3083,7 @@ double residue::getNeighborResiduePairSoluteEnergy(residue* _other)
             }
         }
     }
-    return neighborEnergy;
+    return pairEnergy;
 }
 
 double residue::intraSoluteEnergy()
@@ -3179,10 +3128,10 @@ double residue::intraSoluteEnergy()
                             intraEnergy += tempvdwEnergy;
 						}
 
-                        // ** intra AMBER Electrostatics
+                        // ** intra Electrostatics
                         if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
                         {
-                            // ** get solvationEnergy and dielectric
+                            // ** get dielectric average of atoms
                             double dielectric = (itsAtoms[i]->getDielectric() + itsAtoms[j]->getDielectric()) * 0.5;
 
                             // **calc coulombic energy

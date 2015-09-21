@@ -257,7 +257,6 @@ void protein::activateForRepacking(const UInt _chainIndex, const UInt _residueIn
 			itsChains[itsChainLinkageMap[indChainIndex][i]]->activateForRepacking(_residueIndex);
 		}
 	}
-
 }
 
 void protein::activateForRepacking(const UInt _chainIndex, const UInt _start, const UInt _end)
@@ -539,8 +538,6 @@ vector <int> protein::getLastModification()
 	return position;
 }
 
-
-
 int protein::modify(ran& _ran, vector <int> _position)
 {
     if (chainPosition::getHowMany() == 0)
@@ -572,9 +569,6 @@ int protein::modify(ran& _ran, vector <int> _position)
     }
     return -1;
 }
-
-
-
 
 int protein::modify(ran& _ran)
 {
@@ -685,7 +679,6 @@ bool protein::performRandomMutation(ran& _ran, vector <int> _position)
     resetAllBuffers();
     return false;
 }
-
 
 void protein::setupSystem(ran& _ran)
 {
@@ -822,7 +815,6 @@ void protein::listDihedrals()
 		itsChains[i]->listDihedrals();
 	}
 }
-
 
 vector <int> protein::chooseNextTargetPosition(ran& _ran)
 {
@@ -1347,23 +1339,17 @@ void protein::updateTotalNumResidues()
 
 void protein::buildResidueMatrices()
 {
-    //build triangular matrix (half matrix) for residue-residue pairs
     updateTotalNumResidues();
-    moved = new UInt*[itsNumResidues];
-    energies = new double*[itsNumResidues];
-    for(UInt i=0; i<itsNumResidues; i++)
-    {
-        moved[i]=new UInt[i+1];
-        energies[i]=new double[i+1];
-    }
+    vector <double> tempE;
+    vector <UInt> tempM;
 
-    //populate matrices with starting energies and not moved zeros
+    //populate vectors with starting energies and not moved zeros
     if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
     {
         this->updateDielectrics();
     }
     double residuePairEnergy, totalEnergy = 0.0;
-    UInt i = 0, j = 0, chaini, chainj, resi, resj;
+    UInt chaini, chainj, resi, resj;
     for (chaini = 0; chaini < itsChains.size(); chaini++)
     {
         for (resi = 0; resi < itsChains[chaini]->itsResidues.size(); resi++)
@@ -1372,34 +1358,23 @@ void protein::buildResidueMatrices()
             {
                 for (resj = 0; resj < resi+1; resj++)
                 {
-                    if (chaini == chainj)
+                    if (chaini == chainj && resi == resj)
                     {
-                        if (resi == resj)
-                        {
-                            residuePairEnergy = itsChains[chaini]->itsResidues[resi]->intraSoluteEnergy();
-                        }
-                        else if (resj == resi+1 || resj == resi-1)
-                        {
-                            residuePairEnergy = itsChains[chaini]->itsResidues[resi]->getNeighborResiduePairSoluteEnergy(itsChains[chainj]->itsResidues[resj]);
-                        }
-                        else
-                        {
-                            residuePairEnergy = itsChains[chaini]->itsResidues[resi]->getDistalResiduePairSoluteEnergy(itsChains[chainj]->itsResidues[resj]);
-                        }
+                        residuePairEnergy = itsChains[chaini]->itsResidues[resi]->intraSoluteEnergy();
                     }
                     else
                     {
-                        residuePairEnergy = itsChains[chaini]->itsResidues[resi]->getDistalResiduePairSoluteEnergy(itsChains[chainj]->itsResidues[resj]);
+                        residuePairEnergy = itsChains[chaini]->itsResidues[resi]->getResiduePairSoluteEnergy(itsChains[chainj]->itsResidues[resj]);
                     }
-                    //energies[i][j] = residuePairEnergy;
+                    tempE.push_back(residuePairEnergy);
+                    tempM.push_back(0);
                     totalEnergy += residuePairEnergy;
-                    //moved[i][j] = 0;
-                    j++;
                 }
             }
-            i++;
         }  
     }
+    energies = tempE;
+    moved = tempM;
     cout << totalEnergy << endl;
 }
 
@@ -1622,7 +1597,6 @@ double protein::intraEnergy(UInt _chain1, UInt _chain2)
     }
 }
 
-
 double protein::intraEnergy(const UInt _chain)
 {
 	if((_chain>=0) && (_chain<itsChains.size()))
@@ -1636,7 +1610,6 @@ double protein::intraEnergy(const UInt _chain)
 	}
 }
 
-
 UInt protein::getNumResidues(UInt _chainIndex) const
 {	if (_chainIndex < itsChains.size())
 	{	return itsChains[_chainIndex]->getNumResidues();
@@ -1647,7 +1620,6 @@ UInt protein::getNumResidues(UInt _chainIndex) const
 	}
 	return 0;
 }
-
 
 int protein::getIndexFromResNum(UInt _chainIndex, UInt _resnum)
 {
@@ -1780,7 +1752,6 @@ void protein::setRelativeChi(const UInt _chainIndex, const UInt _resIndex, const
     return;
 }
 
-
 void protein::setRotamerNotAllowed(const UInt _chainIndex, const UInt _residueIndex, const UInt _resType, const UInt _bpt, const UInt _rotamer )
 {
     if (_chainIndex >= 0 && _chainIndex < itsChains.size())
@@ -1812,7 +1783,6 @@ void protein::setRotamerNotAllowed(const UInt _chainIndex, const UInt _residueIn
 
     return;
 }
-
 
 void protein::setCanonicalHelixRotamersOnly(const UInt _chainIndex)
 {
@@ -1909,7 +1879,6 @@ bool protein::isValidHelixRotamer(UInt _resType, UInt _bpt, UInt _rotamer)
 
 	return false;
 }
-
 
 void protein::setRotamerWBC(const UInt _chainIndex, const UInt _resIndex, const UInt _bpt, const UInt _rotamer)
 {
@@ -2140,9 +2109,6 @@ bool protein::performRandomRotamerRotation(ran& _ran, vector <int> _position)
     return false;
 }
 
-
-
-
 void protein::commitLastRotamerChange()
 {   if(itsLastModifiedChain >= 0 && itsLastModificationMethod == 1)
     {   itsChains[itsLastModifiedChain]->commitLastRotamerChange();
@@ -2196,7 +2162,6 @@ void protein::commitState()
 	}
 	return;
 }
-
 
 void protein::undoLastRotamerChange()
 {   if (itsLastModifiedChain >=0 && itsLastModificationMethod == 1)
@@ -2360,6 +2325,7 @@ void protein::eulerRotate(const double _phi, const double _theta, const double _
 	}
 	return;
 }
+
 void protein::undoEulerRotate(UInt _chain, const double _phi, const double _theta, const double _psi)
 {
 	// calculate inverse rotation matrix (transpose of rotation matrix)
@@ -2387,6 +2353,7 @@ void protein::undoEulerRotate(UInt _chain, const double _phi, const double _thet
 	transform(_chain,rotMatrix);
 	return;
 }
+
 void protein::undoEulerRotate(const double _phi, const double _theta, const double _psi)
 {
 	// calculate inverse rotation matrix (transpose of rotation matrix)
@@ -2574,7 +2541,6 @@ void protein::coilcoil(UInt _chain, double _pitch)
 }
 
 // surface area and solvation energy functions.
-
 void protein::initializeSpherePoints()
 {
 	for (UInt i = 0; i < itsChains.size(); i ++)
@@ -2703,7 +2669,6 @@ void protein::removeSpherePoints(UInt _chain)
 	{
 		cout << "ERROR in removeSpherePoints ... chain index out of range." << endl;
 	}
-
 	return;
 }
 
@@ -2721,7 +2686,6 @@ void protein::removeSpherePoints(UInt _chain, UInt _residue)
 	{
 		cout << "ERROR in removeSpherePoints ... chain index out of range." << endl;
 	}
-
 	return;
 }
 
@@ -2749,7 +2713,6 @@ double protein::calculateHCA_O_hBondEnergy()
 			if (i!=j)hbondEnergy += itsChains[i]->calculateHCA_O_hBondEnergy(itsChains[j]);
 		}
 	}
-
 	return hbondEnergy;
 }
 
@@ -2785,6 +2748,7 @@ double protein::getResPairEnergy(const UInt _chain1, const UInt _res1, const UIn
 		exit(1);
 	}
 }
+
 void protein::chainOptSolvent(UInt _plateau, UInt _chainIndex)
 {	// Sidechain and backbone optimization of one independent chain with a polarization based dielectric scaling of electrostatics and corresponding implicit solvation score
 	//    _plateau: the number of consecutive optimization cycles without an energy decrease.
@@ -2887,7 +2851,6 @@ void protein::chainOptSolvent(UInt _plateau, UInt _chainIndex)
 	} while (nobetter < _plateau * 1.2);
 	return;
 }
-
 
 void protein::protOptSolvent(UInt _plateau)
 {	// Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics and corresponding implicit solvation score
@@ -3225,7 +3188,6 @@ void protein::optimizeRotamers(vector <UIntVec> _activePositions)
 	return;
 }
 
-
 void protein::optimizeRotamers(vector <UIntVec> _activePositions, vector <UIntVec> _rotamerArray)
 {
 	double lowestEnergy = 1E10;
@@ -3490,7 +3452,6 @@ vector < UIntVec > protein::rotamerDEE(vector <UIntVec> _activePositions)
 	if (messagesActive) cout << "DEE:  ending number of rotamers = " << count << endl;
 	return finalArray;
 }
-
 
 void protein::optimizeSmallRotations(UInt _steps, double _stepSize)
 {
@@ -3939,4 +3900,3 @@ UInt protein::getNumHardClashes()
 	}
 	return numClashes;
 }
-

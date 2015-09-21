@@ -24,10 +24,10 @@ int main (int argc, char* argv[])
 	protein* bundle = static_cast<protein*>(pMol);
 	residue::setCutoffDistance(9.0);
 	rotamer::setScaleFactor(0.0);
-    amberVDW::setScaleFactor(0.95);
+    amberVDW::setScaleFactor(1.0);
     amberVDW::setRadiusScaleFactor(1.0);
 	amberVDW::setLinearRepulsionDampeningOff();
-    amberElec::setScaleFactor(0.0);
+    amberElec::setScaleFactor(1.0);
 
     t=clock();
     double intra = bundle->intraSoluteEnergy(true);
