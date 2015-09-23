@@ -30,10 +30,22 @@ int main (int argc, char* argv[])
     amberElec::setScaleFactor(1.0);
 
     t=clock();
-    double intra = bundle->intraSoluteEnergy(true);
+    cout << bundle->intraSoluteEnergy(true) << endl;
     t=clock()-t;
-    cout << intra << endl;
-    cout << "Time to run: " << ((float)t)/CLOCKS_PER_SEC << endl << endl;
-	
+
+    cout << "Time to run intraSoluteEnergy: " << ((float)t)/CLOCKS_PER_SEC << endl;
+
+    t=clock();
+    cout << bundle->protEnergy() << endl;
+    t=clock()-t;
+
+    cout << "Time to run first protEnergy: " << ((float)t)/CLOCKS_PER_SEC << endl;
+
+    t=clock();
+    cout << bundle->protEnergy() << endl;
+    t=clock()-t;
+
+    cout << "Time to run second protEnergy: " << ((float)t)/CLOCKS_PER_SEC << endl;
+
 	return 0;
 }

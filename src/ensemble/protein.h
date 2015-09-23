@@ -71,7 +71,6 @@ public:
 	
 	//--Organization functions
     void updateTotalNumResidues();
-    void buildResidueMatrices();
 	void initializeModificationMethods();
 
 	void resetAllBuffers();
@@ -152,6 +151,10 @@ public:
 	double getInterEnergy(UInt _chain, ligand* _other);        
 	
 	//--Energy functions
+    double protEnergy();
+    void updateProtEnergy();
+    void buildResidueEnergyPairs();
+
 	double getAtomCharge(UInt _chainNum, UInt _resNum, UInt _atomNum) { return itsChains[_chainNum]->getAtomCharge(_resNum, _atomNum); }
 	double calculateHCA_O_hBondEnergy();
 	UIntVec getEnergySurface(vector <UIntVec> _activePositions, vector <UIntVec> _rotamerArray, UIntVec _currentArray, UIntVec _bestArray, UInt _index, double& _lowestEnergy);
@@ -269,11 +272,10 @@ private:
 	static bool calcSelfEnergy;
 	static UInt howMany;
     UInt itsNumResidues;
-    vector <UInt> moved;
     vector <double> energies;
 	static UInt itsSolvationParam;
-	vector<chain*> itsChains;
-	vector<UInt> itsIndependentChainsMap;
+    vector <chain*> itsChains;
+    vector <UInt> itsIndependentChainsMap;
 	vector<vector<int> > itsChainLinkageMap;
 	bool (protein::*itsModificationMethods[5])(ran& _ran);
 	

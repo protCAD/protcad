@@ -22,8 +22,6 @@
 #include "molecule.h"
 #endif
 
-
-
 class residueTemplate;
 
 #ifndef RESIDUE_H
@@ -320,6 +318,8 @@ public:
 	bool getPolarHydorgensOn() const {return polarHydrogensOn;}
 	void setPolarHydrogensOn(const bool _polarHydrogensOn);
 	bool getHasPolarHRotamers() const {return dataBase[itsType].getHasPolarHRotamers(); }
+    void setMoved (UInt _moved);
+    UInt getMoved() const {return moved; }
         
 // ***********************************************************************
 // ***********************************************************************
@@ -349,8 +349,9 @@ private:
 	residue* pItsNextRes;
 	residue* pItsPrevRes;
 	bool hydrogensOn;
-        bool polarHydrogensOn;
+    bool polarHydrogensOn;
 	bool isArtificiallyBuilt;
+    UInt moved;
 
 	//variables relating to the rotameric state
 	//or lack thereof....

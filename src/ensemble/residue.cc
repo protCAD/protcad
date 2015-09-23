@@ -2701,9 +2701,11 @@ void residue::rotate(atom* _pAtom, const dblVec& _R_axis, const double _theta)
 } 
                                                     
 void residue::translate(const dblVec& _dblVec)
-{	for (UInt i=0; i < itsAtoms.size(); i++)
+{
+    for (UInt i=0; i < itsAtoms.size(); i++)
 	{	itsAtoms[i]->translate(_dblVec);
 	}
+    moved = 1;
 }
 
 void residue::recursiveTranslateLocal(dblVec& _dblVec, int direction)
@@ -3023,6 +3025,7 @@ double residue::intraEnergy()
 double residue::getResiduePairSoluteEnergy(residue* _other)
 {
     double pairEnergy = 0.0;
+    moved = 0;
     for(UInt i=0; i<itsAtoms.size(); i++)
     {
         if (!itsAtoms[i]->getSilentStatus())
@@ -3089,6 +3092,7 @@ double residue::getResiduePairSoluteEnergy(residue* _other)
 double residue::intraSoluteEnergy()
 {	
 	double intraEnergy = 0.0;
+    moved = 0;
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
 		if (!itsAtoms[i]->getSilentStatus())
@@ -4079,6 +4083,10 @@ double residue::getSelfEnergy(residue* _other)
     return selfEnergy;
 }
 
+void residue::setMoved(UInt _moved)
+{
+    moved = _moved;
+}
 
 double residue::getVolume(UInt _method)
 {
