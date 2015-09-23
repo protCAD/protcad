@@ -1361,7 +1361,8 @@ void protein::buildResidueEnergyPairs()
 {
     vector <double> tempE;
     energies.clear();
-    //populate vectors with starting energies and not moved zeros
+
+    //populate energy vector with starting energies
     if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
     {
         this->updateDielectrics();
@@ -1416,7 +1417,7 @@ void protein::updateProtEnergy()
                             updatePositionDielectrics(chainj, resj);
                         }
 
-                        //calculate position energy
+                        //calculate residue energy pair
                         if (chaini == chainj && resi == resj)
                         {
                             residuePairEnergy = itsChains[chaini]->itsResidues[resi]->intraSoluteEnergy();
