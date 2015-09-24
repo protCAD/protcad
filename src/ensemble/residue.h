@@ -319,7 +319,7 @@ public:
 	void setPolarHydrogensOn(const bool _polarHydrogensOn);
 	bool getHasPolarHRotamers() const {return dataBase[itsType].getHasPolarHRotamers(); }
     void setMoved (UInt _moved);
-    UInt getMoved() const {return moved; }
+    UInt getMoved() const {return moved;}
         
 // ***********************************************************************
 // ***********************************************************************

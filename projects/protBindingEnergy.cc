@@ -39,7 +39,7 @@ int main (int argc, char* argv[])
     //double interEnergy = bundle->interSoluteEnergy(true, 0, 1);
    // cout << Energy[1] << " " << Energy[0];
     t=clock();
-    bundle->buildResidueMatrices();
+    //bundle->buildResidueMatrices();
     t=clock()-t;
     cout << "Time to run: " << ((float)t)/CLOCKS_PER_SEC << endl << endl;
 	return 0;

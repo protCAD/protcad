@@ -49,6 +49,7 @@ void residue::setupDataBase(const bool _Hflag, const bool _HPflag)
 
 UInt residue::howMany = 0;
 
+
 // Constructors and Utilities
 
 
@@ -2224,6 +2225,7 @@ void residue::rotate(UInt _first, UInt _second, double _theta)
 	{	backboneRotation = true;
 	}
 	rotate(pAtom1, pAtom2, _theta, backboneRotation);
+
 }
 
 
@@ -2319,6 +2321,7 @@ void residue::rotateLocal(atom* _pAtom1, atom* _pAtom2, double deltaTheta, doubl
 	#ifdef __RES_DEBUG
 	_pAtom2->queryChildrensCoords();
 	#endif
+
 }
 
 void residue::rotateDihedralLocal(atom* _pAtom1, atom* _pAtom2, double _deltaTheta, UInt _direction)
@@ -2391,6 +2394,7 @@ void residue::rotateDihedralLocal(atom* _pAtom1, atom* _pAtom2, double _deltaThe
 	#ifdef __RES_DEBUG
 	_pAtom2->queryChildrensCoords();
 	#endif
+
 }
 
 void residue::rotateDihedral(atom* _pAtom1, atom* _pAtom2, double _deltaTheta, UInt _direction)
@@ -2467,6 +2471,7 @@ void residue::rotateDihedral(atom* _pAtom1, atom* _pAtom2, double _deltaTheta, U
 	#ifdef __RES_DEBUG
 	_pAtom2->queryChildrensCoords();
 	#endif
+
 }
 
 void residue::rotate(atom* _pAtom1, atom* _pAtom2, double _theta,
@@ -2544,6 +2549,7 @@ void residue::rotate(atom* _pAtom1, atom* _pAtom2, double _theta,
 	cout << _pAtom2->getName() << " " << _pAtom2->getCoords() << endl;
 	_pAtom2->queryChildrensCoords();
 #endif
+
 }
 
 void residue::rotate(const point& _point, const dblMat& _RMatrix )
@@ -2592,6 +2598,7 @@ void residue::rotate_new(atom* _pivotAtom, const dblMat& _RMatrix)
 
 	_pivotAtom->translate(backHome);
 	_pivotAtom->translateChildren(backHome);
+
 }
 
 void residue::rotate_new(atom* _pivotAtom, atom* _firstAtom, const dblMat& _RMatrix)
@@ -2606,6 +2613,7 @@ void residue::rotate_new(atom* _pivotAtom, atom* _firstAtom, const dblMat& _RMat
 
 	_firstAtom->translate(backHome);
 	_firstAtom->translateChildren(backHome);
+
 }
 
 
@@ -2705,7 +2713,7 @@ void residue::translate(const dblVec& _dblVec)
     for (UInt i=0; i < itsAtoms.size(); i++)
 	{	itsAtoms[i]->translate(_dblVec);
 	}
-    moved = 1;
+
 }
 
 void residue::recursiveTranslateLocal(dblVec& _dblVec, int direction)
@@ -2791,6 +2799,7 @@ void residue::transform(const dblMat& _dblMat)
 {	for (UInt i=0; i < itsAtoms.size(); i++)
 	{	itsAtoms[i]->transform(_dblMat);
 	}
+
 }
 
 
@@ -3025,7 +3034,6 @@ double residue::intraEnergy()
 double residue::getResiduePairSoluteEnergy(residue* _other)
 {
     double pairEnergy = 0.0;
-    moved = 0;
     for(UInt i=0; i<itsAtoms.size(); i++)
     {
         if (!itsAtoms[i]->getSilentStatus())
@@ -3092,7 +3100,6 @@ double residue::getResiduePairSoluteEnergy(residue* _other)
 double residue::intraSoluteEnergy()
 {	
 	double intraEnergy = 0.0;
-    moved = 0;
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
 		if (!itsAtoms[i]->getSilentStatus())

@@ -127,7 +127,8 @@ public:
 	//--Optimization functions
     void protOptSolvent(UInt _plateau); // --Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics-- dpike
     void protOptSolvent(UInt _plateau, bool _backbone);  // --Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics-- dpike
-	void chainOptSolvent(UInt _plateau, UInt _chainIndex);
+    void protOpt(UInt _plateau, bool _backbone);  // --Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics and non-redundant energy calc-- dpike
+    void chainOptSolvent(UInt _plateau, UInt _chainIndex);
 	void optimizeSmallRotations(UInt _steps, double _stepSize);
 	void optimizeSmallRotations(vector <UIntVec> _positions, UInt _steps, double _stepSize);
 	void optimizeSmallRotations(UIntVec _position, UInt _steps, double _stepSize);
@@ -152,8 +153,8 @@ public:
 	
 	//--Energy functions
     double protEnergy();
-    void updateProtEnergy();
-    void buildResidueEnergyPairs();
+    void updateProtEnergy(vector<double> &_energies);
+    void buildResidueEnergyPairs(vector<double> &_energies);
 
 	double getAtomCharge(UInt _chainNum, UInt _resNum, UInt _atomNum) { return itsChains[_chainNum]->getAtomCharge(_resNum, _atomNum); }
 	double calculateHCA_O_hBondEnergy();

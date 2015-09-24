@@ -11,10 +11,11 @@
 
 #include "ensemble.h"
 #include "PDBInterface.h"
+#include <time.h>
 int main (int argc, char* argv[])
 {
     if (argc !=3)
-    {   cout << "protOptSolvent <inFile.pdb> <outFile.pdb>" << endl;
+    {   cout << "protOpt <inFile.pdb> <outFile.pdb>" << endl;
         exit(1); }
 
     string infile = argv[1];
@@ -24,9 +25,13 @@ int main (int argc, char* argv[])
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* _prot = static_cast<protein*>(pMol);
 
-    _prot->protOptSolvent(1000, false);
-
+    clock_t t;
+    t=clock();
+    _prot->protOpt(500, false);
+    t=clock()-t;
+    cout << "Time for protOpt: " << ((float)t)/CLOCKS_PER_SEC << endl;
     pdbWriter(_prot, outFile);
+
     return 0;
 }
 
