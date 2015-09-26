@@ -1711,17 +1711,12 @@ vector <double> chain::calculateDielectric(chain* _other, UInt _residueIndex, UI
 	chargeDensity[0] = 0.0;
 	chargeDensity[1] = 0.0;
 	chargeDensity[2] = 0.0;
-	bool withinCube;
 	for(UInt i=0; i<_other->itsResidues.size(); i++)
 	{
-		withinCube = itsResidues[_residueIndex]->inCube(_other->itsResidues[i], 16);
-		if (withinCube)
-		{
-			_chargeDensity = itsResidues[_residueIndex]->calculateDielectric(_other->itsResidues[i], _atomIndex);
-			chargeDensity[0] += _chargeDensity[0];
-			chargeDensity[1] += _chargeDensity[1];
-			chargeDensity[2] += _chargeDensity[2];
-		}
+        _chargeDensity = itsResidues[_residueIndex]->calculateDielectric(_other->itsResidues[i], _atomIndex);
+        chargeDensity[0] += _chargeDensity[0];
+        chargeDensity[1] += _chargeDensity[1];
+        chargeDensity[2] += _chargeDensity[2];
 	}
 	return chargeDensity;
 }
@@ -1733,17 +1728,12 @@ vector <double> chain::calculateDielectric(chain* _other, residue* _residue, ato
 	chargeDensity[0] = 0.0;
 	chargeDensity[1] = 0.0;
 	chargeDensity[2] = 0.0;
-	bool withinCube;
 	for(UInt i=0; i<_other->itsResidues.size(); i++)
 	{
-		withinCube = _residue->inCube(_other->itsResidues[i], 16);
-		if (withinCube)
-		{
-			_chargeDensity = _residue->calculateDielectric(_other->itsResidues[i], _atom);
-			chargeDensity[0] += _chargeDensity[0];
-			chargeDensity[1] += _chargeDensity[1];
-			chargeDensity[2] += _chargeDensity[2];
-		}
+        _chargeDensity = _residue->calculateDielectric(_other->itsResidues[i], _atom);
+        chargeDensity[0] += _chargeDensity[0];
+        chargeDensity[1] += _chargeDensity[1];
+        chargeDensity[2] += _chargeDensity[2];
 	}
 	return chargeDensity;
 }

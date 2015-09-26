@@ -47,5 +47,12 @@ int main (int argc, char* argv[])
 
     cout << "Time to run second protEnergy: " << ((float)t)/CLOCKS_PER_SEC << endl;
 
+    t=clock();
+    double aveE = bundle->getAverageResEnergy();
+    t=clock()-t;
+
+    cout << "Time to run second averageResEnergy: " << ((float)t)/CLOCKS_PER_SEC << endl;
+    cout << aveE << " " << bundle->resEnergy(0,0) << endl;
+
 	return 0;
 }

@@ -152,9 +152,12 @@ public:
 	double getInterEnergy(UInt _chain, ligand* _other);        
 	
 	//--Energy functions
+    void updateEnergyDatabase(vector<double> &_energies, vector < vector <double> > &_resEnergies);
     double protEnergy();
-    void updateProtEnergy(vector<double> &_energies);
-    void buildResidueEnergyPairs(vector<double> &_energies);
+    void updateProtEnergy(vector<double> &_energies, vector < vector <double> > &_resEnergies);
+    void buildResidueEnergyPairs(vector<double> &_energies, vector < vector <double> > &_resEnergies);
+    double resEnergy(UInt chainIndex, UInt resIndex);
+    double getAverageResEnergy();
 
 	double getAtomCharge(UInt _chainNum, UInt _resNum, UInt _atomNum) { return itsChains[_chainNum]->getAtomCharge(_resNum, _atomNum); }
 	double calculateHCA_O_hBondEnergy();
@@ -274,6 +277,7 @@ private:
 	static UInt howMany;
     UInt itsNumResidues;
     vector <double> energies;
+    vector < vector <double> > resEnergies;
 	static UInt itsSolvationParam;
     vector <chain*> itsChains;
     vector <UInt> itsIndependentChainsMap;

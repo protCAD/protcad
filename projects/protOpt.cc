@@ -27,9 +27,9 @@ int main (int argc, char* argv[])
 
     clock_t t;
     t=clock();
-    _prot->protOpt(500, false);
+    _prot->protOpt(100, false);
     t=clock()-t;
-    cout << "Time for protOpt: " << ((float)t)/CLOCKS_PER_SEC << endl;
+    cout << "Time for protOpt: " << ((float)t)/CLOCKS_PER_SEC << " Energy: " << _prot->protEnergy() << endl;
     pdbWriter(_prot, outFile);
 
     return 0;

@@ -1704,6 +1704,7 @@ void residue::setChi(const UInt _bpt, const UInt _index, const double _angle)
 	ASSERT(currentChi < 1e5 && currentChi > -1e5);
 	double diff = _angle - currentChi;
 	setChiByDelta(_bpt, _index, diff);
+    setMoved(1);
 //	calculateSidechainDihedralAngles();
 }
 
@@ -2799,7 +2800,7 @@ void residue::transform(const dblMat& _dblMat)
 {	for (UInt i=0; i < itsAtoms.size(); i++)
 	{	itsAtoms[i]->transform(_dblMat);
 	}
-
+    setMoved(1);
 }
 
 
@@ -3042,22 +3043,11 @@ double residue::getResiduePairSoluteEnergy(residue* _other)
             {
                 if (!_other->itsAtoms[j]->getSilentStatus())
                 {
-                    // if backbone nitrogens are greater than 20 Angstroms apart don't do any further calculations, else continue
-                    double distanceSquared;
-                    if (i == 0 && j == 0)
-                    {
-                        distanceSquared = itsAtoms[i]->inCubeWithDistSQ(_other->itsAtoms[j], 400);
-                        if (distanceSquared > 400)
-                        {
-                            return 0.0;
-                        }
-                    }
-
                     // calculate energy if not bonded atoms
                     bool bonded = isSeparatedByOneOrTwoBonds(i,_other,j);
                     if (!bonded)
                     {
-                        distanceSquared = itsAtoms[i]->inCubeWithDistSQ(_other->itsAtoms[j], cutoffDistanceSquared);
+                        double distanceSquared = itsAtoms[i]->inCubeWithDistSQ(_other->itsAtoms[j], cutoffDistanceSquared);
                         if (distanceSquared <= cutoffDistanceSquared)
                         {
                             // ** inter AMBER Electrostatics
@@ -3193,7 +3183,7 @@ vector <double> residue::calculateDielectric(residue* _other, UInt _atomIndex)
 	for(UInt i=0; i<_other->itsAtoms.size(); i++)
 	{
 		distanceSquared = itsAtoms[_atomIndex]->inCubeWithDistSQ(_other->itsAtoms[i], 81);
-		if (distanceSquared != 999.0 && distanceSquared != 0.0 && distanceSquared <= 81)
+        if (distanceSquared != 0.0 && distanceSquared <= 81)
 		{
 			atoms++;
 			atomEnergyType = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[i][1];
@@ -3237,7 +3227,7 @@ vector <double> residue::calculateDielectric(residue* _other, atom* _atom)
 	for(UInt i=0; i<_other->itsAtoms.size(); i++)
 	{
 		distanceSquared = _atom->inCubeWithDistSQ(_other->itsAtoms[i], 81);
-		if (distanceSquared != 999.0 && distanceSquared != 0.0 && distanceSquared <= 81)
+        if (distanceSquared != 0.0 && distanceSquared <= 81)
 		{
 			atoms++;
 			atomEnergyType = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[i][1];
