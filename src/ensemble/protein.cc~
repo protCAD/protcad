@@ -3266,7 +3266,8 @@ void protein::protOpt(UInt _plateau, bool _backbone)
                     }
                 }
                 if (breakout == 1)
-                {break;
+                {
+                    break;
                 }
             }
             if (breakout == 0)
