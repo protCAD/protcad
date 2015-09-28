@@ -3190,88 +3190,78 @@ void protein::protOptSolvent(UInt _plateau, bool _backbone)
 }
 
 void protein::protOpt(UInt _plateau, bool _backbone)
-{   // Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics and corresponding implicit solvation score
+{   // Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics and corresponding implicit solvation energy
     //    _plateau: the number of consecutive optimization cycles without an energy decrease.
-    //	    	     (1000 is recommended for a full minimization without excessive calculation)
+    //	    	     (100 is recommended for a full optimization without excessive calculation)
     // -pike 2013
 
-    //--Initialize variables for loop and calculate starting energy-------------------------------------
+    //--Initialize variables for loop, calculate starting energy and build energy vectors---------------
     double deltaTheta = 0, Energy, resE, aveResE, pastEnergy = protEnergy();
     UInt randchain, randres, randrestype, allowedRotsize, randrot, nobetter = 0;
-    UInt resNum, randtype, chainNum = getNumChains(), rotbetter = 0, thisone, breakout;
+    UInt resNum, randtype, chainNum = getNumChains(), thisone, breakout;
     vector < vector <double> > currentRot;
     vector <UIntVec> allowedRots;
     srand (time(NULL));
 
-    //--Run optimizaiton loop to energetic minima, determined by _plateau-------------------------------
+    //--Run optimizaiton loop to optimization minima, determined by _plateau----------------------------
     do
-    {
-        //--Generate random residue
+    {   //--choose random residue
         randchain = rand() % chainNum;
         resNum = getNumResidues(randchain);
         randres = rand() % resNum;
         randrestype = getTypeFromResNum(randchain, randres);
         nobetter++;
 
-        //--backbone optimization----------------------------------------------------------------------
-        resE = resEnergy(randchain, randres);
-        aveResE = getAverageResEnergy();
-        if (rotbetter > _plateau && resE > aveResE && _backbone)
-        {
-            //--choose phi or psi and angle, for a local transformation
+        //--Backbone optimization-----------------------------------------------------------------------
+        resE = resEnergy(randchain, randres), aveResE = getAverageResEnergy();
+        if (nobetter > _plateau && resE > (aveResE/(nobetter+1)) && _backbone)
+        {   //--randomly choose phi or psi, and change in angle of -1 or +1 degree
             randtype = rand() % 2;
             do
             { deltaTheta = ((rand() % 3) -1);
             } while (deltaTheta == 0);
 
-            //--transform angles while energy improves, until energy degrades, then revert one step
+            //--transform angles while energy improves, until energy degrades, then revert
             do
-            {
-                setDihedralLocal(randchain, randres, deltaTheta, randtype);
+            {   setDihedralLocal(randchain, randres, deltaTheta, randtype);
                 thisone = 0;
                 //--Energy test
                 Energy = protEnergy();
                 if (Energy < (pastEnergy-0.05))
-                {
-                    nobetter = 0, thisone = 1, pastEnergy = Energy;
+                {   nobetter = 0, thisone = 1, pastEnergy = Energy;
+                    cout << Energy << endl;
                 }
             } while (thisone == 1);
             setDihedralLocal(randchain, randres, (deltaTheta*-1), randtype);
         }
 
-        resE = resEnergy(randchain, randres);
-        aveResE = getAverageResEnergy();
-        if (resE > (aveResE-nobetter))
-        {
-            //--Rotamer optimization-----------------------------------------------------------------------
-            currentRot = getSidechainDihedrals(randchain, randres);
+        //--Rotamer optimization-----------------------------------------------------------------------
+        resE = resEnergy(randchain, randres), aveResE = getAverageResEnergy();
+        if (resE > (aveResE/(nobetter+1)))
+        {   currentRot = getSidechainDihedrals(randchain, randres);
             allowedRots = getAllowedRotamers(randchain, randres, randrestype);
-            rotbetter++, rotbetter++, breakout = 0;
+            breakout = 0;
 
-            //--Try a max of 1/3 of allowed rotamers per branchpoint and keep first improvement or revert to previous angles
+            //--Try a max of 1/3 of allowed rotamers per branchpoint and keep first improvement, else revert
             for (UInt b = 0; b < residue::getNumBpt(randrestype); b++)
-            {
-                allowedRotsize = allowedRots[b].size()*0.33;
+            {   allowedRotsize = allowedRots[b].size()*0.33;
                 for (UInt j = 0; j < allowedRotsize; j ++)
-                {
-                    randrot = rand() % allowedRots[b].size();
+                {   randrot = rand() % allowedRots[b].size();
                     setRotamerWBC(randchain, randres, b, allowedRots[b][randrot]);
-
+                    //--Energy test
                     Energy = protEnergy();
                     if (Energy < (pastEnergy-0.05))
-                    {
-                        //cout << Energy << " " << nobetter << endl;
-                        breakout = 1, rotbetter--, rotbetter--, nobetter = 0, pastEnergy = Energy;
+                    {   breakout = 1, nobetter = 0, pastEnergy = Energy;
+                        cout << Energy << endl;
                         break;
                     }
                 }
                 if (breakout == 1)
-                {break;
+                {   break;
                 }
             }
             if (breakout == 0)
-            {
-                setSidechainDihedralAngles(randchain, randres, currentRot);
+            {   setSidechainDihedralAngles(randchain, randres, currentRot);
             }
         }
     } while (nobetter < _plateau * 1.2);
