@@ -87,12 +87,12 @@ int main (int argc, char* argv[])
 
 	                   //--find lowest Rotamer and optimize neighbors
 	                   allowedRots = bundle->getAllowedRotamers(chains[l], residues[i], restype, 0);
-	                   pastEnergy = bundle->protEnergy();
+	                   pastEnergy = bundle->intraSoluteEnergy(true);
 	                   for (UInt m = 0; m < allowedRots.size(); m ++)
 	                   {
 	                       bundle->setRotamerWBC(chains[l], residues[i], 0, allowedRots[m]);
 					   currentRot = bundle->getSidechainDihedrals(chains[l], residues[i]);
-	                       Energy = bundle->protEnergy();
+	                       Energy = bundle->intraSoluteEnergy(true);
 	                       if (Energy < pastEnergy)
 	                       {
 	                           pastEnergy = Energy;
@@ -103,7 +103,7 @@ int main (int argc, char* argv[])
 	                }
 
 		           //--print pdb and data to output
-		           Energy = bundle->protEnergy();
+		           Energy = bundle->intraSoluteEnergy(true);
 				 dielectric = getAverageDielectric(bundle, 30);
 				 count++;
 				 stringstream convert; 
@@ -117,7 +117,7 @@ int main (int argc, char* argv[])
 		}
 	}
 	t=clock()-t;
-	cout << "Time to run with protEnergy(): " << ((float)t)/CLOCKS_PER_SEC << endl;
+	cout << "Time to run with intraSoluteEnergy(true): " << ((float)t)/CLOCKS_PER_SEC << endl;
 	return 0;
 }
 
