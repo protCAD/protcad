@@ -51,7 +51,7 @@ int main (int argc, char* argv[])
     int resID[] = {Q,N,S,T};
 	int resIDsize = sizeof(resID)/sizeof(resID[0]);
     int replicates = 1;
-	int count = 20;
+	int count = 0;
 
     //--variables
     UInt mutant, restype;
