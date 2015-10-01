@@ -33,7 +33,6 @@ protein::protein(const string& _name) : molecule(_name)
 	itsChains.resize(0);
     itsIndependentChainsMap.resize(0);
     energies.resize(0);
-    resEnergies.resize(0);
 	itsChainLinkageMap.resize(0);
 	itsLastModifiedChain = -1;
 	setMoleculeType(1);
@@ -1329,29 +1328,32 @@ void protein::updateTotalNumResidues()
     itsNumResidues = numResidues;
 }
 
-void protein::updateEnergyDatabase(vector<double> &_energies, vector < vector <double> > &_resEnergies)
+void protein::updateEnergyDatabase(vector < vector < vector <double> > > &_energies)
 {
     if (_energies.empty()) // build energy database
     {
-        updateTotalNumResidues();
-        _energies.clear();
-        _resEnergies.clear();
-        buildResidueEnergyPairs(_energies, _resEnergies);
+        buildResidueEnergyPairs(_energies);
     }
     else // update energy database
     {
-        updateProtEnergy(_energies, _resEnergies);
+        updateProtEnergy(_energies);
     }
 }
 
 double protein::protEnergy()
 {  
-    updateEnergyDatabase(energies, resEnergies);
+    updateEnergyDatabase(energies);
 
     double protEnergy = 0;
     for (UInt i = 0; i < energies.size(); i++) // total energy database
     {
-        protEnergy += energies[i];
+        for (UInt j = 0; j < energies[i].size(); j++)
+        {
+            for (UInt k = 0; k < energies[i][j].size(); k++)
+            {
+                protEnergy += energies[i][j][k];
+            }
+        }
     }
     return protEnergy;
 }
@@ -1360,10 +1362,14 @@ double protein::resEnergy(UInt chainIndex, UInt resIndex)
 {
 	if (itsChains[chainIndex]->itsResidues[resIndex]->getMoved() != 0)
 	{
-		updateEnergyDatabase(energies, resEnergies);
+        updateEnergyDatabase(energies);
 	}
 
-	double resEnergy = resEnergies[chainIndex][resIndex];
+    double resEnergy = 0;
+    for (UInt i = 0; i < energies[chainIndex][resIndex].size(); i++)
+    {
+        resEnergy += energies[chainIndex][resIndex][i];
+    }
 	return resEnergy;
 }
 
@@ -1375,22 +1381,22 @@ double protein::getAverageResEnergy()
     {
         for (UInt j = 0; j < itsChains[i]->itsResidues.size(); j++)
         {
-            totalResEnergy += this->resEnergy(i,j);
+            totalResEnergy += resEnergy(i,j);
             total++;
         }
     }
-    //cout << totalResEnergy << endl;
     averageResEnergy = totalResEnergy/total;
     return averageResEnergy;
 }
 
-void protein::buildResidueEnergyPairs(vector <double> &_energies, vector < vector <double> > &_resEnergies)
+void protein::buildResidueEnergyPairs(vector < vector < vector <double> > > &_energies)
 {
-    double residueEnergy;
-    double totalResEnergy;
-    vector <double> tempE;
-    vector <double> resEnergies;
-    vector < vector <double> > tempResE;
+    updateTotalNumResidues();
+    _energies.clear();
+    double Energy;
+    vector < vector < vector <double> > > chainE;
+    vector < vector <double> > resE;
+    vector <double> E;
 
     //populate energy vector with starting energies
     if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
@@ -1400,29 +1406,28 @@ void protein::buildResidueEnergyPairs(vector <double> &_energies, vector < vecto
     UInt chaini, chainj, resi, resj;
     for (chaini = 0; chaini < itsChains.size(); chaini++)
     {
-        resEnergies.clear();
+        resE.clear();
         for (resi = 0; resi < itsChains[chaini]->itsResidues.size(); resi++)
         {
-            totalResEnergy = 0;
+            E.clear();
             for (chainj = 0; chainj < chaini+1; chainj++)
             {
                 for (resj = 0; resj < resi+1; resj++)
                 {
                     if (chaini == chainj && resi == resj)
                     {
-                        residueEnergy = itsChains[chaini]->itsResidues[resi]->intraSoluteEnergy();
+                        Energy = itsChains[chaini]->itsResidues[resi]->intraSoluteEnergy();
                     }
                     else
                     {
-                        residueEnergy = itsChains[chaini]->itsResidues[resi]->getResiduePairSoluteEnergy(itsChains[chainj]->itsResidues[resj]);
+                        Energy = itsChains[chaini]->itsResidues[resi]->getResiduePairSoluteEnergy(itsChains[chainj]->itsResidues[resj]);
                     }
-                    tempE.push_back(residueEnergy);
-                    totalResEnergy += residueEnergy;
+                    E.push_back(Energy);
                 }
             }
-            resEnergies.push_back(totalResEnergy);
+            resE.push_back(E);
         }
-        tempResE.push_back(resEnergies);
+        chainE.push_back(resE);
     }
     for (chaini = 0; chaini < itsChains.size(); chaini++)
     {
@@ -1431,27 +1436,21 @@ void protein::buildResidueEnergyPairs(vector <double> &_energies, vector < vecto
             itsChains[chaini]->itsResidues[resi]->setMoved(0);
         }
     }
-    _energies = tempE;
-    _resEnergies = tempResE;
+    _energies = chainE;
     return;
 }
 
-void protein::updateProtEnergy(vector <double> &_energies, vector < vector <double> > &_resEnergies)
+void protein::updateProtEnergy(vector < vector < vector <double> > > &_energies)
 {
     double residueEnergy;
-    double totalResEnergy;
-    vector <double> tempE;
-    vector <double> resEnergies;
-    vector < vector <double> > tempResE;
 
     //update energies of residues transformed since last calculation
-    UInt chaini, chainj, resi, resj, i = 0;
+    UInt chaini, chainj, resi, resj, k;
     for (chaini = 0; chaini < itsChains.size(); chaini++)
     {
-        resEnergies.clear();
         for (resi = 0; resi < itsChains[chaini]->itsResidues.size(); resi++)
         {
-            totalResEnergy = 0;
+            k = 0;
             for (chainj = 0; chainj < chaini+1; chainj++)
             {
                 for (resj = 0; resj < resi+1; resj++)
@@ -1477,19 +1476,12 @@ void protein::updateProtEnergy(vector <double> &_energies, vector < vector <doub
                         {
                             residueEnergy = itsChains[chaini]->itsResidues[resi]->getResiduePairSoluteEnergy(itsChains[chainj]->itsResidues[resj]);
                         }
-                        tempE.push_back(residueEnergy);
+                        _energies[chaini][resi][k] = residueEnergy;
                     }
-                    else
-                    {
-                        tempE.push_back(energies[i]);
-                    }
-                    totalResEnergy += tempE[i];
-                    i++;
+                    k++;
                 }
             }
-            resEnergies.push_back(totalResEnergy);
         }
-        tempResE.push_back(resEnergies);
     }
     for (chaini = 0; chaini < itsChains.size(); chaini++)
     {
@@ -1498,10 +1490,6 @@ void protein::updateProtEnergy(vector <double> &_energies, vector < vector <doub
             itsChains[chaini]->itsResidues[resi]->setMoved(0);
         }
     }
-    _energies.clear();
-    _energies = tempE;
-    _resEnergies.clear();
-    _resEnergies = tempResE;
     return;
 }
 //-/////////////////////////////////////////////////////////////////////////////

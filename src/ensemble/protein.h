@@ -152,10 +152,10 @@ public:
 	double getInterEnergy(UInt _chain, ligand* _other);        
 	
 	//--Energy functions
-    void updateEnergyDatabase(vector<double> &_energies, vector < vector <double> > &_resEnergies);
+    void updateEnergyDatabase(vector<vector<vector<double> > > &_energies);
     double protEnergy();
-    void updateProtEnergy(vector<double> &_energies, vector < vector <double> > &_resEnergies);
-    void buildResidueEnergyPairs(vector<double> &_energies, vector < vector <double> > &_resEnergies);
+    void updateProtEnergy(vector<vector<vector<double> > > &_energies);
+    void buildResidueEnergyPairs(vector<vector<vector<double> > > &_energies);
     double resEnergy(UInt chainIndex, UInt resIndex);
     double getAverageResEnergy();
 
@@ -276,8 +276,7 @@ private:
 	static bool calcSelfEnergy;
 	static UInt howMany;
     UInt itsNumResidues;
-    vector <double> energies;
-    vector < vector <double> > resEnergies;
+    vector < vector < vector  <double> > > energies;
 	static UInt itsSolvationParam;
     vector <chain*> itsChains;
     vector <UInt> itsIndependentChainsMap;
