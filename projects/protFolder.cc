@@ -135,7 +135,7 @@ int main (int argc, char* argv[])
 		ensemble* theEnsemble = thePDB->getEnsemblePointer();
 		molecule* pMol = theEnsemble->getMoleculePointer(0);
 		protein* bundle = static_cast<protein*>(pMol);
-		pastEnergy = bundle->intraSoluteEnergy(true), resNum = bundle->getNumResidues(0), fib = 0, count = 0, nobetter = 0, bestEnergy = 1E10, plateau = resNum*24;
+        pastEnergy = bundle->protEnergy(), resNum = bundle->getNumResidues(0), fib = 0, count = 0, nobetter = 0, bestEnergy = 1E10, plateau = resNum*100;
 		foldPosition = getFoldingPosition(bundle);
 		dblVec phis(resNum), psis(resNum);
 		for (UInt i = 0; i < resNum; i++)
@@ -150,7 +150,7 @@ int main (int argc, char* argv[])
 			PDBInterface* thePDB = new PDBInterface(inFile);
 			ensemble* theEnsemble = thePDB->getEnsemblePointer();
 			molecule* pMol = theEnsemble->getMoleculePointer(0);
-			protein* bundle = static_cast<protein*>(pMol);
+            protein* bundle = static_cast<protein*>(pMol);
 			fib++, nobetter++;
 
 			//generate random angles---------------------------
@@ -221,11 +221,11 @@ int main (int argc, char* argv[])
 				}
 
 				//optimize and check Energy------------------------------
-				bundle->protOptSolvent(200);
-				Energy = bundle->intraSoluteEnergy(true);
+                bundle->protOpt(false);
+                Energy = bundle->protEnergy();
 				if (Energy < (pastEnergy + fib) && (Energy < (pastEnergy-.5) || Energy > (pastEnergy+.5)))
 				{
-					cout << Energy << endl;
+                    //cout << Energy << endl;
 					fib = 0, pastEnergy = Energy, test = 0, count++, nobetter--;
 					phis[foldPosition] = newphi, psis[foldPosition] = newpsi;
 
@@ -310,7 +310,7 @@ int main (int argc, char* argv[])
 		molecule* modelMol = theModelEnsemble->getMoleculePointer(0);
 		protein* model = static_cast<protein*>(modelMol);
 		name = rand() % 1000000;
-		cout << name << " " << model->intraSoluteEnergy(true) << endl;
+        cout << name << " " << model->protEnergy() << endl;
 		stringstream convert; 
 		convert << name, endstr = convert.str();
 		outFile = endstr + "_model.pdb";
@@ -327,26 +327,17 @@ int main (int argc, char* argv[])
 
 UInt getFoldingPosition(protein* _prot)
 {
-	//--get average position energy
-	UInt randres, resNum = _prot->getNumResidues(0), position, rescount = 0;
-	double posE, totalposE = 0, aveposE;
-	_prot->updateDielectrics();
+    //--get median residue energy
+    UInt randres, resNum = _prot->getNumResidues(0);
+    double posE, medE;
+    medE = _prot->getMedianResEnergy();
 
-	for (UInt i = 0; i < resNum; i++)
-	{
-		rescount++;
-		posE = _prot->getPositionSoluteEnergy(0, i, false);
-		totalposE = totalposE + posE;
-	}
-	aveposE = totalposE/rescount;
-
-	//--find position with worse than average energy
+    //--find random position with worse than median energy
 	posE = -1E10;
 	do
 	{
 		randres = rand() % resNum;
-		posE = _prot->getPositionSoluteEnergy(0, randres, false);
-	}while (posE <= aveposE);
-	position = randres;
-	return position;
+        posE = _prot->resEnergy(0,randres);
+    }while (posE <= medE);
+    return randres;
 }

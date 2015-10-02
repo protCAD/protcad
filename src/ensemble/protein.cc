@@ -1373,20 +1373,31 @@ double protein::resEnergy(UInt chainIndex, UInt resIndex)
 	return resEnergy;
 }
 
-double protein::getAverageResEnergy()
+double protein::getMedianResEnergy()
 {
-    double averageResEnergy, totalResEnergy = 0;
-    UInt total = 0;
+    double median, resE;
+    vector <double> resEnergies;
     for (UInt i = 0; i < itsChains.size(); i++)
     {
         for (UInt j = 0; j < itsChains[i]->itsResidues.size(); j++)
         {
-            totalResEnergy += resEnergy(i,j);
-            total++;
+            resE = resEnergy(i,j);
+            resEnergies.push_back(resE);
         }
     }
-    averageResEnergy = totalResEnergy/total;
-    return averageResEnergy;
+    size_t size = resEnergies.size();
+
+    sort(resEnergies.begin(), resEnergies.end());
+
+    if (size  % 2 == 0)
+    {
+      median = (resEnergies[size / 2 - 1] + resEnergies[size / 2]) / 2;
+    }
+    else
+    {
+      median = resEnergies[size / 2];
+    }
+    return median;
 }
 
 void protein::buildResidueEnergyPairs(vector < vector < vector <double> > > &_energies)
@@ -3177,15 +3188,15 @@ void protein::protOptSolvent(UInt _plateau, bool _backbone)
     return;
 }
 
-void protein::protOpt(UInt _plateau, bool _backbone)
+void protein::protOpt(bool _backbone)
 {   // Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics and corresponding implicit solvation energy
     //    _plateau: the number of consecutive optimization cycles without an energy decrease.
     //	    	     (100 is recommended for a full optimization without excessive calculation)
     // -pike 2013
 
     //--Initialize variables for loop, calculate starting energy and build energy vectors---------------
-    double deltaTheta = 0, Energy, resE, aveResE, pastEnergy = protEnergy();
-    UInt randchain, randres, randrestype, allowedRotsize, randrot, nobetter = 0;
+    double deltaTheta = 0, Energy, resE, medResE, pastEnergy = protEnergy();
+    UInt randchain, randres, randrestype, allowedRotsize, randrot, nobetter = 0, _plateau = itsNumResidues*10;
     UInt resNum, randtype, chainNum = getNumChains(), thisone, breakout;
     vector < vector <double> > currentRot;
     vector <UIntVec> allowedRots;
@@ -3201,8 +3212,8 @@ void protein::protOpt(UInt _plateau, bool _backbone)
         nobetter++;
 
         //--Backbone optimization-----------------------------------------------------------------------
-        resE = resEnergy(randchain, randres), aveResE = getAverageResEnergy();
-        if (nobetter > _plateau && resE > (aveResE/(nobetter+1)) && _backbone)
+        resE = resEnergy(randchain, randres), medResE = getMedianResEnergy();
+        if (nobetter > _plateau && resE > medResE && _backbone)
         {   //--randomly choose phi or psi, and change in angle of -1 or +1 degree
             randtype = rand() % 2;
             do
@@ -3217,15 +3228,15 @@ void protein::protOpt(UInt _plateau, bool _backbone)
                 Energy = protEnergy();
                 if (Energy < (pastEnergy-0.05))
                 {   nobetter = 0, thisone = 1, pastEnergy = Energy;
-                    cout << Energy << endl;
+                    cout << Energy << " ";
                 }
             } while (thisone == 1);
             setDihedralLocal(randchain, randres, (deltaTheta*-1), randtype);
         }
 
         //--Rotamer optimization-----------------------------------------------------------------------
-        resE = resEnergy(randchain, randres), aveResE = getAverageResEnergy();
-        if (resE > (aveResE/(nobetter+1)))
+        resE = resEnergy(randchain, randres), medResE = getMedianResEnergy();
+        if (resE > (medResE/(nobetter*nobetter)))
         {   currentRot = getSidechainDihedrals(randchain, randres);
             allowedRots = getAllowedRotamers(randchain, randres, randrestype);
             breakout = 0;
@@ -3240,7 +3251,7 @@ void protein::protOpt(UInt _plateau, bool _backbone)
                     Energy = protEnergy();
                     if (Energy < (pastEnergy-0.05))
                     {   breakout = 1, nobetter = 0, pastEnergy = Energy;
-                        cout << Energy << endl;
+                        cout << Energy << " ";
                         break;
                     }
                 }
