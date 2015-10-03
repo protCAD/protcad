@@ -3228,7 +3228,7 @@ void protein::protOpt(bool _backbone)
                 Energy = protEnergy();
                 if (Energy < (pastEnergy-0.05))
                 {   nobetter = 0, thisone = 1, pastEnergy = Energy;
-                    cout << Energy << " ";
+                    //cout << Energy << " ";
                 }
             } while (thisone == 1);
             setDihedralLocal(randchain, randres, (deltaTheta*-1), randtype);
@@ -3251,7 +3251,7 @@ void protein::protOpt(bool _backbone)
                     Energy = protEnergy();
                     if (Energy < (pastEnergy-0.05))
                     {   breakout = 1, nobetter = 0, pastEnergy = Energy;
-                        cout << Energy << " ";
+                        //cout << Energy << " ";
                         break;
                     }
                 }

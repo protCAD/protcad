@@ -18,7 +18,7 @@
 #include "ensemble.h"
 #include "PDBInterface.h"
 
-UInt getFoldingPosition(protein* _prot);
+UInt getFoldingPosition(protein* _prot, UInt _nobetter);
 
 int main (int argc, char* argv[])
 {
@@ -129,14 +129,14 @@ int main (int argc, char* argv[])
     double newphi = 0.0, newpsi = 0.0, randphi, randpsi, pastEnergy, Energy, bestEnergy;
 
 	//--loop
-	for (int a = 1; a < 100; a++)
+    for (int a = 1; a < 1000; a++)
 	{
 		PDBInterface* thePDB = new PDBInterface(inFile);
 		ensemble* theEnsemble = thePDB->getEnsemblePointer();
 		molecule* pMol = theEnsemble->getMoleculePointer(0);
 		protein* bundle = static_cast<protein*>(pMol);
-        pastEnergy = bundle->protEnergy(), resNum = bundle->getNumResidues(0), fib = 0, count = 0, nobetter = 0, bestEnergy = 1E10, plateau = resNum*100;
-		foldPosition = getFoldingPosition(bundle);
+        pastEnergy = bundle->protEnergy(), resNum = bundle->getNumResidues(0), fib = 0, count = 0, nobetter = 0, bestEnergy = 1E10, plateau = resNum*10000;
+        foldPosition = getFoldingPosition(bundle,nobetter+1);
 		dblVec phis(resNum), psis(resNum);
 		for (UInt i = 0; i < resNum; i++)
 		{
@@ -300,7 +300,7 @@ int main (int argc, char* argv[])
 					}
 				}
 			} while (test == 0);
-			foldPosition = getFoldingPosition(bundle);
+            foldPosition = getFoldingPosition(bundle,nobetter);
 			delete thePDB;
 		}while (nobetter < plateau);
 		
@@ -325,7 +325,7 @@ int main (int argc, char* argv[])
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-UInt getFoldingPosition(protein* _prot)
+UInt getFoldingPosition(protein* _prot, UInt _nobetter)
 {
     //--get median residue energy
     UInt randres, resNum = _prot->getNumResidues(0);
@@ -338,6 +338,6 @@ UInt getFoldingPosition(protein* _prot)
 	{
 		randres = rand() % resNum;
         posE = _prot->resEnergy(0,randres);
-    }while (posE <= medE);
+    }while (posE < (medE/_nobetter));
     return randres;
 }
