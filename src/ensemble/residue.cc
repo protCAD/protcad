@@ -1,11 +1,8 @@
 /**********************************************************************
   *********************************************************************
  	filename: residue_basic.cpp
-
  	contents: class residue implemention
-
  	static variables defined: howMany
-
  	functions defined:
 				constructors
 				destructors
@@ -387,13 +384,11 @@ void residue::buildConnectivity()
 {	UInt tempInt;
 	vector<UInt> intVector;
 	intVector.resize(0);
-
 	cout << "itsType = " << itsType << endl;
 	for (UInt i=0; i<dataBase[itsType].connectivity.size(); i++)
 	{	cout << dataBase[itsType].connectivity[i] << " ";
 	}
 	cout << endl;
-
 	for(UInt i=0; i< dataBase[itsType].connectivity.size(); i++)
 	{	tempInt = dataBase[itsType].connectivity[i];
 		if (tempInt == 0)
@@ -2969,7 +2964,7 @@ double residue::intraEnergy()
 	double vdwEnergy = 0.0;
 	double pmfEnergy = 0.0;
 	double amberElecEnergy = 0.0;
-	bool threeBonds;
+    bool twoBonds;
 
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
@@ -2981,7 +2976,7 @@ double residue::intraEnergy()
 				{
 					//distance = itsAtoms[i]->distance(itsAtoms[j]);
 					distanceSquared = itsAtoms[i]->distanceSquared(itsAtoms[j]);
-					threeBonds = isSeparatedByFewBonds(i,j);
+					twoBonds = isSeparatedByOneOrTwoBonds(i,j);
 					// ** intra AMBER vdW
 					if (residueTemplate::itsAmberVDW.getScaleFactor() != 0.0 )
 					{
@@ -2995,7 +2990,7 @@ double residue::intraEnergy()
 								index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][1];
 								index2 = dataBase[itsType].itsAtomEnergyTypeDefinitions[j][1];
 						}
-						if (!threeBonds)
+						if (!twoBonds)
 						{
 							double tempvdwEnergy = residueTemplate::getVDWEnergySQ(index1,index2,distanceSquared);
 							vdwEnergy += tempvdwEnergy;
@@ -3005,7 +3000,7 @@ double residue::intraEnergy()
 					// ** intra AMBER Electrostatics
 					if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
 					{
-						if (!threeBonds)
+						if (!twoBonds)
 						{
 							UInt resType1 = itsType;
 							UInt atomType1 = i;
@@ -3148,7 +3143,7 @@ double residue::intraSoluteEnergy()
 			}
 		}
 	}
-    return intraEnergy;
+	return intraEnergy;
 }
 
 vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
@@ -3311,6 +3306,9 @@ double residue::interEnergy(residue* _other)
 							{
 								double tempvdwEnergy = residueTemplate::getVDWEnergySQ(index1, index2, distanceSquared);
 								vdwEnergy += tempvdwEnergy;
+								
+				//				cout << i << " " << j << " " << tempvdwEnergy << endl;
+							
 							}
 						}
 					}
@@ -4170,7 +4168,7 @@ void residue::coilcoil(const double _pitch)
         double y = itsAtoms[i]->getY();
         double z = itsAtoms[i]->getZ();
 
-        double theta = -2 * 3.14159 * z / _pitch;
+        double theta = -6.28318 * z / _pitch;
 
         double xcoil = x * cos(theta) - y * sin(theta);
         double ycoil = x * sin(theta) + y * cos(theta);
@@ -4240,4 +4238,3 @@ dblVec residue::getBackBoneCentroid()
 	centroid = temp->getCoords();
 	return centroid;
 }
-

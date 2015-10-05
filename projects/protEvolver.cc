@@ -103,7 +103,7 @@ int main (int argc, char* argv[])
 			chainSequence = getChainSequence(bundle, activeChains[i]);
 			proteinSequence.push_back(chainSequence);
 		}
-        bundle->protOptSolvent(200, false);
+        bundle->protOpt(false);
 
 		//--Determine next mutation position
         mutantPosition.clear();
@@ -167,7 +167,7 @@ int main (int argc, char* argv[])
 				}
 				randomizeSideChains(bundle, activeChains[i]);
 			}
-            bundle->protOptSolvent(200, false);
+            bundle->protOpt(false);
 			protein* tempBundle = new protein(*bundle);
 			
 			//--Determine next mutation position
