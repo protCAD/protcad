@@ -123,10 +123,10 @@ int main (int argc, char* argv[])
     vector<vector<UInt> > resIDs;
     vector <UInt> v;
 
-    UInt resID1[] = {P,O,G,P,O,G,P,O,G,V,O,G,P,O,G,P,O,G,P,O,G,P,O,G};
+    UInt resID1[] = {A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A,A};
     v.insert (v.begin(), resID1, resID1 + sizeof(resID1)/sizeof(resID1[0]));
     resIDs.push_back(v);
-    v.clear();
+    v.clear();/*
     UInt resID2[] = {P,O,G,P,O,G,P,O,G,M,O,G,P,O,G,P,O,G,P,O,G,P,O,G};
     v.insert (v.begin(), resID2, resID2 + sizeof(resID2)/sizeof(resID2[0]));
     resIDs.push_back(v);
@@ -214,7 +214,7 @@ int main (int argc, char* argv[])
     UInt resID22[] = {P,O,G,P,O,G,P,O,G,P,W,G,P,O,G,P,O,G,P,O,G,P,O,G};
     v.insert (v.begin(), resID22, resID22 + sizeof(resID22)/sizeof(resID22[0]));
     resIDs.push_back(v);
-    v.clear();/*
+    v.clear();
     UInt resID23[] = {G,P,O,G,P,O,G,P,O,G,R,K,G,R,O,G,P,O,G,P,O,G,P,O,G,G};
     v.insert (v.begin(), resID23, resID23 + sizeof(resID23)/sizeof(resID23[0]));
     resIDs.push_back(v);
