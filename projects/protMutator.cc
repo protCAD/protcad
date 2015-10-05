@@ -319,7 +319,7 @@ int main (int argc, char* argv[])
         ensemble* theEnsemble2 = thePDB2->getEnsemblePointer();
         molecule* pMol2 = theEnsemble2->getMoleculePointer(0);
         protein* bundle2 = static_cast<protein*>(pMol2);
-        bundle2->protOptSolvent(500, false);
+        bundle2->protOpt(false);
         double Energy = bundle2->intraSoluteEnergy(false);
         cout << Energy << endl;
         pdbWriter(bundle2, outFile);

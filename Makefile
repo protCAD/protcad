@@ -165,5 +165,4 @@ $(LIB_CC_OBJECTS): %.o: %.cc %.h
 clean: 
 	rm -f $(OBJDIR)/*.o 
 	rm -f $(OBJDIR)/*.a
-	rm -f protCAD*
 	cd $(BINDIR) && rm -f $(TARGETS)

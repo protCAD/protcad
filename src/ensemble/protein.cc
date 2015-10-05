@@ -1252,6 +1252,7 @@ vector <double> protein::calculateDielectric(chain* _chain, residue* _residue, a
     return dielectric;
 }
 
+
 vector <double> protein::calculateChainIndependentDielectric(chain* _chain, residue* _residue, atom* _atom, UInt _atomIndex)
 {
 	vector <double> chargeDensity(3);
@@ -1271,7 +1272,7 @@ vector <double> protein::calculateChainIndependentDielectric(chain* _chain, resi
     waterpol = waters*1.4907;
     dielectric[0] = (1+12.56*((waters+chargeDensity[2]) * 0.1) * 0.00026824034 * (waterpol+chargeDensity[1])); //combined sums and converted div to mult "(1+4*3.14*((waters+chargeDensity[2])/10)/3728*(waterpol+chargeDensity[1]))"
     dielectric[1] = waters;
-    return dielectric;
+	return dielectric;
 }
 
 void protein::updateChainIndependentDielectrics(UInt _chainIndex)
@@ -1692,6 +1693,23 @@ vector <double> protein::chainFoldingBindingEnergy(bool _unfold)
 	bindingEnergy = complexEnergy - intraChainEnergy;
 	Energy.push_back(bindingEnergy);
 	return Energy;
+}
+
+vector <double> protein::chainBindingEnergy()
+{
+    double bindingEnergy, complexEnergy, intraChainEnergy = 0.0;
+    vector <double> Energy;
+    complexEnergy = this->intraSoluteEnergy(true);
+    Energy.push_back(complexEnergy);
+    UInt numChains = this->getNumChains();
+    for (UInt j = 0; j < numChains; j++)
+    {
+        this->updateChainIndependentDielectrics(j);
+        intraChainEnergy += itsChains[j]->intraSoluteEnergy();
+    }
+    bindingEnergy = complexEnergy - intraChainEnergy;
+    Energy.push_back(bindingEnergy);
+    return Energy;
 }
 
 double protein::bindingPositionSoluteEnergy(UInt _chain, UInt _residue, UInt _otherChain)
@@ -2944,9 +2962,9 @@ void protein::chainOptSolvent(UInt _plateau, UInt _chainIndex)
 		if (preposE > avepreposE)
 		{
 			//--Get current rotamer and allowed
-            currentRot = this->getSidechainDihedrals(_chainIndex, randres);
-            allowedRots = this->getAllowedRotamers(_chainIndex, randres, randrestype, 0);
-            allowedRotsize = (allowedRots.size() * 0.33), rotbetter++, rotbetter++;
+			currentRot = this->getSidechainDihedrals(_chainIndex, randres);
+			allowedRots = this->getAllowedRotamers(_chainIndex, randres, randrestype, 0);
+            allowedRotsize = (allowedRots.size() * 0.3333333), rotbetter++, rotbetter++; //changed div to multi "(allowedRots.size()/3"
 
 			//--Try 1/3 of allowed rotamers keep first improvement or revert to previous angles
 			for (UInt j = 0; j < allowedRotsize; j ++)
@@ -3045,9 +3063,9 @@ void protein::protOptSolvent(UInt _plateau)
 		if (preposE > avepreposE)
 		{
 			//--Get current rotamer and allowed
-            currentRot = this->getSidechainDihedrals(randchain, randres);
-            allowedRots = this->getAllowedRotamers(randchain, randres, randrestype, 0);
-            allowedRotsize = (allowedRots.size() * 0.33), rotbetter++, rotbetter++;
+			currentRot = this->getSidechainDihedrals(randchain, randres);
+			allowedRots = this->getAllowedRotamers(randchain, randres, randrestype, 0);
+            allowedRotsize = (allowedRots.size() * 0.3333333), rotbetter++, rotbetter++; //changed div to multi "(allowedRots.size()/3"
 
 			//--Try 1/3 of allowed rotamers keep first improvement or revert to previous angles
 			for (UInt j = 0; j < allowedRotsize; j ++)
@@ -3078,114 +3096,6 @@ void protein::protOptSolvent(UInt _plateau)
 		number++, number++, totalpreposE = (totalpreposE + preposE), avepreposE = (totalpreposE/number);
 	} while (nobetter < _plateau * 1.2);
 	return;
-}
-
-void protein::protOptSolvent(UInt _plateau, bool _backbone)
-{	// Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics and corresponding implicit solvation score
-    //    _plateau: the number of consecutive optimization cycles without an energy decrease.
-    //	    	     (250 is recommended for a full minimization without excessive calculation)
-    // -pike 2013
-
-    //--Initialize variables for loop and calculate starting energy-------------------------------------
-    bool dielectrics = true;
-    if (residueTemplate::itsAmberElec.getScaleFactor() == 0.0)
-    {
-        dielectrics = false;
-    }
-    double deltaTheta = 0, totalpreposE = 0, avepreposE = -1E10;
-    double Energy, preposE, currentposE, pastEnergy = this->intraSoluteEnergy(dielectrics);
-    UInt randchain, randres, randrestype, allowedRotsize, randrot, number = 0, nobetter = 0;
-    UInt resNum, randtype, chainNum = this->getNumChains(), rotbetter = 0;
-    vector < vector <double> > currentRot;
-    int thisone;
-    vector <UIntVec> allowedRots;
-    srand (time(NULL));
-
-    //--Run optimizaiton loop to energetic minima, determined by _plateau-------------------------------
-    do
-    {
-        //--Generate random residue
-        randchain = rand() % chainNum;
-        resNum = this->getNumResidues(randchain);
-        randres = rand() % resNum;
-        randrestype = this->getTypeFromResNum(randchain, randres);
-        preposE = this->getPositionSoluteEnergy(randchain, randres, dielectrics);
-        if (randrestype == 0 || randrestype == 19 || randrestype == 20 || randrestype == 26 || randrestype == 27 || randrestype == 46 || randrestype == 47)
-        {nobetter++;
-        }
-        else
-        {nobetter++,nobetter++;
-        }
-
-        //--backbone optimization----------------------------------------------------------------------
-        if (rotbetter > _plateau && preposE > avepreposE && _backbone)
-        {
-            //--choose phi or psi and angle, for a local transformation
-            randtype = rand() % 2;
-            do
-            { deltaTheta = ((rand() % 3) -1);
-            } while (deltaTheta == 0);
-
-            //--transform angles while energy improves, until energy degrades, then revert one step
-            do
-            {
-                this->setDihedralLocal(randchain, randres, deltaTheta, randtype);
-                currentposE = this->getPositionSoluteEnergy(randchain, randres, dielectrics), thisone = 0;
-                //--Energy test
-                if (currentposE < (preposE - .05))
-                {
-                    Energy = this->intraSoluteEnergy(dielectrics);
-                    if (Energy < pastEnergy)
-                    {
-                        //cout << Energy << endl;
-                        nobetter = 0, thisone = 1, pastEnergy = Energy, preposE = currentposE;
-                    }
-                }
-            } while (thisone == 1);
-            this->setDihedralLocal(randchain, randres, (deltaTheta*-1), randtype);
-        }
-
-        //--Rotamer optimization-----------------------------------------------------------------------
-        if (preposE > avepreposE)
-        {
-            //--Get current rotamer and allowed
-            currentRot = this->getSidechainDihedrals(randchain, randres);
-            allowedRots = this->getAllowedRotamers(randchain, randres, randrestype);
-            rotbetter++, rotbetter++;
-
-            //--Try a max of 1/3 of allowed rotamers per branchpoint and keep first improvement or revert to previous angles
-            for (UInt b = 0; b < residue::getNumBpt(randrestype); b++)
-            {
-                allowedRotsize = allowedRots[b].size()*0.33;
-                for (UInt j = 0; j < allowedRotsize; j ++)
-                {
-                    randrot = rand() % allowedRots[b].size();
-                    this->setRotamerWBC(randchain, randres, b, allowedRots[b][randrot]);
-                    currentposE = this->getPositionSoluteEnergy(randchain, randres, dielectrics);
-
-                    if (currentposE < (preposE - .05))
-                    {
-                        Energy = this->intraSoluteEnergy(dielectrics);
-                        if (Energy < pastEnergy)
-                        {
-                            //cout << Energy << endl;
-                            rotbetter--, rotbetter--, nobetter = 0, pastEnergy = Energy, preposE = currentposE;
-                            break;
-                        }
-                    }
-                    this->setSidechainDihedralAngles(randchain, randres, currentRot);
-                }
-            }
-        }
-
-        //--check status of optimization---------------------------------------------------------------
-        if (number == _plateau)
-        {
-            number = 0, totalpreposE = 0;
-        }
-        number++,number++, totalpreposE = (totalpreposE + preposE), avepreposE = (totalpreposE/number);
-    } while (nobetter < _plateau * 1.2);
-    return;
 }
 
 void protein::protOpt(bool _backbone)
@@ -3336,6 +3246,74 @@ void protein::optimizeRotamers()
 	}
 	return;
 }
+
+void protein::optimizeRotamersPN()
+{
+    vector < UIntVec > activePositions;
+    vector < UIntVec > rotamerArray;
+    activePositions.resize(0);
+    rotamerArray.resize(0);
+    for (UInt i = 0; i < itsIndependentChainsMap.size(); i ++)
+    {
+        UInt indChain = itsIndependentChainsMap[i];
+        UIntVec activeRes = itsChains[indChain]->getActiveResidues();
+        for (UInt j = 0; j < activeRes.size(); j ++)
+        {
+            UIntVec tempRot = itsChains[indChain]->getAllowedRotamers(activeRes[j], getTypeFromResNum(indChain, activeRes[j]), 0);
+            if (tempRot.size() > 1)
+            {
+                UIntVec position;
+                position.resize(0);
+                position.push_back(indChain);
+                position.push_back(activeRes[j]);
+                activePositions.push_back(position);
+            }
+            else if (tempRot.size() == 1)
+            {
+                setRotamer(indChain, activeRes[j],0,tempRot[0]);
+            }
+        }
+    }
+    if (activePositions.size() > 0)
+    {
+        rotamerArray = rotamerDEE();
+        vector < UIntVec > tempActivePositions;
+        tempActivePositions.resize(0);
+        vector < UIntVec > tempRotamerArray;
+        tempRotamerArray.resize(0);
+        for (UInt i = 0; i < activePositions.size(); i ++)
+        {
+            if (rotamerArray[i].size() > 1)
+            {
+                tempRotamerArray.push_back(rotamerArray[i]);
+                tempActivePositions.push_back(activePositions[i]);
+            }
+            else if (rotamerArray[i].size() == 1)
+            {
+                setRotamer(activePositions[i][0], activePositions[i][1], 0, rotamerArray[i][0]);
+            }
+        }
+        if (tempRotamerArray.size() != 0)
+        {
+            optimizeRotamers(tempActivePositions, tempRotamerArray);
+        }
+        else  // only one solution from DEE - map that onto the protein
+        {
+            for (UInt i = 0; i < activePositions.size(); i ++)
+            {
+                setRotamer(activePositions[i][0], activePositions[i][1], 0, rotamerArray[i][0]);
+            }
+        }
+
+                cout << "Optimized!!!" << endl;
+    }
+    else
+    {
+        cout << "ERROR:  no positions to optimize rotamers for." << endl;
+    }
+    return;
+}
+
 
 void protein::optimizeRotamers(vector <UIntVec> _activePositions)
 {
@@ -3714,7 +3692,7 @@ void protein::optimizeSmallRotations(vector <UIntVec> _activePositions, UInt _st
 			{
 				if (step == 0) // set dihedral at first position
 				{
-					double angle = -1*_steps*(double)_stepSize/2.0;
+                    double angle = -0.5 * _steps*(double)_stepSize; //changed div to mult "-1*_steps*(double)_stepSize/2.0;"
 					itsChains[activePositions[activePos][0]]->setRelativeChi(activePositions[activePos][1], 0, chiPos, angle);
 				}
 				else          // increment rotation
@@ -3762,7 +3740,7 @@ vector < vector < double > > protein::getRotationEnergySurface(vector < UIntVec 
 				{
 					if (step == 0) // set dihedral at first position
 					{
-						double angle = -1*_steps*(double)_stepSize/2.0;
+                        double angle = -0.5 * _steps*(double)_stepSize; //changed div to mult "-1*_steps*(double)_stepSize/2.0;"
 						itsChains[_active[_activePos][0]]->setRelativeChi(_active[_activePos][1], 0, chiPos, angle);
 					}
 					else          // increment rotation
@@ -3835,7 +3813,7 @@ void protein::optimizeSmallRotations( UIntVec _activePosition, UInt _steps, doub
 		{
 			if (step == 0) // set dihedral at first position
 			{
-				double angle = -1.0*(double)_steps*(double)_stepSize/2.0;
+                double angle = -0.5 * _steps*(double)_stepSize; //changed div to mult "-1*_steps*(double)_stepSize/2.0;"
 				itsChains[_activePosition[0]]->setRelativeChi(_activePosition[1], 0, chiPos, angle);
 			}
 			else          // increment rotation
@@ -3872,7 +3850,7 @@ vector < double >  protein::getRotationEnergySurface(UIntVec  _active, UInt _ste
 		{
 			if (step == 0) // set dihedral at first position
 			{
-				double angle = -1*(double)_steps*_stepSize/2.0;
+                double angle = -0.5 * _steps*(double)_stepSize; //changed div to mult "-1*_steps*(double)_stepSize/2.0;"
 				itsChains[_active[0]]->setRelativeChi(_active[1], 0, _chiPos, angle);
 			}
 			else          // increment rotation
@@ -3942,10 +3920,10 @@ double protein::getHBondEnergy(const UInt _chain1, const UInt _res1, const UInt 
             dblVec donor = getCoords(chain,res,"NE2");
             dblVec temp1 = getCoords(chain,res,"CE1");
             dblVec temp2 = getCoords(chain,res,"CD2");
-            dblVec donorBase = (temp1 + temp2)/2.0;
+            dblVec donorBase = (temp1 + temp2) * 0.5; // converted div to multi "donorBase = (temp1 + temp2)/2.0;"
             dblVec acceptor = getCoords(chain,res,"ND1");
             temp2 = getCoords(chain,res,"CG");
-            dblVec acceptorBase = (temp1 + temp2) / 2.0;
+            dblVec acceptorBase = (temp1 + temp2) * 0.5; // converted div to mult "acceptorBase = (temp1 + temp2) / 2.0;"
             donorList.push_back(donor);
             donorBaseList.push_back(donorBase);
             acceptorList.push_back(acceptor);
@@ -4047,7 +4025,7 @@ double protein::getHBondEnergy(const UInt _chain1, const UInt _res1, const UInt 
             dblVec donor = getCoords(chain,res,"NE1");
             dblVec temp1 = getCoords(chain,res,"CD1");
             dblVec temp2 = getCoords(chain,res,"CE2");
-            dblVec donorBase = (temp1 + temp2)/2.0;
+            dblVec donorBase = (temp1 + temp2) * 0.5; // converted div to multi "donorBase = (temp1 + temp2)/2.0;"
             donorList.push_back(donor);
             donorBaseList.push_back(donorBase);
             donorAngleList.push_back(180.0);
@@ -4083,8 +4061,8 @@ double protein::getHBondEnergy(const UInt _chain1, const UInt _res1, const UInt 
 
                 double distRatio = 2.8 / magDA;
                 thisE = 2.0 *(5.0*pow(distRatio,12.0)-6.0*pow(distRatio,10.0));
-                double angleFactor1 = cos(donorAngleList[i]*PI/180.0-donorAngle);
-                double angleFactor2 = cos(acceptorAngleList[j]*PI/180.0-acceptorAngle);
+                double angleFactor1 = cos(donorAngleList[i]*PI * 0.00555555555-donorAngle); //converted div to mult "cos(donorAngleList[i]*PI/180.0-donorAngle)"
+                double angleFactor2 = cos(acceptorAngleList[j]*PI * 0.00555555555-acceptorAngle);//converted div to mult "cos(acceptorAngleList[j]*PI/180.0-acceptorAngle)"
                 thisE = thisE * pow(angleFactor1, 2.0) * pow (angleFactor2, 2.0);
             }
             energy += thisE;

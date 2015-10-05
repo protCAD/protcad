@@ -127,7 +127,6 @@ public:
 	
 	//--Optimization functions
     void protOptSolvent(UInt _plateau); // --Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics-- dpike
-    void protOptSolvent(UInt _plateau, bool _backbone);  // --Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics-- dpike
     void protOpt(bool _backbone);  // --Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics and non-redundant energy calc-- dpike
     void chainOptSolvent(UInt _plateau, UInt _chainIndex);
 	void optimizeSmallRotations(UInt _steps, double _stepSize);
@@ -138,6 +137,7 @@ public:
 	vector <UIntVec> rotamerDEE();
 	vector <UIntVec> rotamerDEE(vector <UIntVec> _activePositions);
 	void optimizeRotamers();
+	void optimizeRotamersPN();
 	void optimizeRotamers(vector <UIntVec> _positions);
 	void optimizeRotamers(vector <UIntVec> _positions, vector <UIntVec> _rotamerArray);
 	
@@ -173,6 +173,7 @@ public:
 	double interSoluteEnergy(bool _updateDielectrics, UInt _chain1, UInt _chain2);
 	vector <double> chainFoldingBindingEnergy(UInt _ligandChain);
 	vector <double> chainFoldingBindingEnergy(bool _unfold);
+	vector <double> chainBindingEnergy();
 	double bindingPositionSoluteEnergy(UInt _chain, UInt _residue, UInt _otherChain);
 	vector <double> getChargeDensity(UInt _chainIndex, UInt _residueIndex, UInt _atomIndex);
     vector <double> calculateDielectric(UInt _chainIndex, UInt _residueIndex, UInt _atomIndex);
