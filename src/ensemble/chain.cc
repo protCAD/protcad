@@ -150,23 +150,23 @@ void chain::activateChainPosition(UInt _indexInChain)
 		itsChainPositions[_indexInChain] = newCP;
 		//now let's make sure that only alpha amino acids are allowed for an alpha
 		//only beta for a beta, etc.
-		UInt resTypeIndex = itsResidues[_indexInChain]->getTypeIndex();
-		UInt numBpt = residue::getNumBpt(resTypeIndex);
+        //UInt resTypeIndex = itsResidues[_indexInChain]->getTypeIndex();
+        //UInt numBpt = residue::getNumBpt(resTypeIndex);
 		//cout << "Num branchpoints in actual residue ==" << numBpt << endl;
-		UInt initialNumAllowedRes = newCP->getNumAllowedRes();
+        //UInt initialNumAllowedRes = newCP->getNumAllowedRes();
 		vector<UInt> notAllowedSet;
 		notAllowedSet.resize(0);
-		for (UInt i=0; i< initialNumAllowedRes; i++)
-		{
-			UInt identity = newCP->itsAllowedResidues[i].getIdentity();
-			UInt numBptInPossibleRes = residue::getNumBpt(identity);
+        //for (UInt i=0; i< initialNumAllowedRes; i++) // this prevents using branchpoints as dihedral pivot points for complex residues, so commented out.  doug p. 2015
+        //{
+            //UInt identity = newCP->itsAllowedResidues[i].getIdentity();
+            //UInt numBptInPossibleRes = residue::getNumBpt(identity);
 			//cout << "numBptInPossibleRes = " << numBptInPossibleRes << endl;
-			if ( numBptInPossibleRes != numBpt )
-			{
-				notAllowedSet.push_back(identity);
-			}
+            //if ( numBptInPossibleRes != numBpt )
+            //{
+            //	notAllowedSet.push_back(identity);
+            //}
 
-		}
+        //}
 		/*for (UInt i=0; i<notAllowedSet.size(); i++)
 		{
 			cout << "noAllowedSet[" << i << "] = " << notAllowedSet[i] << endl;
@@ -315,7 +315,8 @@ void chain::mutate(const UInt _indexInChain, const UInt _aaType)
     {   // Now check if this position is allowed to be mutated
         // to this residue type
         if (itsChainPositions[_indexInChain]->residueIsAllowed(_aaType))
-        {   residue* pOldRes = itsResidues[_indexInChain];
+        {
+            residue* pOldRes = itsResidues[_indexInChain];
             //buffer everything
             bufferResidueIntoUndoBuffer(_indexInChain);
             // mutate to new residue and place new pointer in chain
@@ -1188,6 +1189,23 @@ UIntVec chain::getAllowedRotamers(const UInt _indexInChain, const UInt _aaType, 
 	return allowedRotamers;
 }
 
+vector <UIntVec> chain::getAllowedRotamers(const UInt _indexInChain, const UInt _aaType)
+{
+    vector <UIntVec> allowedRotamers;
+    allowedRotamers.resize(0);
+    if ( _indexInChain >=0 && _indexInChain < itsChainPositions.size() )
+    {
+        allowedRotamers = itsChainPositions[_indexInChain]->getAllowedRotamers(_aaType);
+    }
+    else
+    {
+        cout << "Error in chain::getAllowedRotamers." << endl;
+        cout << " position " << _indexInChain << " is out of range on chain." << endl;
+    }
+
+    return allowedRotamers;
+}
+
 UIntVec chain::getResAllowed(const UInt _indexInChain)
 {
 	UIntVec allowedResidues;
@@ -1639,20 +1657,6 @@ double chain::getInterEnergy(const UInt _residue1, chain* _other, const UInt _re
 	}
 }
 
-double chain::getInterEnergy(ligand* _other)
-{
-    double interEnergy=0.0;
-    
-    for(UInt i=0; i<itsResidues.size(); i++)
-    {
-    
-        double tempE=itsResidues[i]->interEnergy(_other);
-        interEnergy+=tempE;
-    }
-    
-    return interEnergy;
-}
-
 double chain::intraEnergy()
 {	double intraEnergy = 0.0;
 	//cout << "chain::intraEnergy";
@@ -1679,8 +1683,8 @@ double chain::intraEnergy()
 
 double chain::intraSoluteEnergy()
 {	
-	bool withinCube;
 	double intraEnergy = 0.0;
+//#pragma omp parallel for reduction(+:intraEnergy)
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{	
 		double tempE = itsResidues[i]->intraSoluteEnergy();
@@ -1689,11 +1693,11 @@ double chain::intraSoluteEnergy()
 		double interE = 0.0;
 		for(UInt j=i+1; j<itsResidues.size(); j++)
 		{	
-			withinCube = itsResidues[i]->inCube(itsResidues[j], 16);
-			if (withinCube)
-			{
+            bool withinCube = itsResidues[i]->inCube(itsResidues[j], 16);
+            if (withinCube)
+            {
 				interE += itsResidues[i]->interSoluteEnergy(itsResidues[j]);
-			}
+            }
 		}
 		intraEnergy += interE;
 	}
@@ -1707,17 +1711,12 @@ vector <double> chain::calculateDielectric(chain* _other, UInt _residueIndex, UI
 	chargeDensity[0] = 0.0;
 	chargeDensity[1] = 0.0;
 	chargeDensity[2] = 0.0;
-	bool withinCube;
 	for(UInt i=0; i<_other->itsResidues.size(); i++)
 	{
-		withinCube = itsResidues[_residueIndex]->inCube(_other->itsResidues[i], 16);
-		if (withinCube)
-		{
-			_chargeDensity = itsResidues[_residueIndex]->calculateDielectric(_other->itsResidues[i], _atomIndex);
-			chargeDensity[0] += _chargeDensity[0];
-			chargeDensity[1] += _chargeDensity[1];
-			chargeDensity[2] += _chargeDensity[2];
-		}
+        _chargeDensity = itsResidues[_residueIndex]->calculateDielectric(_other->itsResidues[i], _atomIndex);
+        chargeDensity[0] += _chargeDensity[0];
+        chargeDensity[1] += _chargeDensity[1];
+        chargeDensity[2] += _chargeDensity[2];
 	}
 	return chargeDensity;
 }
@@ -1729,17 +1728,12 @@ vector <double> chain::calculateDielectric(chain* _other, residue* _residue, ato
 	chargeDensity[0] = 0.0;
 	chargeDensity[1] = 0.0;
 	chargeDensity[2] = 0.0;
-	bool withinCube;
 	for(UInt i=0; i<_other->itsResidues.size(); i++)
 	{
-		withinCube = _residue->inCube(_other->itsResidues[i], 16);
-		if (withinCube)
-		{
-			_chargeDensity = _residue->calculateDielectric(_other->itsResidues[i], _atom);
-			chargeDensity[0] += _chargeDensity[0];
-			chargeDensity[1] += _chargeDensity[1];
-			chargeDensity[2] += _chargeDensity[2];
-		}
+        _chargeDensity = _residue->calculateDielectric(_other->itsResidues[i], _atom);
+        chargeDensity[0] += _chargeDensity[0];
+        chargeDensity[1] += _chargeDensity[1];
+        chargeDensity[2] += _chargeDensity[2];
 	}
 	return chargeDensity;
 }
@@ -1824,17 +1818,17 @@ double chain::interEnergy(chain* _other)
 
 double chain::interSoluteEnergy(chain* _other)
 {
-	bool withinCube;	
 	double interEnergy = 0.0;
+//#pragma omp parallel for reduction(+:interEnergy)
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{
 		for(UInt j=0; j<_other->itsResidues.size(); j++)
 		{	
-			withinCube = itsResidues[i]->inCube(_other->itsResidues[j], 16);
-			if (withinCube)
-			{
+            bool withinCube = itsResidues[i]->inCube(_other->itsResidues[j], 16);
+            if (withinCube)
+            {
 				interEnergy += itsResidues[i]->interSoluteEnergy(_other->itsResidues[j]);
-			}
+            }
 		}
 	}
 	return interEnergy;
@@ -2180,32 +2174,6 @@ double chain::tabulateSurfaceArea(UInt _residueIndex, UInt _atomIndex)
 		cout << "ERROR in chain::tabulateSurfaceArea ... residue index out of range." << endl;
 	}
 	return surfaceArea;
-}
-
-double chain::tabulateSolvationEnergy(UInt _param)
-{
-	double solvationEnergy = 0.0;
-	for (UInt i = 0; i < itsResidues.size(); i++)
-	{
-		solvationEnergy += itsResidues[i]->tabulateSolvationEnergy(_param);
-	}
-
-	return solvationEnergy;
-}
-
-double chain::tabulateSolvationEnergy(UInt _residue, UInt _param)
-{
-	double solvationEnergy = 0.0;
-	if (_residue >= 0 && _residue < itsResidues.size() )
-	{
-		solvationEnergy = itsResidues[_residue]->tabulateSolvationEnergy(_param);
-	}
-	else
-	{
-		cout << "ERROR in chain::tabulateSolvationEnergy ... residue index out of range." << endl;
-	}
-
-	return solvationEnergy;
 }
 	
 void chain::removeIntraChainSpherePoints()

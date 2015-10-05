@@ -1,10 +1,10 @@
 //******************************************************************************************************* 
 //*******************************************************************************************************
-//******************************	___  ____ ____ ___ ____ _ _  _  _  _   *******************************
-//******************************	|__] |__/ |  |  |  |___ | |\ |  |__|   *******************************
-//******************************	|    |  \ |__|  |  |___ | | \| o|  |   *******************************
-//******************************   							    *******************************
-//******************************		class protein is defined		    *******************************
+//******************************	___  ____ ____ ___ ____ _ _  _  _  _   ******************************
+//******************************	|__] |__/ |  |  |  |___ | |\ |  |__|   ******************************
+//******************************	|    |  \ |__|  |  |___ | | \| o|  |   ******************************
+//******************************   							               ******************************
+//******************************		class protein is defined		   ******************************
 //*******************************************************************************************************
 //*******************************************************************************************************
 
@@ -12,6 +12,7 @@
 #include "assert.h"
 #include <string.h>
 #include <vector>
+#include <algorithm>
 #include "typedef.h"
 #include "ran.h"
 #include "molecule.h"
@@ -22,9 +23,6 @@
 //#include "./stack.h"
 #ifndef PDBWRITER_H
 #include "pdbWriter.h"
-#endif
-#ifndef LIGAND_H
-#include "ligand.h"
 #endif
 #ifndef ATOMITERATOR_H
 class atomIterator;
@@ -38,7 +36,7 @@ class protein : public molecule
 {
 public:
 	friend class atomIterator;
-	friend class residueIterator;
+    friend class residueIterator;
 	friend class ruler;
 
 //--Functions--------------------------------------------------------------------------------------------	
@@ -73,7 +71,9 @@ public:
 	UInt getNumHardClashes(const UInt _chainIndex) {return itsChains[_chainIndex]->getNumHardClashes(); }
 	
 	//--Organization functions
+    void updateTotalNumResidues();
 	void initializeModificationMethods();
+
 	void resetAllBuffers();
 	static void silenceMessages() {messagesActive = false; }
 	void accessChainZeroResZero();
@@ -126,9 +126,9 @@ public:
 	void rejectModification();
 	
 	//--Optimization functions
-	void protOptSolvent(UInt _plateau); // --Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics-- dpike
-	void rotOptSolvent(UInt _plateau); // --Sidechain optimization with a polarization based dielectric scaling of electrostatics-- dpike / nosker
-	void chainOptSolvent(UInt _plateau, UInt _chainIndex);
+    void protOptSolvent(UInt _plateau); // --Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics-- dpike
+    void protOpt(bool _backbone);  // --Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics and non-redundant energy calc-- dpike
+    void chainOptSolvent(UInt _plateau, UInt _chainIndex);
 	void optimizeSmallRotations(UInt _steps, double _stepSize);
 	void optimizeSmallRotations(vector <UIntVec> _positions, UInt _steps, double _stepSize);
 	void optimizeSmallRotations(UIntVec _position, UInt _steps, double _stepSize);
@@ -153,6 +153,13 @@ public:
 	double getInterEnergy(UInt _chain, ligand* _other);        
 	
 	//--Energy functions
+    void updateEnergyDatabase(vector<vector<vector<double> > > &_energies);
+    double protEnergy();
+    void updateProtEnergy(vector<vector<vector<double> > > &_energies);
+    void buildResidueEnergyPairs(vector<vector<vector<double> > > &_energies);
+    double resEnergy(UInt chainIndex, UInt resIndex);
+    double getMedianResEnergy();
+
 	double getAtomCharge(UInt _chainNum, UInt _resNum, UInt _atomNum) { return itsChains[_chainNum]->getAtomCharge(_resNum, _atomNum); }
 	double calculateHCA_O_hBondEnergy();
 	UIntVec getEnergySurface(vector <UIntVec> _activePositions, vector <UIntVec> _rotamerArray, UIntVec _currentArray, UIntVec _bestArray, UInt _index, double& _lowestEnergy);
@@ -160,7 +167,7 @@ public:
 	double getResPairEnergy(const UInt _chain1, const UInt _res1, const UInt _chain2, const UInt _res2);
 	double getIntraEnergy(const UInt _chainIndex1, const UInt _resIndex1, const UInt _atomIndex1, const UInt _chainIndex2, const UInt _resIndex2, const UInt _atomIndex2);
 	double getPairwiseResidueEnergy(const UInt _chain1, const UInt _res1, const UInt _chain2, const UInt _res2);
-	double getDielectric(UInt _chainIndex, UInt _resIndex, UInt _atomIndex) {return itsChains[_chainIndex]->itsResidues[_resIndex]->itsAtoms[_atomIndex]->getDielectric();}
+    double getDielectric(UInt _chainIndex, UInt _resIndex, UInt _atomIndex) {return itsChains[_chainIndex]->itsResidues[_resIndex]->itsAtoms[_atomIndex]->getDielectric();}
 	double intraEnergy();
 	double intraSoluteEnergy(bool _updateDielectrics);
 	double interSoluteEnergy(bool _updateDielectrics, UInt _chain1, UInt _chain2);
@@ -169,10 +176,10 @@ public:
 	vector <double> chainBindingEnergy();
 	double bindingPositionSoluteEnergy(UInt _chain, UInt _residue, UInt _otherChain);
 	vector <double> getChargeDensity(UInt _chainIndex, UInt _residueIndex, UInt _atomIndex);
-	double calculateDielectric(UInt _chainIndex, UInt _residueIndex, UInt _atomIndex);
-	double calculateDielectric(chain* _chain, residue* _residue, atom* _atom);
+    vector <double> calculateDielectric(UInt _chainIndex, UInt _residueIndex, UInt _atomIndex);
+    vector <double> calculateDielectric(chain* _chain, residue* _residue, atom* _atom);
     vector <double> calculateSolvationEnergy(UInt _chainIndex, UInt _residueIndex, UInt _atomIndex) {return itsChains[_chainIndex]->itsResidues[_residueIndex]->calculateSolvationEnergy( _atomIndex);}
-    double calculateChainIndependentDielectric(chain* _chain, residue* _residue, atom* _atom, UInt _atomIndex);
+    vector <double> calculateChainIndependentDielectric(chain* _chain, residue* _residue, atom* _atom, UInt _atomIndex);
 	void updateDielectrics();
 	void updatePositionDielectrics(UInt _chainIndex, UInt _residueIndex);
 	void updateChainIndependentDielectrics(UInt _chainIndex);
@@ -180,7 +187,7 @@ public:
 	double intraEnergy(UInt _chain1, UInt _chain2);
 	double getPositionEnergy(vector <int> _position);
 	double getPositionSoluteEnergy(vector <int> _position);
-	double getPositionEnergy(vector <UInt> _position);
+    double getPositionEnergy(vector <UInt> _position);
 	double getRotamerEnergy(UInt _chain, UInt _residue) { return itsChains[_chain]->rotamerEnergy(_residue); }
 	double getPositionEnergy(UInt _chainIndex, UInt _residueIndex);
 	double getPositionSoluteEnergy(UInt _chainIndex, UInt _residueIndex, bool _updateDielectrics);
@@ -217,7 +224,7 @@ public:
 	void rotateChain(UInt _chain, const axis _axis, const double _theta);
 
 	//--Rotamer functions
-	void setRotamerNotAllowed(const UInt _chainIndex, const UInt _resIndex, const UInt _resType, const UInt _bpt, const UInt _rotamer);
+    void setRotamerNotAllowed(const UInt _chainIndex, const UInt _resIndex, const UInt _resType, const UInt _bpt, const UInt _rotamer);
 	void listAllowedRotamers(UInt _chain, UInt _resIndex);
 	void setRotamer(const UInt _chainIndex, const UInt _resIndex, const UInt _bpt, const UInt _rotamer);
 	void setRotamerWBC(const UInt _chainIndex, const UInt _resIndex, const UInt _bpt, const UInt _rotamer);
@@ -235,13 +242,12 @@ public:
 	void setCanonicalHelixRotamersOnly(const UInt _chainIndex, const UInt _resIndex);
 	void setCanonicalHelixRotamersOnly(const UInt _chainIndex);
 	UIntVec getAllowedRotamers(UInt _chainIndex, UInt _resIndex, UInt _resType, UInt _bpt) { return itsChains[_chainIndex]->getAllowedRotamers(_resIndex, _resType, _bpt); }
+    vector <UIntVec> getAllowedRotamers(UInt _chainIndex, UInt _resIndex, UInt _resType) { return itsChains[_chainIndex]->getAllowedRotamers(_resIndex, _resType); }
 	void setRelativeChi(const UInt _chainIndex, const UInt _resIndex, const UInt _bpt, const UInt _chi, const double _angle);
 	void setChi (const UInt _chainIndex, const UInt _resIndex, const UInt _bpt, const UInt _chi, const double _angle);
 	double getChi (const UInt _chainIndex, const UInt _resIndex, const UInt _bpt, const UInt _chi) { return itsChains[_chainIndex]->getChi(_resIndex, _bpt, _chi); }
 	vector < vector <double> >  getSidechainDihedrals(UInt _chainIndex, UInt _indexInChain) {return itsChains[_chainIndex]->getSidechainDihedralAngles(_indexInChain);}
 	void setSidechainDihedralAngles(UInt _chainIndex, UInt _indexInChain, vector< vector<double> > Angles);
-	//void findLowestRotamer(vector <int> _position);
-	//void findLowestRotamerWithSymmetry(vector <int> _position);
 		
 	//--Surface area functions
 	double getVolume(UInt _method);
@@ -271,9 +277,11 @@ private:
 	static bool messagesActive;
 	static bool calcSelfEnergy;
 	static UInt howMany;
+    UInt itsNumResidues;
+    vector < vector < vector  <double> > > energies;
 	static UInt itsSolvationParam;
-	vector<chain*> itsChains;
-	vector<UInt> itsIndependentChainsMap;
+    vector <chain*> itsChains;
+    vector <UInt> itsIndependentChainsMap;
 	vector<vector<int> > itsChainLinkageMap;
 	bool (protein::*itsModificationMethods[5])(ran& _ran);
 	

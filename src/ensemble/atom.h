@@ -113,10 +113,12 @@ public:
 	void setAtomicRadius(double _radius);
 	double getSolvationEnergy() {return itsSolvationEnergy;}
 	double getDielectric() {return itsDielectric;}
+    double getNumberofWaters() {return itsWaters;}
 	double getMaxDielectric() {return itsMaxDielectric;}
 	double getMinDielectric() {return itsMinDielectric;}
 	void setSolvationEnergy(double _solvationEnergy);
 	void setDielectric(double _dielectric);
+    void setNumberofWaters(double _waters);
 	void setMaxDielectric(double _maxDielectric);
 	void setMinDielectric(double _minDielectric);
 
@@ -213,6 +215,7 @@ protected:
 	double itsRadius;
 	double itsSolvationEnergy;
 	double itsDielectric;
+    double itsWaters;
 	double itsMaxDielectric;
 	double itsMinDielectric;
 	double itsEpsilon;

@@ -24,6 +24,10 @@ class ligand;
 #include "atomIterator.h"
 #endif
 
+#ifndef RESIDUEITERATOR_H
+#include "residueIterator.h"
+#endif
+
 unsigned int pdbWriter(vector<protein*> _protVec, vector<ligand*> _ligVec, const string& _pdbFile);
 unsigned int pdbWriter(protein* _pProtein, const string& _filename);
 unsigned int pdbWriter(ligand* _pLigand, const string& _filename);

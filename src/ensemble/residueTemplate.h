@@ -1,11 +1,9 @@
 #include "assert.h"
 #include "atom.h"
-#include "pmf.h"
 #include "amberVDW.h"
 #include "amberElec.h"
 #include "aaBaseline.h"
 #include "typedef.h"
-#include "solvation.h"
 #include "helixPropensity.h"
 
 #ifndef RESIDUETEMPLATE_H
@@ -106,14 +104,12 @@ public:
 		
 	// Energy modeling
 	UIntVec itsAtomEnergyTypeIndex;
-	static int itsCurrentEnergyType;
-	static pmf itsPMF;
+    static int itsCurrentEnergyType;
 	static amberElec itsAmberElec;
 	static amberVDW itsAmberVDW;
 	static aaBaseline itsAABaseline;
 	static bool atomEnergyTypeDefinitonsBuilt;
 	static helixPropensity itsHelixPropensity;
-	static solvation itsSolvation;
 };
 
 #endif

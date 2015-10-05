@@ -22,11 +22,6 @@
 #include "molecule.h"
 #endif
 
-#ifndef LIGAND_H
-#include "ligand.h"
-#endif
-
-
 class residueTemplate;
 
 #ifndef RESIDUE_H
@@ -241,7 +236,7 @@ public:
 	double getIntraEnergy(const UInt atom1, residue* _other, const UInt atom2);
 	double interEnergy(residue* _other);
 	double interSoluteEnergy(residue* _other);
-     double interEnergy(ligand* _other);
+    double getResiduePairSoluteEnergy(residue* _other);
 	double getSelfEnergy(residue* _other);
 	double calculateHCA_O_hBondEnergy(residue* _other);
 	double BBEnergy();
@@ -323,6 +318,8 @@ public:
 	bool getPolarHydorgensOn() const {return polarHydrogensOn;}
 	void setPolarHydrogensOn(const bool _polarHydrogensOn);
 	bool getHasPolarHRotamers() const {return dataBase[itsType].getHasPolarHRotamers(); }
+    void setMoved (UInt _moved);
+    UInt getMoved() const {return moved;}
         
 // ***********************************************************************
 // ***********************************************************************
@@ -352,8 +349,9 @@ private:
 	residue* pItsNextRes;
 	residue* pItsPrevRes;
 	bool hydrogensOn;
-        bool polarHydrogensOn;
+    bool polarHydrogensOn;
 	bool isArtificiallyBuilt;
+    UInt moved;
 
 	//variables relating to the rotameric state
 	//or lack thereof....
