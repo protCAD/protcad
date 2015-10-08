@@ -16,6 +16,7 @@
 #include <sstream>
 #include "ensemble.h"
 #include "PDBInterface.h"
+
 int main (int argc, char* argv[])
 {
 	//--Running parameters
@@ -25,7 +26,8 @@ int main (int argc, char* argv[])
 		exit(1);
 	}
     enum aminoAcid {A,R,N,D,Dh,C,Cx,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,HC};
-	string infile = argv[1];
+    string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Q","E","Eh","Hd", "He","Hn","Hp","I","L","K","M","F","P","O","S","T","W","Y", "V","G","dA","dR","dN","dD","dDh","dC","dCx","dQ","dE","dEh","dHd","dHe","dHn","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV","Hce"};
+    string infile = argv[1];
 	PDBInterface* thePDB = new PDBInterface(infile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
@@ -40,6 +42,15 @@ int main (int argc, char* argv[])
 	string outFile;
 
     _prot->intraSoluteEnergy(true);
+    cout << "chain" << " position" << " residue" << " dielectric" << " solvationEnergy" << endl;
+    for (UInt i = 0; i < _prot->getNumChains(); i++)
+    {
+        for (UInt j = 0; j < _prot->getNumResidues(i); j++)
+        {
+            UInt restype = _prot->getTypeFromResNum(i,j);
+            cout << i << " " << j+1 << " " << aminoAcidString[restype] << " " << _prot->getDielectric(i, j) << " " << _prot->getSolvationEnergy(i, j) << endl;
+        }
+    }
 
 //--Print final energy and write a pdb file--------------------------------------------------------------
     outFile = infile;

@@ -3163,6 +3163,26 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
     itsAtoms[_atomIndex]->setSolvationEnergy(proteinSolvent-solventEntropy);
 	return solvationEnergy;
 }
+
+double residue::getSolvationEnergy()
+{
+    double solvationEnergy = 0.0;
+    for(UInt i=0; i<itsAtoms.size(); i++)
+    {
+        solvationEnergy += itsAtoms[i]->getSolvationEnergy();
+    }
+    return solvationEnergy;
+}
+
+double residue::getDielectric()
+{
+    double dielectricTotal = 0.0;
+    for(UInt i=0; i<itsAtoms.size(); i++)
+    {
+        dielectricTotal += itsAtoms[i]->getDielectric();
+    }
+    return dielectricTotal/itsAtoms.size();
+}
 		
 vector <double> residue::calculateDielectric(residue* _other, UInt _atomIndex)
 {	

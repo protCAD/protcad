@@ -3133,6 +3133,7 @@ void protein::protOpt(bool _backbone)
             //--transform angles while energy improves, until energy degrades, then revert
             do
             {   setDihedralLocal(randchain, randres, deltaTheta, randtype);
+                itsChains[randchain]->itsResidues[randres]->setMoved(1);
                 thisone = 0;
                 //--Energy test
                 Energy = protEnergy();
@@ -3142,6 +3143,7 @@ void protein::protOpt(bool _backbone)
                 }
             } while (thisone == 1);
             setDihedralLocal(randchain, randres, (deltaTheta*-1), randtype);
+            itsChains[randchain]->itsResidues[randres]->setMoved(1);
         }
 
         //--Rotamer optimization-----------------------------------------------------------------------
@@ -3157,6 +3159,7 @@ void protein::protOpt(bool _backbone)
                 for (UInt j = 0; j < allowedRotsize; j ++)
                 {   randrot = rand() % allowedRots[b].size();
                     setRotamerWBC(randchain, randres, b, allowedRots[b][randrot]);
+                    itsChains[randchain]->itsResidues[randres]->setMoved(1);
                     //--Energy test
                     Energy = protEnergy();
                     if (Energy < (pastEnergy-0.05))
@@ -3171,6 +3174,7 @@ void protein::protOpt(bool _backbone)
             }
             if (breakout == 0)
             {   setSidechainDihedralAngles(randchain, randres, currentRot);
+                itsChains[randchain]->itsResidues[randres]->setMoved(1);
             }
         }
     } while (nobetter < _plateau * 1.2);

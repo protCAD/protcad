@@ -112,6 +112,9 @@ public:
 	void listChiDefinitions() const;
 	UInt getNumChis(const UInt _resIndex, const UInt _bpt);
 
+    void setMoved (UInt resIndex, UInt _moved) {itsResidues[resIndex]->setMoved(_moved);}
+    double getSolvationEnergy(const UInt _resIndex) {return itsResidues[_resIndex]->getSolvationEnergy();}
+    double getDielectric(const UInt _resIndex) {return itsResidues[_resIndex]->getDielectric();}
 	UIntVec getActiveResidues() { return itsRepackActivePositionMap;}
 	void setRotamerNotAllowed (const UInt _indexInChain, const UInt aaType, const UInt _bpt, const UInt _rotamer);
 	UIntVec getAllowedRotamers ( const UInt _indexInChain, const UInt  _aaType, const UInt _bpt);

@@ -15,6 +15,7 @@
 #include <string>
 #include <time.h>
 #include <sstream>
+#include <unistd.h>
 #include "ensemble.h"
 #include "PDBInterface.h"
 
@@ -119,9 +120,11 @@ int main (int argc, char* argv[])
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	//--Initialize variables for loop
-	string inFile = argv[1], startstr, endstr, outFile, frameFile, countstr;
-    UInt resNum, foldPosition, name, restype, DorL, test = 0, count, fib = 0, plateau, nobetter;
+    //--Initialize variables for loop and generate unique seed per thread
+    srand (getpid());
+    string inFile = argv[1], startstr, endstr, outFile;
+    UInt resNum, foldPosition, name, restype, DorL, test = 0, count, plateau, nobetter;
+    int direction;
 	stringstream convert;
 	name = rand() % 1000000;
 	convert << name, startstr = convert.str();
@@ -135,7 +138,7 @@ int main (int argc, char* argv[])
 		ensemble* theEnsemble = thePDB->getEnsemblePointer();
 		molecule* pMol = theEnsemble->getMoleculePointer(0);
 		protein* bundle = static_cast<protein*>(pMol);
-        pastEnergy = bundle->protEnergy(), resNum = bundle->getNumResidues(0), fib = 0, count = 0, nobetter = 0, bestEnergy = 1E10, plateau = resNum*10000;
+        pastEnergy = bundle->protEnergy(), resNum = bundle->getNumResidues(0), count = 0, nobetter = 0, bestEnergy = 1E10, plateau = resNum;
         foldPosition = getFoldingPosition(bundle,nobetter+1);
 		dblVec phis(resNum), psis(resNum);
 		for (UInt i = 0; i < resNum; i++)
@@ -151,23 +154,23 @@ int main (int argc, char* argv[])
 			ensemble* theEnsemble = thePDB->getEnsemblePointer();
 			molecule* pMol = theEnsemble->getMoleculePointer(0);
             protein* bundle = static_cast<protein*>(pMol);
-			fib++, nobetter++;
+            nobetter++;
 
 			//generate random angles---------------------------
 			restype = bundle->getTypeFromResNum(0, foldPosition);
 			randphi = rand() % phisL.size();
 			randpsi = rand() % psisL.size();
-			if (restype < 26)
+            if (restype < G)
 			{
 				newphi = phisL[randphi];
 				newpsi = psisL[randpsi];
 			}
-			if (restype > 26)
+            if (restype > G)
 			{
 				newphi = phisD[randphi];
 				newpsi = psisD[randpsi];
 			}
-			if (restype == 26)
+            if (restype == G)
 			{
 				DorL = rand() % 1;
 				if (DorL == 0)
@@ -189,6 +192,7 @@ int main (int argc, char* argv[])
 				test++;
 				for (UInt i = 0; i < resNum; i++)
 				{
+                    bundle->setMoved(0,i,1);
 					//psi only (n-terminus)
 					if (i == 0 && i == foldPosition)
 					{
@@ -223,10 +227,14 @@ int main (int argc, char* argv[])
 				//optimize and check Energy------------------------------
                 bundle->protOpt(false);
                 Energy = bundle->protEnergy();
-				if (Energy < (pastEnergy + fib) && (Energy < (pastEnergy-.5) || Energy > (pastEnergy+.5)))
+                if (Energy < (pastEnergy + nobetter) && (Energy < (pastEnergy-.5) || Energy > (pastEnergy+.5)))
 				{
-                    //cout << Energy << endl;
-					fib = 0, pastEnergy = Energy, test = 0, count++, nobetter--;
+                    //cout << Energy << " " << nobetter << endl;
+                    pastEnergy = Energy, test = 0, count++;
+                    if (nobetter > 0) { nobetter--;
+                    }
+                    else{ nobetter = 0;
+                    }
 					phis[foldPosition] = newphi, psis[foldPosition] = newpsi;
 
 					if (Energy < bestEnergy)
@@ -237,16 +245,19 @@ int main (int argc, char* argv[])
 
 					//check folding status---------------------------------
 					restype = bundle->getTypeFromResNum(0, foldPosition);
+                    do
+                    { direction = ((rand() % 3) -1);
+                    } while (direction == 0);
 
 					//L chirality
-					if (newphi < 0 && foldPosition != 0 && foldPosition != resNum-1)
+                    if (newphi < 0 && foldPosition != 0 && foldPosition != resNum-1 && foldPosition != 0)
 					{
 						//alpha
 						if (newpsi < phisD[0])
 						{
 							if (newphi == phisL[0] && newpsi == psisL[0])
 							{
-								foldPosition = foldPosition+1;
+                                foldPosition = foldPosition+direction;
 							}
 							else
 							{
@@ -259,7 +270,7 @@ int main (int argc, char* argv[])
 						{
 							if ((newphi == phisL[1] && newpsi == psisL[2]) || (newphi == phisL[2] && newpsi == psisL[3]))
 							{
-								foldPosition = foldPosition+1;
+                                foldPosition = foldPosition+direction;
 							}
 							else
 							{
@@ -269,14 +280,14 @@ int main (int argc, char* argv[])
 						}
 					}
 					//D chirality
-					if (newphi > 0 && foldPosition != 0 && foldPosition != resNum-1)
+                    if (newphi > 0 && foldPosition != 0 && foldPosition != resNum-1 && foldPosition != 0)
 					{
 						//alpha
 						if (newpsi > phisL[0])
 						{
 							if (newphi == phisD[0] && newpsi == psisD[0])
 							{
-								foldPosition = foldPosition+1;
+                                foldPosition = foldPosition+direction;
 							}
 							else
 							{
@@ -289,7 +300,7 @@ int main (int argc, char* argv[])
 						{
 							if ((newphi == phisD[1] && newpsi == psisD[2]) || (newphi == phisD[2] && newpsi == psisD[3]))
 							{
-								foldPosition = foldPosition+1;
+                                foldPosition = foldPosition+direction;
 							}
 							else
 							{
@@ -338,6 +349,6 @@ UInt getFoldingPosition(protein* _prot, UInt _nobetter)
 	{
 		randres = rand() % resNum;
         posE = _prot->resEnergy(0,randres);
-    }while (posE < (medE/_nobetter));
+    }while (posE < (medE/(_nobetter+1)));
     return randres;
 }
