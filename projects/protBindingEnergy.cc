@@ -21,7 +21,6 @@ int main (int argc, char* argv[])
 		cout << "bindingEnergy <inFile.pdb>" << endl;
 		exit(1);
 	}
-    clock_t t;
 	string infile = argv[1];
 	PDBInterface* thePDB = new PDBInterface(infile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
@@ -35,12 +34,7 @@ int main (int argc, char* argv[])
 	amberVDW::setLinearRepulsionDampeningOff();
     amberElec::setScaleFactor(1.0);
 
-    //vector <double> Energy = bundle->chainFoldingBindingEnergy(false);
-    //double interEnergy = bundle->interSoluteEnergy(true, 0, 1);
-   // cout << Energy[1] << " " << Energy[0];
-    t=clock();
-    //bundle->buildResidueMatrices();
-    t=clock()-t;
-    cout << "Time to run: " << ((float)t)/CLOCKS_PER_SEC << endl << endl;
+    vector <double> Energy = bundle->chainBindingEnergy();
+    cout << Energy[1] << " " << Energy[0];
 	return 0;
 }

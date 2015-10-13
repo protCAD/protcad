@@ -31,7 +31,7 @@ int main (int argc, char* argv[])
 	}
 	enum aminoAcid {A,R,N,D,Dh,C,Cx,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV};
 	//string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Q","E","Eh","Hd", "He","Hn","Hp","I","L","K","M","F","P","O","S","T","W","Y", "V","G","dA","dR","dN","dD","dDh","dC","dCx","dQ","dE","dEh","dHd","dHe","dHn","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV"};
-	residue::setCutoffDistance(8.0);
+    residue::setCutoffDistance(9.0);
 	rotamer::setScaleFactor(0.0);
 	amberVDW::setScaleFactor(1.0);
 	amberVDW::setRadiusScaleFactor(1.0);
@@ -125,6 +125,7 @@ int main (int argc, char* argv[])
     string inFile = argv[1], startstr, endstr, outFile;
     UInt resNum, foldPosition, name, restype, DorL, test = 0, count, plateau, nobetter;
     int direction;
+    bool gtest;
 	stringstream convert;
 	name = rand() % 1000000;
 	convert << name, startstr = convert.str();
@@ -154,7 +155,7 @@ int main (int argc, char* argv[])
 			ensemble* theEnsemble = thePDB->getEnsemblePointer();
 			molecule* pMol = theEnsemble->getMoleculePointer(0);
             protein* bundle = static_cast<protein*>(pMol);
-            nobetter++;
+            nobetter++, gtest = true;
 
 			//generate random angles---------------------------
 			restype = bundle->getTypeFromResNum(0, foldPosition);
@@ -309,7 +310,22 @@ int main (int argc, char* argv[])
 							}
 						}
 					}
-				}
+                }
+                else if(restype == G && gtest)
+                {
+                    test = 0;
+                    gtest = false;
+                    if (DorL == 1)
+                    {
+                        newphi = phisL[randphi];
+                        newpsi = psisL[randpsi];
+                    }
+                    else
+                    {
+                        newphi = phisD[randphi];
+                        newpsi = psisD[randpsi];
+                    }
+                }
 			} while (test == 0);
             foldPosition = getFoldingPosition(bundle,nobetter);
 			delete thePDB;

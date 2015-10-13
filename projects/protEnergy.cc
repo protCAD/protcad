@@ -15,7 +15,6 @@
 //--Program setup-------------------------------------------------------------
 int main (int argc, char* argv[])
 {	
-    clock_t t;
 	string infile = argv[1];
 	enum aminoAcid {A, R, N, D, Dh, C, Q, E, Eh, G, H, O, I, L, K, M, F, P, S, T, W, Y, V, dA, dR, dN, dD, dDh, dC, dQ, dE, dEh, dH, dO, dI, dL, dK, dM, dF, dP, dS, dT, dW, dY, dV};
 	PDBInterface* thePDB = new PDBInterface(infile);
@@ -29,23 +28,8 @@ int main (int argc, char* argv[])
 	amberVDW::setLinearRepulsionDampeningOff();
     amberElec::setScaleFactor(1.0);
 
-    t=clock();
-    cout << bundle->intraSoluteEnergy(true) << endl;
-    t=clock()-t;
 
-    cout << "Time to run intraSoluteEnergy: " << ((float)t)/CLOCKS_PER_SEC << endl;
-
-    t=clock();
-    cout << bundle->protEnergy() << endl;
-    t=clock()-t;
-
-    cout << "Time to run first protEnergy: " << ((float)t)/CLOCKS_PER_SEC << endl;
-
-    t=clock();
-    cout << bundle->protEnergy() << endl;
-    t=clock()-t;
-
-    cout << "Time to run second protEnergy: " << ((float)t)/CLOCKS_PER_SEC << endl;
+    cout << bundle->protEnergy() << " ";
 
 	return 0;
 }
