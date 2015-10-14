@@ -3154,8 +3154,8 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
     int waters = itsAtoms[_atomIndex]->getNumberofWaters();
     double charge = residueTemplate::itsAmberElec.getItsCharge(itsType, _atomIndex);
     double chargeSquared = charge*charge;
-    double Temperature = 30;
-    double waterDielectric = -0.3195 * Temperature + 86.115; //fit from Malmberg and Maryott, 1956 JRNBS
+    double Temperature = 4;
+    double waterDielectric = -0.3195 * Temperature + 86.115; //fit of data from Malmberg and Maryott, 1956 JRNBS
     double proteinSolvent = -166 * (atomDielectric/waterDielectric) * (chargeSquared/9);
     double solventEntropy = Temperature*0.0019872041*log(pow(0.5,(waters)));
     solvationEnergy[0] = proteinSolvent;
@@ -3224,7 +3224,7 @@ vector <double> residue::calculateDielectric(residue* _other, UInt _atomIndex)
 	{
 		chargeDensity[0] = volumes;
 		chargeDensity[1] = charges;
-		chargeDensity[2] = 1;
+        chargeDensity[2] = 0.1;
 	}
 	return chargeDensity;
 }
@@ -3267,7 +3267,7 @@ vector <double> residue::calculateDielectric(residue* _other, atom* _atom)
 	{
 		chargeDensity[0] = volumes;
 		chargeDensity[1] = charges;
-		chargeDensity[2] = 1;
+        chargeDensity[2] = 0.1;
 	}
 	return chargeDensity;
 }

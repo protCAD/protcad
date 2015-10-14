@@ -35,6 +35,6 @@ int main (int argc, char* argv[])
     amberElec::setScaleFactor(1.0);
 
     vector <double> Energy = bundle->chainBindingEnergy();
-    cout << Energy[1] << " " << Energy[0];
+    cout << Energy[0] << " " << Energy[1];
 	return 0;
 }
