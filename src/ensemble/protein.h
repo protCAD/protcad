@@ -177,7 +177,6 @@ public:
 	vector <double> chainFoldingBindingEnergy(bool _unfold);
 	vector <double> chainBindingEnergy();
 	double bindingPositionSoluteEnergy(UInt _chain, UInt _residue, UInt _otherChain);
-	vector <double> getChargeDensity(UInt _chainIndex, UInt _residueIndex, UInt _atomIndex);
     vector <double> calculateDielectric(UInt _chainIndex, UInt _residueIndex, UInt _atomIndex);
     vector <double> calculateDielectric(chain* _chain, residue* _residue, atom* _atom);
     vector <double> calculateSolvationEnergy(UInt _chainIndex, UInt _residueIndex, UInt _atomIndex) {return itsChains[_chainIndex]->itsResidues[_residueIndex]->calculateSolvationEnergy( _atomIndex);}

@@ -1702,34 +1702,30 @@ double chain::intraSoluteEnergy()
 
 vector <double> chain::calculateDielectric(chain* _other, UInt _residueIndex, UInt _atomIndex)
 {	
-	vector <double> chargeDensity(3);
-	vector <double> _chargeDensity(3);
+    vector <double> chargeDensity(2);
+    vector <double> _chargeDensity(2);
 	chargeDensity[0] = 0.0;
 	chargeDensity[1] = 0.0;
-	chargeDensity[2] = 0.0;
 	for(UInt i=0; i<_other->itsResidues.size(); i++)
 	{
         _chargeDensity = itsResidues[_residueIndex]->calculateDielectric(_other->itsResidues[i], _atomIndex);
         chargeDensity[0] += _chargeDensity[0];
         chargeDensity[1] += _chargeDensity[1];
-        chargeDensity[2] += _chargeDensity[2];
 	}
 	return chargeDensity;
 }
 
 vector <double> chain::calculateDielectric(chain* _other, residue* _residue, atom* _atom)
 {	
-	vector <double> chargeDensity(3);
-	vector <double> _chargeDensity(3);
+    vector <double> chargeDensity(2);
+    vector <double> _chargeDensity(2);
 	chargeDensity[0] = 0.0;
 	chargeDensity[1] = 0.0;
-	chargeDensity[2] = 0.0;
 	for(UInt i=0; i<_other->itsResidues.size(); i++)
 	{
         _chargeDensity = _residue->calculateDielectric(_other->itsResidues[i], _atom);
         chargeDensity[0] += _chargeDensity[0];
         chargeDensity[1] += _chargeDensity[1];
-        chargeDensity[2] += _chargeDensity[2];
 	}
 	return chargeDensity;
 }

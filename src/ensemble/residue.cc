@@ -3131,13 +3131,11 @@ double residue::getDielectric()
 		
 vector <double> residue::calculateDielectric(residue* _other, UInt _atomIndex)
 {	
-	vector <double> chargeDensity(3);
+    vector <double> chargeDensity(2);
 	chargeDensity[0] = 0.0;
 	chargeDensity[1] = 0.0;
-	chargeDensity[2] = 0.0;
 	double charges = 0.0;
 	double volumes = 0.0;
-	double atoms = 0.0;
 	double distanceSquared;
 	int atomEnergyType;
 	for(UInt i=0; i<_other->itsAtoms.size(); i++)
@@ -3145,7 +3143,44 @@ vector <double> residue::calculateDielectric(residue* _other, UInt _atomIndex)
 		distanceSquared = itsAtoms[_atomIndex]->inCubeWithDistSQ(_other->itsAtoms[i], 81);
         if (distanceSquared != 0.0 && distanceSquared <= 81)
 		{
-			atoms++;
+			atomEnergyType = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[i][1];
+            if (atomEnergyType == 4) charges += 0.49, volumes += 23.2; //magnesium
+			if (atomEnergyType == 11) charges += 1.382, volumes += 8.7;
+			if (atomEnergyType == 12 || atomEnergyType == 15) charges += 1.382, volumes += 8.7;
+			if (atomEnergyType == 13) charges += 1.836, volumes += 23.2;
+			if (atomEnergyType == 14) charges += 2.222, volumes += 36.7;
+			if (atomEnergyType == 16 || atomEnergyType == 27) charges += 1.529, volumes += 8.7;
+			if (atomEnergyType == 18 || atomEnergyType == 21) charges += 1.768, volumes += 21.3;
+			if (atomEnergyType == 22) charges += 1.45, volumes += 20.4;
+			if (atomEnergyType == 46 || atomEnergyType == 50) charges += 1.48, volumes += 13.6;
+			if (atomEnergyType == 48) charges += 1.866, volumes += 22.7;
+			if (atomEnergyType == 49) charges += 2.252, volumes += 21.4;
+			if (atomEnergyType == 55) charges += 0.46, volumes += 15.9;
+			if (atomEnergyType == 56) charges += 0.664, volumes += 18;
+			if (atomEnergyType == 57) charges += 1.05, volumes += 18;
+			if (atomEnergyType == 60) charges += 3.2684, volumes += 29.2;
+			if (atomEnergyType == 61) charges += 3.6643, volumes += 36.7;
+		}
+    }
+    chargeDensity[0] = volumes;
+    chargeDensity[1] = charges;
+	return chargeDensity;
+}
+
+vector <double> residue::calculateDielectric(residue* _other, atom* _atom)
+{	
+	vector <double> chargeDensity(2);
+	chargeDensity[0] = 0.0;
+	chargeDensity[1] = 0.0;
+	double charges = 0.0;
+	double volumes = 0.0;
+	double distanceSquared;
+	int atomEnergyType;
+	for(UInt i=0; i<_other->itsAtoms.size(); i++)
+	{
+		distanceSquared = _atom->inCubeWithDistSQ(_other->itsAtoms[i], 81);
+        if (distanceSquared != 0.0 && distanceSquared <= 81)
+		{
 			atomEnergyType = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[i][1];
             if (atomEnergyType == 4) charges += 0.49, volumes += 23.2; //magnesium
 			if (atomEnergyType == 11) charges += 1.382, volumes += 8.7;
@@ -3165,55 +3200,8 @@ vector <double> residue::calculateDielectric(residue* _other, UInt _atomIndex)
 			if (atomEnergyType == 61) charges += 3.6643, volumes += 36.7;
 		}
 	}
-	if (atoms != 0.0)
-	{
-		chargeDensity[0] = volumes;
-		chargeDensity[1] = charges;
-        chargeDensity[2] = 0.1;
-	}
-	return chargeDensity;
-}
-
-vector <double> residue::calculateDielectric(residue* _other, atom* _atom)
-{	
-	vector <double> chargeDensity(2);
-	chargeDensity[0] = 0.0;
-	chargeDensity[1] = 0.0;
-	double charges = 0.0;
-	double volumes = 0.0;
-	double atoms = 0.0;
-	double distanceSquared;
-	int atomEnergyType;
-	for(UInt i=0; i<_other->itsAtoms.size(); i++)
-	{
-		distanceSquared = _atom->inCubeWithDistSQ(_other->itsAtoms[i], 81);
-        if (distanceSquared != 0.0 && distanceSquared <= 81)
-		{
-			atoms++;
-			atomEnergyType = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[i][1];
-			if (atomEnergyType == 11) charges += 1.382, volumes += 8.7;
-			if (atomEnergyType == 12 || atomEnergyType == 15) charges += 1.382, volumes += 8.7;
-			if (atomEnergyType == 13) charges += 1.836, volumes += 23.2;
-			if (atomEnergyType == 14) charges += 2.222, volumes += 36.7;
-			if (atomEnergyType == 16 || atomEnergyType == 27) charges += 1.529, volumes += 8.7;
-			if (atomEnergyType == 18 || atomEnergyType == 21) charges += 1.768, volumes += 21.3;
-			if (atomEnergyType == 22) charges += 1.45, volumes += 20.4;
-			if (atomEnergyType == 46 || atomEnergyType == 50) charges += 1.48, volumes += 13.6;
-			if (atomEnergyType == 48) charges += 1.866, volumes += 22.7;
-			if (atomEnergyType == 49) charges += 2.252, volumes += 21.4;
-			if (atomEnergyType == 55) charges += 0.46, volumes += 15.9;
-			if (atomEnergyType == 56) charges += 0.664, volumes += 18;
-			if (atomEnergyType == 57) charges += 1.05, volumes += 18;
-			if (atomEnergyType == 60) charges += 3.2684, volumes += 29.2;
-			if (atomEnergyType == 61) charges += 3.6643, volumes += 36.7;
-		}
-	}
-	if (atoms != 0.0)
-	{
-		chargeDensity[0] = volumes;
-		chargeDensity[1] = charges;
-        chargeDensity[2] = 0.1;
-	}
+    chargeDensity[0] = volumes;
+    chargeDensity[1] = charges;
 	return chargeDensity;
 }
 
