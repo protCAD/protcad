@@ -72,9 +72,9 @@ int main (int argc, char* argv[])
 		molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
 		protein* frame = static_cast<protein*>(frameMol);
 		frame->silenceMessages();
-		chargeDensity = frame->getChargeDensity(0, mutants[i], 8);
+        //chargeDensity = frame->getChargeDensity(0, mutants[i], 8);
 		//pdbWriter(frame, outFile);
-		cout << chargeDensity[0] << "   " << chargeDensity[1] << "   " << chargeDensity[2] << endl;
+        //cout << chargeDensity[0] << "   " << chargeDensity[1] << "   " << chargeDensity[2] << endl;
 		delete theFramePDB;
 	}
 	return 0;

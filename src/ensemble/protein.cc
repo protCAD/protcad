@@ -1193,6 +1193,7 @@ vector <double> protein::calculateDielectric(UInt _chainIndex, UInt _residueInde
 	double watervol = 0.0;
 	double waters = 0.0;
 	double waterpol = 0.0;
+    double die;
 	for(UInt i=0; i<itsChains.size(); i++)
 	{
 		_chargeDensity = itsChains[_chainIndex]->calculateDielectric(itsChains[i], _residueIndex, _atomIndex);
@@ -1202,7 +1203,15 @@ vector <double> protein::calculateDielectric(UInt _chainIndex, UInt _residueInde
     watervol = 3052-chargeDensity[0];
     waters = watervol/27;
     waterpol = waters*1.4907;
-    dielectric[0] = 1+4*3.14*((waters)/3052)*(waterpol+chargeDensity[1]); //combined sums and converted div to mult "(1+4*3.14*((waters+chargeDensity[2])/10)/3728*(waterpol+chargeDensity[1]))"
+    die = 1+4*3.14*((waters)/3052)*(waterpol+chargeDensity[1]);
+    if (die > 2)
+    {
+        dielectric[0] = die;
+    }
+    else
+    {
+        dielectric[0] = 2;
+    }
     dielectric[1] = waters;
     return dielectric;
 }
@@ -1217,6 +1226,7 @@ vector <double> protein::calculateDielectric(chain* _chain, residue* _residue, a
 	double watervol = 0.0;
 	double waters = 0.0;
 	double waterpol = 0.0;
+    double die;
 	for(UInt i=0; i<itsChains.size(); i++)
 	{
 		_chargeDensity = _chain->calculateDielectric(itsChains[i], _residue, _atom);
@@ -1226,7 +1236,15 @@ vector <double> protein::calculateDielectric(chain* _chain, residue* _residue, a
     watervol = 3052-chargeDensity[0];
     waters = watervol/27;
     waterpol = waters*1.4907;
-    dielectric[0] = 1+4*3.14*((waters)/3052)*(waterpol+chargeDensity[1]); //combined sums and converted div to mult "(1+4*3.14*((waters+chargeDensity[2])/10)/3728*(waterpol+chargeDensity[1]))"
+    die = 1+4*3.14*((waters)/3052)*(waterpol+chargeDensity[1]);
+    if (die > 2)
+    {
+        dielectric[0] = die;
+    }
+    else
+    {
+        dielectric[0] = 2;
+    }
     dielectric[1] = waters;
     return dielectric;
 }
@@ -1242,13 +1260,22 @@ vector <double> protein::calculateChainIndependentDielectric(chain* _chain, resi
 	double watervol = 0.0;
 	double waters = 0.0;
     double waterpol = 0.0;
+    double die;
 	_chargeDensity = _chain->calculateDielectric(_chain, _residue, _atom);
 	chargeDensity[0] += _chargeDensity[0];
 	chargeDensity[1] += _chargeDensity[1];
     watervol = 3052-chargeDensity[0];
     waters = watervol/27;
     waterpol = waters*1.4907;
-    dielectric[0] = 1+4*3.14*((waters)/3052)*(waterpol+chargeDensity[1]); //combined sums and converted div to mult "(1+4*3.14*((waters+chargeDensity[2])/10)/3728*(waterpol+chargeDensity[1]))"
+    die = 1+4*3.14*((waters)/3052)*(waterpol+chargeDensity[1]);
+    if (die > 2)
+    {
+        dielectric[0] = die;
+    }
+    else
+    {
+        dielectric[0] = 2;
+    }
     dielectric[1] = waters;
 	return dielectric;
 }
