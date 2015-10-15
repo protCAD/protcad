@@ -1405,7 +1405,7 @@ void protein::buildResidueEnergyPairs(vector < vector < vector <double> > > &_en
 {
     updateTotalNumResidues();
     _energies.clear();
-    double Energy;
+    double Energy, test = 0.0;
     vector < vector < vector <double> > > chainE;
     vector < vector <double> > resE;
     vector <double> E;
@@ -1432,15 +1432,17 @@ void protein::buildResidueEnergyPairs(vector < vector < vector <double> > > &_en
                     }
                     else
                     {
-                        Energy = itsChains[chaini]->itsResidues[resi]->getResiduePairSoluteEnergy(itsChains[chainj]->itsResidues[resj]);
+                        Energy = itsChains[chaini]->itsResidues[resi]->interSoluteEnergy(itsChains[chainj]->itsResidues[resj]);
                     }
                     E.push_back(Energy);
+                    test += Energy;
                 }
             }
             resE.push_back(E);
         }
         chainE.push_back(resE);
     }
+    cout << "testE " << test << endl;
     for (chaini = 0; chaini < itsChains.size(); chaini++)
     {
         for (resi = 0; resi < itsChains[chaini]->itsResidues.size(); resi++)
@@ -1486,7 +1488,7 @@ void protein::updateProtEnergy(vector < vector < vector <double> > > &_energies)
                         }
                         else
                         {
-                            residueEnergy = itsChains[chaini]->itsResidues[resi]->getResiduePairSoluteEnergy(itsChains[chainj]->itsResidues[resj]);
+                            residueEnergy = itsChains[chaini]->itsResidues[resi]->interSoluteEnergy(itsChains[chainj]->itsResidues[resj]);
                         }
                         _energies[chaini][resi][k] = residueEnergy;
                     }

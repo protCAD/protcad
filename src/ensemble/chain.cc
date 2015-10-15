@@ -1693,11 +1693,7 @@ double chain::intraSoluteEnergy()
 		double interE = 0.0;
 		for(UInt j=i+1; j<itsResidues.size(); j++)
 		{	
-            bool withinCube = itsResidues[i]->inCube(itsResidues[j], 16);
-            if (withinCube)
-            {
-				interE += itsResidues[i]->interSoluteEnergy(itsResidues[j]);
-            }
+            interE += itsResidues[i]->interSoluteEnergy(itsResidues[j]);
 		}
 		intraEnergy += interE;
 	}
@@ -1823,12 +1819,8 @@ double chain::interSoluteEnergy(chain* _other)
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{
 		for(UInt j=0; j<_other->itsResidues.size(); j++)
-		{	
-            bool withinCube = itsResidues[i]->inCube(_other->itsResidues[j], 16);
-            if (withinCube)
-            {
-				interEnergy += itsResidues[i]->interSoluteEnergy(_other->itsResidues[j]);
-            }
+        {
+            interEnergy += itsResidues[i]->interSoluteEnergy(_other->itsResidues[j]);
 		}
 	}
 	return interEnergy;
