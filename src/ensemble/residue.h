@@ -232,7 +232,7 @@ public:
 	double intraSoluteEnergy();
 	vector <double> calculateDielectric(residue* _other, UInt _atomIndex);
 	vector <double> calculateDielectric(residue* _other, atom* _atom);
-    vector <double> calculateSolvationEnergy(UInt _atomIndex);
+    double calculateSolvationEnergy(UInt _atomIndex);
     double getSolvationEnergy();
     double getDielectric();
 	double getIntraEnergy(const UInt atom1, residue* _other, const UInt atom2);

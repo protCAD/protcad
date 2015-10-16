@@ -27,9 +27,9 @@ int main (int argc, char* argv[])
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* bundle = static_cast<protein*>(pMol);
 	bundle->silenceMessages();
-	residue::setCutoffDistance(9.0);
+    residue::setCutoffDistance(9.0);
 	rotamer::setScaleFactor(0.0);
-	amberVDW::setScaleFactor(1.0);
+    amberVDW::setScaleFactor(1.0);
 	amberVDW::setRadiusScaleFactor(1.0);
 	amberVDW::setLinearRepulsionDampeningOff();
     amberElec::setScaleFactor(1.0);

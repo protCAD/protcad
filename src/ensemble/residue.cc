@@ -3037,9 +3037,8 @@ double residue::intraSoluteEnergy()
             if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
             {
                 // ** get solvationEnergy
-                vector <double> tempSolvEnergy = this->calculateSolvationEnergy(i);
-                intraEnergy += tempSolvEnergy[0];
-                intraEnergy -= tempSolvEnergy[1];
+                double tempSolvEnergy = calculateSolvationEnergy(i);
+                intraEnergy -= tempSolvEnergy;
             }
 			for(UInt j=i+1; j<itsAtoms.size(); j++)
 			{
@@ -3091,21 +3090,20 @@ double residue::intraSoluteEnergy()
 	return intraEnergy;
 }
 
-vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
+double residue::calculateSolvationEnergy(UInt _atomIndex)
 {
 	//--requires update of dielectrics at protein level to be accurate.
-    vector <double> solvationEnergy(2);
+    double solvationEnergy;
 	double atomDielectric = itsAtoms[_atomIndex]->getDielectric();
     int waters = itsAtoms[_atomIndex]->getNumberofWaters();
     double charge = residueTemplate::itsAmberElec.getItsCharge(itsType, _atomIndex);
     double chargeSquared = charge*charge;
-    double Temperature = 4;
+    double Temperature = 15;
     double waterDielectric = -0.3195 * Temperature + 86.115; //fit of data from Malmberg and Maryott, 1956 JRNBS
-    double proteinSolvent = -166 * (atomDielectric/waterDielectric) * (chargeSquared/9);
-    double solventEntropy = Temperature*0.0019872041*log(pow(0.5,(waters)));
-    solvationEnergy[0] = proteinSolvent;
-    solvationEnergy[1] = solventEntropy;
-    itsAtoms[_atomIndex]->setSolvationEnergy(proteinSolvent-solventEntropy);
+    double proteinSolventEnthalpy = -166 * (atomDielectric/waterDielectric) * (chargeSquared/9);
+    double proteinSolventEntropy = Temperature*0.0019872041*log(pow(0.5,(waters)));
+    solvationEnergy = proteinSolventEnthalpy-proteinSolventEntropy;
+    itsAtoms[_atomIndex]->setSolvationEnergy(solvationEnergy);
 	return solvationEnergy;
 }
 
