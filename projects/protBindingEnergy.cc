@@ -34,7 +34,7 @@ int main (int argc, char* argv[])
 	amberVDW::setLinearRepulsionDampeningOff();
     amberElec::setScaleFactor(1.0);
 
-    vector <double> Energy = bundle->chainBindingEnergy();
+    vector <double> Energy = bundle->chainFoldingBindingEnergy(true);
     cout << Energy[0] << " " << Energy[1];
 	return 0;
 }

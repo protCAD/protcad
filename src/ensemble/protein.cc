@@ -1619,9 +1619,8 @@ vector <double> protein::chainFoldingBindingEnergy(UInt _ligandChain)
 
 vector <double> protein::chainFoldingBindingEnergy(bool _unfold)
 {
-	double bindingEnergy, complexEnergy, intraChainEnergy = 0.0, LorD;
+    double bindingEnergy, complexEnergy, intraChainEnergy = 0.0;//, LorD;
 	vector <double> Energy;
-    //cout << "complex" << endl;
     complexEnergy = this->intraSoluteEnergy(true);
 	Energy.push_back(complexEnergy);
     UInt resNum, restype, numChains = this->getNumChains();
@@ -1633,7 +1632,7 @@ vector <double> protein::chainFoldingBindingEnergy(bool _unfold)
 			for (UInt k = 0; k < resNum; k++)
 			{
                 restype = this->getTypeFromResNum(j,k);
-				if (restype < 26)
+                if (restype <= 26)
 				{
                     this->setDihedral(j, k, -63.68, 0, 0);
                     this->setDihedral(j, k, 155.22, 1, 0);
@@ -1643,7 +1642,7 @@ vector <double> protein::chainFoldingBindingEnergy(bool _unfold)
                     this->setDihedral(j, k, 63.68, 0, 0);
                     this->setDihedral(j, k, -155.22, 1, 0);
 				}
-				if (restype == 26)
+                /*if (restype == 26)
 				{
 					if (k == 0)
 					{
@@ -1687,11 +1686,10 @@ vector <double> protein::chainFoldingBindingEnergy(bool _unfold)
                             this->setDihedral(j, k, 155.22, 1, 0);
 						}
 					}
-				}
+                }*/
 			}
-            this->chainOptSolvent(200, j);
+            this->chainOptSolvent(500, j);
 		}
-        //cout << "chain" << j << endl;
         this->updateChainIndependentDielectrics(j);
 		intraChainEnergy += itsChains[j]->intraSoluteEnergy();
 	}
@@ -3002,7 +3000,7 @@ void protein::chainOptSolvent(UInt _plateau, UInt _chainIndex)
 	return;
 }
 
-void protein::protOptSolvent(UInt _plateau)
+void protein::protOptSolvent(UInt _plateau, bool _backbone)
 {	// Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics and corresponding implicit solvation score
 	//    _plateau: the number of consecutive optimization cycles without an energy decrease.
 	//	    	     (250 is recommended for a full minimization without excessive calculation)
@@ -3037,7 +3035,7 @@ void protein::protOptSolvent(UInt _plateau)
 		}
 
 		//--backbone optimization----------------------------------------------------------------------
-		if (rotbetter > _plateau && preposE > avepreposE)
+        if (rotbetter > _plateau && preposE > avepreposE && _backbone)
 		{
 			//--choose phi or psi and angle, for a local transformation
 			randtype = rand() % 2;

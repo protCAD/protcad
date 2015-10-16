@@ -26,7 +26,7 @@ int main (int argc, char* argv[])
     molecule* pMol = theEnsemble->getMoleculePointer(0);
     protein* _prot = static_cast<protein*>(pMol);
 
-    _prot->protOptSolvent(500);
+    _prot->protOptSolvent(1000, false);
     pdbWriter(_prot, outFile);
 
     return 0;
