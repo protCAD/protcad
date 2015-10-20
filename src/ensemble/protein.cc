@@ -1424,25 +1424,29 @@ void protein::buildResidueEnergyPairs(vector < vector < vector <double> > > &_en
     for (chaini = 0; chaini < itsChains.size(); chaini++)
     {
         resE.clear();
-        for (resi = 0; resi < itsChains[chaini]->itsResidues.size(); resi++)
+        for (resi = 0; resi < getNumResidues(chaini); resi++)
         {
             E.clear();
+            Energy = itsChains[chaini]->itsResidues[resi]->intraSoluteEnergy();
+            E.push_back(Energy);
             for (chainj = 0; chainj < chaini+1; chainj++)
             {
-                for (resj = 0; resj < resi+1; resj++)
+                for (resj = 0; resj < getNumResidues(chainj); resj++)
                 {
+                    cout << chaini << " " << resi << " " << chainj << " " << resj<< " | ";
                     if (chaini == chainj && resi == resj)
                     {
-                        Energy = itsChains[chaini]->itsResidues[resi]->intraSoluteEnergy();
+                        break;
                     }
                     else
                     {
                         Energy = itsChains[chaini]->itsResidues[resi]->interSoluteEnergy(itsChains[chainj]->itsResidues[resj]);
+                        E.push_back(Energy);
                     }
-                    E.push_back(Energy);
                 }
             }
             resE.push_back(E);
+            cout << endl;
         }
         chainE.push_back(resE);
     }
@@ -1468,34 +1472,36 @@ void protein::updateProtEnergy(vector < vector < vector <double> > > &_energies)
         for (resi = 0; resi < itsChains[chaini]->itsResidues.size(); resi++)
         {
             k = 0;
+            if (itsChains[chaini]->itsResidues[resi]->getMoved() != 0)
+            {
+                if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
+                {
+                    updatePositionDielectrics(chaini, resi);
+                }
+                residueEnergy = itsChains[chaini]->itsResidues[resi]->intraSoluteEnergy();
+                _energies[chaini][resi][k] = residueEnergy;
+            }
             for (chainj = 0; chainj < chaini+1; chainj++)
             {
-                for (resj = 0; resj < resi+1; resj++)
+                for (resj = 0; resj < getNumResidues(chainj); resj++)
                 {
-                    if (itsChains[chaini]->itsResidues[resi]->getMoved() != 0 || itsChains[chainj]->itsResidues[resj]->getMoved() != 0)
+                    if (chaini == chainj && resi == resj)
                     {
-                        //update position dielectrics
-                        if (itsChains[chaini]->itsResidues[resi]->getMoved() != 0 && residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
-                        {
-                            updatePositionDielectrics(chaini, resi);
-                        }
-                        if (itsChains[chainj]->itsResidues[resj]->getMoved() != 0 && residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
-                        {
-                            updatePositionDielectrics(chainj, resj);
-                        }
-
-                        //calculate residue energy pair
-                        if (chaini == chainj && resi == resj)
-                        {
-                            residueEnergy = itsChains[chaini]->itsResidues[resi]->intraSoluteEnergy();
-                        }
-                        else
-                        {
-                            residueEnergy = itsChains[chaini]->itsResidues[resi]->interSoluteEnergy(itsChains[chainj]->itsResidues[resj]);
-                        }
-                        _energies[chaini][resi][k] = residueEnergy;
+                        break;
                     }
-                    k++;
+                    else
+                    {
+                        k++;
+                        if (itsChains[chaini]->itsResidues[resi]->getMoved() != 0 || itsChains[chainj]->itsResidues[resj]->getMoved() != 0)
+                        {
+                            if (itsChains[chainj]->itsResidues[resj]->getMoved() != 0 && residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
+                            {
+                                updatePositionDielectrics(chainj, resj);
+                            }
+                            residueEnergy = itsChains[chaini]->itsResidues[resi]->interSoluteEnergy(itsChains[chainj]->itsResidues[resj]);
+                            _energies[chaini][resi][k] = residueEnergy;
+                        }
+                    }
                 }
             }
         }

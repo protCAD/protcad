@@ -3296,6 +3296,7 @@ double residue::interSoluteEnergy(residue* _other)
                         double distanceSquared = itsAtoms[i]->inCubeWithDistSQ(_other->itsAtoms[j], cutoffDistanceSquared);
 						if (distanceSquared != 0.0 && distanceSquared != 999.0 && distanceSquared <= cutoffDistanceSquared)
 						{
+                            //cout << itsResNum << " " << _other->itsResNum << endl;
 							// ** inter AMBER Electrostatics
 							if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
 							{
