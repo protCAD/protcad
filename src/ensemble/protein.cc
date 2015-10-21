@@ -1249,7 +1249,6 @@ vector <double> protein::calculateDielectric(chain* _chain, residue* _residue, a
     return dielectric;
 }
 
-
 vector <double> protein::calculateChainIndependentDielectric(chain* _chain, residue* _residue, atom* _atom, UInt _atomIndex)
 {
     vector <double> chargeDensity(2);
@@ -1295,6 +1294,16 @@ void protein::updateChainIndependentDielectrics(UInt _chainIndex)
     }
 }
 
+void protein::updateTotalNumResidues()
+{
+    UInt numResidues = 0;
+    for(UInt i=0; i<itsChains.size(); i++)
+    {
+        numResidues += getNumResidues(i);
+    }
+    itsNumResidues = numResidues;
+}
+
 //Functions used in fast (non-redundant) energy calculation (protEnergy) //////////////////
 void protein::updateDielectrics()
 {
@@ -1322,16 +1331,6 @@ void protein::updatePositionDielectrics(UInt _chainIndex, UInt _residueIndex)
         itsChains[_chainIndex]->itsResidues[_residueIndex]->itsAtoms[i]->setDielectric(dielectric[0]);
         itsChains[_chainIndex]->itsResidues[_residueIndex]->itsAtoms[i]->setNumberofWaters(dielectric[1]);
     }
-}
-
-void protein::updateTotalNumResidues()
-{
-    UInt numResidues = 0;
-    for(UInt i=0; i<itsChains.size(); i++)
-    {
-        numResidues += getNumResidues(i);
-    }
-    itsNumResidues = numResidues;
 }
 
 void protein::updateEnergyDatabase(vector < vector < vector <double> > > &_energies)
@@ -1372,9 +1371,35 @@ double protein::resEnergy(UInt chainIndex, UInt resIndex)
 	}
 
     double resEnergy = 0;
-    for (UInt i = 0; i < energies[chainIndex][resIndex].size(); i++)
+    UInt chaini, chainj, resi, resj, k;
+    for (chaini = 0; chaini < itsChains.size(); chaini++)
     {
-        resEnergy += energies[chainIndex][resIndex][i];
+        for (resi = 0; resi < itsChains[chaini]->itsResidues.size(); resi++)
+        {
+            k = 0;
+            if (chaini == chainIndex && resi == resIndex)
+            {
+                resEnergy += energies[chaini][resi][k];
+            }
+            for (chainj = 0; chainj < chaini+1; chainj++)
+            {
+                for (resj = 0; resj < getNumResidues(chainj); resj++)
+                {
+                    if (chaini == chainj && resi == resj)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        k++;
+                        if ((chaini == chainIndex && resi == resIndex) || (chainj == chainIndex && resj == resIndex))
+                        {
+                            resEnergy += energies[chaini][resi][k];
+                        }
+                    }
+                }
+            }
+        }
     }
 	return resEnergy;
 }
@@ -1408,7 +1433,6 @@ double protein::getMedianResEnergy()
 
 void protein::buildResidueEnergyPairs(vector < vector < vector <double> > > &_energies)
 {
-    updateTotalNumResidues();
     _energies.clear();
     double Energy;
     vector < vector < vector <double> > > chainE;
@@ -1433,7 +1457,7 @@ void protein::buildResidueEnergyPairs(vector < vector < vector <double> > > &_en
             {
                 for (resj = 0; resj < getNumResidues(chainj); resj++)
                 {
-                    cout << chaini << " " << resi << " " << chainj << " " << resj<< " | ";
+                    //cout << chaini << " " << resi << " " << chainj << " " << resj<< " | ";
                     if (chaini == chainj && resi == resj)
                     {
                         break;
@@ -1446,7 +1470,7 @@ void protein::buildResidueEnergyPairs(vector < vector < vector <double> > > &_en
                 }
             }
             resE.push_back(E);
-            cout << endl;
+            //cout << endl;
         }
         chainE.push_back(resE);
     }
