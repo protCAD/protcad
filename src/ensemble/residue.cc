@@ -3027,61 +3027,6 @@ double residue::intraEnergy()
 	return intraEnergy;
 }
 
-double residue::getResiduePairSoluteEnergy(residue* _other)
-{
-    double pairEnergy = 0.0;
-    for(UInt i=0; i<itsAtoms.size(); i++)
-    {
-        if (!itsAtoms[i]->getSilentStatus())
-        {
-            for(UInt j=0; j<_other->itsAtoms.size(); j++)
-            {
-                if (!_other->itsAtoms[j]->getSilentStatus())
-                {
-                    // calculate energy if not bonded atoms
-                    bool bonded = isSeparatedByOneOrTwoBonds(i,_other,j);
-                    if (!bonded)
-                    {
-                        double distanceSquared = itsAtoms[i]->inCubeWithDistSQ(_other->itsAtoms[j], cutoffDistanceSquared);
-                        if (distanceSquared <= cutoffDistanceSquared)
-                        {
-                            // ** inter AMBER Electrostatics
-                            if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
-                            {
-                                // ** get dielectric average
-                                double dielectric = (itsAtoms[i]->getDielectric() + _other->itsAtoms[j]->getDielectric()) * 0.5;
-                                UInt resType1 = itsType;
-                                UInt resType2 = _other->itsType;
-                                UInt index1 = i;
-                                UInt index2 = j;
-                                double tempAmberElecEnergy = residueTemplate::getAmberElecSoluteEnergySQ(resType1, index1, resType2, index2, distanceSquared, dielectric);
-                                pairEnergy += tempAmberElecEnergy;
-                            }
-
-                            // ** inter AMBER vdW
-                            if (residueTemplate::itsAmberVDW.getScaleFactor() != 0.0)
-                            {
-                                int index1, index2;
-                                if (hydrogensOn)
-                                {	index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][0];
-                                    index2 = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[j][0];
-                                }
-                                else
-                                {	index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][1];
-                                    index2 = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[j][1];
-                                }
-                                double tempvdwEnergy = residueTemplate::getVDWEnergySQ(index1, index2, distanceSquared);
-                                pairEnergy += tempvdwEnergy;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return pairEnergy;
-}
-
 double residue::intraSoluteEnergy()
 {	
 	double intraEnergy = 0.0;
@@ -3092,9 +3037,8 @@ double residue::intraSoluteEnergy()
             if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
             {
                 // ** get solvationEnergy
-                vector <double> tempSolvEnergy = this->calculateSolvationEnergy(i);
-                intraEnergy += tempSolvEnergy[0];
-                intraEnergy -= tempSolvEnergy[1];
+                double tempSolvEnergy = calculateSolvationEnergy(i);
+                intraEnergy -= tempSolvEnergy;
             }
 			for(UInt j=i+1; j<itsAtoms.size(); j++)
 			{
@@ -3146,33 +3090,50 @@ double residue::intraSoluteEnergy()
 	return intraEnergy;
 }
 
-vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
+double residue::calculateSolvationEnergy(UInt _atomIndex)
 {
 	//--requires update of dielectrics at protein level to be accurate.
-    vector <double> solvationEnergy(2);
+    double solvationEnergy;
 	double atomDielectric = itsAtoms[_atomIndex]->getDielectric();
     int waters = itsAtoms[_atomIndex]->getNumberofWaters();
     double charge = residueTemplate::itsAmberElec.getItsCharge(itsType, _atomIndex);
     double chargeSquared = charge*charge;
-    double Temperature = 4;
-    double waterDielectric = 85;
-    double proteinSolvent = -166 * (atomDielectric/waterDielectric) * (chargeSquared/9);
-    double solventEntropy = Temperature*0.0019872041*log(pow(0.5,(waters)));
-    solvationEnergy[0] = proteinSolvent;
-    solvationEnergy[1] = solventEntropy;
-    itsAtoms[_atomIndex]->setSolvationEnergy(proteinSolvent-solventEntropy);
+    double Temperature = 15;
+    double waterDielectric = -0.3195 * Temperature + 86.115; //fit of data from Malmberg and Maryott, 1956 JRNBS
+    double proteinSolventEnthalpy = -166 * (atomDielectric/waterDielectric) * (chargeSquared/9);
+    double proteinSolventEntropy = Temperature*0.0019872041*log(pow(0.5,(waters)));
+    solvationEnergy = proteinSolventEnthalpy-proteinSolventEntropy;
+    itsAtoms[_atomIndex]->setSolvationEnergy(solvationEnergy);
 	return solvationEnergy;
+}
+
+double residue::getSolvationEnergy()
+{
+    double solvationEnergy = 0.0;
+    for(UInt i=0; i<itsAtoms.size(); i++)
+    {
+        solvationEnergy += itsAtoms[i]->getSolvationEnergy();
+    }
+    return solvationEnergy;
+}
+
+double residue::getDielectric()
+{
+    double dielectricTotal = 0.0;
+    for(UInt i=0; i<itsAtoms.size(); i++)
+    {
+        dielectricTotal += itsAtoms[i]->getDielectric();
+    }
+    return dielectricTotal/itsAtoms.size();
 }
 		
 vector <double> residue::calculateDielectric(residue* _other, UInt _atomIndex)
 {	
-	vector <double> chargeDensity(3);
+    vector <double> chargeDensity(2);
 	chargeDensity[0] = 0.0;
 	chargeDensity[1] = 0.0;
-	chargeDensity[2] = 0.0;
 	double charges = 0.0;
 	double volumes = 0.0;
-	double atoms = 0.0;
 	double distanceSquared;
 	int atomEnergyType;
 	for(UInt i=0; i<_other->itsAtoms.size(); i++)
@@ -3180,7 +3141,44 @@ vector <double> residue::calculateDielectric(residue* _other, UInt _atomIndex)
 		distanceSquared = itsAtoms[_atomIndex]->inCubeWithDistSQ(_other->itsAtoms[i], 81);
         if (distanceSquared != 0.0 && distanceSquared <= 81)
 		{
-			atoms++;
+			atomEnergyType = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[i][1];
+            if (atomEnergyType == 4) charges += 0.49, volumes += 23.2; //magnesium
+			if (atomEnergyType == 11) charges += 1.382, volumes += 8.7;
+			if (atomEnergyType == 12 || atomEnergyType == 15) charges += 1.382, volumes += 8.7;
+			if (atomEnergyType == 13) charges += 1.836, volumes += 23.2;
+			if (atomEnergyType == 14) charges += 2.222, volumes += 36.7;
+			if (atomEnergyType == 16 || atomEnergyType == 27) charges += 1.529, volumes += 8.7;
+			if (atomEnergyType == 18 || atomEnergyType == 21) charges += 1.768, volumes += 21.3;
+			if (atomEnergyType == 22) charges += 1.45, volumes += 20.4;
+			if (atomEnergyType == 46 || atomEnergyType == 50) charges += 1.48, volumes += 13.6;
+			if (atomEnergyType == 48) charges += 1.866, volumes += 22.7;
+			if (atomEnergyType == 49) charges += 2.252, volumes += 21.4;
+			if (atomEnergyType == 55) charges += 0.46, volumes += 15.9;
+			if (atomEnergyType == 56) charges += 0.664, volumes += 18;
+			if (atomEnergyType == 57) charges += 1.05, volumes += 18;
+			if (atomEnergyType == 60) charges += 3.2684, volumes += 29.2;
+			if (atomEnergyType == 61) charges += 3.6643, volumes += 36.7;
+		}
+    }
+    chargeDensity[0] = volumes;
+    chargeDensity[1] = charges;
+	return chargeDensity;
+}
+
+vector <double> residue::calculateDielectric(residue* _other, atom* _atom)
+{	
+	vector <double> chargeDensity(2);
+	chargeDensity[0] = 0.0;
+	chargeDensity[1] = 0.0;
+	double charges = 0.0;
+	double volumes = 0.0;
+	double distanceSquared;
+	int atomEnergyType;
+	for(UInt i=0; i<_other->itsAtoms.size(); i++)
+	{
+		distanceSquared = _atom->inCubeWithDistSQ(_other->itsAtoms[i], 81);
+        if (distanceSquared != 0.0 && distanceSquared <= 81)
+		{
 			atomEnergyType = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[i][1];
             if (atomEnergyType == 4) charges += 0.49, volumes += 23.2; //magnesium
 			if (atomEnergyType == 11) charges += 1.382, volumes += 8.7;
@@ -3200,55 +3198,8 @@ vector <double> residue::calculateDielectric(residue* _other, UInt _atomIndex)
 			if (atomEnergyType == 61) charges += 3.6643, volumes += 36.7;
 		}
 	}
-	if (atoms != 0.0)
-	{
-		chargeDensity[0] = volumes;
-		chargeDensity[1] = charges;
-		chargeDensity[2] = 1;
-	}
-	return chargeDensity;
-}
-
-vector <double> residue::calculateDielectric(residue* _other, atom* _atom)
-{	
-	vector <double> chargeDensity(2);
-	chargeDensity[0] = 0.0;
-	chargeDensity[1] = 0.0;
-	double charges = 0.0;
-	double volumes = 0.0;
-	double atoms = 0.0;
-	double distanceSquared;
-	int atomEnergyType;
-	for(UInt i=0; i<_other->itsAtoms.size(); i++)
-	{
-		distanceSquared = _atom->inCubeWithDistSQ(_other->itsAtoms[i], 81);
-        if (distanceSquared != 0.0 && distanceSquared <= 81)
-		{
-			atoms++;
-			atomEnergyType = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[i][1];
-			if (atomEnergyType == 11) charges += 1.382, volumes += 8.7;
-			if (atomEnergyType == 12 || atomEnergyType == 15) charges += 1.382, volumes += 8.7;
-			if (atomEnergyType == 13) charges += 1.836, volumes += 23.2;
-			if (atomEnergyType == 14) charges += 2.222, volumes += 36.7;
-			if (atomEnergyType == 16 || atomEnergyType == 27) charges += 1.529, volumes += 8.7;
-			if (atomEnergyType == 18 || atomEnergyType == 21) charges += 1.768, volumes += 21.3;
-			if (atomEnergyType == 22) charges += 1.45, volumes += 20.4;
-			if (atomEnergyType == 46 || atomEnergyType == 50) charges += 1.48, volumes += 13.6;
-			if (atomEnergyType == 48) charges += 1.866, volumes += 22.7;
-			if (atomEnergyType == 49) charges += 2.252, volumes += 21.4;
-			if (atomEnergyType == 55) charges += 0.46, volumes += 15.9;
-			if (atomEnergyType == 56) charges += 0.664, volumes += 18;
-			if (atomEnergyType == 57) charges += 1.05, volumes += 18;
-			if (atomEnergyType == 60) charges += 3.2684, volumes += 29.2;
-			if (atomEnergyType == 61) charges += 3.6643, volumes += 36.7;
-		}
-	}
-	if (atoms != 0.0)
-	{
-		chargeDensity[0] = volumes;
-		chargeDensity[1] = charges;
-		chargeDensity[2] = 1;
-	}
+    chargeDensity[0] = volumes;
+    chargeDensity[1] = charges;
 	return chargeDensity;
 }
 
@@ -3345,6 +3296,7 @@ double residue::interSoluteEnergy(residue* _other)
                         double distanceSquared = itsAtoms[i]->inCubeWithDistSQ(_other->itsAtoms[j], cutoffDistanceSquared);
 						if (distanceSquared != 0.0 && distanceSquared != 999.0 && distanceSquared <= cutoffDistanceSquared)
 						{
+                            //cout << itsResNum << " " << _other->itsResNum << endl;
 							// ** inter AMBER Electrostatics
 							if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
 							{
