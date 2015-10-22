@@ -1168,6 +1168,7 @@ double protein::intraSoluteEnergy(bool _updateDielectrics)
 		for(UInt j=i+1; j<itsChains.size(); j++)
 		{
 			intraEnergy += itsChains[i]->interSoluteEnergy(itsChains[j]);
+
 		}
 	}
 	return intraEnergy;
@@ -3156,7 +3157,7 @@ void protein::protOpt(bool _backbone)
 
         //--Backbone optimization-----------------------------------------------------------------------
         resE = resEnergy(randchain, randres), medResE = getMedianResEnergy();
-        if (nobetter > _plateau && resE > medResE && _backbone)
+        if (nobetter > _plateau && resE > (medResE/(nobetter*nobetter)) && _backbone)
         {   //--randomly choose phi or psi, and change in angle of -1 or +1 degree
             randtype = rand() % 2;
             do
@@ -3180,7 +3181,7 @@ void protein::protOpt(bool _backbone)
         }
 
         //--Rotamer optimization-----------------------------------------------------------------------
-        resE = resEnergy(randchain, randres), medResE = getMedianResEnergy();
+        //resE = resEnergy(randchain, randres), medResE = getMedianResEnergy();
         if (resE > (medResE/(nobetter*nobetter)))
         {   currentRot = getSidechainDihedrals(randchain, randres);
             allowedRots = getAllowedRotamers(randchain, randres, randrestype);

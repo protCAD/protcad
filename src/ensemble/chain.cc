@@ -1684,12 +1684,10 @@ double chain::intraEnergy()
 double chain::intraSoluteEnergy()
 {	
 	double intraEnergy = 0.0;
-//#pragma omp parallel for reduction(+:intraEnergy)
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{	
 		double tempE = itsResidues[i]->intraSoluteEnergy();
 		intraEnergy += tempE;
-
 		double interE = 0.0;
 		for(UInt j=i+1; j<itsResidues.size(); j++)
 		{	
