@@ -29,7 +29,7 @@ int main (int argc, char* argv[])
     amberElec::setScaleFactor(1.0);
 
 
-    cout << bundle->protEnergy() << " " << bundle->protEnergy() << endl;
+    cout << bundle->protEnergy() << " " << bundle->protEnergy() << " " << bundle->intraSoluteEnergy(true) << endl;
 
 	return 0;
 }

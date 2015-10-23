@@ -19,6 +19,7 @@ int main (int argc, char* argv[])
     {   cout << "protOpt <inFile.pdb> <outFile.pdb>" << endl;
         exit(1); }
 
+    clock_t t;
     string infile = argv[1];
     string outFile = argv[2];
     PDBInterface* thePDB = new PDBInterface(infile);
@@ -26,7 +27,10 @@ int main (int argc, char* argv[])
     molecule* pMol = theEnsemble->getMoleculePointer(0);
     protein* _prot = static_cast<protein*>(pMol);
 
+    t=clock();
     _prot->protOpt(false);
+    t=clock()-t;
+    cout << "Time: " << ((float)t)/CLOCKS_PER_SEC << " Energy: " << _prot->protEnergy() << endl;
     pdbWriter(_prot, outFile);
 
     return 0;

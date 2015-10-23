@@ -228,7 +228,7 @@ int main (int argc, char* argv[])
 				//optimize and check Energy------------------------------
                 bundle->protOpt(false);
                 Energy = bundle->protEnergy();
-                if (Energy < (pastEnergy + nobetter) && (Energy < (pastEnergy-.5) || Energy > (pastEnergy+.5)))
+                if (Energy < (pastEnergy + (nobetter*nobetter)) && (Energy < (pastEnergy-.5) || Energy > (pastEnergy+.5)))
 				{
                     //cout << Energy << " " << nobetter << endl;
                     pastEnergy = Energy, test = 0, count++;
