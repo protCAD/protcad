@@ -3101,8 +3101,8 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
     double chargeSquared = charge*charge;
     double Temperature = 300;
     double waterDielectric = -0.3195 * (Temperature-274.15) + 86.115; //fit of data from Malmberg and Maryott, 1956 JRNBS
-    double proteinSolventEnthalpy = 166 * (atomDielectric/waterDielectric) * (chargeSquared/9);
-    double proteinSolventEntropy = -(cos(pow(2,charge)))*(Temperature*0.0019872041*log(pow(0.5,(waters*0.1))));
+    double proteinSolventEnthalpy = -166 * (atomDielectric/waterDielectric) * (chargeSquared/9);
+    double proteinSolventEntropy = (cos(pow(2,charge)))*(Temperature*0.0019872041*log(pow(0.5,(waters*0.1))));
     solvationEnergy.push_back(proteinSolventEnthalpy);
     solvationEnergy.push_back(proteinSolventEntropy);
     itsAtoms[_atomIndex]->setSolvationEnergy(proteinSolventEnthalpy-proteinSolventEntropy);
