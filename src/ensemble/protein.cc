@@ -1168,6 +1168,7 @@ double protein::intraSoluteEnergy(bool _updateDielectrics)
 		for(UInt j=i+1; j<itsChains.size(); j++)
 		{
 			intraEnergy += itsChains[i]->interSoluteEnergy(itsChains[j]);
+
 		}
 	}
 	return intraEnergy;
@@ -1451,8 +1452,6 @@ void protein::buildResidueEnergyPairs(vector < vector < vector <double> > > &_en
         for (resi = 0; resi < getNumResidues(chaini); resi++)
         {
             E.clear();
-            Energy = itsChains[chaini]->itsResidues[resi]->intraSoluteEnergy();
-            E.push_back(Energy);
             for (chainj = 0; chainj < chaini+1; chainj++)
             {
                 for (resj = 0; resj < getNumResidues(chainj); resj++)
@@ -1460,6 +1459,8 @@ void protein::buildResidueEnergyPairs(vector < vector < vector <double> > > &_en
                     //cout << chaini << " " << resi << " " << chainj << " " << resj<< " | ";
                     if (chaini == chainj && resi == resj)
                     {
+                        Energy = itsChains[chaini]->itsResidues[resi]->intraSoluteEnergy();
+                        E.push_back(Energy);
                         break;
                     }
                     else
@@ -1496,26 +1497,26 @@ void protein::updateProtEnergy(vector < vector < vector <double> > > &_energies)
         for (resi = 0; resi < itsChains[chaini]->itsResidues.size(); resi++)
         {
             k = 0;
-            if (itsChains[chaini]->itsResidues[resi]->getMoved() != 0)
-            {
-                if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
-                {
-                    updatePositionDielectrics(chaini, resi);
-                }
-                residueEnergy = itsChains[chaini]->itsResidues[resi]->intraSoluteEnergy();
-                _energies[chaini][resi][k] = residueEnergy;
-            }
             for (chainj = 0; chainj < chaini+1; chainj++)
             {
                 for (resj = 0; resj < getNumResidues(chainj); resj++)
                 {
                     if (chaini == chainj && resi == resj)
                     {
+                        if (itsChains[chaini]->itsResidues[resi]->getMoved() != 0)
+                        {
+                            if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
+                            {
+                                updatePositionDielectrics(chaini, resi);
+                            }
+                            residueEnergy = itsChains[chaini]->itsResidues[resi]->intraSoluteEnergy();
+                            _energies[chaini][resi][k] = residueEnergy;
+                        }
+                        k++;
                         break;
                     }
                     else
                     {
-                        k++;
                         if (itsChains[chaini]->itsResidues[resi]->getMoved() != 0 || itsChains[chainj]->itsResidues[resj]->getMoved() != 0)
                         {
                             if (itsChains[chainj]->itsResidues[resj]->getMoved() != 0 && residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
@@ -1526,6 +1527,7 @@ void protein::updateProtEnergy(vector < vector < vector <double> > > &_energies)
                             _energies[chaini][resi][k] = residueEnergy;
                         }
                     }
+                    k++;
                 }
             }
         }
@@ -3138,8 +3140,9 @@ void protein::protOpt(bool _backbone)
     // -pike 2013
 
     //--Initialize variables for loop, calculate starting energy and build energy vectors---------------
+    updateTotalNumResidues();
     double deltaTheta = 0, Energy, resE, medResE, pastEnergy = protEnergy();
-    UInt randchain, randres, randrestype, allowedRotsize, randrot, nobetter = 0, _plateau = itsNumResidues*10;
+    UInt randchain, randres, randrestype, allowedRotsize, randrot, nobetter = 0, _plateau = itsNumResidues*5;
     UInt resNum, randtype, chainNum = getNumChains(), thisone, breakout;
     vector < vector <double> > currentRot;
     vector <UIntVec> allowedRots;
@@ -3153,10 +3156,11 @@ void protein::protOpt(bool _backbone)
         randres = rand() % resNum;
         randrestype = getTypeFromResNum(randchain, randres);
         nobetter++;
+        //cout << nobetter << " ";
 
         //--Backbone optimization-----------------------------------------------------------------------
         resE = resEnergy(randchain, randres), medResE = getMedianResEnergy();
-        if (nobetter > _plateau && resE > medResE && _backbone)
+        if (nobetter > _plateau && resE > (medResE/nobetter) && _backbone)
         {   //--randomly choose phi or psi, and change in angle of -1 or +1 degree
             randtype = rand() % 2;
             do
@@ -3180,8 +3184,8 @@ void protein::protOpt(bool _backbone)
         }
 
         //--Rotamer optimization-----------------------------------------------------------------------
-        resE = resEnergy(randchain, randres), medResE = getMedianResEnergy();
-        if (resE > (medResE/(nobetter*nobetter)))
+        //resE = resEnergy(randchain, randres), medResE = getMedianResEnergy();
+        if (resE > (medResE/nobetter))
         {   currentRot = getSidechainDihedrals(randchain, randres);
             allowedRots = getAllowedRotamers(randchain, randres, randrestype);
             breakout = 0;
