@@ -1,7 +1,7 @@
 //*******************************************************************************************************
 //*******************************************************************************************************
 //**************************************                       ******************************************
-//**************************************   structFinder 1.0    ******************************************
+//**************************************   getDihedrals 1.0    ******************************************
 //**************************************                       ******************************************
 //*******************************************************************************************************
 //*******************************************************************************************************
@@ -14,9 +14,9 @@
 #include "PDBInterface.h"
 int main (int argc, char* argv[])
 {
-	if (argc !=2)
+    if (argc !=2)
 	{
-	cout << "StructFinder <inFile.pdb>" << endl;
+    cout << "getDihedrals <inFile.pdb>" << endl;
 	exit(1);
 	}
 
@@ -25,17 +25,8 @@ int main (int argc, char* argv[])
 	PDBInterface* thePDB = new PDBInterface(infile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
-	protein* bundle = static_cast<protein*>(pMol);
-	bundle->silenceMessages();
-	residue::setCutoffDistance(8.0);
-	rotamer::setScaleFactor(0.0);
-	amberVDW::setScaleFactor(1.0);
-	amberVDW::setRadiusScaleFactor(0.95);
-	amberVDW::setLinearRepulsionDampeningOff();
-	amberElec::setScaleFactor(0.0);
-	
-	cout << endl << "\t*StructFinder*" << endl;
-	cout << endl <<"Generate phi psi angles for modeling" << endl;
+    protein* bundle = static_cast<protein*>(pMol);
+
 	cout << endl << "chain res phi psi" << endl;
 
 
@@ -46,9 +37,9 @@ int main (int argc, char* argv[])
 		UInt resNum = bundle->getNumResidues(i);
 		for (UInt j = 0; j < resNum; j ++)
 		{	
-			double phi = bundle->getPhi(i,j);
-			double psi = bundle->getPsi(i,j);
-			cout << i+1 << " " << j+1 << " " << phi << " " << psi << endl;
+            double phi = bundle->getPhi(i,j);
+            double psi = bundle->getPsi(i,j);
+            cout << i+1 << " " << j+1 << " " << phi << " " << psi << endl;
 		}
 	}
 	return 0;

@@ -159,6 +159,8 @@ public:
     void updateProtEnergy(vector<vector<vector<double> > > &_energies);
     void buildResidueEnergyPairs(vector<vector<vector<double> > > &_energies);
     double resEnergy(UInt chainIndex, UInt resIndex);
+    double getReferenceEnergy();
+    double deltaH();
     double getMedianResEnergy();
     double getSolvationEnergy(UInt _chainIndex, UInt _residueIndex) {return itsChains[_chainIndex]->getSolvationEnergy(_residueIndex); }
 	double getAtomCharge(UInt _chainNum, UInt _resNum, UInt _atomNum) { return itsChains[_chainNum]->getAtomCharge(_resNum, _atomNum); }

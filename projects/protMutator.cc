@@ -27,7 +27,7 @@ int main (int argc, char* argv[])
     cout << "mutantMaker <inFile.pdb>" << endl;
 	exit(1);
 	}
-	enum aminoAcid {A,R,N,D,Dh,C,Cx,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV};
+    enum aminoAcid {A,R,N,D,Dh,C,Cx,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dAT,dW,dY,dV,Hce,Pch};
 	string infile = argv[1];
 	PDBInterface* thePDB = new PDBInterface(infile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
@@ -123,11 +123,19 @@ int main (int argc, char* argv[])
     vector<vector<UInt> > resIDs;
     vector <UInt> v;
 
-    UInt resID1[] = {E,W,E,A,L,E,K,K,L,A,A,L,E,A,K,L,Q,A,L,E,K,K,L,E,A,L,E,He,G};
+    UInt resID1[] = {E,P,L,S,Y,A,E,A,E,K,L,E,E,A,L,A,E,L,K,R,E,Y,S,E,L,E,E,E,L,Q,E,A,K,R,A,E,Q};// -design1a
+    v.insert (v.begin(), resID1, resID1 + sizeof(resID1)/sizeof(resID1[0]));
+    resIDs.push_back(v);
+    v.clear();/*
+
+    UInt resID1[] = {A,A,A,A,L,K,A,K,L,A,A,L,K,A,K,L,A,A,A,dQ,N,dA,dA,dA,dL,dA,dA,dL,dE,dA,dE,dL,dA,dA,dL,dE,dA,dE,dA,dA};
     v.insert (v.begin(), resID1, resID1 + sizeof(resID1)/sizeof(resID1[0]));
     resIDs.push_back(v);
     v.clear();
-    UInt resID2[] = {E,W,E,A,L,E,K,K,L,A,A,L,E,R,K,L,Q,A,L,E,K,K,L,E,A,L,E,He,G};
+
+
+
+    UInt resID2[] = {dK,dP,dL,dS,dY,dA,dE,dK,dE,dK,dL,dK,dE,dK,dL,dA,dF,dL,dK,dK,dE,dY,dS,dR,dT,dL,dA,dR,dL,dQ,dR,dA,dK,dR,dA,dE,dK}; -wt
     v.insert (v.begin(), resID2, resID2 + sizeof(resID2)/sizeof(resID2[0]));
     resIDs.push_back(v);
     v.clear();
@@ -320,7 +328,7 @@ int main (int argc, char* argv[])
         molecule* pMol2 = theEnsemble2->getMoleculePointer(0);
         protein* bundle2 = static_cast<protein*>(pMol2);
         bundle2->protOpt(false);
-        double Energy = bundle2->intraSoluteEnergy(false);
+        double Energy = bundle2->protEnergy();
         cout << Energy << endl;
         pdbWriter(bundle2, outFile);
         delete thePDB2;

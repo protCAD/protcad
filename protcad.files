@@ -149,12 +149,12 @@ projects/protDock.cc
 projects/protEnergy.cc
 projects/protEvolver.cc
 projects/protFolder.cc
+projects/protInverter.cc
 projects/protMerge.cc
 projects/protMover.cc
 projects/protMutator.cc
 projects/protOpt.cc
 projects/protPointMutator.cc
-projects/protPointMutator_old.cc
 projects/protRandomizer.cc
 projects/protShaper.cc
 projects/README
