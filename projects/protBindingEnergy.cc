@@ -33,8 +33,9 @@ int main (int argc, char* argv[])
 	amberVDW::setRadiusScaleFactor(1.0);
 	amberVDW::setLinearRepulsionDampeningOff();
     amberElec::setScaleFactor(1.0);
-
-    double Energy = bundle->deltaH();
-    cout << Energy;
+    vector <double> Energy = bundle->chainBindingEnergy();
+    double deltaH = bundle->deltaH();
+    cout << "TotalE ChainBindingE deltaH" << endl;
+    cout << Energy[0] << " " << Energy[1] << " " << deltaH << endl;
 	return 0;
 }
