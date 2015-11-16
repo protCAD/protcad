@@ -111,7 +111,7 @@ int main (int argc, char* argv[])
 		pdbWriter(bundle, tempModel);
 
 		//--set Energy startpoint
-        Energy = bundle->deltaH();
+        Energy = bundle->protEnergy();
         pastEnergy = Energy;
         bestEnergy = Energy;
 		delete thePDB;
@@ -165,7 +165,7 @@ int main (int argc, char* argv[])
             mutantPosition = getMutationPosition(bundle, activeChains, activeChainsSize, activeResidues, activeResiduesSize);
 
             //--Energy test
-            Energy = bundle->deltaH();
+            Energy = bundle->protEnergy();
             if (Energy < pastEnergy)
 			{
                 //cout << Energy << " " << nobetter << endl;
@@ -199,7 +199,7 @@ int main (int argc, char* argv[])
 		ensemble* theModelEnsemble = theModelPDB->getEnsemblePointer();
 		molecule* modelMol = theModelEnsemble->getMoleculePointer(0);
 		protein* model = static_cast<protein*>(modelMol);
-        Energy = model->deltaH();
+        Energy = model->protEnergy();
         if (Energy < 0)
         {
             name = rand() % 1000000;
@@ -273,14 +273,14 @@ vector <UInt> getMutationPosition(protein* _prot, UInt *_activeChains, UInt _act
     UInt randres, randchain;
     double posE, medE;
     vector <UInt> _mutantPosition;
-    medE = _prot->getMedianDeltaH();
+    medE = _prot->getMedianResEnergy();
 
     //--find random position with worse than median energy
     do
     {
         randchain = _activeChains[rand() % _activeChainsSize];
         randres = _activeResidues[rand() % _activeResiduesSize];
-        posE = _prot->deltaH(randchain,randres);
+        posE = _prot->resEnergy(randchain,randres);
     }while (posE < medE);
     _mutantPosition.push_back(randchain);
     _mutantPosition.push_back(randres);
@@ -335,7 +335,7 @@ UInt getProbabilisticMutation(vector <UInt> _mutantPosition, UInt *_aminoacids, 
         mutant = _aminoacids[rand() % aaSize];
         if (count > 200)
         {
-            acceptance = (resFreqs[mutant]/max)*100;
+            acceptance = ((resFreqs[mutant]/max)*100)/2;
         }
         else
         {
