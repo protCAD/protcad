@@ -289,7 +289,7 @@ vector <UInt> getMutationPosition(protein* _prot, UInt *_activeChains, UInt _act
 
 UInt getProbabilisticMutation(vector <UInt> _mutantPosition, UInt *_aminoacids, UInt aaSize)
 {
-    UInt mutant, chance;
+    UInt mutant, chance, entropy;
     double acceptance;
     string inFrame;
     vector <UInt> resFreqs(55,1);
@@ -332,8 +332,9 @@ UInt getProbabilisticMutation(vector <UInt> _mutantPosition, UInt *_aminoacids, 
     do
     {
         chance = rand() % 100;
+        entropy = rand() % 100;
         mutant = _aminoacids[rand() % aaSize];
-        if (count > 200)
+        if (count > 200 && entropy < 50)
         {
             acceptance = ((resFreqs[mutant]/max)*100)/2;
         }
