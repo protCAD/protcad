@@ -334,7 +334,7 @@ UInt getProbabilisticMutation(vector <UInt> _mutantPosition, UInt *_aminoacids, 
         chance = rand() % 100;
         entropy = rand() % 100;
         mutant = _aminoacids[rand() % aaSize];
-        if ((count > 200 && !_entropy) || (count > 200 && _entropy && entropy > 50))
+        if ((count > 1000 && !_entropy) || (count > 1000 && _entropy && entropy > 50))
         {
             acceptance = ((resFreqs[mutant]/max)*100)/2;
         }
