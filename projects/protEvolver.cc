@@ -52,10 +52,10 @@ int main (int argc, char* argv[])
 
 	//--inputs for mutation
 	UInt activeChains[] = {0};
-    UInt allowedLResidues[] = {A,R,N,D,Q,E,I,L,K,M,F,P,S,T,W,Y,V,G};
+    UInt allowedLResidues[] = {A,R,Q,E,I,L,K,M,P,W,V};
     UInt activeResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39};
-    UInt randomResidues[] = {0,1,2,3,6,9,10,13,16,17,18,21,22,23,25,26,29,32,33,36,39};
-    UInt allowedDResidues[] = {dA,dR,dN,dD,dQ,dE,dI,dL,dK,dM,dF,dP,dS,dT,dW,dY,dV,G};
+    UInt randomResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39};
+    UInt allowedDResidues[] = {dA,dR,dQ,dE,dI,dL,dK,dM,dP,dW,dV};
 
     double phi, bestEnergy, pastEnergy, finalEnergy, Energy;
     UInt nobetter = 0, activeChainsSize = sizeof(activeChains)/sizeof(activeChains[0]), randomResiduesSize = sizeof(randomResidues)/sizeof(randomResidues[0]), activeResiduesSize = sizeof(activeResidues)/sizeof(activeResidues[0]);
@@ -90,12 +90,12 @@ int main (int argc, char* argv[])
                 phi = bundle->getPhi(activeChains[i], randomResidues[j]);
 				if (phi > 0 && phi < 180)
 				{
-                    mutant = getProbabilisticMutation(randomPosition, allowedDResidues, dResidues, false);
+                    mutant = getProbabilisticMutation(randomPosition, allowedDResidues, dResidues, true);
                     bundle->mutateWBC(activeChains[i], randomResidues[j], mutant);
 				}
 				if (phi < 0 && phi > -180)
 				{
-                    mutant = getProbabilisticMutation(randomPosition, allowedLResidues, lResidues, false);
+                    mutant = getProbabilisticMutation(randomPosition, allowedLResidues, lResidues, true);
                     bundle->mutateWBC(activeChains[i], randomResidues[j], mutant);
                 }
                 randomPosition.clear();
@@ -183,15 +183,6 @@ int main (int argc, char* argv[])
 			sequencePosition.clear();
 			delete thePDB;
 			delete tempBundle;
-            UInt seqCount = getNumberofSequences();
-            if (seqCount < 200)
-            {
-                plateau = 0;
-            }
-            else
-            {
-                plateau = (lResidues*activeChainsSize);
-            }
 		}while (nobetter < plateau);
 
 		//--Print final energy and write a pdb file----------------------------------------------------
@@ -334,7 +325,7 @@ UInt getProbabilisticMutation(vector <UInt> _mutantPosition, UInt *_aminoacids, 
         chance = rand() % 100;
         entropy = rand() % 100;
         mutant = _aminoacids[rand() % aaSize];
-        if ((count > 1000 && !_entropy) || (count > 1000 && _entropy && entropy > 50))
+        if ((count > 1000 && !_entropy) || (count > 1000 && _entropy && entropy > 33))
         {
             acceptance = ((resFreqs[mutant]/max)*100)/2;
         }
