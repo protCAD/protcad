@@ -51,16 +51,16 @@ int main (int argc, char* argv[])
     srand (getpid());
 
 	//--inputs for mutation
-	UInt activeChains[] = {0};
-    UInt allowedLResidues[] = {A,R,Q,E,I,L,K,M,P,W,V};
-    UInt activeResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39};
-    UInt randomResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39};
-    UInt allowedDResidues[] = {dA,dR,dQ,dE,dI,dL,dK,dM,dP,dW,dV};
+    UInt activeChains[] = {1};
+    UInt allowedLResidues[] = {A,R,Q,D,E,I,L,K,M,W,V};
+    UInt activeResidues[] = {1,2,3,4,5,6};
+    UInt randomResidues[] = {1,2,3,4,5,6};
+    UInt allowedDResidues[] = {dA,dR,dQ,dD,dE,dI,dL,dK,dM,dW,dV};
 
-    double phi, bestEnergy, pastEnergy, finalEnergy, Energy;
+    double phi, bestEnergy, pastEnergy, Energy;
     UInt nobetter = 0, activeChainsSize = sizeof(activeChains)/sizeof(activeChains[0]), randomResiduesSize = sizeof(randomResidues)/sizeof(randomResidues[0]), activeResiduesSize = sizeof(activeResidues)/sizeof(activeResidues[0]);
     UInt lResidues = sizeof(allowedLResidues)/sizeof(allowedLResidues[0]), dResidues = sizeof(allowedDResidues)/sizeof(allowedDResidues[0]);
-    UInt name, mutant = 0, numResidues, plateau = (lResidues*activeChainsSize);
+    UInt name, mutant = 0, numResidues, plateau = (activeResiduesSize*activeChainsSize)/2;
     vector < UInt > mutantPosition, chainSequence, sequencePosition, randomPosition;
 	vector < vector < UInt > > proteinSequence, finalSequence;
 	stringstream convert;
@@ -190,8 +190,9 @@ int main (int argc, char* argv[])
 		ensemble* theModelEnsemble = theModelPDB->getEnsemblePointer();
 		molecule* modelMol = theModelEnsemble->getMoleculePointer(0);
 		protein* model = static_cast<protein*>(modelMol);
-        Energy = model->protEnergy();
-        if (Energy < 0)
+        vector <double> bindingEnergy = model->chainBindingEnergy();
+        UInt numchains = model->getNumChains();
+        if ((numchains == 1 && bindingEnergy[0] < 0) || (numchains > 1 && bindingEnergy[0] < 0 && bindingEnergy[1] < 0))
         {
             name = rand() % 1000000;
             stringstream convert;
@@ -205,8 +206,7 @@ int main (int argc, char* argv[])
                 chainSequence = getChainSequence(model, activeChains[i]);
                 finalSequence.push_back(chainSequence);
             }
-            finalEnergy = Energy;
-            cout << name << " " << finalEnergy << " ";
+            cout << name << " " << bindingEnergy[0] << " " << bindingEnergy[1] << " ";
             for (UInt i = 0; i < activeChainsSize; i++)
             {
                 for (UInt j = 0; j < finalSequence[i].size(); j++)
@@ -325,7 +325,7 @@ UInt getProbabilisticMutation(vector <UInt> _mutantPosition, UInt *_aminoacids, 
         chance = rand() % 100;
         entropy = rand() % 100;
         mutant = _aminoacids[rand() % aaSize];
-        if ((count > 1000 && !_entropy) || (count > 1000 && _entropy && entropy > 33))
+        if ((count > 500 && !_entropy) || (count > 500 && _entropy && entropy > 33))
         {
             acceptance = ((resFreqs[mutant]/max)*100)/2;
         }
