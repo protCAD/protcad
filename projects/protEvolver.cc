@@ -60,7 +60,7 @@ int main (int argc, char* argv[])
     double phi, bestEnergy, pastEnergy, Energy;
     UInt nobetter = 0, activeChainsSize = sizeof(activeChains)/sizeof(activeChains[0]), randomResiduesSize = sizeof(randomResidues)/sizeof(randomResidues[0]), activeResiduesSize = sizeof(activeResidues)/sizeof(activeResidues[0]);
     UInt lResidues = sizeof(allowedLResidues)/sizeof(allowedLResidues[0]), dResidues = sizeof(allowedDResidues)/sizeof(allowedDResidues[0]);
-    UInt name, mutant = 0, numResidues, plateau = (activeResiduesSize*activeChainsSize)/2;
+    UInt name, mutant = 0, numResidues, plateau = (activeResiduesSize*activeChainsSize);
     vector < UInt > mutantPosition, chainSequence, sequencePosition, randomPosition;
 	vector < vector < UInt > > proteinSequence, finalSequence;
 	stringstream convert;
@@ -182,7 +182,7 @@ int main (int argc, char* argv[])
 			}
 			sequencePosition.clear();
 			delete thePDB;
-			delete tempBundle;
+            delete tempBundle;
 		}while (nobetter < plateau);
 
 		//--Print final energy and write a pdb file----------------------------------------------------
@@ -325,7 +325,7 @@ UInt getProbabilisticMutation(vector <UInt> _mutantPosition, UInt *_aminoacids, 
         chance = rand() % 100;
         entropy = rand() % 100;
         mutant = _aminoacids[rand() % aaSize];
-        if ((count > 500 && !_entropy) || (count > 500 && _entropy && entropy > 33))
+        if ((count > 100 && !_entropy) || (count > 100 && _entropy && entropy > 33))
         {
             acceptance = ((resFreqs[mutant]/max)*100)/2;
         }
