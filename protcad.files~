@@ -158,7 +158,6 @@ projects/protPointMutator.cc
 projects/protRandomizer.cc
 projects/protShaper.cc
 projects/protSorter.cc
-projects/protRotamer.cc
 projects/README
 projects/triadFinder.cc
 projects/y_aligner.cc

@@ -22,7 +22,7 @@
 void randomizeSideChains(protein* _prot, UInt _chainIndex);
 vector <UInt> getChainSequence(protein* _prot, UInt _chainIndex);
 vector <UInt> getMutationPosition(protein* _prot, UInt* _activeChains, UInt _activeChainsSize, UInt* _activeResidues, UInt _activeResiduesSize);
-UInt getProbabilisticMutation(vector <UInt> _mutantPosition, UInt *_aminoacids, UInt aaSize, bool _entropy);
+UInt getProbabilisticMutation(vector <UInt> _mutantPosition, UInt *_aminoacids, UInt aaSize);
 UInt getNumberofSequences();
 
 //--Program setup----------------------------------------------------------------------------------------
@@ -90,12 +90,12 @@ int main (int argc, char* argv[])
                 phi = bundle->getPhi(activeChains[i], randomResidues[j]);
 				if (phi > 0 && phi < 180)
 				{
-                    mutant = getProbabilisticMutation(randomPosition, allowedDResidues, dResidues, true);
+                    mutant = getProbabilisticMutation(randomPosition, allowedDResidues, dResidues);
                     bundle->mutateWBC(activeChains[i], randomResidues[j], mutant);
 				}
 				if (phi < 0 && phi > -180)
 				{
-                    mutant = getProbabilisticMutation(randomPosition, allowedLResidues, lResidues, true);
+                    mutant = getProbabilisticMutation(randomPosition, allowedLResidues, lResidues);
                     bundle->mutateWBC(activeChains[i], randomResidues[j], mutant);
                 }
                 randomPosition.clear();
@@ -141,12 +141,12 @@ int main (int argc, char* argv[])
 						phi = bundle->getPhi(mutantPosition[0], mutantPosition[1]);
 						if (phi > 0 && phi < 180)
 						{
-                            mutant = getProbabilisticMutation(mutantPosition, allowedDResidues, dResidues, true);
+                            mutant = getProbabilisticMutation(mutantPosition, allowedDResidues, dResidues);
 							bundle->mutateWBC(mutantPosition[0],mutantPosition[1], mutant);
 						}
 						if (phi < 0 && phi > -180)
 						{
-                            mutant = getProbabilisticMutation(mutantPosition, allowedLResidues, lResidues, true);
+                            mutant = getProbabilisticMutation(mutantPosition, allowedLResidues, lResidues);
 							bundle->mutateWBC(mutantPosition[0],mutantPosition[1], mutant);
 						}
 					}
@@ -278,7 +278,7 @@ vector <UInt> getMutationPosition(protein* _prot, UInt *_activeChains, UInt _act
     return _mutantPosition;
 }
 
-UInt getProbabilisticMutation(vector <UInt> _mutantPosition, UInt *_aminoacids, UInt aaSize, bool _entropy)
+UInt getProbabilisticMutation(vector <UInt> _mutantPosition, UInt *_aminoacids, UInt aaSize)
 {
     UInt mutant, chance, entropy;
     double acceptance;
@@ -325,7 +325,9 @@ UInt getProbabilisticMutation(vector <UInt> _mutantPosition, UInt *_aminoacids, 
         chance = rand() % 100;
         entropy = rand() % 100;
         mutant = _aminoacids[rand() % aaSize];
-        if ((count > 100 && !_entropy) || (count > 100 && _entropy && entropy > 16))
+        UInt pooling = -0.09*count + 140;
+        cout << pooling << endl;
+        if (count > 499 && entropy > pooling)
         {
             acceptance = ((resFreqs[mutant]/max)*100)/2;
         }

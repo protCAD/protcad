@@ -3236,7 +3236,7 @@ void protein::protOpt(bool _backbone)
     //--Initialize variables for loop, calculate starting energy and build energy vectors---------------
     updateTotalNumResidues();
     double deltaTheta = 0, Energy, resE, medResE, pastEnergy = protEnergy();
-    UInt randchain, randres, randrestype, allowedRotsize, randrot, nobetter = 0, _plateau = itsNumResidues*10;
+    UInt randchain, randres, randrestype, allowedRotsize, randrot, nobetter = 0, _plateau = itsNumResidues*8;
     UInt resNum, randtype, chainNum = getNumChains(), thisone, breakout;
     vector < vector <double> > currentRot;
     vector <UIntVec> allowedRots;
