@@ -81,6 +81,7 @@ public:
 	void printAllLinkageInfo();
 	int getIndexFromResNum(UInt _chainIndex, UInt _resnum);
 	UInt getNumChains() const {return itsChains.size();}
+    UInt getNumBpt(UInt restype) {return residue::getNumBpt(restype);}
 	int getResNum(UInt _chainIndex, UInt _resIndex) {return itsChains[_chainIndex]->getResNum(_resIndex);}
 	UInt getNumResidues(UInt _chainIndex) const;
 	UInt getTypeFromResNum(UInt _chainIndex, UInt _resNum) { return itsChains[_chainIndex]->getTypeFromResNum(_resNum);}

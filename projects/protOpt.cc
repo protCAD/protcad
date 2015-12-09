@@ -28,7 +28,7 @@ int main (int argc, char* argv[])
     protein* _prot = static_cast<protein*>(pMol);
 
     t=clock();
-    _prot->protOpt(false);
+    _prot->protOpt(true);
     t=clock()-t;
     cout << "Time: " << ((float)t)/CLOCKS_PER_SEC << " Energy: " << _prot->protEnergy() << endl;
     pdbWriter(_prot, outFile);
