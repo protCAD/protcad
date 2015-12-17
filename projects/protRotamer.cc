@@ -27,8 +27,8 @@ int main (int argc, char* argv[])
 		exit(1);
 	}
     string infile = argv[1];
-    enum aminoAcid {A,R,N,D,Dh,C,Cx,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,Hce,Pch};
-    string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Q","E","Eh","Hd", "He","Hn","Hp","I","L","K","M","F","P","O","S","T","W","Y", "V","G","dA","dR","dN","dD","dDh","dC","dCx","dQ","dE","dEh","dHd","dHe","dHn","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV","Hce","Pch"};
+    enum aminoAcid {A,R,N,D,Dh,C,Cx,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,Hce,Pch,Csf};
+    string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Q","E","Eh","Hd", "He","Hn","Hp","I","L","K","M","F","P","O","S","T","W","Y", "V","G","dA","dR","dN","dD","dDh","dC","dCx","dQ","dE","dEh","dHd","dHe","dHn","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV","Hce","Pch","Csf"};
     PDBInterface* thePDB = new PDBInterface(infile);
     ensemble* theEnsemble = thePDB->getEnsemblePointer();
     molecule* pMol = theEnsemble->getMoleculePointer(0);
@@ -45,14 +45,14 @@ int main (int argc, char* argv[])
     //--parameters
     int chains[] = {0};
 	int chainsSize = sizeof(chains)/sizeof(chains[0]);
-    int residues[] = {10};//61,30,9,129/46,47,61,92,95/,87,91,110,150,152{1,3,5,7,9,13,15,17,19,21,28,30,32,34,36,54,57,59,61,70,72,74,76,78,86,88,90,92,94,108,110,112,114,116,127,129,131,133,151,153,155,157,159,161,166,169,172,174,181,183,185};
+    int residues[] = {0};//61,30,9,129/46,47,61,92,95/,87,91,110,150,152{1,3,5,7,9,13,15,17,19,21,28,30,32,34,36,54,57,59,61,70,72,74,76,78,86,88,90,92,94,108,110,112,114,116,127,129,131,133,151,153,155,157,159,161,166,169,172,174,181,183,185};
     int residuesSize = sizeof(residues)/sizeof(residues[0]);
     int count = 0;
 
     //--variables
     UInt restype;
     double Energy;
-    UIntVec allowedRots;
+    vector <UIntVec> allowedRots;
     cout << "pdb " << "energy " << endl;
 
     for (int i = 0; i < chainsSize; i++)
@@ -60,18 +60,21 @@ int main (int argc, char* argv[])
         for (int j = 0; j < residuesSize; j++)
         {
             restype = bundle->getTypeFromResNum(chains[i], residues[j]);
-            allowedRots = bundle->getAllowedRotamers(chains[i], residues[j], restype, 0);
-            for (UInt m = 0; m < allowedRots.size(); m ++)
+            allowedRots = bundle->getAllowedRotamers(chains[i], residues[j], restype);
+            for (UInt b = 0; b < residue::getNumBpt(restype); b++)
             {
-               bundle->setRotamerWBC(chains[i], residues[j], 0, allowedRots[m]);
-               Energy = bundle->protEnergy();
-               count++;
-               stringstream convert;
-               string countstr;
-               convert << count, countstr = convert.str();
-               string outFile = countstr + ".pdb";
-               pdbWriter(bundle, outFile);
-               cout << count << " " << Energy << " " << endl;
+                for (UInt m = 0; m < allowedRots[b].size(); m ++)
+                {
+                   bundle->setRotamerWBC(chains[i], residues[j], b, allowedRots[b][m]);
+                   Energy = bundle->protEnergy();
+                   count++;
+                   stringstream convert;
+                   string countstr;
+                   convert << count, countstr = convert.str();
+                   string outFile = countstr + ".pdb";
+                   pdbWriter(bundle, outFile);
+                   cout << count << " " << Energy << " " << endl;
+                }
             }
         }
     }

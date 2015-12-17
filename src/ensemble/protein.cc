@@ -3234,9 +3234,8 @@ void protein::protOpt(bool _backbone)
     // -pike 2013
 
     //--Initialize variables for loop, calculate starting energy and build energy vectors---------------
-    updateTotalNumResidues();
     double deltaTheta = 0, Energy, resE, medResE, pastEnergy = protEnergy();
-    UInt randchain, randres, randrestype, allowedRotsize, randrot, nobetter = 0, _plateau = itsNumResidues*8;
+    UInt randchain, randres, randrestype, allowedRotsize, randrot, nobetter = 0, _plateau = 50;
     UInt resNum, randtype, chainNum = getNumChains(), thisone, breakout;
     vector < vector <double> > currentRot;
     vector <UIntVec> allowedRots;
@@ -3254,7 +3253,7 @@ void protein::protOpt(bool _backbone)
 
         //--Backbone optimization-----------------------------------------------------------------------
         resE = resEnergy(randchain, randres), medResE = getMedianResEnergy();
-        if (nobetter > _plateau && resE > (medResE/nobetter) && _backbone)
+        if (nobetter > _plateau && resE > medResE && _backbone)
         {   //--randomly choose phi or psi, and change in angle of -1 or +1 degree
             randtype = rand() % 2;
             do
@@ -3278,8 +3277,8 @@ void protein::protOpt(bool _backbone)
         }
 
         //--Rotamer optimization-----------------------------------------------------------------------
-        //resE = resEnergy(randchain, randres), medResE = getMedianResEnergy();
-        if (resE > (medResE/nobetter))
+        resE = resEnergy(randchain, randres);
+        if (resE > medResE)
         {   currentRot = getSidechainDihedrals(randchain, randres);
             allowedRots = getAllowedRotamers(randchain, randres, randrestype);
             breakout = 0;
