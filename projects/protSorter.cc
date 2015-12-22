@@ -39,7 +39,7 @@ int main (int argc, char* argv[])
     while ((pent=readdir(pdir)))
     {
         inFrame = pent->d_name;
-        if (inFrame.find(".evo.pdb") != std::string::npos)
+        if (inFrame.find(".pdb") != std::string::npos)
         {
             count++;
             PDBInterface* theModelPDB = new PDBInterface(inFrame);
@@ -55,13 +55,13 @@ int main (int argc, char* argv[])
             amberElec::setScaleFactor(1.0);
 
             Energy = model->protEnergy();
-            if (Energy < -322)
+            if (Energy < 5000)
             {
                 stringstream convert;
                 string outFile;
                 UInt name = count;
                 convert << name, outFile = convert.str();
-                string tempModel = outFile + "_best.evo.pdb";
+                string tempModel = outFile + "_best.pdb";
                 pdbWriter(model, tempModel);
             }
             delete theModelPDB;
