@@ -22,6 +22,7 @@
 //--Program setup----------------------------------------------------------------------------------------
 int main (int argc, char* argv[])
 {
+    enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dAT,dW,dY,dV,Hce,Pch};
 	//--Running parameters
         if (argc !=1)
 	{
@@ -49,20 +50,35 @@ int main (int argc, char* argv[])
             model->silenceMessages();
             residue::setCutoffDistance(9.0);
             rotamer::setScaleFactor(0.0);
-            amberVDW::setScaleFactor(1.0);
+            amberVDW::setScaleFactor(0.95);
             amberVDW::setRadiusScaleFactor(1.0);
             amberVDW::setLinearRepulsionDampeningOff();
             amberElec::setScaleFactor(1.0);
 
             Energy = model->protEnergy();
-            if (Energy < 5000)
+            UInt hces = 0;
+            UInt chainNum = model->getNumChains();
+            for (UInt i = 0; i < chainNum; i ++)
+            {
+                UInt resNum = model->getNumResidues(i);
+                for (UInt j = 0; j < resNum; j ++)
+                {
+                    UInt type = model->getTypeFromResNum(i,j);
+                    if (type == Hce)
+                    {
+                        hces++;
+                    }
+                }
+            }
+            if (hces == 7)
             {
                 stringstream convert;
                 string outFile;
                 UInt name = count;
                 convert << name, outFile = convert.str();
-                string tempModel = outFile + "_best.pdb";
+                string tempModel = outFile + "_7.pdb";
                 pdbWriter(model, tempModel);
+                cout << inFrame << " " << Energy << endl;
             }
             delete theModelPDB;
         }
