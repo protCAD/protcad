@@ -335,6 +335,7 @@ public:
     static void setupDataBase(const bool _Hflag, const bool _HPflag);
 	static double getCutoffDistance() {return cutoffDistance; }
 	static void setCutoffDistance( const double _cutoff ) { cutoffDistance = _cutoff; cutoffDistanceSquared = _cutoff*_cutoff; }
+    static void setTemperature( const double _temp ) { temperature = _temp; }
 
 // ***********************************************************************
 // ***********************************************************************
@@ -370,6 +371,7 @@ private:
 	private:
 	static UInt howMany;
 	static bool dataBaseBuilt;
+    static double temperature;
 	static double cutoffDistance;
 	static double cutoffDistanceSquared;
 };
