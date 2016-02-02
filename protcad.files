@@ -1,3 +1,5 @@
+bin/protBindingEnergy
+bin/protOpt
 bin/README
 data/aa/AHD.dat
 data/aa/ALA.dat
@@ -9,8 +11,11 @@ data/aa/ARG.dat
 data/aa/ASH.dat
 data/aa/ASN.dat
 data/aa/ASP.dat
+data/aa/ATD.dat
+data/aa/CSF.dat
 data/aa/CXD.dat
 data/aa/CYD.dat
+data/aa/CYF.dat
 data/aa/CYS.dat
 data/aa/CYX.dat
 data/aa/DUM.dat
@@ -84,8 +89,11 @@ data/rotamerLib/ARG.rot
 data/rotamerLib/ASH.rot
 data/rotamerLib/ASN.rot
 data/rotamerLib/ASP.rot
+data/rotamerLib/ATD.rot
+data/rotamerLib/CSF.rot
 data/rotamerLib/CXD.rot
 data/rotamerLib/CYD.rot
+data/rotamerLib/CYF.rot
 data/rotamerLib/CYS.rot
 data/rotamerLib/CYX.rot
 data/rotamerLib/DUM.rot
@@ -138,6 +146,7 @@ data/ATOMTYPE
 data/helixPropensity.frc
 data/README.atomtype
 data/uni_mod.in
+obj/libprotcad.a
 obj/README
 projects/dielectricFit.cc
 projects/getDielectric.cc
@@ -156,9 +165,9 @@ projects/protMutator.cc
 projects/protOpt.cc
 projects/protPointMutator.cc
 projects/protRandomizer.cc
+projects/protRotamer.cc
 projects/protShaper.cc
 projects/protSorter.cc
-projects/protRotamer.cc
 projects/README
 projects/triadFinder.cc
 projects/y_aligner.cc
@@ -420,3 +429,5 @@ src/tnt/trisolve.h
 src/tnt/vec.h
 src/tnt/vecadaptor.h
 src/tnt/version.h
+Makefile
+README
