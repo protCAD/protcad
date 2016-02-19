@@ -20,6 +20,7 @@
 
 void buildAntiParallelBetaBarrel (protein* _prot, double _pitch);
 void buildAntiParallelHelixDimer (protein* _prot, double _radius, double _phase, double _coil);
+void buildAlaCoilHexamer (protein* _prot, double _radius, double _phase);
 
 int main (int argc, char* argv[])
 {
@@ -31,12 +32,11 @@ int main (int argc, char* argv[])
 	}
 	enum aminoAcid {A,R,N,D,Dh,C,Cx,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV};
 	//string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Q","E","Eh","Hd", "He","Hn","Hp","I","L","K","M","F","P","O","S","T","W","Y", "V","G","dA","dR","dN","dD","dDh","dC","dCx","dQ","dE","dEh","dHd","dHe","dHn","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV"};
-    residue::setCutoffDistance(10.0);
+    residue::setCutoffDistance(9.0);
 	rotamer::setScaleFactor(0.0);
 	amberVDW::setScaleFactor(1.0);
 	amberVDW::setRadiusScaleFactor(1.0);
-	amberVDW::setLinearRepulsionDampeningOff();
-	amberElec::setScaleFactor(1.0);
+    amberElec::setScaleFactor(0.0);
 	srand (time(NULL));
 
 	//--Initialize variables for loop
@@ -127,14 +127,40 @@ int main (int argc, char* argv[])
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 
     //--loop
-    PDBInterface* theFramePDB = new PDBInterface(inFile);
-    ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
-    molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
-    protein* frame = static_cast<protein*>(frameMol);
-    frame->silenceMessages();
-
-    buildAntiParallelHelixDimer(frame, 3.8, 0, 140);
-    pdbWriter(frame, outFile);
+    double radius = 9;
+    double coilstart = 90;
+    double coil = coilstart;
+    double best = 1E10;
+    double phasestart = 0;
+    double phase = phasestart;
+    for (UInt i=0; i < 100; i++)
+    {
+        radius = radius + 0.2;
+        for (UInt j=0; j < 90; j++)
+        {
+            phase = phase + 1.0;
+            PDBInterface* theFramePDB = new PDBInterface(inFile);
+            ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
+            molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
+            protein* frame = static_cast<protein*>(frameMol);
+            frame->silenceMessages();
+            buildAlaCoilHexamer(frame, radius, phase);
+            double Energy = frame->protEnergy();
+            cout << frame->protEnergy() << " " << radius << " " << phase;
+            if (Energy < best)
+            {
+                cout << " hit!" << endl;
+                best = Energy;
+                pdbWriter(frame, outFile);
+            }
+            else
+            {
+                cout << endl;
+            }
+            delete theFramePDB;
+        }
+        phase = phasestart;
+    }
 /*#pragma omp parallel for
     for (UInt j = 0; j < 100; j ++)
     {
@@ -161,14 +187,21 @@ int main (int argc, char* argv[])
 	cout << endl << "Structure reshaped!!" << endl << endl;
 	return 0;
 }
-
-
-void buildAntiParallelHelixDimer (protein* _prot, double _radius, double _phase, double _coil)
+void buildAlaCoilHexamer (protein* _prot, double _radius, double _phase)
 {
     _prot->rotate(Z_axis, _phase);
-    _prot->translate(0.0, _radius, 1.6);
-    _prot->rotate(1, Z_axis, 165);
+    _prot->translate(0.0, _radius, 0.0);
+    _prot->rotate(1, Z_axis, 120);
+    _prot->rotate(2, Z_axis, 240);
+    return;
+}
+
+void buildAntiParallelHelixDimer (protein* _prot, double _radius, double _phase, double _coil)
+{ 
+    _prot->rotate(Z_axis, _phase);
     _prot->rotate(1, Y_axis, 180);
+    _prot->translate(0.0, _radius, 0.0);
+    _prot->rotate(1, Z_axis, 180);
     _prot->coilcoil(_coil);
     return;
 }
