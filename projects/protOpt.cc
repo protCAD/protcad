@@ -26,15 +26,9 @@ int main (int argc, char* argv[])
     ensemble* theEnsemble = thePDB->getEnsemblePointer();
     molecule* pMol = theEnsemble->getMoleculePointer(0);
     protein* _prot = static_cast<protein*>(pMol);
-    residue::setCutoffDistance(9.0);
-    rotamer::setScaleFactor(0.0);
-    amberVDW::setScaleFactor(1.0);
-    amberVDW::setRadiusScaleFactor(1.0);
-    amberVDW::setLinearRepulsionDampeningOff();
-    amberElec::setScaleFactor(1.0);
 
     t=clock();
-    _prot->protOpt(false);
+    _prot->protOpt(true);
     t=clock()-t;
     cout << "Time: " << ((float)t)/CLOCKS_PER_SEC << " Energy: " << _prot->protEnergy() << endl;
     pdbWriter(_prot, outFile);
