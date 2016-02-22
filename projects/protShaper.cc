@@ -30,7 +30,7 @@ int main (int argc, char* argv[])
 		cout << "structShaper <inFile.pdb> <outFile.pdb>" << endl;
 		exit(1);
 	}
-    enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dAT,dW,dY,dV,Hce,Pch};
+    enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dAT,dW,dY,dV,Hcd,Pch};
 	//string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Q","E","Eh","Hd", "He","Hn","Hp","I","L","K","M","F","P","O","S","T","W","Y", "V","G","dA","dR","dN","dD","dDh","dC","dCx","dQ","dE","dEh","dHd","dHe","dHn","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV"};
     residue::setCutoffDistance(9.0);
 	rotamer::setScaleFactor(0.0);
@@ -134,9 +134,11 @@ int main (int argc, char* argv[])
     //double phasestart = 0;
     //double phase = phasestart;
     double angle = 0;
+
+    //rotamer optimizations
     for (UInt k = 0; k < 9; k++)
     {
-        for (UInt m = 0; m < 16; m++)
+        for (UInt m = 0; m < 32; m++)
         {
             PDBInterface* theFramePDB = new PDBInterface(inFile);
             ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
@@ -144,15 +146,17 @@ int main (int argc, char* argv[])
             protein* frame = static_cast<protein*>(frameMol);
             frame->silenceMessages();
             //buildAlaCoilHexamer(frame, radius, phase);
-            UIntVec allowedRots = frame->getAllowedRotamers(0, 5, Hce, 0);
+            UIntVec allowedRots = frame->getAllowedRotamers(0, 5, Hcd, 0);
             for (UInt l = 0; l < frame->getNumChains(); l++)
             {
                 //frame->setRotamerWBC(l, 6, 0, allowedRots[k]);
                 frame->setRotamerWBC(l, 13, 0, allowedRots[k]);
                 //frame->setRotamerWBC(l, 41, 0, allowedRots[k]);
                 frame->setRotamerWBC(l, 48, 0, allowedRots[k]);
-                angle = 22.5*m;
+                angle = 11.25*m;
+                //frame->setChi(l, 6, 1, 0, angle);
                 frame->setChi(l, 13, 1, 0, angle);
+                //frame->setChi(l, 41, 1, 0, angle);
                 frame->setChi(l, 48, 1, 0, angle);
             }
             double Energy = frame->protEnergy();
@@ -171,8 +175,9 @@ int main (int argc, char* argv[])
         }
         angle = 0;
     }
-    /*
-    for (UInt i=0; i < 100; i++)
+
+    //bundle optimizations
+    /*for (UInt i=0; i < 100; i++)
     {
         radius = radius + 0.1;
         for (UInt j=0; j < 90; j++)
@@ -186,13 +191,13 @@ int main (int argc, char* argv[])
                 protein* frame = static_cast<protein*>(frameMol);
                 frame->silenceMessages();
                 buildAlaCoilHexamer(frame, radius, phase);
-                UIntVec allowedRots = frame->getAllowedRotamers(0, 5, Hce, 0);
+                UIntVec allowedRots = frame->getAllowedRotamers(0, 5, Hcd, 0);
                 for (UInt l = 0; l < frame->getNumChains(); l++)
                 {
                     frame->setRotamerWBC(l, 6, 0, allowedRots[k]);
-                    frame->setRotamerWBC(l, 13, 0, allowedRots[k]);
+                    //frame->setRotamerWBC(l, 13, 0, allowedRots[k]);
                     frame->setRotamerWBC(l, 41, 0, allowedRots[k]);
-                    frame->setRotamerWBC(l, 48, 0, allowedRots[k]);
+                    //frame->setRotamerWBC(l, 48, 0, allowedRots[k]);
                 }
                 double Energy = frame->protEnergy();
                 cout << frame->protEnergy() << " " << radius << " " << phase << " " << k;
@@ -211,26 +216,6 @@ int main (int argc, char* argv[])
         }
         phase = phasestart;
     }*/
-/*#pragma omp parallel for
-    for (UInt j = 0; j < 100; j ++)
-    {
-        double pastEnergy = frame->intraSoluteEnergy(true), Energy;
-        double angle=0;
-        angle = angle+45;
-        frame->setChi(0, 116, 1, 0, angle);
-        Energy = frame->intraSoluteEnergy(true);
-        if (Energy < pastEnergy)
-        {
-            pastEnergy = Energy;
-            pdbWriter(frame, outFile);
-        }
-        else
-        {
-            frame->setChi(0, 116, 1, 0, -angle);
-        }
-    }
-
-    buildAntiParallelBetaBarrel(frame, 20);*/
 
 
 //--Print end and write a pdb file--------------------------------------------------------------
