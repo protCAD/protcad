@@ -28,63 +28,47 @@ int main (int argc, char* argv[])
 		exit(1);
 	}
     string infile = argv[1];
-    enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dAT,dW,dY,dV,Hce,Pch};
+    enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dAT,dW,dY,dV,Hce,Pch,Csf};
     string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hn","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dQ","dE","dEh","dHd","dHe","dHn","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dAT","dW","dY","dV","Hce","Pch"};
     PDBInterface* thePDB = new PDBInterface(infile);
     ensemble* theEnsemble = thePDB->getEnsemblePointer();
     molecule* pMol = theEnsemble->getMoleculePointer(0);
     protein* bundle = static_cast<protein*>(pMol);
     bundle->silenceMessages();
-    residue::setCutoffDistance(9.0);
-    rotamer::setScaleFactor(0.0);
-    amberVDW::setScaleFactor(1.0);
-    amberVDW::setRadiusScaleFactor(1.0);
-    amberVDW::setLinearRepulsionDampeningOff();
-    amberElec::setScaleFactor(1.0);
     srand (getpid());
+    UInt numres = bundle->getNumResidues(0);
     delete thePDB;
 	
     //--parameters
-    int chains[] = {0,1};
-	int chainsSize = sizeof(chains)/sizeof(chains[0]);
-    int residues[] = {46,47,61,92,95};//61,30,9,129/46,47,61,92,95/,87,91,110,150,152{1,3,5,7,9,13,15,17,19,21,28,30,32,34,36,54,57,59,61,70,72,74,76,78,86,88,90,92,94,108,110,112,114,116,127,129,131,133,151,153,155,157,159,161,166,169,172,174,181,183,185};
-    int residuesSize = sizeof(residues)/sizeof(residues[0]);
-    int resID[] = {Hce};
+    //int chains[] = {0};
+    //int chainsSize = sizeof(chains)/sizeof(chains[0]);
+    //int residues[] = {1,3,5,7,9,13,15,17,19,21,28,30,32,34,36,54,57,59,61,70,72,74,76,78,86,88,90,92,94,108,110,112,114,116,127,129,131,133,151,153,155,157,159,161,166,169,172,174,181,183,185};//{46,47,61,92,95};//61,30,9,129/46,47,61,92,95/,87,91,110,150,152{1,3,5,7,9,13,15,17,19,21,28,30,32,34,36,54,57,59,61,70,72,74,76,78,86,88,90,92,94,108,110,112,114,116,127,129,131,133,151,153,155,157,159,161,166,169,172,174,181,183,185};
+    //int residuesSize = sizeof(residues)/sizeof(residues[0]);
+    int resID[] = {Csf};
     //int resIDsize = sizeof(resID)/sizeof(resID[0]);
 
-    //--variables
-    UInt count = 0, mutchain, mutres;
-    double Energy;//
 
 	//--Mutations
-    for (int i = 0; i < 2000; i++)
+    for (UInt i = 0; i < numres; i++)
     {
         PDBInterface* thePDB = new PDBInterface(infile);
         ensemble* theEnsemble = thePDB->getEnsemblePointer();
         molecule* pMol = theEnsemble->getMoleculePointer(0);
         protein* bundle = static_cast<protein*>(pMol);
 
-        count = rand() % 1000000000;
-        cout << count << " ";
-        for (int j = 0; j < 10; j++)
-        {
-            mutchain = chains[rand() % chainsSize];
-            mutres = residues[rand() % residuesSize];
-            bundle->activateForRepacking(mutchain, mutres);
-            bundle->mutate(mutchain, mutres, resID[0]);
-            cout << mutchain << "," << mutres << " " ;
-        }
-        bundle->protOpt(true);
+        bundle->activateForRepacking(0, i);
+        bundle->mutate(0, i, resID[0]);
+        bundle->protOpt(false);
 
         //--print pdb and data to output
-        Energy = bundle->protEnergy();
+        double Energy = bundle->protEnergy();
 
         stringstream convert;
         string countstr;
-        convert << count, countstr = convert.str();
+        convert << i, countstr = convert.str();
         string outFile = countstr + ".pdb";
         pdbWriter(bundle, outFile);
-        cout << Energy << endl;
+        cout << i << " " << Energy << endl;
         delete thePDB;
     }
 	return 0;

@@ -48,35 +48,15 @@ int main (int argc, char* argv[])
             molecule* modelMol = theModelEnsemble->getMoleculePointer(0);
             protein* model = static_cast<protein*>(modelMol);
             model->silenceMessages();
-            residue::setCutoffDistance(9.0);
-            rotamer::setScaleFactor(0.0);
-            amberVDW::setScaleFactor(0.95);
-            amberVDW::setRadiusScaleFactor(1.0);
-            amberVDW::setLinearRepulsionDampeningOff();
-            amberElec::setScaleFactor(1.0);
 
             Energy = model->protEnergy();
-            UInt hces = 0;
-            UInt chainNum = model->getNumChains();
-            for (UInt i = 0; i < chainNum; i ++)
-            {
-                UInt resNum = model->getNumResidues(i);
-                for (UInt j = 0; j < resNum; j ++)
-                {
-                    UInt type = model->getTypeFromResNum(i,j);
-                    if (type == Hce)
-                    {
-                        hces++;
-                    }
-                }
-            }
-            if (hces == 7)
+            if (Energy < 1300)
             {
                 stringstream convert;
                 string outFile;
                 UInt name = count;
                 convert << name, outFile = convert.str();
-                string tempModel = outFile + "_7.pdb";
+                string tempModel = outFile + "_good.pdb";
                 pdbWriter(model, tempModel);
                 cout << inFrame << " " << Energy << endl;
             }

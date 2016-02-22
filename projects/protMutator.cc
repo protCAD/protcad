@@ -27,19 +27,13 @@ int main (int argc, char* argv[])
     cout << "mutantMaker <inFile.pdb>" << endl;
 	exit(1);
 	}
-    enum aminoAcid {A,R,N,D,Dh,C,Cx,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dAT,dW,dY,dV,Hce,Pch};
+    enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dAT,dW,dY,dV,Hce,Pch};
 	string infile = argv[1];
 	PDBInterface* thePDB = new PDBInterface(infile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* bundle = static_cast<protein*>(pMol);
 	bundle->silenceMessages();
-    residue::setCutoffDistance(9.0);
-	rotamer::setScaleFactor(0.0);
-	amberVDW::setScaleFactor(1.0);
-    amberVDW::setRadiusScaleFactor(0.95);
-	amberVDW::setLinearRepulsionDampeningOff();
-    amberElec::setScaleFactor(0.0);
 	
 	//--h3lix
 	//UInt resID_A[] = {P,K,G,P,K,G,P,K,G,K,O,G,P,D,G,D,O,G,D,O,G,D,O,G,P,K,G,P,K,G};
@@ -123,7 +117,7 @@ int main (int argc, char* argv[])
     vector<vector<UInt> > resIDs;
     vector <UInt> v;
 
-    UInt resID1[] = {E,P,L,S,Y,A,E,A,E,K,L,E,E,A,L,A,E,L,K,R,E,Y,S,E,L,E,E,E,L,Q,E,A,K,R,A,E,Q};// -design1a
+    UInt resID1[] = {D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N,D,N,V,Q,I,G,G,D,V,S,G,A,L,D,A,G,T,G,N};// -design1a
     v.insert (v.begin(), resID1, resID1 + sizeof(resID1)/sizeof(resID1[0]));
     resIDs.push_back(v);
     v.clear();/*
@@ -249,7 +243,7 @@ int main (int argc, char* argv[])
     v.clear();
     UInt resID29[] = {G,P,O,G,L,O,G,M,L,G,Q,K,G,E,M,G,P,K,G,P,O,G,P,O,G,P,O,G,P,O,G};
     v.insert (v.begin(), resID29, resID29 + sizeof(resID29)/sizeof(resID29[0]));
-    resIDs.push_back(v);
+    resIDs.push_back(v);A
     v.clear();
     UInt resID30[] = {G,P,O,G,R,O,G,K,R,G,K,O,G,V,R,G,P,R,G,P,O,G,P,O,G,P,O,G,P,O,G};
     v.insert (v.begin(), resID30, resID30 + sizeof(resID30)/sizeof(resID30[0]));
@@ -304,16 +298,16 @@ int main (int argc, char* argv[])
                 }*/
                 if (!mutants)
                 {
-                    if (j >= resIDs[i].size())
+                    /*if (j >= resIDs[i].size())
                     {
                         bundle->removeResidue(i,j);
                     }
                     else
-                    {
+                    {*/
                         bundle->activateForRepacking(i, j);
-                        bundle->mutateWBC(i, j, resIDs[h][j]);
-                        randomizeSideChain(bundle, i, j);
-                    }
+                        bundle->mutateWBC(i, j, resID1[j]);
+                        //randomizeSideChain(bundle, i, j);
+                    //}
                 }
             }
         }
@@ -327,7 +321,7 @@ int main (int argc, char* argv[])
         ensemble* theEnsemble2 = thePDB2->getEnsemblePointer();
         molecule* pMol2 = theEnsemble2->getMoleculePointer(0);
         protein* bundle2 = static_cast<protein*>(pMol2);
-        bundle2->protOpt(false);
+        //bundle2->protOpt(false);
         double Energy = bundle2->protEnergy();
         cout << Energy << endl;
         pdbWriter(bundle2, outFile);
