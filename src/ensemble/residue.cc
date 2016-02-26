@@ -3039,8 +3039,8 @@ double residue::intraSoluteEnergy()
             {
                 // ** get solvationEnergy
                 vector <double> tempSolvEnergy = calculateSolvationEnergy(i);
-                intraEnergy -= tempSolvEnergy[0];
-                intraEnergy -= tempSolvEnergy[1];
+                intraEnergy += tempSolvEnergy[0];
+                intraEnergy += tempSolvEnergy[1];
             }
 			for(UInt j=i+1; j<itsAtoms.size(); j++)
 			{

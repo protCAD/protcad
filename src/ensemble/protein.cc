@@ -1588,36 +1588,36 @@ double protein::getReferenceEnergy()
 double protein::getReferenceEnergy(UInt restype)
 {
     double refEnergy;
-    if (restype == 0  || restype == 27) refEnergy = 0.109328;  //A
-    if (restype == 1  || restype == 28) refEnergy = -2.23141;  //R
-    if (restype == 2  || restype == 29) refEnergy = -8.17526;  //N
-    if (restype == 3  || restype == 30) refEnergy = -24.9987;  //D
-    if (restype == 4  || restype == 31) refEnergy = -8.91481;  //Dh
-    if (restype == 5  || restype == 32) refEnergy = -0.929664; //C
-    if (restype == 6  || restype == 33) refEnergy = -0.232213; //Cx
-    if (restype == 7  || restype == 34) refEnergy = -3.02736;  //Q
-    if (restype == 8  || restype == 35) refEnergy = -21.0404;  //E
-    if (restype == 9  || restype == 36) refEnergy = -5.40169;  //Eh
-    if (restype == 10 || restype == 37) refEnergy = -1.76723;  //Hd
-    if (restype == 11 || restype == 38) refEnergy = 0.999759;  //He
-    if (restype == 12 || restype == 39) refEnergy = -23.0389;  //Hn
-    if (restype == 13 || restype == 40) refEnergy = 2.6474;  //Hp
-    if (restype == 14 || restype == 41) refEnergy = 7.08515;  //I
-    if (restype == 15 || restype == 42) refEnergy = 7.18812;  //L
-    if (restype == 16 || restype == 43) refEnergy = -7.23468;  //K
-    if (restype == 17 || restype == 44) refEnergy = 1.54745;  //M
-    if (restype == 18 || restype == 45) refEnergy = 19.8302;  //F
-    if (restype == 19 || restype == 46) refEnergy = 9.94971;  //P
-    if (restype == 20 || restype == 47) refEnergy = -0.728798;  //O
-    if (restype == 21 || restype == 48) refEnergy = -0.22086;  //S
-    if (restype == 22 || restype == 49) refEnergy = 4.49881;  //T
-    if (restype == 23 || restype == 51) refEnergy = 23.2677;  //W
-    if (restype == 24 || restype == 52) refEnergy = 16.4737;  //Y
-    if (restype == 25 || restype == 53) refEnergy = 6.36419;  //V
-    if (restype == 26) refEnergy = -2.21166;  //G
-    if (restype == 50) refEnergy = 5.56827;  //dAT
-    if (restype == 54) refEnergy = 107.601;  //Hce
-    if (restype == 55) refEnergy = 304.883;  //Pch
+    if (restype == 0  || restype == 27) refEnergy = 6.94721;  //A
+    if (restype == 1  || restype == 28) refEnergy = 13.2347;  //R
+    if (restype == 2  || restype == 29) refEnergy = 19.4047;  //N
+    if (restype == 3  || restype == 30) refEnergy = 36.421;  //D
+    if (restype == 4  || restype == 31) refEnergy = 19.639;  //Dh
+    if (restype == 5  || restype == 32) refEnergy = 8.28941; //C
+    if (restype == 6  || restype == 33) refEnergy = 8.6945; //Cx
+    if (restype == 7  || restype == 34) refEnergy = 15.2746;  //Q
+    if (restype == 8  || restype == 35) refEnergy = 33.5134;  //E
+    if (restype == 9  || restype == 36) refEnergy = 16.7645;  //Eh
+    if (restype == 10 || restype == 37) refEnergy = 10.2095;  //Hd
+    if (restype == 11 || restype == 38) refEnergy = 7.8952;  //He
+    if (restype == 12 || restype == 39) refEnergy = 30.5373;  //Hn
+    if (restype == 13 || restype == 40) refEnergy = 5.17108;  //Hp
+    if (restype == 14 || restype == 41) refEnergy = 9.2771;  //I
+    if (restype == 15 || restype == 42) refEnergy = 2.93547;  //L
+    if (restype == 16 || restype == 43) refEnergy = 13.3458;  //K
+    if (restype == 17 || restype == 44) refEnergy = 5.91433;  //M
+    if (restype == 18 || restype == 45) refEnergy = 3.89894;  //F
+    if (restype == 19 || restype == 46) refEnergy = -1.244;  //P
+    if (restype == 20 || restype == 47) refEnergy = 9.09773;  //O
+    if (restype == 21 || restype == 48) refEnergy = 8.32352;  //S
+    if (restype == 22 || restype == 49) refEnergy = 7.1672;  //T
+    if (restype == 23 || restype == 51) refEnergy = 0.159482;  //W
+    if (restype == 24 || restype == 52) refEnergy = 7.8967;  //Y
+    if (restype == 25 || restype == 53) refEnergy = 5.40009;  //V
+    if (restype == 26) refEnergy = 8.77318;  //G
+    if (restype == 50) refEnergy = 8.95223;  //dAT
+    if (restype == 54) refEnergy = 141.136;  //Hce
+    if (restype == 55) refEnergy = 236.007;  //Pch
     return refEnergy;
 }
 
@@ -3234,9 +3234,8 @@ void protein::protOpt(bool _backbone)
     // -pike 2013
 
     //--Initialize variables for loop, calculate starting energy and build energy vectors---------------
-    updateTotalNumResidues();
     double deltaTheta = 0, Energy, resE, medResE, pastEnergy = protEnergy();
-    UInt randchain, randres, randrestype, allowedRotsize, randrot, nobetter = 0, _plateau = itsNumResidues*10;
+    UInt randchain, randres, randrestype, allowedRotsize, randrot, nobetter = 0, _plateau = 100;
     UInt resNum, randtype, chainNum = getNumChains(), thisone, breakout;
     vector < vector <double> > currentRot;
     vector <UIntVec> allowedRots;
@@ -3254,7 +3253,7 @@ void protein::protOpt(bool _backbone)
 
         //--Backbone optimization-----------------------------------------------------------------------
         resE = resEnergy(randchain, randres), medResE = getMedianResEnergy();
-        if (nobetter > _plateau && resE > (medResE/nobetter) && _backbone)
+        if (nobetter > _plateau && resE > medResE && _backbone)
         {   //--randomly choose phi or psi, and change in angle of -1 or +1 degree
             randtype = rand() % 2;
             do
@@ -3278,8 +3277,8 @@ void protein::protOpt(bool _backbone)
         }
 
         //--Rotamer optimization-----------------------------------------------------------------------
-        //resE = resEnergy(randchain, randres), medResE = getMedianResEnergy();
-        if (resE > (medResE/nobetter))
+        resE = resEnergy(randchain, randres);
+        if (resE > medResE)
         {   currentRot = getSidechainDihedrals(randchain, randres);
             allowedRots = getAllowedRotamers(randchain, randres, randrestype);
             breakout = 0;
