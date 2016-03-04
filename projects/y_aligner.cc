@@ -22,7 +22,7 @@ int main (int argc, char* argv[])
 	double phimin = -180.0; double phimax = 180.0; double step = 20.0;
 	double thetamin = -180.0; double thetamax = 180.0;
 	double psimin = -180.0; double psimax = 180.0;
-	for (UInt i = 0; i < 5; i ++)
+    for (UInt i = 0; i < 10; i ++)
 	{
 		cout << endl;
 		cout << "*********" << endl;

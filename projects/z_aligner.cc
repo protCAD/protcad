@@ -25,7 +25,7 @@ int main (int argc, char* argv[])
 	double phimin = -2.0 * PI; double phimax = 2.0 * PI; double step = (20.0/180.0) * 2.0 * PI;
 	double thetamin = -2.0 * PI; double thetamax = 2.0 * PI;
 	double psimin = -2.0 * PI; double psimax = 2.0 * PI;
-	for (UInt i = 0; i < 5; i ++)
+    for (UInt i = 0; i < 10; i ++)
 	{
 		cout << endl;
 		cout << "*********" << endl;
@@ -78,7 +78,7 @@ int main (int argc, char* argv[])
 		thetamax = bestTheta + step;
 		psimin = bestPsi - step;
 		psimax = bestPsi + step;
-		step = step/5;
+        step = step/5;
 	}
 
 	cout << "**************BEST***************" << endl;

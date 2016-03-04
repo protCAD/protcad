@@ -21,7 +21,7 @@ int main (int argc, char* argv[])
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
     protein* bundle = static_cast<protein*>(pMol);
 
-    cout << bundle->intraSoluteEnergy(true);
+    cout << bundle->intraSoluteEnergy(true) << endl;
     pdbWriter(bundle, infile);
 	return 0;
 }
