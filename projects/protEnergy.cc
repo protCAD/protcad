@@ -20,8 +20,9 @@ int main (int argc, char* argv[])
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
     protein* bundle = static_cast<protein*>(pMol);
+    //amberElec::setScaleFactor(0.0);
 
-    cout << bundle->intraSoluteEnergy(true) << endl;
+    cout << bundle->protEnergy() << endl;
     pdbWriter(bundle, infile);
 	return 0;
 }
