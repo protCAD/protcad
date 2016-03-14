@@ -36,7 +36,7 @@ int main (int argc, char* argv[])
 	rotamer::setScaleFactor(0.0);
 	amberVDW::setScaleFactor(1.0);
 	amberVDW::setRadiusScaleFactor(1.0);
-    amberElec::setScaleFactor(0.0);
+    amberElec::setScaleFactor(1.0);
     srand (time(NULL));
 
 	//--Initialize variables for loop
@@ -177,16 +177,16 @@ int main (int argc, char* argv[])
     UInt res1, res2;
     double chi1, chi2;
     cout << "iteration Energy radius chi3 chi1" << endl;
-    for (UInt i=0; i < 360; i++)
-    {
-        for (UInt j=0; j < 360; j++)
+    //for (UInt i= 60; i < 90; i++)
+    //{
+        for (UInt j= 60; j < 90; j++)
         {
             //for (int m = 45; m < 55; m++)
             //{
-            //    for (int k = -65; k < -55; k++)
-             //   {
+                //for (int k = -65; k < -55; k++)
+                //{
                     count++;
-                    phase = 274.6, angle1 = j, angle2 = i, rot = 6, radius = 11.2, res1 = 8, res2 = 15, chi1 = -56, chi2 = 49;
+                    phase = 274.6, angle1 = 77, angle2 = 70, rot = 6, radius = 11.2, res1 = 8, res2 = 15, chi1 = -56, chi2 = 49;
                     PDBInterface* theFramePDB = new PDBInterface(inFile);
                     ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
                     molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
@@ -200,6 +200,7 @@ int main (int argc, char* argv[])
                         frame->mutateWBC(l, res1, Hcd);
                         frame->setRotamerWBC(l, res1, 0, allowedRots[rot]);
                         //frame->setChi(l, res1, 0, 0, chi1);
+                        //frame->setChi(l, res1, 0, 1, chi2);
                         frame->setChi(l, res1, 1, 0, angle1);
                         frame->activateForRepacking(l, res2);
                         frame->mutateWBC(l, res2, Hcd);
@@ -224,10 +225,10 @@ int main (int argc, char* argv[])
                     //    cout << endl;
                     //}
                     delete theFramePDB;
-               // }
-           // }
+                //}
+            //}
         }
-    }
+    //}
     /*/dihed0rals
     PDBInterface* theFramePDB = new PDBInterface(inFile);
     ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
