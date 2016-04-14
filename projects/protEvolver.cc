@@ -23,7 +23,6 @@ void randomizeSideChains(protein* _prot, UInt _chainIndex);
 vector <UInt> getChainSequence(protein* _prot, UInt _chainIndex);
 vector <UInt> getMutationPosition(protein* _prot, UInt* _activeChains, UInt _activeChainsSize, UInt* _activeResidues, UInt _activeResiduesSize);
 UInt getProbabilisticMutation(vector <UInt> _mutantPosition, UInt *_aminoacids, UInt aaSize);
-UInt getNumberofSequences();
 
 //--Program setup----------------------------------------------------------------------------------------
 int main (int argc, char* argv[])
@@ -116,7 +115,7 @@ int main (int argc, char* argv[])
         bestEnergy = Energy;
 		delete thePDB;
 		
-		//--Run single evolution loop till hitting plateau
+        //--Run through a single evolutionary path (ancestral line) till hitting plateau
 		do
 		{  
 			PDBInterface* thePDB = new PDBInterface(infile);
@@ -309,53 +308,21 @@ UInt getProbabilisticMutation(vector <UInt> _mutantPosition, UInt *_aminoacids, 
     }
     closedir(pdir);
 
-    //--find max frequency for position
-    UInt max = 0;
-    for (UInt i = 0; i < resFreqs.size(); i++)
-    {
-        if (resFreqs[i] > max)
-        {
-            max = resFreqs[i];
-        }
-    }
-
-    //--determine relative chance of mutation acceptance
+    //--determine population based chance of mutation acceptance or a random mutation, via linear regression of sequence entropy
     do
     {
         chance = rand() % 100;
-        entropy = rand() % 100;
+        entropy = rand() % 100; //sequence entropy determined by pooling linear decline to resolve minima after suitable diversity
         mutant = _aminoacids[rand() % aaSize];
-        UInt pooling = -0.09*count + 140;
-        cout << pooling << endl;
-        if (count > 499 && entropy > pooling)
+        UInt pooling = -0.09 * count + 140; //500 sequences equals 5% chance of pooling sequences, 95% chance of it being random, 1000=50% ...
+        if (entropy > pooling)
         {
-            acceptance = ((resFreqs[mutant]/max)*100)/2;
+            acceptance = (resFreqs[mutant]/count)*100; //chance of accepting given amino acid at position is proportional to population
         }
         else
         {
-            acceptance = 100;
+            acceptance = 100;  //random mutation
         }
     }while (chance > acceptance);
     return mutant;
-}
-
-UInt getNumberofSequences()
-{
-    string inFrame;
-    DIR *pdir;
-    struct dirent *pent;
-    pdir=opendir(".");
-    UInt count = 0;
-
-    //--get sequence evolution results for position
-    while ((pent=readdir(pdir)))
-    {
-        inFrame = pent->d_name;
-        if (inFrame.find(".evo.pdb") != std::string::npos)
-        {
-            count++;
-        }
-    }
-    closedir(pdir);
-    return count;
 }

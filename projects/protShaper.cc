@@ -136,8 +136,8 @@ int main (int argc, char* argv[])
     //double offset;
     UInt count = 0, rot;
 
-    //rotamer optimizations
-    /*for (UInt k = 0; k < 100; k++)
+    /*//rotamer optimizations
+    for (UInt k = 0; k < 100; k++)
     {
         //for (UInt m = 0; m < 36; m++)
         //{
@@ -177,16 +177,16 @@ int main (int argc, char* argv[])
     UInt res1, res2;
     double chi1, chi2;
     cout << "iteration Energy radius chi3 chi1" << endl;
-    //for (UInt i= 60; i < 90; i++)
+    //for (UInt i= 0; i < 360; i++)
     //{
-        for (UInt j= 60; j < 90; j++)
+        for (UInt j= 0; j < 360; j++)
         {
             //for (int m = 45; m < 55; m++)
             //{
                 //for (int k = -65; k < -55; k++)
                 //{
                     count++;
-                    phase = 274.6, angle1 = 77, angle2 = 70, rot = 6, radius = 11.2, res1 = 8, res2 = 15, chi1 = -56, chi2 = 49;
+                    phase = j, angle1 = 77, angle2 = 70, rot = 6, radius = 12, res1 = 8, res2 = 15, chi1 = -56, chi2 = 49;
                     PDBInterface* theFramePDB = new PDBInterface(inFile);
                     ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
                     molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
@@ -201,25 +201,22 @@ int main (int argc, char* argv[])
                         frame->setRotamerWBC(l, res1, 0, allowedRots[rot]);
                         //frame->setChi(l, res1, 0, 0, chi1);
                         //frame->setChi(l, res1, 0, 1, chi2);
-                        frame->setChi(l, res1, 1, 0, angle1);
+                        //frame->setChi(l, res1, 1, 0, angle1);
                         frame->activateForRepacking(l, res2);
                         frame->mutateWBC(l, res2, Hcd);
                         frame->setRotamerWBC(l, res2, 0, allowedRots[rot]);
-                        frame->setChi(l, res2, 0, 0, chi1);
-                        frame->setChi(l, res2, 0, 1, chi2);
-                        frame->setChi(l, res2, 1, 0, angle2);
+                        //frame->setChi(l, res2, 0, 0, chi1);
+                        //frame->setChi(l, res2, 0, 1, chi2);
+                        //frame->setChi(l, res2, 1, 0, angle2);
                     }
                     double Energy = frame->protEnergy();                  
-                    if (Energy < best)
-                    {
-                        cout << count << " " << Energy << " " << radius << " " << " " << angle1 << " " << angle2 << endl;
+                    cout << count << " " << Energy << " " << phase << " " << radius << endl; //radius << " " << " " << angle1 << " " << angle2 << endl;
                         best = Energy;
                         stringstream convert;
                         string countstr;
                         convert << count, countstr = convert.str();
                         outFile = countstr + ".hexamer.pdb";
                         pdbWriter(frame, outFile);
-                    }
                     //else
                     //{
                     //    cout << endl;
@@ -229,7 +226,7 @@ int main (int argc, char* argv[])
             //}
         }
     //}
-    /*/dihed0rals
+    /*////dihed0rals
     PDBInterface* theFramePDB = new PDBInterface(inFile);
     ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
     molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
@@ -242,8 +239,8 @@ int main (int argc, char* argv[])
         resNum = frame->getNumResidues(i);
         for (UInt j = 0; j < resNum; j++)
         {
-            frame->setDihedral(i, j, alphaL[0], 0, 0);
-            frame->setDihedral(i, j, alphaL[1], 1, 0);
+            frame->setDihedral(i, j, -65.5, 0, 0);
+            frame->setDihedral(i, j, -37.5, 1, 0);
         }
     }
     outFile = "ideal_ala.pdb";
@@ -257,10 +254,10 @@ void buildAlaCoilHexamer (protein* _prot, double _radius, double _phase)
 {
     _prot->rotate(Z_axis, _phase);
     _prot->translate(0.0, _radius, 0.0);
-    _prot->rotate(1, Z_axis, 120);
     _prot->rotate(2, Z_axis, 120);
-    _prot->rotate(3, Z_axis, 240);
+    _prot->rotate(3, Z_axis, 120);
     _prot->rotate(4, Z_axis, 240);
+    _prot->rotate(5, Z_axis, 240);
     return;
 }
 

@@ -58,8 +58,8 @@ int main (int argc, char* argv[])
         protein* bundle = static_cast<protein*>(pMol);
         UInt restype = bundle->getTypeFromResNum(0,i);
         bundle->updateDielectrics();
-        double dielectric = bundle->getDielectric(0,i);
-        if (restype != G && dielectric < 47)
+        //double dielectric = bundle->getDielectric(0,i);
+        if (restype != G)
         {
             bundle->activateForRepacking(0, i);
             bundle->mutate(0, i, resID[0]);
