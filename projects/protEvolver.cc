@@ -34,8 +34,8 @@ int main (int argc, char* argv[])
 		exit(1);
 	}
 	string infile = argv[1];
-    enum aminoAcid {A,R,N,D,Dh,C,Cx,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dAT,dW,dY,dV,Hce,Pch};
-    string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Q","E","Eh","Hd","He","Hn","Hp","I","L","K","M","F","P","O","S","T","W","Y", "V","G","dA","dR","dN","dD","dDh","dC","dCx","dQ","dE","dEh","dHd","dHe","dHn","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dAT","dW","dY","dV","Hce","Pch"};
+    enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dAT,dW,dY,dV,Hce,Pch,Csf};
+    string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hn","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dQ","dE","dEh","dHd","dHe","dHn","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dAT","dW","dY","dV","Hce","Pch","Csf"};
     PDBInterface* thePDB = new PDBInterface(infile);
     ensemble* theEnsemble = thePDB->getEnsemblePointer();
     molecule* pMol = theEnsemble->getMoleculePointer(0);
@@ -50,18 +50,18 @@ int main (int argc, char* argv[])
     srand (getpid());
 
 	//--inputs for mutation
-    UInt activeChains[] = {0};
-    UInt allowedLResidues[] = {A,R,Q,E,I,L,K,M,P,W,V};
-    UInt activeResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39};
-    UInt randomResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39};
-    UInt allowedDResidues[] = {dA,dR,dQ,dE,dI,dL,dK,dM,dP,dW,dV};
+    UInt activeChains[] = {1};
+    UInt allowedLResidues[] = {A,R,N,D,Q,E,I,L,K,M,F,S,T,W,Y,V};
+    UInt activeResidues[] = {1,2,3,4,5,6,7,8,9,10};
+    UInt randomResidues[] = {1,2,3,4,5,6,7,8,9,10};
+    UInt allowedDResidues[] = {G};
 
     double phi, bestEnergy, pastEnergy, Energy;
     UInt nobetter = 0, activeChainsSize = sizeof(activeChains)/sizeof(activeChains[0]), randomResiduesSize = sizeof(randomResidues)/sizeof(randomResidues[0]), activeResiduesSize = sizeof(activeResidues)/sizeof(activeResidues[0]);
     UInt lResidues = sizeof(allowedLResidues)/sizeof(allowedLResidues[0]), dResidues = sizeof(allowedDResidues)/sizeof(allowedDResidues[0]);
     UInt name, mutant = 0, numResidues, plateau = (activeResiduesSize*activeChainsSize);
     vector < UInt > mutantPosition, chainSequence, sequencePosition, randomPosition;
-	vector < vector < UInt > > proteinSequence, finalSequence;
+    vector < vector < UInt > > proteinSequence, finalSequence;
 	stringstream convert;
 	string startstr, outFile;
 	name = rand() % 1000000;

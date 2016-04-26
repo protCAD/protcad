@@ -126,9 +126,9 @@ public:
 	void acceptModification();
 	void rejectModification();
 	
-	//--Optimization functions
-    void protOptSolvent(UInt _plateau, bool _backbone); // --Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics-- dpike
-    void protOpt(bool _backbone);  // --Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics and non-redundant energy calc-- dpike
+    //--Optimization functions
+    void protOpt(bool _backbone); // --Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics-- dpike
+    void protOpt(bool _backbone, UIntVec _activechains);
     void chainOptSolvent(UInt _plateau, UInt _chainIndex);
 	void optimizeSmallRotations(UInt _steps, double _stepSize);
 	void optimizeSmallRotations(vector <UIntVec> _positions, UInt _steps, double _stepSize);
@@ -165,6 +165,7 @@ public:
     double deltaH();
     double deltaH(UInt chainIndex, UInt resIndex);
     double getMedianResEnergy();
+    double getMedianResEnergy(UIntVec _activeChains);
     double getMedianDeltaH();
     double getSolvationEnergy(UInt _chainIndex, UInt _residueIndex) {return itsChains[_chainIndex]->getSolvationEnergy(_residueIndex); }
 	double getAtomCharge(UInt _chainNum, UInt _resNum, UInt _atomNum) { return itsChains[_chainNum]->getAtomCharge(_resNum, _atomNum); }

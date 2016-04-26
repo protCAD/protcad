@@ -1432,6 +1432,33 @@ double protein::getMedianResEnergy()
     return median;
 }
 
+double protein::getMedianResEnergy(UIntVec _activeChains)
+{
+    double median, resE;
+    vector <double> resEnergies;
+    for (UInt i = 0; i < _activeChains.size(); i++)
+    {
+        for (UInt j = 0; j < itsChains[_activeChains[i]]->itsResidues.size(); j++)
+        {
+            resE = resEnergy(i,j);
+            resEnergies.push_back(resE);
+        }
+    }
+    size_t size = resEnergies.size();
+
+    sort(resEnergies.begin(), resEnergies.end());
+
+    if (size  % 2 == 0)
+    {
+      median = (resEnergies[size / 2 - 1] + resEnergies[size / 2]) / 2;
+    }
+    else
+    {
+      median = resEnergies[size / 2];
+    }
+    return median;
+}
+
 double protein::getMedianDeltaH()
 {
     double median, resE;
@@ -3126,107 +3153,6 @@ void protein::chainOptSolvent(UInt _plateau, UInt _chainIndex)
 	return;
 }
 
-void protein::protOptSolvent(UInt _plateau, bool _backbone)
-{	// Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics and corresponding implicit solvation score
-	//    _plateau: the number of consecutive optimization cycles without an energy decrease.
-	//	    	     (250 is recommended for a full minimization without excessive calculation)
-	// -pike 2013
-
-	//--Initialize variables for loop and calculate starting energy-------------------------------------
-	double deltaTheta = 0, totalpreposE = 0, avepreposE = -1E10;
-    double Energy, preposE, currentposE, pastEnergy = this->intraSoluteEnergy(true);
-    UInt randchain, randres, randrestype, allowedRotsize, randrot, number = 0, nobetter = 0;
-    UInt resNum, randtype, chainNum = this->getNumChains(), rotbetter = 0;
-	vector < vector <double> > currentRot;
-	int thisone;
-    UIntVec allowedRots;
-	srand (time(NULL));
-
-	//--Run optimizaiton loop to energetic minima, determined by _plateau-------------------------------
-	do
-	{
-		//--Generate random residue
-		randchain = rand() % chainNum;
-        resNum = this->getNumResidues(randchain);
-		randres = rand() % resNum;
-        randrestype = this->getTypeFromResNum(randchain, randres);
-        preposE = this->getPositionSoluteEnergy(randchain, randres, true);
-		if (randrestype == 0 || randrestype == 19 || randrestype == 20 || randrestype == 26 || randrestype == 27 || randrestype == 46 || randrestype == 47)
-		{
-			nobetter++;
-		}
-		else
-		{
-			nobetter++, nobetter++;
-		}
-
-		//--backbone optimization----------------------------------------------------------------------
-        if (rotbetter > _plateau && preposE > avepreposE && _backbone)
-		{
-			//--choose phi or psi and angle, for a local transformation
-			randtype = rand() % 2;
-			do
-			{ deltaTheta = ((rand() % 3) -1);
-			} while (deltaTheta == 0);
-
-			//--transform angles while energy improves, until energy degrades, then revert one step
-			do
-			{
-                this->setDihedralLocal(randchain, randres, deltaTheta, randtype);
-                currentposE = this->getPositionSoluteEnergy(randchain, randres, true), thisone = 0;
-				//--Energy test
-				if (currentposE < (preposE - .05))
-				{
-                    Energy = this->intraSoluteEnergy(true);
-					if (Energy < pastEnergy)
-					{
-						//cout << Energy << endl;
-						nobetter = 0, thisone = 1, pastEnergy = Energy, preposE = currentposE;
-					}
-				}
-			} while (thisone == 1);
-            this->setDihedralLocal(randchain, randres, (deltaTheta*-1), randtype);
-		}
-
-		//--Rotamer optimization-----------------------------------------------------------------------
-		if (preposE > avepreposE)
-		{
-			//--Get current rotamer and allowed
-			currentRot = this->getSidechainDihedrals(randchain, randres);
-			allowedRots = this->getAllowedRotamers(randchain, randres, randrestype, 0);
-            allowedRotsize = (allowedRots.size() * 0.3333333), rotbetter++, rotbetter++; //changed div to multi "(allowedRots.size()/3"
-
-			//--Try 1/3 of allowed rotamers keep first improvement or revert to previous angles
-			for (UInt j = 0; j < allowedRotsize; j ++)
-			{
-                randrot = rand() % allowedRots.size();
-                this->setRotamerWBC(randchain, randres, 0, allowedRots[randrot]);
-                currentposE = this->getPositionSoluteEnergy(randchain, randres, true);
-
-				if (currentposE < (preposE - .05))
-				{
-                    Energy = this->intraSoluteEnergy(true);
-					if (Energy < pastEnergy)
-					{
-						//cout << Energy << endl;
-						rotbetter--, rotbetter--, nobetter = 0, pastEnergy = Energy, preposE = currentposE;
-						break;
-					}
-				}
-                this->setSidechainDihedralAngles(randchain, randres, currentRot);
-			}
-		}
-
-		//--check status of optimization---------------------------------------------------------------
-		if (number == _plateau)
-		{
-			number = 0, totalpreposE = 0;
-		}
-		number++, number++, totalpreposE = (totalpreposE + preposE), avepreposE = (totalpreposE/number);
-	} while (nobetter < _plateau * 1.2);
-	return;
-}
-
 void protein::protOpt(bool _backbone)
 {   // Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics and corresponding implicit solvation energy
     //    _plateau: the number of consecutive optimization cycles without an energy decrease.
@@ -3253,6 +3179,90 @@ void protein::protOpt(bool _backbone)
 
         //--Backbone optimization-----------------------------------------------------------------------
         resE = resEnergy(randchain, randres), medResE = getMedianResEnergy();
+        if (nobetter > _plateau && resE > medResE && _backbone)
+        {   //--randomly choose phi or psi, and change in angle of -1 or +1 degree
+            randtype = rand() % 2;
+            do
+            { deltaTheta = ((rand() % 3) -1);
+            } while (deltaTheta == 0);
+
+            //--transform angles while energy improves, until energy degrades, then revert
+            do
+            {   setDihedralLocal(randchain, randres, deltaTheta, randtype);
+                itsChains[randchain]->itsResidues[randres]->setMoved(1);
+                thisone = 0;
+                //--Energy test
+                Energy = protEnergy();
+                if (Energy < (pastEnergy-0.05))
+                {   nobetter = 0, thisone = 1, pastEnergy = Energy;
+                    //cout << Energy << " ";
+                }
+            } while (thisone == 1);
+            setDihedralLocal(randchain, randres, (deltaTheta*-1), randtype);
+            itsChains[randchain]->itsResidues[randres]->setMoved(1);
+        }
+
+        //--Rotamer optimization-----------------------------------------------------------------------
+        resE = resEnergy(randchain, randres);
+        if (resE > medResE)
+        {   currentRot = getSidechainDihedrals(randchain, randres);
+            allowedRots = getAllowedRotamers(randchain, randres, randrestype);
+            breakout = 0;
+
+            //--Try a max of 1/3 of allowed rotamers per branchpoint and keep first improvement, else revert
+            for (UInt b = 0; b < residue::getNumBpt(randrestype); b++)
+            {   allowedRotsize = allowedRots[b].size()*0.33;
+                for (UInt j = 0; j < allowedRotsize; j ++)
+                {   randrot = rand() % allowedRots[b].size();
+                    setRotamerWBC(randchain, randres, b, allowedRots[b][randrot]);
+                    itsChains[randchain]->itsResidues[randres]->setMoved(1);
+                    //--Energy test
+                    Energy = protEnergy();
+                    if (Energy < (pastEnergy-0.05))
+                    {   breakout = 1, nobetter = 0, pastEnergy = Energy;
+                        //cout << Energy << " ";
+                        break;
+                    }
+                }
+                if (breakout == 1)
+                {   break;
+                }
+            }
+            if (breakout == 0)
+            {   setSidechainDihedralAngles(randchain, randres, currentRot);
+                itsChains[randchain]->itsResidues[randres]->setMoved(1);
+            }
+        }
+    } while (nobetter < _plateau * 1.2);
+    return;
+}
+
+void protein::protOpt(bool _backbone, UIntVec _activechains)
+{   // Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics and corresponding implicit solvation energy
+    //    _plateau: the number of consecutive optimization cycles without an energy decrease.
+    //	    	     (100 is recommended for a full optimization without excessive calculation)
+    // -pike 2013
+
+    //--Initialize variables for loop, calculate starting energy and build energy vectors---------------
+    double deltaTheta = 0, Energy, resE, medResE, pastEnergy = protEnergy();
+    UInt randchain, randres, randrestype, allowedRotsize, randrot, nobetter = 0, _plateau = 100;
+    UInt resNum, randtype, thisone, breakout;
+    UInt activeChainSize = _activechains.size();
+    vector < vector <double> > currentRot;
+    vector <UIntVec> allowedRots;
+
+    //--Run optimizaiton loop to optimization minima, determined by _plateau----------------------------
+    do
+    {   //--choose random residue
+        randchain = _activechains[rand() % activeChainSize];
+        resNum = getNumResidues(randchain);
+        randres = rand() % resNum;
+        randrestype = getTypeFromResNum(randchain, randres);
+        nobetter++;
+        //cout << nobetter << " ";
+
+        //--Backbone optimization-----------------------------------------------------------------------
+        resE = resEnergy(randchain, randres), medResE = getMedianResEnergy(_activechains);
         if (nobetter > _plateau && resE > medResE && _backbone)
         {   //--randomly choose phi or psi, and change in angle of -1 or +1 degree
             randtype = rand() % 2;

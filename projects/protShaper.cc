@@ -126,30 +126,27 @@ int main (int argc, char* argv[])
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    //--loop
     double radius;
-    //double coilstart = 90;
-    //double coil;
     double best = 1E100;
     double phase;
-    double angle1, angle2;
-    //double offset;
-    UInt count = 0, rot;
+    UInt count = 0;
 
-    /*//rotamer optimizations
+   /*double coil;
+    double offset;
+    ///rotamer optimizations
     for (UInt k = 0; k < 100; k++)
-    {
+    //{
         //for (UInt m = 0; m < 36; m++)
         //{
-            for (UInt n = 0; n < 1000; n++)
-            {
+            //for (UInt n = 0; n < 1000; n++)
+            //{
                 count++;
                 PDBInterface* theFramePDB = new PDBInterface(inFile);
                 ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
                 molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
                 protein* frame = static_cast<protein*>(frameMol);
                 frame->silenceMessages();
-                radius = 3.5+(k*.01), coil = 360, offset = (n*0.01), phase = 0;
+                radius = 4, coil = 360, offset = 5.37, phase = 0;
                 buildAntiParallelHelixDimer (frame, radius, phase, coil, offset);
                 double Energy = frame->protEnergy();
                 cout << count << " " << Energy << " " << radius << " " << coil << " " << offset;
@@ -168,25 +165,26 @@ int main (int argc, char* argv[])
                     cout << endl;
                 }
                 delete theFramePDB;
-            }
+            //}
         //}
-    }*/
+    //}*/
 
     //bundle optimizations
     UIntVec allowedRots;
-    UInt res1, res2;
-    double chi1, chi2;
-    cout << "iteration Energy radius chi3 chi1" << endl;
-    //for (UInt i= 0; i < 360; i++)
-    //{
-        for (UInt j= 0; j < 360; j++)
-        {
-            //for (int m = 45; m < 55; m++)
-            //{
-                //for (int k = -65; k < -55; k++)
+    UInt res1, res2, rot;
+    double chi2;//, chi2;
+    double angle1, angle2;
+    cout << "iteration Energy radius angle" << endl;
+    for (UInt i= 0; i < 10; i++)
+    {
+        //for (UInt j= 0; j < 20; j++)
+        //{
+            for (int m = 55; m < 95; m++)
+            {
+               // for (int k = 50; k < 70; k++)
                 //{
                     count++;
-                    phase = j, angle1 = 77, angle2 = 70, rot = 6, radius = 12, res1 = 8, res2 = 15, chi1 = -56, chi2 = 49;
+                    phase = 39.69, angle1 = m, angle2 = m, rot = 7, radius = 11.5 + (i*0.1), res1 = 8, res2 = 15;//, chi2 = k;//, chi1 = k;
                     PDBInterface* theFramePDB = new PDBInterface(inFile);
                     ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
                     molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
@@ -201,16 +199,16 @@ int main (int argc, char* argv[])
                         frame->setRotamerWBC(l, res1, 0, allowedRots[rot]);
                         //frame->setChi(l, res1, 0, 0, chi1);
                         //frame->setChi(l, res1, 0, 1, chi2);
-                        //frame->setChi(l, res1, 1, 0, angle1);
+                        frame->setChi(l, res1, 1, 0, angle1);
                         frame->activateForRepacking(l, res2);
                         frame->mutateWBC(l, res2, Hcd);
                         frame->setRotamerWBC(l, res2, 0, allowedRots[rot]);
                         //frame->setChi(l, res2, 0, 0, chi1);
                         //frame->setChi(l, res2, 0, 1, chi2);
-                        //frame->setChi(l, res2, 1, 0, angle2);
+                        frame->setChi(l, res2, 1, 0, angle2);
                     }
                     double Energy = frame->protEnergy();                  
-                    cout << count << " " << Energy << " " << phase << " " << radius << endl; //radius << " " << " " << angle1 << " " << angle2 << endl;
+                    cout << count << " " << Energy << " " << radius << " " << angle1 << endl;
                         best = Energy;
                         stringstream convert;
                         string countstr;
@@ -223,10 +221,10 @@ int main (int argc, char* argv[])
                     //}
                     delete theFramePDB;
                 //}
-            //}
-        }
-    //}
-    /*////dihed0rals
+            }
+        //}
+    }
+    /*/////dihed0rals
     PDBInterface* theFramePDB = new PDBInterface(inFile);
     ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
     molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
@@ -247,7 +245,6 @@ int main (int argc, char* argv[])
     pdbWriter(frame, outFile);*/
 
 //--Print end and write a pdb file--------------------------------------------------------------
-    cout << endl << "Structure reshaped!! best= " << best << endl << endl;
 	return 0;
 }
 void buildAlaCoilHexamer (protein* _prot, double _radius, double _phase)
