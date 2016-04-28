@@ -190,8 +190,8 @@ int main (int argc, char* argv[])
 		molecule* modelMol = theModelEnsemble->getMoleculePointer(0);
 		protein* model = static_cast<protein*>(modelMol);
         vector <double> bindingEnergy = model->chainBindingEnergy();
-        UInt numchains = model->getNumChains();
-        if ((numchains == 1 && bindingEnergy[0] < 0) || (numchains > 1 && bindingEnergy[0] < 0 && bindingEnergy[1] < 0))
+        //UInt numchains = model->getNumChains();
+        if (bindingEnergy[0] < 0)
         {
             name = rand() % 1000000;
             stringstream convert;
