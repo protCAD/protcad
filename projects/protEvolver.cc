@@ -1,10 +1,10 @@
 //*******************************************************************************************************
 //*******************************************************************************************************
 //***********************************                          ******************************************
-//***********************************     protEvolver 2.0      ******************************************
+//***********************************     protEvolver 3.0      ******************************************
 //***********************************                          ******************************************
 //*******************************************************************************************************
-//***************   -Folding Selective Protein Evolution in Implicit Solvent-   ***********************
+//*******   -Folding Selective Protein Genetic Algorithm Based Evolution in Implicit Solvent -   ********
 //*******************************************************************************************************
 
 /////// Just specify infile structure, active chains and residues indexes, and it will evolve a sequence favorable for folding
@@ -61,12 +61,12 @@ int main (int argc, char* argv[])
     double phi, bestEnergy, pastEnergy, Energy;
     UInt nobetter = 0, activeChainsSize = sizeof(activeChains)/sizeof(activeChains[0]), randomResiduesSize = sizeof(randomResidues)/sizeof(randomResidues[0]), activeResiduesSize = sizeof(activeResidues)/sizeof(activeResidues[0]);
     UInt lResidues = sizeof(allowedLResidues)/sizeof(allowedLResidues[0]), dResidues = sizeof(allowedDResidues)/sizeof(allowedDResidues[0]);
-    UInt name, timeid, sec, mutant = 0, numResidues, plateau = (activeResiduesSize*activeChainsSize);
+    UInt name, timeid, sec, mutant = 0, numResidues, plateau = 1;//(activeResiduesSize;
     vector < UInt > mutantPosition, chainSequence, sequencePosition, randomPosition;
     vector < vector < UInt > > proteinSequence, finalSequence, sequencePool;
 	stringstream convert;
 	string startstr, outFile;
-	name = rand() % 1000000;
+    name = rand() % 100000000;
 	convert << name, startstr = convert.str();
 	string tempModel = startstr + "_temp.pdb";
 	delete thePDB;
@@ -210,14 +210,14 @@ int main (int argc, char* argv[])
                 chainSequence = getChainSequence(model, activeChains[i]);
                 finalSequence.push_back(chainSequence);
             }
-            cout << name << " " << bindingEnergy[0] << " " << bindingEnergy[1] << " ";
+            cout << timeid << " " << bindingEnergy[0] << " " << bindingEnergy[1] << " ";
             fstream fs;
+            fs.open ("finalsequences.out", fstream::in | fstream::out | fstream::app);
             for (UInt i = 0; i < activeChainsSize; i++)
             {
                 for (UInt j = 0; j < finalSequence[i].size(); j++)
                 {
                     cout << aminoAcidString[finalSequence[i][j]] << " ";
-                    fs.open ("finalsequences.out", fstream::in | fstream::out | fstream::app);
                     fs << finalSequence[i][j] << ",";
                 }
             }

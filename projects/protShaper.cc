@@ -146,10 +146,10 @@ int main (int argc, char* argv[])
                 molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
                 protein* frame = static_cast<protein*>(frameMol);
                 frame->silenceMessages();
-                radius = 3+(k*0.1), coil = m+1, offset = 7.33, phase = 0;
+                radius = 3+(k*0.1), coil = 360, offset = 7.33, phase = m;
                 buildAntiParallelHelixDimer (frame, radius, phase, coil, offset);
                 double Energy = frame->protEnergy();
-                cout << count << " " << Energy << " " << radius << " " << coil << " " << offset;
+                cout << count << " " << Energy << " " << radius << " " << phase << " " << offset;
                 if (Energy < best)
                 {
                     cout << " hit!!!!!!!!" << endl;
