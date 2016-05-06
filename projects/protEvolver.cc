@@ -15,6 +15,7 @@
 #include <time.h>
 #include <dirent.h>
 #include <sstream>
+#include <fstream>
 #include <unistd.h>
 #include "ensemble.h"
 #include "PDBInterface.h"
@@ -22,7 +23,8 @@
 void randomizeSideChains(protein* _prot, UInt _chainIndex);
 vector <UInt> getChainSequence(protein* _prot, UInt _chainIndex);
 vector <UInt> getMutationPosition(protein* _prot, UInt* _activeChains, UInt _activeChainsSize, UInt* _activeResidues, UInt _activeResiduesSize);
-UInt getProbabilisticMutation(vector <UInt> _mutantPosition, UInt *_aminoacids, UInt aaSize);
+UInt getProbabilisticMutation(vector < vector < UInt > > _sequencePool, vector <UInt> _mutantPosition, UInt *_aminoacids, UInt aaSize);
+vector < vector < UInt > > buildSequencePool();
 
 //--Program setup----------------------------------------------------------------------------------------
 int main (int argc, char* argv[])
@@ -59,9 +61,9 @@ int main (int argc, char* argv[])
     double phi, bestEnergy, pastEnergy, Energy;
     UInt nobetter = 0, activeChainsSize = sizeof(activeChains)/sizeof(activeChains[0]), randomResiduesSize = sizeof(randomResidues)/sizeof(randomResidues[0]), activeResiduesSize = sizeof(activeResidues)/sizeof(activeResidues[0]);
     UInt lResidues = sizeof(allowedLResidues)/sizeof(allowedLResidues[0]), dResidues = sizeof(allowedDResidues)/sizeof(allowedDResidues[0]);
-    UInt name, mutant = 0, numResidues, plateau = (activeResiduesSize*activeChainsSize);
+    UInt name, timeid, sec, mutant = 0, numResidues, plateau = (activeResiduesSize*activeChainsSize);
     vector < UInt > mutantPosition, chainSequence, sequencePosition, randomPosition;
-    vector < vector < UInt > > proteinSequence, finalSequence;
+    vector < vector < UInt > > proteinSequence, finalSequence, sequencePool;
 	stringstream convert;
 	string startstr, outFile;
 	name = rand() % 1000000;
@@ -76,6 +78,7 @@ int main (int argc, char* argv[])
 		ensemble* theEnsemble = thePDB->getEnsemblePointer();
 		molecule* pMol = theEnsemble->getMoleculePointer(0);
 		protein* bundle = static_cast<protein*>(pMol);
+        sequencePool = buildSequencePool();
 
         //--load in initial pdb and mutate in random starting sequence on active chains and random residues
         proteinSequence.clear(), chainSequence.clear(), nobetter = 0;
@@ -89,12 +92,12 @@ int main (int argc, char* argv[])
                 phi = bundle->getPhi(activeChains[i], randomResidues[j]);
 				if (phi > 0 && phi < 180)
 				{
-                    mutant = getProbabilisticMutation(randomPosition, allowedDResidues, dResidues);
+                    mutant = getProbabilisticMutation(sequencePool, randomPosition, allowedDResidues, dResidues);
                     bundle->mutateWBC(activeChains[i], randomResidues[j], mutant);
 				}
 				if (phi < 0 && phi > -180)
 				{
-                    mutant = getProbabilisticMutation(randomPosition, allowedLResidues, lResidues);
+                    mutant = getProbabilisticMutation(sequencePool, randomPosition, allowedLResidues, lResidues);
                     bundle->mutateWBC(activeChains[i], randomResidues[j], mutant);
                 }
                 randomPosition.clear();
@@ -140,12 +143,12 @@ int main (int argc, char* argv[])
 						phi = bundle->getPhi(mutantPosition[0], mutantPosition[1]);
 						if (phi > 0 && phi < 180)
 						{
-                            mutant = getProbabilisticMutation(mutantPosition, allowedDResidues, dResidues);
+                            mutant = getProbabilisticMutation(sequencePool, mutantPosition, allowedDResidues, dResidues);
 							bundle->mutateWBC(mutantPosition[0],mutantPosition[1], mutant);
 						}
 						if (phi < 0 && phi > -180)
 						{
-                            mutant = getProbabilisticMutation(mutantPosition, allowedLResidues, lResidues);
+                            mutant = getProbabilisticMutation(sequencePool, mutantPosition, allowedLResidues, lResidues);
 							bundle->mutateWBC(mutantPosition[0],mutantPosition[1], mutant);
 						}
 					}
@@ -193,10 +196,12 @@ int main (int argc, char* argv[])
         //UInt numchains = model->getNumChains();
         if (bindingEnergy[0] < 0)
         {
-            name = rand() % 1000000;
+            name = rand() % 100;
+            sec = time(NULL);
+            timeid = name + sec;
             stringstream convert;
             string countstr;
-            convert << name, countstr = convert.str();
+            convert << timeid, countstr = convert.str();
             outFile = countstr + ".evo.pdb";
             pdbWriter(model, outFile);
             finalSequence.clear(), chainSequence.clear();
@@ -206,16 +211,22 @@ int main (int argc, char* argv[])
                 finalSequence.push_back(chainSequence);
             }
             cout << name << " " << bindingEnergy[0] << " " << bindingEnergy[1] << " ";
+            fstream fs;
             for (UInt i = 0; i < activeChainsSize; i++)
             {
                 for (UInt j = 0; j < finalSequence[i].size(); j++)
                 {
                     cout << aminoAcidString[finalSequence[i][j]] << " ";
+                    fs.open ("finalsequences.out", fstream::in | fstream::out | fstream::app);
+                    fs << finalSequence[i][j] << ",";
                 }
             }
             cout << endl;
+            fs << endl;
+            fs.close();
         }
 		delete theModelPDB;
+        sequencePool.clear();
 	}
 	return 0;
 }
@@ -277,36 +288,19 @@ vector <UInt> getMutationPosition(protein* _prot, UInt *_activeChains, UInt _act
     return _mutantPosition;
 }
 
-UInt getProbabilisticMutation(vector <UInt> _mutantPosition, UInt *_aminoacids, UInt aaSize)
+UInt getProbabilisticMutation(vector < vector < UInt > > _sequencePool, vector <UInt> _mutantPosition, UInt *_aminoacids, UInt aaSize)
 {
     UInt mutant, chance, entropy;
     double acceptance;
-    string inFrame;
     vector <UInt> resFreqs(55,1);
-    DIR *pdir;
-    struct dirent *pent;
-    pdir=opendir(".");
-    UInt count = 0;
+    UInt count = _sequencePool.size();
 
     //--get sequence evolution results for position
-    while ((pent=readdir(pdir)))
+    for (UInt i = 0; i < _sequencePool.size(); i++)
     {
-        inFrame = pent->d_name;
-        if (inFrame.find(".evo.pdb") != std::string::npos)
-        {
-            count++;
-            PDBInterface* theModelPDB = new PDBInterface(inFrame);
-            ensemble* theModelEnsemble = theModelPDB->getEnsemblePointer();
-            molecule* modelMol = theModelEnsemble->getMoleculePointer(0);
-            protein* model = static_cast<protein*>(modelMol);
-            model->silenceMessages();
-
-            UInt restype = model->getTypeFromResNum(_mutantPosition[0], _mutantPosition[1]);
-            resFreqs[restype] = resFreqs[restype] + 1;
-            delete theModelPDB;
-        }
+        UInt restype = _sequencePool[i][_mutantPosition[1]];
+        resFreqs[restype] = resFreqs[restype] + 1;
     }
-    closedir(pdir);
 
     //--determine population based chance of mutation acceptance or a random mutation, via linear regression of sequence entropy
     do
@@ -325,4 +319,27 @@ UInt getProbabilisticMutation(vector <UInt> _mutantPosition, UInt *_aminoacids, 
         }
     }while (chance > acceptance);
     return mutant;
+}
+
+vector < vector < UInt > > buildSequencePool()
+{
+    ifstream file("finalsequences.out");
+    string item, line;
+    vector < UInt > sequence;
+    vector < vector < UInt > > sequencePool;
+    while(getline(file,line))
+    {
+        stringstream stream(line);
+        while(getline(stream,item,','))
+        {
+            stringstream aaString(item);
+            int aaIndex;
+            aaString >> aaIndex;
+            sequence.push_back(aaIndex);
+        }
+        sequencePool.push_back(sequence);
+        sequence.clear();
+    }
+    file.close();
+    return sequencePool;
 }

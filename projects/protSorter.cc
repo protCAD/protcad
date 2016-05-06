@@ -14,11 +14,12 @@
 #include <time.h>
 #include <dirent.h>
 #include <sstream>
+#include <fstream>
 #include <unistd.h>
 #include "ensemble.h"
 #include "PDBInterface.h"
 
-
+vector < vector < UInt > > buildSequencePool();
 //--Program setup----------------------------------------------------------------------------------------
 int main (int argc, char* argv[])
 {
@@ -29,7 +30,18 @@ int main (int argc, char* argv[])
                 cout << "protSorter" << endl;
 		exit(1);
 	}
-    double Energy;
+    vector < vector < UInt > > sequencePool;
+    sequencePool = buildSequencePool();
+
+    for (UInt i = 0; i < sequencePool.size(); i++)
+    {
+        for (UInt j = 0; j < sequencePool[i].size(); j++)
+        {
+            cout << sequencePool[i][j] << " ";
+        }
+        cout << endl;
+    }
+    /*
     string inFrame;
     DIR *pdir;
     struct dirent *pent;
@@ -40,7 +52,7 @@ int main (int argc, char* argv[])
     while ((pent=readdir(pdir)))
     {
         inFrame = pent->d_name;
-        if (inFrame.find(".pdb") != std::string::npos)
+        if (inFrame.find("evo.pdb") != std::string::npos)
         {
             count++;
             PDBInterface* theModelPDB = new PDBInterface(inFrame);
@@ -48,22 +60,25 @@ int main (int argc, char* argv[])
             molecule* modelMol = theModelEnsemble->getMoleculePointer(0);
             protein* model = static_cast<protein*>(modelMol);
             model->silenceMessages();
-
-            Energy = model->protEnergy();
-            if (Energy < 1300)
+            fstream fs;
+            fs.open ("finalsequences.out", fstream::in | fstream::out | fstream::app);
+            for (UInt i = 0; i < model->getNumResidues(1); i++)
             {
-                stringstream convert;
-                string outFile;
-                UInt name = count;
-                convert << name, outFile = convert.str();
-                string tempModel = outFile + "_good.pdb";
-                pdbWriter(model, tempModel);
-                cout << inFrame << " " << Energy << endl;
+                if (i == model->getNumResidues(1)-1)
+                {
+                    fs << model->getTypeFromResNum(1,i) << ",";
+                }
+                else
+                {
+                    fs << model->getTypeFromResNum(1,i) << ",";
+                }
             }
+            fs << endl;
+            fs.close();
             delete theModelPDB;
         }
     }
-    closedir(pdir);
+    closedir(pdir);*/
     return 0;
 }
 
@@ -71,3 +86,25 @@ int main (int argc, char* argv[])
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////// functions //////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
+vector < vector < UInt > > buildSequencePool()
+{
+    ifstream file("finalsequences.out");
+    string item, line;
+    vector < UInt > sequence;
+    vector < vector < UInt > > sequencePool;
+    while(getline(file,line))
+    {
+        stringstream stream(line);
+        while(getline(stream,item,','))
+        {
+            stringstream aaString(item);
+            int aaIndex;
+            aaString >> aaIndex;
+            sequence.push_back(aaIndex);
+        }
+        sequencePool.push_back(sequence);
+        sequence.clear();
+    }
+    file.close();
+    return sequencePool;
+}

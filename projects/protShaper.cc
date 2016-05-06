@@ -131,13 +131,13 @@ int main (int argc, char* argv[])
     double phase;
     UInt count = 0;
 
-   /*double coil;
+    double coil;
     double offset;
     ///rotamer optimizations
-    for (UInt k = 0; k < 100; k++)
-    //{
-        //for (UInt m = 0; m < 36; m++)
-        //{
+    for (UInt k = 0; k < 20; k++)
+    {
+        for (UInt m = 0; m < 360; m++)
+        {
             //for (UInt n = 0; n < 1000; n++)
             //{
                 count++;
@@ -146,7 +146,7 @@ int main (int argc, char* argv[])
                 molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
                 protein* frame = static_cast<protein*>(frameMol);
                 frame->silenceMessages();
-                radius = 4, coil = 360, offset = 5.37, phase = 0;
+                radius = 3+(k*0.1), coil = m+1, offset = 7.33, phase = 0;
                 buildAntiParallelHelixDimer (frame, radius, phase, coil, offset);
                 double Energy = frame->protEnergy();
                 cout << count << " " << Energy << " " << radius << " " << coil << " " << offset;
@@ -166,10 +166,10 @@ int main (int argc, char* argv[])
                 }
                 delete theFramePDB;
             //}
-        //}
-    //}*/
+        }
+    }
 
-    //bundle optimizations
+    /*//bundle optimizations
     UIntVec allowedRots;
     UInt res1, res2, rot;
     double chi2;//, chi2;
@@ -224,7 +224,7 @@ int main (int argc, char* argv[])
             }
         //}
     }
-    /*/////dihed0rals
+    //////dihed0rals
     PDBInterface* theFramePDB = new PDBInterface(inFile);
     ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
     molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
