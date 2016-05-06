@@ -131,7 +131,7 @@ int main (int argc, char* argv[])
     double phase;
     UInt count = 0;
 
-    double coil;
+    /*double coil;
     double offset;
     ///rotamer optimizations
     for (UInt k = 0; k < 20; k++)
@@ -167,9 +167,9 @@ int main (int argc, char* argv[])
                 delete theFramePDB;
             //}
         }
-    }
+    }*/
 
-    /*//bundle optimizations
+    //bundle optimizations
     UIntVec allowedRots;
     UInt res1, res2, rot;
     double chi2;//, chi2;
@@ -224,7 +224,7 @@ int main (int argc, char* argv[])
             }
         //}
     }
-    //////dihed0rals
+    /*/////dihed0rals
     PDBInterface* theFramePDB = new PDBInterface(inFile);
     ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
     molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
