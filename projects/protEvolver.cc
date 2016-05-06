@@ -210,19 +210,24 @@ int main (int argc, char* argv[])
                 chainSequence = getChainSequence(model, activeChains[i]);
                 finalSequence.push_back(chainSequence);
             }
-            cout << timeid << " " << bindingEnergy[0] << " " << bindingEnergy[1] << " ";
+            fstream finalline;
+            finalline.open ("final.out", fstream::in | fstream::out | fstream::app);
+            finalline << timeid << " " << bindingEnergy[0] << " " << bindingEnergy[1] << " ";
+
+            
             fstream fs;
             fs.open ("finalsequences.out", fstream::in | fstream::out | fstream::app);
             for (UInt i = 0; i < activeChainsSize; i++)
             {
                 for (UInt j = 0; j < finalSequence[i].size(); j++)
                 {
-                    cout << aminoAcidString[finalSequence[i][j]] << " ";
+                    finalline << aminoAcidString[finalSequence[i][j]] << " ";
                     fs << finalSequence[i][j] << ",";
                 }
             }
-            cout << endl;
             fs << endl;
+            finalline << endl;
+            finalline.close();
             fs.close();
         }
 		delete theModelPDB;
