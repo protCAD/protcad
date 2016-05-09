@@ -23,7 +23,7 @@
 void randomizeSideChains(protein* _prot, UInt _chainIndex);
 vector <UInt> getChainSequence(protein* _prot, UInt _chainIndex);
 vector <UInt> getMutationPosition(protein* _prot, UInt* _activeChains, UInt _activeChainsSize, UInt* _activeResidues, UInt _activeResiduesSize);
-UInt getProbabilisticMutation(vector < vector < UInt > > _sequencePool, vector <UInt> _mutantPosition, UInt *_aminoacids, UInt aaSize);
+UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector <UInt> _mutantPosition, UInt *_aminoacids, UInt aaSize);
 vector < vector < UInt > > buildSequencePool();
 
 //--Program setup----------------------------------------------------------------------------------------
@@ -215,8 +215,8 @@ int main (int argc, char* argv[])
             finalline.open ("final.out", fstream::in | fstream::out | fstream::app);
             finalline << timeid << " " << bindingEnergy[0] << " " << bindingEnergy[1] << " ";
 
-        fstream finallocal;
-        finallocal.open (localout, fstream::in | fstream::out | fstream::app);
+            fstream finallocal;
+            finallocal.open (localout, fstream::in | fstream::out | fstream::app);
             finallocal << timeid << " " << bindingEnergy[0] << " " << bindingEnergy[1] << " ";
 
             fstream fs;
@@ -299,11 +299,11 @@ vector <UInt> getMutationPosition(protein* _prot, UInt *_activeChains, UInt _act
     return _mutantPosition;
 }
 
-UInt getProbabilisticMutation(vector < vector < UInt > > _sequencePool, vector <UInt> _mutantPosition, UInt *_aminoacids, UInt aaSize)
+UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector <UInt> _mutantPosition, UInt *_aminoacids, UInt aaSize)
 {
     UInt mutant, chance, entropy;
     double acceptance;
-    vector <UInt> resFreqs(55,1);
+    vector <UInt> resFreqs(57,1);
     UInt count = _sequencePool.size();
 
     //--get sequence evolution results for position

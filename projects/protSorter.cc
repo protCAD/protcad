@@ -30,7 +30,7 @@ int main (int argc, char* argv[])
                 cout << "protSorter" << endl;
 		exit(1);
 	}
-    vector < vector < UInt > > sequencePool;
+    /*vector < vector < UInt > > sequencePool;
     sequencePool = buildSequencePool();
 
     for (UInt i = 0; i < sequencePool.size(); i++)
@@ -40,8 +40,8 @@ int main (int argc, char* argv[])
             cout << sequencePool[i][j] << " ";
         }
         cout << endl;
-    }
-    /*
+    }*/
+
     string inFrame;
     DIR *pdir;
     struct dirent *pent;
@@ -64,21 +64,14 @@ int main (int argc, char* argv[])
             fs.open ("finalsequences.out", fstream::in | fstream::out | fstream::app);
             for (UInt i = 0; i < model->getNumResidues(1); i++)
             {
-                if (i == model->getNumResidues(1)-1)
-                {
-                    fs << model->getTypeFromResNum(1,i) << ",";
-                }
-                else
-                {
-                    fs << model->getTypeFromResNum(1,i) << ",";
-                }
+                fs << model->getTypeFromResNum(1,i) << ",";
             }
             fs << endl;
             fs.close();
             delete theModelPDB;
         }
     }
-    closedir(pdir);*/
+    closedir(pdir);
     return 0;
 }
 
