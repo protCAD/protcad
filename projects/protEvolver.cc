@@ -303,7 +303,7 @@ UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector 
 {
     UInt mutant, chance, entropy;
     double acceptance;
-    vector <UInt> resFreqs(57,1);
+    vector <UInt> resFreqs(58,1);
     UInt count = _sequencePool.size();
 
     //--get sequence evolution results for position
