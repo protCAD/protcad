@@ -63,8 +63,6 @@ int main (int argc, char* argv[])
     UInt nobetter = 0, activeChainsSize = sizeof(activeChains)/sizeof(activeChains[0]), randomResiduesSize = sizeof(randomResidues)/sizeof(randomResidues[0]), activeResiduesSize = sizeof(activeResidues)/sizeof(activeResidues[0]);
     UInt lResidues = sizeof(allowedLResidues)/sizeof(allowedLResidues[0]), dResidues = sizeof(allowedDResidues)/sizeof(allowedDResidues[0]);
     UInt name, timeid, sec, mutant = 0, numResidues, plateau = activeResiduesSize;
-    vector < UInt > mutantPosition, chainSequence, sequencePosition, randomPosition;
-    vector < vector < UInt > > proteinSequence, finalSequence, sequencePool;
     stringstream convert;
     string startstr, outFile;
     name = rand() % 100000000;
@@ -79,10 +77,12 @@ int main (int argc, char* argv[])
         ensemble* theEnsemble = thePDB->getEnsemblePointer();
         molecule* pMol = theEnsemble->getMoleculePointer(0);
         protein* bundle = static_cast<protein*>(pMol);
+        vector < UInt > mutantPosition, chainSequence, sequencePosition, randomPosition;
+        vector < vector < UInt > > sequencePool, proteinSequence, finalSequence;
         sequencePool = buildSequencePool();
 
         //--load in initial pdb and mutate in random starting sequence on active chains and random residues
-        proteinSequence.clear(), chainSequence.clear(), nobetter = 0;
+        nobetter = 0;
         for (UInt i = 0; i < activeChainsSize; i++)
         {
             for (UInt j = 0; j < randomResiduesSize; j++)
@@ -237,7 +237,7 @@ int main (int argc, char* argv[])
             fs.close();
         }
         delete theModelPDB;
-        sequencePool.clear();
+        sequencePool.clear(),proteinSequence.clear(), chainSequence.clear(), mutantPosition.clear(), chainSequence.clear(), sequencePosition.clear(), randomPosition.clear();
     }
     return 0;
 }

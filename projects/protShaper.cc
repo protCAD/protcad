@@ -172,19 +172,19 @@ int main (int argc, char* argv[])
     //bundle optimizations
     UIntVec allowedRots;
     UInt res1, res2, rot;
-    double chi2;//, chi2;
+    //double chi1, chi2;
     double angle1, angle2;
     cout << "iteration Energy radius angle" << endl;
     for (UInt i= 0; i < 10; i++)
     {
-        //for (UInt j= 0; j < 20; j++)
-        //{
-            for (int m = 55; m < 95; m++)
-            {
+        for (int j= 260; j < 360; j++)
+        {
+            //for (int m = 55; m < 95; m++)
+            //{
                // for (int k = 50; k < 70; k++)
                 //{
                     count++;
-                    phase = 39.69, angle1 = m, angle2 = m, rot = 7, radius = 11.5 + (i*0.1), res1 = 8, res2 = 15;//, chi2 = k;//, chi1 = k;
+                    phase = 31.8, angle1 = j, angle2 = j, rot = 6, radius = 12 + (i*0.1), res1 = 6, res2 = 13;//, chi1 = -59, chi2 = j;
                     PDBInterface* theFramePDB = new PDBInterface(inFile);
                     ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
                     molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
@@ -208,7 +208,7 @@ int main (int argc, char* argv[])
                         frame->setChi(l, res2, 1, 0, angle2);
                     }
                     double Energy = frame->protEnergy();                  
-                    cout << count << " " << Energy << " " << radius << " " << angle1 << endl;
+                    cout << count << " " << Energy << " " << radius << " " << j << endl;
                         best = Energy;
                         stringstream convert;
                         string countstr;
@@ -221,8 +221,8 @@ int main (int argc, char* argv[])
                     //}
                     delete theFramePDB;
                 //}
-            }
-        //}
+            //}
+        }
     }
     /*/////dihed0rals
     PDBInterface* theFramePDB = new PDBInterface(inFile);
