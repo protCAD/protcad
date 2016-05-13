@@ -3150,7 +3150,7 @@ vector <double> residue::calculateDielectric(residue* _other, UInt _atomIndex)
 	int atomEnergyType;
 	for(UInt i=0; i<_other->itsAtoms.size(); i++)
 	{
-		distanceSquared = itsAtoms[_atomIndex]->inCubeWithDistSQ(_other->itsAtoms[i], 81);
+        distanceSquared = itsAtoms[_atomIndex]->inCubeWithDistSQ(_other->itsAtoms[i], 9);
         if (distanceSquared != 0.0 && distanceSquared <= 81)
 		{
 			atomEnergyType = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[i][1];
@@ -3188,7 +3188,7 @@ vector <double> residue::calculateDielectric(residue* _other, atom* _atom)
 	int atomEnergyType;
 	for(UInt i=0; i<_other->itsAtoms.size(); i++)
 	{
-		distanceSquared = _atom->inCubeWithDistSQ(_other->itsAtoms[i], 81);
+        distanceSquared = _atom->inCubeWithDistSQ(_other->itsAtoms[i], 9);
         if (distanceSquared != 0.0 && distanceSquared <= 81)
 		{
 			atomEnergyType = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[i][1];
@@ -3305,7 +3305,7 @@ double residue::interSoluteEnergy(residue* _other)
                     bool bonded = isSeparatedByOneOrTwoBonds(i,_other,j);
 					if (!bonded)
 					{
-                        double distanceSquared = itsAtoms[i]->inCubeWithDistSQ(_other->itsAtoms[j], cutoffDistanceSquared);
+                        double distanceSquared = itsAtoms[i]->inCubeWithDistSQ(_other->itsAtoms[j], cutoffDistance);
 						if (distanceSquared != 0.0 && distanceSquared != 999.0 && distanceSquared <= cutoffDistanceSquared)
 						{
                             //cout << itsResNum << " " << _other->itsResNum << endl;

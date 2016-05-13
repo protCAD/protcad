@@ -89,7 +89,7 @@ public:
 	double distanceSquared(atom* pOtherAtom) const;
 	bool inCutoff (const atom* pOtherAtom, double _cutoffDistance);
 	double inCubeWithDist (const atom* pOtherAtom, double _cutoff);
-	double inCubeWithDistSQ (const atom* pOtherAtom, double _cutoffSquared);
+    double inCubeWithDistSQ (const atom* pOtherAtom, double _cutoff);
 	bool inCube (const atom* pOtherAtom, double _cutoffDistance);
 	bool inCutoffSQ (const atom* pOtherAtom, double _cutoff, double _cutoffSquared);
 	bool inCutoff (const atom& OtherAtom, double _cutoffDistance);
