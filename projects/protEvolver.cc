@@ -79,6 +79,7 @@ int main (int argc, char* argv[])
         protein* bundle = static_cast<protein*>(pMol);
         vector < UInt > mutantPosition, chainSequence, sequencePosition, randomPosition;
         vector < vector < UInt > > sequencePool, proteinSequence, finalSequence;
+        vector < double > bindingEnergy;
         sequencePool = buildSequencePool();
 
         //--load in initial pdb and mutate in random starting sequence on active chains and random residues
@@ -114,7 +115,9 @@ int main (int argc, char* argv[])
         pdbWriter(bundle, tempModel);
 
         //--set Energy startpoint
-        Energy = bundle->protEnergy();
+        bindingEnergy.clear();
+        bindingEnergy = bundle->chainBindingEnergy();
+        Energy = bindingEnergy[1];
         pastEnergy = Energy;
         bestEnergy = Energy;
         delete thePDB;
@@ -168,7 +171,9 @@ int main (int argc, char* argv[])
             mutantPosition = getMutationPosition(bundle, activeChains, activeChainsSize, activeResidues, activeResiduesSize);
 
             //--Energy test
-            Energy = bundle->protEnergy();
+            bindingEnergy.clear();
+            bindingEnergy = bundle->chainBindingEnergy();
+            Energy = bindingEnergy[1];
             if (Energy < pastEnergy)
             {
                 //cout << Energy << " " << nobetter << endl;
@@ -193,9 +198,10 @@ int main (int argc, char* argv[])
         ensemble* theModelEnsemble = theModelPDB->getEnsemblePointer();
         molecule* modelMol = theModelEnsemble->getMoleculePointer(0);
         protein* model = static_cast<protein*>(modelMol);
-        vector <double> bindingEnergy = model->chainBindingEnergy();
+        bindingEnergy.clear();
+        bindingEnergy = model->chainBindingEnergy();
         //UInt numchains = model->getNumChains();
-        if (bindingEnergy[0] < 0)
+        if (bindingEnergy[1] < 0)
         {
             name = rand() % 100;
             sec = time(NULL);
@@ -237,7 +243,7 @@ int main (int argc, char* argv[])
             fs.close();
         }
         delete theModelPDB;
-        sequencePool.clear(),proteinSequence.clear(), chainSequence.clear(), mutantPosition.clear(), chainSequence.clear(), sequencePosition.clear(), randomPosition.clear();
+        bindingEnergy.clear(),sequencePool.clear(),proteinSequence.clear(), chainSequence.clear(), mutantPosition.clear(), chainSequence.clear(), sequencePosition.clear(), randomPosition.clear();
     }
     return 0;
 }
