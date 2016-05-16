@@ -18,6 +18,7 @@ protein::protein() : molecule()
 	cout << itsName << endl;
 #endif
 	itsChains.resize(0);
+    energies.clear();
     energies.resize(0);
 	setMoleculeType(1);
 	resetAllBuffers();
@@ -33,6 +34,7 @@ protein::protein(const string& _name) : molecule(_name)
 #endif
 	itsChains.resize(0);
     itsIndependentChainsMap.resize(0);
+    energies.clear();
     energies.resize(0);
 	itsChainLinkageMap.resize(0);
 	itsLastModifiedChain = -1;
@@ -60,10 +62,6 @@ protein::~protein()
 #ifdef PROTEIN_DEBUG
 	cout << "protein destructor called " << endl;
 #endif
-    for (UInt i = 0; i < energies.size(); i++)
-    {
-        delete energies[i];
-    }
 	for(UInt i=0; i<itsChains.size(); i++)
 	{	delete itsChains[i];
 	}
