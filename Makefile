@@ -33,7 +33,7 @@ FLAG_OPT3 = -Wall -O3  -g -felide-constructors -Wno-deprecated
 FLAG_PROF = -Wall -O3 -felide-constructors -pg -Wno-deprecated
 FLAG_DEBUG = -Wall -g2 -felide-constructors -Wno-deprecated
 FLAG_DEBUG2 = -Wall -g2 -ansi -pedantic -Wno-deprecated
-FLAG_OPTMAX = -Wall -oFast -flto -ffast-math -ftree-vectorize -march=native -mtune=native -pipe -msse3 -Wno-deprecated -fopenmp -std=gnu++11
+FLAG_OPTMAX = -Wall -O2 -ffast-math -ftree-vectorize -march=native -mtune=native -pipe -msse3 -Wno-deprecated -fopenmp -std=gnu++11
 
 CFLAGS = $(FLAG_OPTMAX) $(DEFS)
 FFLAGS = -Wall -g 
