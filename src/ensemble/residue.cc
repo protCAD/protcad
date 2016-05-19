@@ -622,7 +622,7 @@ void residue::deleteAtom(const UInt _atomIndex)
 			// as though the atom never existed in the first place
 		}
 		// We're going to allow ASP and GLU to be unprotonated
-		if ( (itsAtoms[_atomIndex]->getName() == "HD2" && getType() == "ASP") ||
+        if ( (itsAtoms[_atomIndex]->getName() == "HD2" && getType() == "ASP") ||
                      (itsAtoms[_atomIndex]->getName() == "HE2" && getType() == "GLU") )
 		{	// this should be allowed
 			if (theParent)
@@ -648,7 +648,7 @@ void residue::deleteAtom(const UInt _atomIndex)
 			{	thePreviousSib->setChild(0);
 			}
 			delete itsAtoms[_atomIndex];
-			iterATOM firstAtom;
+            iterATOM firstAtom;
 			firstAtom = itsAtoms.begin();
 			itsAtoms.erase(firstAtom + _atomIndex);
 		}
@@ -3146,12 +3146,12 @@ vector <double> residue::calculateDielectric(residue* _other, UInt _atomIndex)
 	chargeDensity[1] = 0.0;
 	double charges = 0.0;
 	double volumes = 0.0;
-	double distanceSquared;
+    bool inCube;
 	int atomEnergyType;
 	for(UInt i=0; i<_other->itsAtoms.size(); i++)
 	{
-        distanceSquared = itsAtoms[_atomIndex]->inCubeWithDistSQ(_other->itsAtoms[i], 9);
-        if (distanceSquared != 0.0 && distanceSquared <= 81)
+        inCube = itsAtoms[_atomIndex]->inCube(_other->itsAtoms[i], 7.4);
+        if (inCube)
 		{
 			atomEnergyType = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[i][1];
             if (atomEnergyType == 4) charges += 0.49, volumes += 23.2; //magnesium
@@ -3184,12 +3184,12 @@ vector <double> residue::calculateDielectric(residue* _other, atom* _atom)
 	chargeDensity[1] = 0.0;
 	double charges = 0.0;
 	double volumes = 0.0;
-	double distanceSquared;
+    bool inCube;
 	int atomEnergyType;
 	for(UInt i=0; i<_other->itsAtoms.size(); i++)
 	{
-        distanceSquared = _atom->inCubeWithDistSQ(_other->itsAtoms[i], 9);
-        if (distanceSquared != 0.0 && distanceSquared <= 81)
+        inCube = _atom->inCube(_other->itsAtoms[i], 7.4);
+        if (inCube)
 		{
 			atomEnergyType = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[i][1];
             if (atomEnergyType == 4) charges += 0.49, volumes += 23.2; //magnesium
