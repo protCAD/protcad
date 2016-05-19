@@ -184,7 +184,7 @@ int main (int argc, char* argv[])
                // for (int k = 50; k < 70; k++)
                 //{
                     count++;
-                    phase = 91.37, angle1 = 294, angle2 = 294, rot = 6, radius = 11.86, res1 = 6, res2 = 13, chi1 = m, chi2 = 30;
+                    phase = 91.37, angle1 = 294, angle2 = 294, rot = 6, radius = 11.86, res1 = 6, res2 = 13, chi1 = -63, chi2 = 30;
                     PDBInterface* theFramePDB = new PDBInterface(inFile);
                     ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
                     molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
