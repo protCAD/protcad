@@ -32,7 +32,7 @@ int main (int argc, char* argv[])
     //--Running parameters
     if (argc !=3)
     {
-        cout << "protEvolver <inFile.pdb>" << endl;
+        cout << "protEvolver <inFile.pdb> <outfile>" << endl;
         exit(1);
     }
     string infile = argv[1];
@@ -64,7 +64,7 @@ int main (int argc, char* argv[])
     double phi, bestEnergy, pastEnergy, Energy;
     UInt nobetter = 0, activeChainsSize = sizeof(activeChains)/sizeof(activeChains[0]), randomResiduesSize = sizeof(randomResidues)/sizeof(randomResidues[0]), activeResiduesSize = sizeof(activeResidues)/sizeof(activeResidues[0]);
     UInt lResidues = sizeof(allowedLResidues)/sizeof(allowedLResidues[0]), dResidues = sizeof(allowedDResidues)/sizeof(allowedDResidues[0]);
-    UInt name, timeid, sec, mutant = 0, numResidues, plateau = activeResiduesSize;
+    UInt name, timeid, sec, mutant = 0, numResidues, plateau = activeResiduesSize/2;
     vector < UInt > mutantPosition, chainSequence, sequencePosition, randomPosition;
     vector < vector < UInt > > sequencePool, proteinSequence, finalSequence;
     vector < double > bindingEnergy;
@@ -109,7 +109,7 @@ int main (int argc, char* argv[])
             chainSequence = getChainSequence(bundle, activeChains[i]);
             proteinSequence.push_back(chainSequence);
         }
-        bundle->protOpt(false, frozenResidues);
+        bundle->protOptFrozen(false, frozenResidues);
 
         //--Determine next mutation position
         mutantPosition.clear();
@@ -162,7 +162,7 @@ int main (int argc, char* argv[])
                     }
                 }
             }
-            bundle->protOpt(false, frozenResidues);
+            bundle->protOptFrozen(false, frozenResidues);
             protein* tempBundle = new protein(*bundle);
 
             //--Determine next mutation position
@@ -303,10 +303,10 @@ vector <UInt> getMutationPosition(protein* _prot, UInt *_activeChains, UInt _act
 
 UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector <UInt> _mutantPosition, UInt *_aminoacids, UInt aaSize)
 {
-    UInt mutant, chance, entropy;
+    int mutant, chance, entropy;
     double acceptance;
     vector <UInt> resFreqs(58,1);
-    UInt count = _sequencePool.size();
+    int count = _sequencePool.size();
 
     //--get sequence evolution results for position
     for (UInt i = 0; i < _sequencePool.size(); i++)
@@ -321,7 +321,7 @@ UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector 
         chance = rand() % 100;
         entropy = rand() % 100; //sequence entropy determined by pooling linear decline to resolve minima after suitable diversity
         mutant = _aminoacids[rand() % aaSize];
-        UInt pooling = -0.09 * count + 140; //500 sequences equals 5% chance of pooling sequences, 95% chance of it being random, 1000=50% ...
+        int pooling = -0.316 * count + 190; //300 sequences equals 5% chance of pooling sequences, 100% at 600
         if (entropy > pooling)
         {
             acceptance = (resFreqs[mutant]/count)*100; //chance of accepting given amino acid at position is proportional to population
