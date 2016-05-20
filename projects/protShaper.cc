@@ -133,7 +133,7 @@ int main (int argc, char* argv[])
 
     double coil;
     double offset;
-    //rotamer optimizations
+    /*rotamer optimizations
     for (UInt k = 0; k < 10; k++)
     {
         for (UInt m = 0; m < 50; m++)
@@ -167,24 +167,24 @@ int main (int argc, char* argv[])
                 delete theFramePDB;
             //}
        }
-    }
+    }*/
 
-    /*bundle optimizations
+    //bundle optimizations
     UIntVec allowedRots;
     UInt res1, res2, rot;
     double chi1, chi2;
     double angle1, angle2;
     cout << "iteration Energy radius angle" << endl;
-    //for (UInt i= -65; i < -55; i++)
+    //for (UInt i= 0; i < 10; i++)
     //{
-      //  for (int j= 55; j < 65; j++)
-      //  {
-            //for (int m = -70; m < -50; m++)
+        //for (int j= -85; j < -75; j++)
+        //{
+            //for (int m = 25; m < 35; m++)
             //{
-               // for (int k = 50; k < 70; k++)
-                //{
+               for (int k = 320; k < 330; k++)
+               {
                     count++;
-                    phase = 91.37, angle1 = 294, angle2 = 294, rot = 6, radius = 11.86, res1 = 6, res2 = 13, chi1 = -63, chi2 = 30;
+                    phase = 91.37, angle1 = 327, angle2 = 327, rot = 6, radius = 12.5, res1 = 6, res2 = 13, chi1 = -80, chi2 = 30;
                     PDBInterface* theFramePDB = new PDBInterface(inFile);
                     ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
                     molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
@@ -208,7 +208,7 @@ int main (int argc, char* argv[])
                         frame->setChi(l, res2, 1, 0, angle2);
                     }
                     double Energy = frame->protEnergy();                  
-                    cout << count << " " << Energy << " " << radius << " " << phase << " " << angle1 << " " << chi1 << " " << chi2;
+                    cout << count << " " << Energy << " " << radius << " " << angle1 << " " << chi1 << " " << chi2;
                     if (Energy < best)
                     {
                         best = Energy;
@@ -228,11 +228,11 @@ int main (int argc, char* argv[])
                     //    cout << endl;
                     //}
                     delete theFramePDB;
-                //}
+                }
             //}
-      //  }
-   // }
-    /////dihed0rals
+        //}
+    //}
+    /*//dihed0rals
     PDBInterface* theFramePDB = new PDBInterface(inFile);
     ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
     molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
