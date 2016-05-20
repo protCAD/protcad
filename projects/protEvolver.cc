@@ -4,7 +4,7 @@
 //***********************************     protEvolver 3.0      ******************************************
 //***********************************                          ******************************************
 //*******************************************************************************************************
-//*******   -Folding Selective Protein Genetic Algorithm Based Evolution in Implicit Solvent -   ********
+//********   -Fold Selective Protein Genetic Algorithm Based Evolution in Implicit Solvent -   **********
 //*******************************************************************************************************
 
 /////// Just specify infile structure, active chains and residues indexes, and it will evolve a sequence favorable for folding
@@ -53,16 +53,21 @@ int main (int argc, char* argv[])
     srand (getpid());
 
     //--inputs for mutation
-    UInt activeChains[] = {1};
-    UInt allowedLResidues[] = {A,R,N,D,Q,E,I,L,K,M,F,S,T,W,Y,V};
-    UInt activeResidues[] = {1,2,3,4,5,6,7,8,9,10};
-    UInt randomResidues[] = {1,2,3,4,5,6,7,8,9,10};
+    UInt activeChains[] = {0,1,2,3,4,5};
+    UInt allowedLResidues[] = {A,R,D,Q,E,I,L,K,M,F,W,Y,V};
+    UInt activeResidues[] = {0,1,2,3,4,5,7,8,9,10,11,12,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28};
+    UInt randomResidues[] = {0,1,2,3,4,5,7,8,9,10,11,12,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28};
     UInt allowedDResidues[] = {G};
+    UIntVec frozenResidues(2); frozenResidues[0] = 6, frozenResidues[1] = 13;
+
 
     double phi, bestEnergy, pastEnergy, Energy;
     UInt nobetter = 0, activeChainsSize = sizeof(activeChains)/sizeof(activeChains[0]), randomResiduesSize = sizeof(randomResidues)/sizeof(randomResidues[0]), activeResiduesSize = sizeof(activeResidues)/sizeof(activeResidues[0]);
     UInt lResidues = sizeof(allowedLResidues)/sizeof(allowedLResidues[0]), dResidues = sizeof(allowedDResidues)/sizeof(allowedDResidues[0]);
     UInt name, timeid, sec, mutant = 0, numResidues, plateau = activeResiduesSize;
+    vector < UInt > mutantPosition, chainSequence, sequencePosition, randomPosition;
+    vector < vector < UInt > > sequencePool, proteinSequence, finalSequence;
+    vector < double > bindingEnergy;
     stringstream convert;
     string startstr, outFile;
     name = rand() % 100000000;
@@ -77,9 +82,6 @@ int main (int argc, char* argv[])
         ensemble* theEnsemble = thePDB->getEnsemblePointer();
         molecule* pMol = theEnsemble->getMoleculePointer(0);
         protein* bundle = static_cast<protein*>(pMol);
-        vector < UInt > mutantPosition, chainSequence, sequencePosition, randomPosition;
-        vector < vector < UInt > > sequencePool, proteinSequence, finalSequence;
-        vector < double > bindingEnergy;
         sequencePool = buildSequencePool();
 
         //--load in initial pdb and mutate in random starting sequence on active chains and random residues
@@ -107,7 +109,7 @@ int main (int argc, char* argv[])
             chainSequence = getChainSequence(bundle, activeChains[i]);
             proteinSequence.push_back(chainSequence);
         }
-        bundle->protOpt(false);
+        bundle->protOpt(false, frozenResidues);
 
         //--Determine next mutation position
         mutantPosition.clear();
@@ -115,9 +117,7 @@ int main (int argc, char* argv[])
         pdbWriter(bundle, tempModel);
 
         //--set Energy startpoint
-        bindingEnergy.clear();
-        bindingEnergy = bundle->chainBindingEnergy();
-        Energy = bindingEnergy[1];
+        Energy = bundle->protEnergy();
         pastEnergy = Energy;
         bestEnergy = Energy;
         delete thePDB;
@@ -161,9 +161,8 @@ int main (int argc, char* argv[])
                         bundle->mutateWBC(activeChains[i],j, proteinSequence[i][j]);
                     }
                 }
-                //randomizeSideChains(bundle, activeChains[i]);
             }
-            bundle->protOpt(false);
+            bundle->protOpt(false, frozenResidues);
             protein* tempBundle = new protein(*bundle);
 
             //--Determine next mutation position
@@ -171,12 +170,9 @@ int main (int argc, char* argv[])
             mutantPosition = getMutationPosition(bundle, activeChains, activeChainsSize, activeResidues, activeResiduesSize);
 
             //--Energy test
-            bindingEnergy.clear();
-            bindingEnergy = bundle->chainBindingEnergy();
-            Energy = bindingEnergy[1];
+            Energy = bundle->protEnergy();
             if (Energy < pastEnergy)
             {
-                //cout << Energy << " " << nobetter << endl;
                 if (Energy < bestEnergy)
                 {
                     bestEnergy = Energy;
@@ -200,8 +196,7 @@ int main (int argc, char* argv[])
         protein* model = static_cast<protein*>(modelMol);
         bindingEnergy.clear();
         bindingEnergy = model->chainBindingEnergy();
-        //UInt numchains = model->getNumChains();
-        if (bindingEnergy[1] < 0)
+        if (bindingEnergy[0] < 0)
         {
             name = rand() % 100;
             sec = time(NULL);
@@ -244,6 +239,7 @@ int main (int argc, char* argv[])
         }
         delete theModelPDB;
         bindingEnergy.clear(),sequencePool.clear(),proteinSequence.clear(), chainSequence.clear(), mutantPosition.clear(), chainSequence.clear(), sequencePosition.clear(), randomPosition.clear();
+        bindingEnergy.resize(0),sequencePool.resize(0),proteinSequence.resize(0), chainSequence.resize(0), mutantPosition.resize(0), chainSequence.resize(0), sequencePosition.resize(0), randomPosition.resize(0);
     }
     return 0;
 }

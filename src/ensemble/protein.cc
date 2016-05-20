@@ -3324,6 +3324,93 @@ void protein::protOpt(bool _backbone, UIntVec _activechains)
     return;
 }
 
+void protein::protOptFrozen(bool _backbone, UIntVec _frozenResidues)
+{   // Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics and corresponding implicit solvation energy
+    //    _plateau: the number of consecutive optimization cycles without an energy decrease.
+    //	    	     (100 is recommended for a full optimization without excessive calculation)
+    // -pike 2013
+
+    //--Initialize variables for loop, calculate starting energy and build energy vectors---------------
+    double deltaTheta = 0, Energy, resE, medResE, pastEnergy = protEnergy();
+    UInt randchain, randres, randrestype, allowedRotsize, randrot, nobetter = 0, _plateau = 100;
+    UInt resNum, randtype, chainNum = getNumChains(), thisone, breakout;
+    vector < vector <double> > currentRot;
+    vector <UIntVec> allowedRots;
+    srand (time(NULL));
+
+    //--Run optimizaiton loop to optimization minima, determined by _plateau----------------------------
+    do
+    {   //--choose random residue
+        randchain = rand() % chainNum;
+        resNum = getNumResidues(randchain);
+        do
+        {
+            randres = rand() % resNum;
+        } while (randres == _frozenResidues[0] || randres == _frozenResidues[1]);
+        randrestype = getTypeFromResNum(randchain, randres);
+        nobetter++;
+        //cout << nobetter << " ";
+
+        //--Backbone optimization-----------------------------------------------------------------------
+        resE = resEnergy(randchain, randres), medResE = getMedianResEnergy();
+        if (nobetter > _plateau && resE > medResE && _backbone)
+        {   //--randomly choose phi or psi, and change in angle of -1 or +1 degree
+            randtype = rand() % 2;
+            do
+            { deltaTheta = ((rand() % 3) -1);
+            } while (deltaTheta == 0);
+
+            //--transform angles while energy improves, until energy degrades, then revert
+            do
+            {   setDihedralLocal(randchain, randres, deltaTheta, randtype);
+                itsChains[randchain]->itsResidues[randres]->setMoved(1);
+                thisone = 0;
+                //--Energy test
+                Energy = protEnergy();
+                if (Energy < (pastEnergy-0.05))
+                {   nobetter = 0, thisone = 1, pastEnergy = Energy;
+                    //cout << Energy << " ";
+                }
+            } while (thisone == 1);
+            setDihedralLocal(randchain, randres, (deltaTheta*-1), randtype);
+            itsChains[randchain]->itsResidues[randres]->setMoved(1);
+        }
+
+        //--Rotamer optimization-----------------------------------------------------------------------
+        resE = resEnergy(randchain, randres);
+        if (resE > medResE)
+        {   currentRot = getSidechainDihedrals(randchain, randres);
+            allowedRots = getAllowedRotamers(randchain, randres, randrestype);
+            breakout = 0;
+
+            //--Try a max of 1/3 of allowed rotamers per branchpoint and keep first improvement, else revert
+            for (UInt b = 0; b < residue::getNumBpt(randrestype); b++)
+            {   allowedRotsize = allowedRots[b].size()*0.33;
+                for (UInt j = 0; j < allowedRotsize; j ++)
+                {   randrot = rand() % allowedRots[b].size();
+                    setRotamerWBC(randchain, randres, b, allowedRots[b][randrot]);
+                    itsChains[randchain]->itsResidues[randres]->setMoved(1);
+                    //--Energy test
+                    Energy = protEnergy();
+                    if (Energy < (pastEnergy-0.05))
+                    {   breakout = 1, nobetter = 0, pastEnergy = Energy;
+                        //cout << Energy << " ";
+                        break;
+                    }
+                }
+                if (breakout == 1)
+                {   break;
+                }
+            }
+            if (breakout == 0)
+            {   setSidechainDihedralAngles(randchain, randres, currentRot);
+                itsChains[randchain]->itsResidues[randres]->setMoved(1);
+            }
+        }
+    } while (nobetter < _plateau * 1.2);
+    return;
+}
+
 /*double protein::getUnfoldedStateEnergy()
 {
 
