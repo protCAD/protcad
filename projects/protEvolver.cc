@@ -30,13 +30,12 @@ vector < vector < UInt > > buildSequencePool();
 int main (int argc, char* argv[])
 {
     //--Running parameters
-    if (argc !=3)
+    if (argc !=2)
     {
-        cout << "protEvolver <inFile.pdb> <outfile>" << endl;
+        cout << "protEvolver <inFile.pdb>" << endl;
         exit(1);
     }
     string infile = argv[1];
-    string localout = argv[2];
     enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dAT,dW,dY,dV,Hce,Pch,Csf};
     string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hn","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dQ","dE","dEh","dHd","dHe","dHn","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dAT","dW","dY","dV","Hce","Pch","Csf"};
     PDBInterface* thePDB = new PDBInterface(infile);
@@ -53,12 +52,19 @@ int main (int argc, char* argv[])
     srand (getpid());
 
     //--inputs for mutation
-    UInt activeChains[] = {0,1,2,3,4,5};
+    bool homoSymmetric = true;
+    UInt activeChains[] = {0};
     UInt allowedLResidues[] = {A,R,D,Q,E,I,L,K,M,F,W,Y,V};
     UInt activeResidues[] = {0,1,2,3,4,5,7,8,9,10,11,12,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28};
     UInt randomResidues[] = {0,1,2,3,4,5,7,8,9,10,11,12,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28};
     UInt allowedDResidues[] = {G};
+    UIntVec activeChain(1);
     UIntVec frozenResidues(2); frozenResidues[0] = 6, frozenResidues[1] = 13;
+
+    if (homoSymmetric)
+    {
+        activeChain[0] = activeChains[0];
+    }
 
 
     double phi, bestEnergy, pastEnergy, Energy;
@@ -83,6 +89,13 @@ int main (int argc, char* argv[])
         molecule* pMol = theEnsemble->getMoleculePointer(0);
         protein* bundle = static_cast<protein*>(pMol);
         sequencePool = buildSequencePool();
+        if (homoSymmetric)
+        {
+            for (UInt i = 1; i < bundle->getNumChains(); i++)
+            {
+                bundle->symmetryLinkChainAtoB(i, activeChain[0]);
+            }
+        }
 
         //--load in initial pdb and mutate in random starting sequence on active chains and random residues
         nobetter = 0;
@@ -109,7 +122,7 @@ int main (int argc, char* argv[])
             chainSequence = getChainSequence(bundle, activeChains[i]);
             proteinSequence.push_back(chainSequence);
         }
-        bundle->protOptFrozen(false, frozenResidues);
+        bundle->protOpt(false, frozenResidues, activeChain);
 
         //--Determine next mutation position
         mutantPosition.clear();
@@ -117,7 +130,7 @@ int main (int argc, char* argv[])
         pdbWriter(bundle, tempModel);
 
         //--set Energy startpoint
-        Energy = bundle->protEnergy();
+        Energy = bundle->intraSoluteEnergy(true);
         pastEnergy = Energy;
         bestEnergy = Energy;
         delete thePDB;
@@ -129,6 +142,13 @@ int main (int argc, char* argv[])
             ensemble* theEnsemble = thePDB->getEnsemblePointer();
             molecule* pMol = theEnsemble->getMoleculePointer(0);
             protein* bundle = static_cast<protein*>(pMol);
+            if (homoSymmetric)
+            {
+                for (UInt i = 1; i < bundle->getNumChains(); i++)
+                {
+                    bundle->symmetryLinkChainAtoB(i, activeChain[0]);
+                }
+            }
 
             //--Mutate current sequence, new mutant and optimize system
             nobetter++;
@@ -156,13 +176,13 @@ int main (int argc, char* argv[])
                             bundle->mutateWBC(mutantPosition[0],mutantPosition[1], mutant);
                         }
                     }
-                    else
+                    else if (j != frozenResidues[0] && j != frozenResidues[1])
                     {
                         bundle->mutateWBC(activeChains[i],j, proteinSequence[i][j]);
                     }
                 }
             }
-            bundle->protOptFrozen(false, frozenResidues);
+            bundle->protOpt(false, frozenResidues, activeChain);
             protein* tempBundle = new protein(*bundle);
 
             //--Determine next mutation position
@@ -170,7 +190,7 @@ int main (int argc, char* argv[])
             mutantPosition = getMutationPosition(bundle, activeChains, activeChainsSize, activeResidues, activeResiduesSize);
 
             //--Energy test
-            Energy = bundle->protEnergy();
+            Energy = bundle->intraSoluteEnergy(true);
             if (Energy < pastEnergy)
             {
                 if (Energy < bestEnergy)
@@ -196,7 +216,7 @@ int main (int argc, char* argv[])
         protein* model = static_cast<protein*>(modelMol);
         bindingEnergy.clear();
         bindingEnergy = model->chainBindingEnergy();
-        if (bindingEnergy[0] < 0)
+        if (bindingEnergy[0] <= 0 && bindingEnergy[1] <= 0)
         {
             name = rand() % 100;
             sec = time(NULL);
@@ -216,10 +236,6 @@ int main (int argc, char* argv[])
             finalline.open ("final.out", fstream::in | fstream::out | fstream::app);
             finalline << timeid << " " << bindingEnergy[0] << " " << bindingEnergy[1] << " ";
 
-            fstream finallocal;
-            finallocal.open (localout, fstream::in | fstream::out | fstream::app);
-            finallocal << timeid << " " << bindingEnergy[0] << " " << bindingEnergy[1] << " ";
-
             fstream fs;
             fs.open ("finalsequences.out", fstream::in | fstream::out | fstream::app);
             for (UInt i = 0; i < activeChainsSize; i++)
@@ -233,8 +249,6 @@ int main (int argc, char* argv[])
             fs << endl;
             finalline << endl;
             finalline.close();
-            finallocal << endl;
-            finallocal.close();
             fs.close();
         }
         delete theModelPDB;

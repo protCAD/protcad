@@ -3324,7 +3324,7 @@ void protein::protOpt(bool _backbone, UIntVec _activechains)
     return;
 }
 
-void protein::protOptFrozen(bool _backbone, UIntVec _frozenResidues)
+void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activechains)
 {   // Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics and corresponding implicit solvation energy
     //    _plateau: the number of consecutive optimization cycles without an energy decrease.
     //	    	     (100 is recommended for a full optimization without excessive calculation)
@@ -3333,7 +3333,8 @@ void protein::protOptFrozen(bool _backbone, UIntVec _frozenResidues)
     //--Initialize variables for loop, calculate starting energy and build energy vectors---------------
     double deltaTheta = 0, Energy, resE, medResE, pastEnergy = protEnergy();
     UInt randchain, randres, randrestype, allowedRotsize, randrot, nobetter = 0, _plateau = 80;
-    UInt resNum, randtype, chainNum = getNumChains(), thisone, breakout;
+    UInt resNum, randtype, thisone, breakout;
+    UInt activeChainSize = _activechains.size();
     vector < vector <double> > currentRot;
     vector <UIntVec> allowedRots;
     srand (time(NULL));
@@ -3341,7 +3342,7 @@ void protein::protOptFrozen(bool _backbone, UIntVec _frozenResidues)
     //--Run optimizaiton loop to optimization minima, determined by _plateau----------------------------
     do
     {   //--choose random residue
-        randchain = rand() % chainNum;
+        randchain = rand() % activeChainSize;
         resNum = getNumResidues(randchain);
         do
         {
@@ -3352,7 +3353,7 @@ void protein::protOptFrozen(bool _backbone, UIntVec _frozenResidues)
         //cout << nobetter << " ";
 
         //--Backbone optimization-----------------------------------------------------------------------
-        resE = resEnergy(randchain, randres), medResE = getMedianResEnergy();
+        resE = resEnergy(randchain, randres), medResE = getMedianResEnergy(_activechains);
         if (nobetter > _plateau && resE > medResE && _backbone)
         {   //--randomly choose phi or psi, and change in angle of -1 or +1 degree
             randtype = rand() % 2;
