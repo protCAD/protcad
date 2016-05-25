@@ -129,7 +129,7 @@ public:
     //--Optimization functions
     void protOpt(bool _backbone); // --Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics-- dpike
     void protOpt(bool _backbone, UIntVec _activechains);
-    void protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activechains);
+    void protOpt(bool _backbone, UIntVec _frozenResidues, UInt _activeChain);
     void chainOptSolvent(UInt _plateau, UInt _chainIndex);
 	void optimizeSmallRotations(UInt _steps, double _stepSize);
 	void optimizeSmallRotations(vector <UIntVec> _positions, UInt _steps, double _stepSize);
@@ -180,8 +180,8 @@ public:
     double getDielectric(UInt _chainIndex, UInt _resIndex, UInt _atomIndex) {return itsChains[_chainIndex]->itsResidues[_resIndex]->itsAtoms[_atomIndex]->getDielectric();}
 	double intraEnergy();
 	double intraSoluteEnergy(bool _updateDielectrics);
+    double intraSoluteEnergy(bool _updateDielectrics, UInt _activeChain);
 	double interSoluteEnergy(bool _updateDielectrics, UInt _chain1, UInt _chain2);
-	vector <double> chainFoldingBindingEnergy(UInt _ligandChain);
 	vector <double> chainFoldingBindingEnergy(bool _unfold);
 	vector <double> chainBindingEnergy();
 	double bindingPositionSoluteEnergy(UInt _chain, UInt _residue, UInt _otherChain);

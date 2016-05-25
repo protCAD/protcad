@@ -53,24 +53,18 @@ int main (int argc, char* argv[])
 
     //--inputs for mutation
     bool homoSymmetric = true;
+    bool backboneRelaxation = false;
     UInt activeChains[] = {0};
-    UInt allowedLResidues[] = {A,R,D,Q,E,I,L,K,M,F,W,Y,V};
-    UInt activeResidues[] = {0,1,2,3,4,5,7,8,9,10,11,12,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28};
-    UInt randomResidues[] = {0,1,2,3,4,5,7,8,9,10,11,12,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28};
+    UInt allowedLResidues[] = {A,R,Q,E,I,L,K,M,F,W,Y,V};
+    UInt activeResidues[] = {1,2,3,5,8,9,10,12,15,16,17,19,20,22,23,24,26,27};
+    UInt randomResidues[] = {1,2,3,5,8,9,10,12,15,16,17,19,20,22,23,24,26,27};
     UInt allowedDResidues[] = {G};
-    UIntVec activeChain(1);
     UIntVec frozenResidues(2); frozenResidues[0] = 6, frozenResidues[1] = 13;
-
-    if (homoSymmetric)
-    {
-        activeChain[0] = activeChains[0];
-    }
-
 
     double phi, bestEnergy, pastEnergy, Energy;
     UInt nobetter = 0, activeChainsSize = sizeof(activeChains)/sizeof(activeChains[0]), randomResiduesSize = sizeof(randomResidues)/sizeof(randomResidues[0]), activeResiduesSize = sizeof(activeResidues)/sizeof(activeResidues[0]);
     UInt lResidues = sizeof(allowedLResidues)/sizeof(allowedLResidues[0]), dResidues = sizeof(allowedDResidues)/sizeof(allowedDResidues[0]);
-    UInt name, timeid, sec, mutant = 0, numResidues, plateau = activeResiduesSize/2;
+    UInt name, timeid, sec, mutant = 0, numResidues, plateau = 10;
     vector < UInt > mutantPosition, chainSequence, sequencePosition, randomPosition;
     vector < vector < UInt > > sequencePool, proteinSequence, finalSequence;
     vector < double > bindingEnergy;
@@ -93,7 +87,7 @@ int main (int argc, char* argv[])
         {
             for (UInt i = 1; i < bundle->getNumChains(); i++)
             {
-                bundle->symmetryLinkChainAtoB(i, activeChain[0]);
+                bundle->symmetryLinkChainAtoB(i, activeChains[0]);
             }
         }
 
@@ -122,7 +116,14 @@ int main (int argc, char* argv[])
             chainSequence = getChainSequence(bundle, activeChains[i]);
             proteinSequence.push_back(chainSequence);
         }
-        bundle->protOpt(false, frozenResidues, activeChain);
+        if (homoSymmetric)
+        {
+            bundle->protOpt(backboneRelaxation, frozenResidues, activeChains[0]);
+        }
+        else
+        {
+            bundle->protOpt(backboneRelaxation);
+        }
 
         //--Determine next mutation position
         mutantPosition.clear();
@@ -130,7 +131,14 @@ int main (int argc, char* argv[])
         pdbWriter(bundle, tempModel);
 
         //--set Energy startpoint
-        Energy = bundle->intraSoluteEnergy(true);
+        if (homoSymmetric)
+        {
+            Energy = bundle->intraSoluteEnergy(true, activeChains[0]);
+        }
+        else
+        {
+            Energy = bundle->protEnergy();
+        }
         pastEnergy = Energy;
         bestEnergy = Energy;
         delete thePDB;
@@ -146,7 +154,7 @@ int main (int argc, char* argv[])
             {
                 for (UInt i = 1; i < bundle->getNumChains(); i++)
                 {
-                    bundle->symmetryLinkChainAtoB(i, activeChain[0]);
+                    bundle->symmetryLinkChainAtoB(i, activeChains[0]);
                 }
             }
 
@@ -182,7 +190,14 @@ int main (int argc, char* argv[])
                     }
                 }
             }
-            bundle->protOpt(false, frozenResidues, activeChain);
+            if (homoSymmetric)
+            {
+                bundle->protOpt(backboneRelaxation, frozenResidues, activeChains[0]);
+            }
+            else
+            {
+                bundle->protOpt(backboneRelaxation);
+            }
             protein* tempBundle = new protein(*bundle);
 
             //--Determine next mutation position
@@ -190,7 +205,14 @@ int main (int argc, char* argv[])
             mutantPosition = getMutationPosition(bundle, activeChains, activeChainsSize, activeResidues, activeResiduesSize);
 
             //--Energy test
-            Energy = bundle->intraSoluteEnergy(true);
+            if (homoSymmetric)
+            {
+                Energy = bundle->intraSoluteEnergy(true, activeChains[0]);
+            }
+            else
+            {
+                Energy = bundle->protEnergy();
+            }
             if (Energy < pastEnergy)
             {
                 if (Energy < bestEnergy)
