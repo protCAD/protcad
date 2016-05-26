@@ -126,6 +126,7 @@ int main (int argc, char* argv[])
             bundle->protOpt(backboneRelaxation);
         }
         randStartE = bundle->protEnergy();
+
         //--Determine next mutation position
         mutantPosition.clear();
         mutantPosition = getMutationPosition(bundle, activeChains, activeChainsSize, activeResidues, activeResiduesSize);
@@ -364,13 +365,13 @@ UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector 
     //--determine population based chance of mutation acceptance or a random mutation, via linear regression of sequence entropy
     do
     {
-        chance = rand() % 100;
-        entropy = rand() % 100; //sequence entropy determined by pooling linear decline to resolve minima after suitable diversity
+        chance = (rand() % 100) + 1;
+        entropy = (rand() % 100) + 1; //sequence entropy determined by pooling linear decline to resolve minima after suitable diversity
         mutant = _aminoacids[rand() % aaSize];
         int pooling = -0.316 * count + 190; //300 sequences equals 5% chance of pooling sequences, 100% at 600
         if (entropy > pooling)
         {
-            acceptance = (resFreqs[mutant]/count)*100; //chance of accepting given amino acid at position is proportional to population
+            acceptance = (resFreqs[mutant]/(count-1))*100; //chance of accepting given amino acid at position is proportional to population
         }
         else
         {
