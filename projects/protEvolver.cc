@@ -61,7 +61,7 @@ int main (int argc, char* argv[])
     UInt allowedDResidues[] = {G};
     UIntVec frozenResidues(2); frozenResidues[0] = 6, frozenResidues[1] = 13;
 
-    double phi, bestEnergy, pastEnergy, Energy;
+    double phi, bestEnergy, pastEnergy, Energy, randStartE;
     UInt nobetter = 0, activeChainsSize = sizeof(activeChains)/sizeof(activeChains[0]), randomResiduesSize = sizeof(randomResidues)/sizeof(randomResidues[0]), activeResiduesSize = sizeof(activeResidues)/sizeof(activeResidues[0]);
     UInt lResidues = sizeof(allowedLResidues)/sizeof(allowedLResidues[0]), dResidues = sizeof(allowedDResidues)/sizeof(allowedDResidues[0]);
     UInt name, timeid, sec, mutant = 0, numResidues, plateau = activeResiduesSize;
@@ -125,7 +125,7 @@ int main (int argc, char* argv[])
         {
             bundle->protOpt(backboneRelaxation);
         }
-
+        randStartE = bundle->protEnergy();
         //--Determine next mutation position
         mutantPosition.clear();
         mutantPosition = getMutationPosition(bundle, activeChains, activeChainsSize, activeResidues, activeResiduesSize);
@@ -239,8 +239,8 @@ int main (int argc, char* argv[])
         protein* model = static_cast<protein*>(modelMol);
         bindingEnergy.clear();
         bindingEnergy = model->chainBindingEnergy();
-        //if (bindingEnergy[0] < 100000)
-        //{
+        if (bindingEnergy[0] < randStartE)
+        {
             name = rand() % 100;
             sec = time(NULL);
             timeid = name + sec;
@@ -273,7 +273,7 @@ int main (int argc, char* argv[])
             finalline << endl;
             finalline.close();
             fs.close();
-        //}
+        }
         delete theModelPDB;
         bindingEnergy.clear(),sequencePool.clear(),proteinSequence.clear(), chainSequence.clear(), mutantPosition.clear(), chainSequence.clear(), sequencePosition.clear(), randomPosition.clear();
         bindingEnergy.resize(0),sequencePool.resize(0),proteinSequence.resize(0), chainSequence.resize(0), mutantPosition.resize(0), chainSequence.resize(0), sequencePosition.resize(0), randomPosition.resize(0);
