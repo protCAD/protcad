@@ -1462,7 +1462,7 @@ double protein::getMedianResEnergy(UIntVec _activeChains)
     {
         for (UInt j = 0; j < itsChains[_activeChains[i]]->itsResidues.size(); j++)
         {
-            resE = resEnergy(i,j);
+            resE = resEnergy(_activeChains[i],j);
             resEnergies.push_back(resE);
         }
     }
@@ -3282,11 +3282,13 @@ void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UInt _activeChain
     // -pike 2013
 
     //--Initialize variables for loop, calculate starting energy and build energy vectors---------------
-    double deltaTheta = 0, Energy, pastEnergy = intraSoluteEnergy(true, _activeChain), totalpreposE = 0, avepreposE = -1E10, preposE;
-    UInt randchain, randres, randrestype, allowedRotsize, randrot, nobetter = 0, _plateau = 100, number = 0;
+    double deltaTheta = 0, Energy, resE, medResE, pastEnergy = intraSoluteEnergy(true, _activeChain);
+    UInt randchain, randres, randrestype, allowedRotsize, randrot, nobetter = 0, _plateau = 100;
     UInt resNum, randtype, thisone, breakout;
     bool skip;
     vector < vector <double> > currentRot;
+    UIntVec activeChains;
+    activeChains.push_back(_activeChain);
     vector <UIntVec> allowedRots;
     srand (time(NULL));
 
@@ -3308,11 +3310,11 @@ void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UInt _activeChain
             }
         } while (skip);
         randrestype = getTypeFromResNum(randchain, randres);
-        preposE = getPositionSoluteEnergy(randchain,randres,false);
         nobetter++;
 
         //--Backbone optimization-----------------------------------------------------------------------
-        if (nobetter > _plateau && _backbone && preposE > avepreposE)
+        medResE = getMedianResEnergy(activeChains), resE = resEnergy(randchain, randres);
+        if (nobetter > _plateau && _backbone && resE > medResE)
         {   //--randomly choose phi or psi, and change in angle of -1 or +1 degree
             randtype = rand() % 2;
             do
@@ -3322,6 +3324,7 @@ void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UInt _activeChain
             //--transform angles while energy improves, until energy degrades, then revert
             do
             {   setDihedralLocal(randchain, randres, deltaTheta, randtype);
+                itsChains[randchain]->itsResidues[randres]->setMoved(1);
                 thisone = 0;
                 //--Energy test
                 updatePositionDielectrics(randchain, randres);
@@ -3332,10 +3335,11 @@ void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UInt _activeChain
                 }
             } while (thisone == 1);
             setDihedralLocal(randchain, randres, (deltaTheta*-1), randtype);
+            itsChains[randchain]->itsResidues[randres]->setMoved(1);
         }
 
         //--Rotamer optimization-----------------------------------------------------------------------
-        if (preposE > avepreposE)
+        if (resE > medResE)
         {
             currentRot = getSidechainDihedrals(randchain, randres);
             allowedRots = getAllowedRotamers(randchain, randres, randrestype);
@@ -3347,6 +3351,7 @@ void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UInt _activeChain
                 for (UInt j = 0; j < allowedRotsize; j ++)
                 {   randrot = rand() % allowedRots[b].size();
                     setRotamerWBC(randchain, randres, b, allowedRots[b][randrot]);
+                    itsChains[randchain]->itsResidues[randres]->setMoved(1);
                     //--Energy test
                     updatePositionDielectrics(randchain, randres);
                     Energy = intraSoluteEnergy(false, _activeChain);
@@ -3361,15 +3366,9 @@ void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UInt _activeChain
             }
             if (breakout == 0)
             {   setSidechainDihedralAngles(randchain, randres, currentRot);
+                itsChains[randchain]->itsResidues[randres]->setMoved(1);
             }
         }
-
-        //--check status of optimization---------------------------------------------------------------
-        if (number == _plateau)
-        {
-            number = 0, totalpreposE = 0;
-        }
-        number++, totalpreposE = (totalpreposE + preposE), avepreposE = (totalpreposE/number);
     } while (nobetter < _plateau * 1.2);
     return;
 }
