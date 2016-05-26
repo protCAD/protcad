@@ -1387,7 +1387,10 @@ double protein::protEnergy()
 
 double protein::resEnergy(UInt chainIndex, UInt resIndex)
 {
-    updateEnergyDatabase(energies);
+    if (itsChains[chainIndex]->itsResidues[resIndex]->getMoved() != 0)
+    {
+        updateEnergyDatabase(energies);
+    }
     double resEnergy = 0;
     UInt chaini, chainj, resi, resj, k;
     for (chaini = 0; chaini < itsChains.size(); chaini++)
@@ -1426,6 +1429,7 @@ double protein::getMedianResEnergy()
 {
     double median, resE;
     vector <double> resEnergies;
+    updateEnergyDatabase(energies);
     for (UInt i = 0; i < itsChains.size(); i++)
     {
         for (UInt j = 0; j < itsChains[i]->itsResidues.size(); j++)
@@ -1453,11 +1457,40 @@ double protein::getMedianResEnergy(UIntVec _activeChains)
 {
     double median, resE;
     vector <double> resEnergies;
+    updateEnergyDatabase(energies);
     for (UInt i = 0; i < _activeChains.size(); i++)
     {
         for (UInt j = 0; j < itsChains[_activeChains[i]]->itsResidues.size(); j++)
         {
             resE = resEnergy(i,j);
+            resEnergies.push_back(resE);
+        }
+    }
+    size_t size = resEnergies.size();
+
+    sort(resEnergies.begin(), resEnergies.end());
+
+    if (size  % 2 == 0)
+    {
+      median = (resEnergies[size / 2 - 1] + resEnergies[size / 2]) / 2;
+    }
+    else
+    {
+      median = resEnergies[size / 2];
+    }
+    return median;
+}
+
+double protein::getMedianResEnergy(UIntVec _activeChains, UIntVec _activeResidues)
+{
+    double median, resE;
+    vector <double> resEnergies;
+    updateEnergyDatabase(energies);
+    for (UInt i = 0; i < _activeChains.size(); i++)
+    {
+        for (UInt j = 0; j < _activeResidues.size(); j++)
+        {
+            resE = resEnergy(_activeChains[i], _activeResidues[j]);
             resEnergies.push_back(resE);
         }
     }

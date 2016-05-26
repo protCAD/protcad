@@ -64,7 +64,7 @@ int main (int argc, char* argv[])
     double phi, bestEnergy, pastEnergy, Energy;
     UInt nobetter = 0, activeChainsSize = sizeof(activeChains)/sizeof(activeChains[0]), randomResiduesSize = sizeof(randomResidues)/sizeof(randomResidues[0]), activeResiduesSize = sizeof(activeResidues)/sizeof(activeResidues[0]);
     UInt lResidues = sizeof(allowedLResidues)/sizeof(allowedLResidues[0]), dResidues = sizeof(allowedDResidues)/sizeof(allowedDResidues[0]);
-    UInt name, timeid, sec, mutant = 0, numResidues, plateau = 10;
+    UInt name, timeid, sec, mutant = 0, numResidues, plateau = activeResiduesSize;
     vector < UInt > mutantPosition, chainSequence, sequencePosition, randomPosition;
     vector < vector < UInt > > sequencePool, proteinSequence, finalSequence;
     vector < double > bindingEnergy;
@@ -97,6 +97,7 @@ int main (int argc, char* argv[])
         {
             for (UInt j = 0; j < randomResiduesSize; j++)
             {
+                bundle->setMoved(activeChains[i],randomResidues[j],1);
                 bundle->activateForRepacking(activeChains[i], randomResidues[j]);
                 randomPosition.push_back(activeChains[i]);
                 randomPosition.push_back(randomResidues[j]);
@@ -323,7 +324,16 @@ vector <UInt> getMutationPosition(protein* _prot, UInt *_activeChains, UInt _act
     UInt randres, randchain;
     double posE, medE;
     vector <UInt> _mutantPosition;
-    medE = _prot->getMedianResEnergy();
+    UIntVec activeChains, activeResidues;
+    for (UInt i = 0; i < _activeChainsSize; i++)
+    {
+        activeChains.push_back(_activeChains[i]);
+    }
+    for (UInt i = 0; i < _activeResiduesSize; i++)
+    {
+        activeResidues.push_back(_activeResidues[i]);
+    }
+    medE = _prot->getMedianResEnergy(activeChains, activeResidues);
 
     //--find random position with worse than median energy
     do

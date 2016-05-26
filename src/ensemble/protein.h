@@ -167,6 +167,7 @@ public:
     double deltaH(UInt chainIndex, UInt resIndex);
     double getMedianResEnergy();
     double getMedianResEnergy(UIntVec _activeChains);
+    double getMedianResEnergy(UIntVec _activeChains, UIntVec _activeResidues);
     double getMedianDeltaH();
     double getSolvationEnergy(UInt _chainIndex, UInt _residueIndex) {return itsChains[_chainIndex]->getSolvationEnergy(_residueIndex); }
 	double getAtomCharge(UInt _chainNum, UInt _resNum, UInt _atomNum) { return itsChains[_chainNum]->getAtomCharge(_resNum, _atomNum); }
