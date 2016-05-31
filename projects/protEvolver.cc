@@ -22,8 +22,10 @@
 
 vector <UInt> getChainSequence(protein* _prot, UInt _chainIndex);
 vector <UInt> getMutationPosition(protein* _prot, UIntVec &_activeChains, UIntVec &_activeResidues);
-UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, UIntVec &_mutantPosition, UIntVec &_aminoacids);
+UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition);
+void createPossibleMutantsDatabase(protein* bundle, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedLResidues, bool _homosymmetric);
 vector < vector < UInt > > buildSequencePool();
+vector < vector < UInt > > buildPossibleMutants();
 enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dAT,dW,dY,dV,Hce,Pch,Csf};
 string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hn","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dQ","dE","dEh","dHd","dHe","dHn","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dAT","dW","dY","dV","Hce","Pch","Csf"};
 
@@ -88,7 +90,7 @@ int main (int argc, char* argv[])
     double phi, bestEnergy, pastEnergy, Energy, randStartE;
     UInt timeid, sec, mutant = 0, numResidues, plateau = activeResiduesSize, nobetter = 0;
     vector < UInt > mutantPosition, chainSequence, sequencePosition, randomPosition;
-    vector < vector < UInt > > sequencePool, proteinSequence, finalSequence;
+    vector < vector < UInt > > sequencePool, proteinSequence, finalSequence, possibleMutants;
     vector < double > bindingEnergy;
     stringstream convert;
     string infile = argv[1];
@@ -98,19 +100,20 @@ int main (int argc, char* argv[])
     string tempModel = startstr + "_temp.pdb";
     srand (getpid());
 
-    //--determine which amino acids are possible for each position from activeResidues
+    //--determine which allowed amino acids are possible for each position from activeResidues
     PDBInterface* thePDB = new PDBInterface(infile);
     ensemble* theEnsemble = thePDB->getEnsemblePointer();
     molecule* pMol = theEnsemble->getMoleculePointer(0);
     protein* bundle = static_cast<protein*>(pMol);
-    sequencePool = buildSequencePool();
-    if (homoSymmetric)
+    possibleMutants = buildPossibleMutants();
+    cout << "test1" << endl;
+    if(possibleMutants.size() < activeResidues.size())
     {
-        for (UInt i = 1; i < bundle->getNumChains(); i++)
-        {
-            bundle->symmetryLinkChainAtoB(i, activeChains[0]);
-        }
+        cout << "test2" << endl;
+        createPossibleMutantsDatabase(bundle, activeChains, activeResidues, allowedLResidues, homoSymmetric);
+        possibleMutants = buildPossibleMutants();
     }
+    cout << "test3" << endl;
     delete thePDB;
 
     //--Run multiple independent evolution cycles-----------------------------------------------------
@@ -128,6 +131,7 @@ int main (int argc, char* argv[])
                 bundle->symmetryLinkChainAtoB(i, activeChains[0]);
             }
         }
+        cout << "test4" << endl;
 
         //--load in initial pdb and mutate in random starting sequence on active chains and random residues
         nobetter = 0;
@@ -142,12 +146,14 @@ int main (int argc, char* argv[])
                 phi = bundle->getPhi(activeChains[i], randomResidues[j]);
                 if (phi > 0 && phi < 180)
                 {
-                    mutant = getProbabilisticMutation(sequencePool, randomPosition, allowedDResidues);
+                    mutant = getProbabilisticMutation(sequencePool, possibleMutants, randomPosition);
                     bundle->mutateWBC(activeChains[i], randomResidues[j], mutant);
                 }
                 if (phi < 0 && phi > -180)
                 {
-                    mutant = getProbabilisticMutation(sequencePool, randomPosition, allowedLResidues);
+                    cout << "test5" << endl;
+                    mutant = getProbabilisticMutation(sequencePool, possibleMutants, randomPosition);
+                    cout << "test6" << endl;
                     bundle->mutateWBC(activeChains[i], randomResidues[j], mutant);
                 }
                 randomPosition.clear();
@@ -215,12 +221,12 @@ int main (int argc, char* argv[])
                         phi = bundle->getPhi(mutantPosition[0], mutantPosition[1]);
                         if (phi > 0 && phi < 180)
                         {
-                            mutant = getProbabilisticMutation(sequencePool, mutantPosition, allowedDResidues);
+                            mutant = getProbabilisticMutation(sequencePool, possibleMutants, mutantPosition);
                             bundle->mutateWBC(mutantPosition[0],mutantPosition[1], mutant);
                         }
                         if (phi < 0 && phi > -180)
                         {
-                            mutant = getProbabilisticMutation(sequencePool, mutantPosition, allowedLResidues);
+                            mutant = getProbabilisticMutation(sequencePool, possibleMutants, mutantPosition);
                             bundle->mutateWBC(mutantPosition[0],mutantPosition[1], mutant);
                         }
                     }
@@ -295,11 +301,11 @@ int main (int argc, char* argv[])
                 finalSequence.push_back(chainSequence);
             }
             fstream finalline;
-            finalline.open ("final.out", fstream::in | fstream::out | fstream::app);
+            finalline.open ("results.out", fstream::in | fstream::out | fstream::app);
             finalline << timeid << " " << bindingEnergy[0] << " " << bindingEnergy[1] << " ";
 
             fstream fs;
-            fs.open ("finalsequences.out", fstream::in | fstream::out | fstream::app);
+            fs.open ("sequencepool.out", fstream::in | fstream::out | fstream::app);
             for (UInt i = 0; i < activeChainsSize; i++)
             {
                 for (UInt j = 0; j < finalSequence[i].size(); j++)
@@ -358,7 +364,7 @@ vector <UInt> getMutationPosition(protein* _prot, UIntVec &_activeChains, UIntVe
     return _mutantPosition;
 }
 
-UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, UIntVec &_mutantPosition, UIntVec &_aminoacids)
+UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition)
 {
     int mutant, chance, entropy;
     double acceptance;
@@ -377,7 +383,8 @@ UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, UIntVec
     {
         chance = (rand() % 100) + 1;
         entropy = (rand() % 100) + 1; //sequence entropy determined by pooling linear decline to resolve minima after suitable diversity
-        mutant = _aminoacids[rand() % _aminoacids.size()];
+        UInt positionPossibles = _possibleMutants[_mutantPosition[1]].size();
+        mutant = _possibleMutants[_mutantPosition[1]][rand() % positionPossibles];
         int pooling = -0.316 * count + 190; //300 sequences equals 5% chance of pooling sequences, 100% at 600
         if (entropy > pooling)
         {
@@ -393,7 +400,7 @@ UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, UIntVec
 
 vector < vector < UInt > > buildSequencePool()
 {
-    ifstream file("finalsequences.out");
+    ifstream file("sequencepool.out");
     string item, line;
     vector < UInt > sequence;
     vector < vector < UInt > > sequencePool;
@@ -412,4 +419,73 @@ vector < vector < UInt > > buildSequencePool()
     }
     file.close();
     return sequencePool;
+}
+
+vector < vector < UInt > > buildPossibleMutants()
+{
+    ifstream file("possiblemutants.out");
+    string item, line;
+    vector < UInt > _position;
+    vector < vector < UInt > > _possibleMutants;
+    while(getline(file,line))
+    {
+        stringstream stream(line);
+        while(getline(stream,item,','))
+        {
+            stringstream aaString(item);
+            int aaIndex;
+            aaString >> aaIndex;
+            _position.push_back(aaIndex);
+        }
+        _possibleMutants.push_back(_position);
+        _position.clear();
+    }
+    file.close();
+    return _possibleMutants;
+}
+
+void createPossibleMutantsDatabase(protein* _bundle, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedLResidues, bool _homoSymmetric)
+{
+    double Energy;
+    fstream pm;
+    pm.open ("possiblemutants.out", fstream::in | fstream::out | fstream::app);
+    if (_homoSymmetric)
+    {
+        for (UInt i = 1; i < _bundle->getNumChains(); i++)
+        {
+            _bundle->symmetryLinkChainAtoB(i, _activeChains[0]);
+        }
+    }
+    for (UInt i = 0; i < _activeChains.size(); i++)
+    {
+        for (UInt j = 0; j <_activeResidues.size(); j++)
+        {
+            for (UInt k = 0; k <_allowedLResidues.size(); k++)
+            {
+                _bundle->activateForRepacking(_activeChains[i], _activeResidues[j]);
+                _bundle->mutateWBC(_activeChains[i], _activeResidues[j], _allowedLResidues[k]);
+                UIntVec allowedRots = _bundle->getAllowedRotamers(_activeChains[i], _activeResidues[j], _allowedLResidues[k], 0);
+                for (UInt l = 0; l < allowedRots.size(); l++)
+                {
+                    _bundle->setRotamerWBC(_activeChains[i], _activeResidues[j], 0, allowedRots[l]);
+                    _bundle->setMoved(_activeChains[i], _activeResidues[j], 1);
+                    if (_homoSymmetric)
+                    {
+                        Energy = _bundle->intraSoluteEnergy(true, _activeChains[0]);
+                    }
+                    else
+                    {
+                        Energy = _bundle->protEnergy();
+                    }
+                    if (Energy < 0)
+                    {
+                        pm << _allowedLResidues[k] << ",";
+                        break;
+                    }
+                }
+            }
+            _bundle->mutateWBC(_activeChains[i], _activeResidues[j], A);
+            pm << endl;
+        }
+    }
 }
