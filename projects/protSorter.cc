@@ -42,7 +42,7 @@ int main (int argc, char* argv[])
         cout << endl;
     }*/
 
-    /*create evo data file
+    //create evo data file
     string inFrame;
     DIR *pdir;
     struct dirent *pent;
@@ -61,21 +61,25 @@ int main (int argc, char* argv[])
             molecule* modelMol = theModelEnsemble->getMoleculePointer(0);
             protein* model = static_cast<protein*>(modelMol);
             model->silenceMessages();
-            fstream fs;
-            fs.open ("finalsequences.test.out", fstream::in | fstream::out | fstream::app);
-            for (UInt i = 0; i < model->getNumResidues(1); i++)
+	    double E = model->intraSoluteEnergy(true);
+            if (E < 12680900)
             {
-                fs << model->getTypeFromResNum(1,i) << ",";
-            }
-            fs << endl;
-            fs.close();
+            	fstream fs;
+            	fs.open ("finalsequences.test.out", fstream::in | fstream::out | fstream::app);
+            	for (UInt i = 0; i < model->getNumResidues(0); i++)
+            	{
+                	fs << model->getTypeFromResNum(0,i) << ",";
+            	}
+            	fs << endl;
+            	fs.close();
+	    }
             delete theModelPDB;
         }
     }
-    closedir(pdir);*/
+    closedir(pdir);
 
     //create evo final file
-    string inFrame;
+    /*string inFrame;
     DIR *pdir;
     struct dirent *pent;
     pdir=opendir(".");
@@ -107,7 +111,8 @@ int main (int argc, char* argv[])
             delete theModelPDB;
         }
     }
-    closedir(pdir);
+    closedir(pdir);*/
+
     return 0;
 }
 
