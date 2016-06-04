@@ -87,6 +87,7 @@ int main (int argc, char* argv[])
     }
 
     //--set initial variables
+    srand (getpid());
     double phi, bestEnergy, pastEnergy, Energy, randStartE;
     UInt timeid, sec, mutant = 0, numResidues, plateau = activeResiduesSize, nobetter = 0;
     vector < UInt > mutantPosition, chainSequence, sequencePosition, randomPosition;
@@ -98,7 +99,7 @@ int main (int argc, char* argv[])
     UInt name = rand() % 100000000;
     convert << name, startstr = convert.str();
     string tempModel = startstr + "_temp.pdb";
-    srand (getpid());
+
 
     //--determine which allowed amino acids are possible for each position from activeResidues
     PDBInterface* thePDB = new PDBInterface(infile);
@@ -278,7 +279,7 @@ int main (int argc, char* argv[])
         protein* model = static_cast<protein*>(modelMol);
         bindingEnergy.clear();
         bindingEnergy = model->chainBindingEnergy();
-        if (bindingEnergy[0] < randStartE)
+        if (bindingEnergy[0] < randStartE && bindingEnergy[0] < 0)
         {
             name = rand() % 100;
             sec = time(NULL);

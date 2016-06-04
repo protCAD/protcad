@@ -3286,10 +3286,8 @@ void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UInt _activeChain
     UInt randchain, randres, randrestype, allowedRotsize, randrot, nobetter = 0, _plateau = 100;
     UInt resNum, randtype, thisone, breakout;
     bool skip;
-    vector < vector <double> > currentRot;
-    UIntVec activeChains;
+    UIntVec activeChains, currentRot, allowedRots;
     activeChains.push_back(_activeChain);
-    vector <UIntVec> allowedRots;
     srand (time(NULL));
 
     //--Run optimizaiton loop to optimization minima, determined by _plateau----------------------------
@@ -3341,31 +3339,26 @@ void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UInt _activeChain
         //--Rotamer optimization-----------------------------------------------------------------------
         if (resE > medResE)
         {
-            currentRot = getSidechainDihedrals(randchain, randres);
-            allowedRots = getAllowedRotamers(randchain, randres, randrestype);
+            currentRot = getCurrentRotamer(randchain, randres);
+            allowedRots = getAllowedRotamers(randchain, randres, randrestype, 0);
             breakout = 0;
 
             //--Try a max of 1/3 of allowed rotamers per branchpoint and keep first improvement, else revert
-            for (UInt b = 0; b < residue::getNumBpt(randrestype); b++)
-            {   allowedRotsize = allowedRots[b].size()*0.33;
-                for (UInt j = 0; j < allowedRotsize; j ++)
-                {   randrot = rand() % allowedRots[b].size();
-                    setRotamerWBC(randchain, randres, b, allowedRots[b][randrot]);
-                    itsChains[randchain]->itsResidues[randres]->setMoved(1);
-                    //--Energy test
-                    updatePositionDielectrics(randchain, randres);
-                    Energy = intraSoluteEnergy(false, _activeChain);
-                    if (Energy < (pastEnergy-0.05))
-                    {   breakout = 1, nobetter = 0, pastEnergy = Energy;
-                        break;
-                    }
-                }
-                if (breakout == 1)
-                {   break;
+            allowedRotsize = allowedRots.size()*0.33;
+            for (UInt j = 0; j < allowedRotsize; j ++)
+            {   randrot = rand() % allowedRots.size();
+                setRotamerWBC(randchain, randres, 0, allowedRots[randrot]);
+                itsChains[randchain]->itsResidues[randres]->setMoved(1);
+                //--Energy test
+                updatePositionDielectrics(randchain, randres);
+                Energy = intraSoluteEnergy(false, _activeChain);
+                if (Energy < (pastEnergy-0.05))
+                {   breakout = 1, nobetter = 0, pastEnergy = Energy;
+                    break;
                 }
             }
             if (breakout == 0)
-            {   setSidechainDihedralAngles(randchain, randres, currentRot);
+            {   setRotamerWBC(randchain, randres, 0, currentRot[0]);
                 itsChains[randchain]->itsResidues[randres]->setMoved(1);
             }
         }
