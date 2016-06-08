@@ -61,18 +61,18 @@ int main (int argc, char* argv[])
             molecule* modelMol = theModelEnsemble->getMoleculePointer(0);
             protein* model = static_cast<protein*>(modelMol);
             model->silenceMessages();
-	    double E = model->intraSoluteEnergy(true);
-            if (E < 12680900)
-            {
+            //double E = model->intraSoluteEnergy(true);
+            //if (E < 0)
+            //{
             	fstream fs;
-            	fs.open ("finalsequences.test.out", fstream::in | fstream::out | fstream::app);
+                fs.open ("sequencepool.test.out", fstream::in | fstream::out | fstream::app);
             	for (UInt i = 0; i < model->getNumResidues(0); i++)
             	{
                 	fs << model->getTypeFromResNum(0,i) << ",";
             	}
             	fs << endl;
             	fs.close();
-	    }
+        //}
             delete theModelPDB;
         }
     }

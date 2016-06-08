@@ -361,11 +361,10 @@ vector <UInt> getMutationPosition(protein* _prot, UIntVec &_activeChains, UIntVe
 
 UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition, UInt *_activeResidues)
 {
-    int mutant, chance, entropy;
-    double acceptance;
+    float mutant, chance, entropy, acceptance, pooling, resFreqAccept;
     vector <UInt> resFreqs(58,1);
     UInt position;
-    int count = _sequencePool.size();
+    float count = _sequencePool.size();
 
     //--get sequence evolution results for position
     for (UInt i = 0; i < _sequencePool.size(); i++)
@@ -390,10 +389,11 @@ UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector 
         chance = (rand() % 100) + 1;
         entropy = (rand() % 100) + 1; //sequence entropy determined by pooling linear decline to resolve minima after suitable diversity
         mutant = _possibleMutants[position][rand() % positionPossibles];
-        int pooling = -0.316 * count + 190; //300 sequences equals 5% chance of pooling sequences, 100% at 600
+        pooling = (-0.316 * count) + 285; //600 sequences equals 5% chance of pooling sequences, 100% at >= 900
         if (entropy > pooling)
         {
-            acceptance = (resFreqs[mutant]/(count-1))*100; //chance of accepting given amino acid at position is proportional to population
+            resFreqAccept = resFreqs[mutant];
+            acceptance = ((resFreqAccept/(count-1))*100); //chance of accepting given amino acid at position is proportional to population
         }
         else
         {
