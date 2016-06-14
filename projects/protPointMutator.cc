@@ -44,15 +44,16 @@ int main (int argc, char* argv[])
     //int chainsSize = sizeof(chains)/sizeof(chains[0]);
     //int residues[] = {1,3,5,7,9,13,15,17,19,21,28,30,32,34,36,54,57,59,61,70,72,74,76,78,86,88,90,92,94,108,110,112,114,116,127,129,131,133,151,153,155,157,159,161,166,169,172,174,181,183,185};//{46,47,61,92,95};//61,30,9,129/46,47,61,92,95/,87,91,110,150,152{1,3,5,7,9,13,15,17,19,21,28,30,32,34,36,54,57,59,61,70,72,74,76,78,86,88,90,92,94,108,110,112,114,116,127,129,131,133,151,153,155,157,159,161,166,169,172,174,181,183,185};
     //int residuesSize = sizeof(residues)/sizeof(residues[0]);
-    int resID[] = {R,K};
+    int resID[] = {W};
     UInt resIDsize = sizeof(resID)/sizeof(resID[0]);
     double Energy, bestE;
 
 	//--Mutations
     for (UInt h = 0; h < resIDsize; h++)
     {
-        for (UInt i = 0; i < numres; i++)
-        {
+        //for (UInt i = 0; i < numres; i++)
+        //{
+            UInt i = 3;
             PDBInterface* thePDB = new PDBInterface(infile);
             ensemble* theEnsemble = thePDB->getEnsemblePointer();
             molecule* pMol = theEnsemble->getMoleculePointer(0);
@@ -85,7 +86,7 @@ int main (int argc, char* argv[])
                 cout << i << " " << aminoAcidString[resID[h]] << " " << bestE << endl;
             }
             delete thePDB;
-        }
+        //}
     }
 	return 0;
 }
