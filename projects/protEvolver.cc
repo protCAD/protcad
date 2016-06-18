@@ -277,9 +277,17 @@ int main (int argc, char* argv[])
             ensemble* theModelEnsemble = theModelPDB->getEnsemblePointer();
             molecule* modelMol = theModelEnsemble->getMoleculePointer(0);
             protein* model = static_cast<protein*>(modelMol);
+            if (homoSymmetric)
+            {
+                Energy = model->intraSoluteEnergy(true, activeChains[0]);
+            }
+            else
+            {
+                Energy = model->protEnergy();
+            }
             bindingEnergy.clear();
             bindingEnergy = model->chainBindingEnergy();
-            if (bindingEnergy[0] < randStartE && bindingEnergy[0] < 0)
+            if (Energy < randStartE)
             {
                 name = rand() % 100;
                 sec = time(NULL);
