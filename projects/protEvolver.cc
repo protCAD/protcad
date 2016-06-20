@@ -174,8 +174,6 @@ int main (int argc, char* argv[])
             Energy = bundle->protEnergy();
         }
         randStartE = Energy;
-        if (randStartE < 0)
-        {
             //--Determine next mutation position
             mutantPosition.clear();
             mutantPosition = getMutationPosition(bundle, activeChains, activeResidues);
@@ -323,11 +321,6 @@ int main (int argc, char* argv[])
                 fs.close();
             }
             delete theModelPDB;
-        }
-        else
-        {
-            delete thePDB;
-        }
         bindingEnergy.clear(),sequencePool.clear(),proteinSequence.clear(), chainSequence.clear(), mutantPosition.clear(), chainSequence.clear(), sequencePosition.clear(), randomPosition.clear();
         bindingEnergy.resize(0),sequencePool.resize(0),proteinSequence.resize(0), chainSequence.resize(0), mutantPosition.resize(0), chainSequence.resize(0), sequencePosition.resize(0), randomPosition.resize(0);
     }
