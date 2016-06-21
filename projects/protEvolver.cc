@@ -115,7 +115,7 @@ int main (int argc, char* argv[])
     delete thePDB;
 
     //--Run multiple independent evolution cycles-----------------------------------------------------
-    for (UInt a = 1; a < 500; a++)
+    for (UInt a = 1; a < 1000; a++)
     {
         PDBInterface* thePDB = new PDBInterface(infile);
         ensemble* theEnsemble = thePDB->getEnsemblePointer();
@@ -174,153 +174,153 @@ int main (int argc, char* argv[])
             Energy = bundle->protEnergy();
         }
         randStartE = Energy;
-            //--Determine next mutation position
-            mutantPosition.clear();
-            mutantPosition = getMutationPosition(bundle, activeChains, activeResidues);
-            pdbWriter(bundle, tempModel);
-            pastEnergy = Energy;
-            bestEnergy = Energy;
-            delete thePDB;
+        //--Determine next mutation position
+        mutantPosition.clear();
+        mutantPosition = getMutationPosition(bundle, activeChains, activeResidues);
+        pdbWriter(bundle, tempModel);
+        pastEnergy = Energy;
+        bestEnergy = Energy;
+        delete thePDB;
 
-            //--Run through a single evolutionary path (ancestral line) till hitting plateau
-            do
-            {
-                PDBInterface* thePDB = new PDBInterface(infile);
-                ensemble* theEnsemble = thePDB->getEnsemblePointer();
-                molecule* pMol = theEnsemble->getMoleculePointer(0);
-                protein* bundle = static_cast<protein*>(pMol);
-                if (homoSymmetric)
-                {
-                    for (UInt i = 1; i < bundle->getNumChains(); i++)
-                    {
-                        bundle->symmetryLinkChainAtoB(i, activeChains[0]);
-                    }
-                }
-
-                //--Mutate current sequence, new mutant and optimize system
-                nobetter++;
-                for (UInt i = 0; i < activeChains.size(); i++)
-                {
-                    numResidues = bundle->getNumResidues(activeChains[i]);
-                    for (UInt j = 0; j < numResidues; j++)
-                    {
-                        bundle->setMoved(activeChains[i], j,1);
-                        bundle->activateForRepacking(activeChains[i],j);
-                        if (activeChains[i] == mutantPosition[0] && j == mutantPosition[1])
-                        {
-                            //--new mutant
-                            sequencePosition.push_back(i);
-                            sequencePosition.push_back(j);
-                            phi = bundle->getPhi(mutantPosition[0], mutantPosition[1]);
-                            if (phi > 0 && phi < 180)
-                            {
-                                mutant = getProbabilisticMutation(sequencePool, possibleMutants, mutantPosition, _activeResidues);
-                                bundle->mutateWBC(mutantPosition[0],mutantPosition[1], mutant);
-                            }
-                            if (phi < 0 && phi > -180)
-                            {
-                                mutant = getProbabilisticMutation(sequencePool, possibleMutants, mutantPosition, _activeResidues);
-                                bundle->mutateWBC(mutantPosition[0],mutantPosition[1], mutant);
-                            }
-                        }
-                        else if (j != frozenResidues[0] && j != frozenResidues[1])
-                        {
-                            bundle->mutateWBC(activeChains[i],j, proteinSequence[i][j]);
-                        }
-                    }
-                }
-                if (homoSymmetric)
-                {
-                    bundle->protOpt(backboneRelaxation, frozenResidues, activeChains[0]);
-                }
-                else
-                {
-                    bundle->protOpt(backboneRelaxation);
-                }
-                protein* tempBundle = new protein(*bundle);
-
-                //--Determine next mutation position
-                mutantPosition.clear();
-                mutantPosition = getMutationPosition(bundle, activeChains, activeResidues);
-
-                //--Energy test
-                if (homoSymmetric)
-                {
-                    Energy = bundle->intraSoluteEnergy(true, activeChains[0]);
-                }
-                else
-                {
-                    Energy = bundle->protEnergy();
-                }
-                if (Energy < pastEnergy)
-                {
-                    if (Energy < bestEnergy)
-                    {
-                        bestEnergy = Energy;
-                        pdbWriter(tempBundle, tempModel);
-                    }
-                    proteinSequence[sequencePosition[0]][sequencePosition[1]] = mutant, pastEnergy = Energy;
-                    if (nobetter > 0) { nobetter--;
-                    }
-                    else{ nobetter = 0;
-                    }
-                }
-                sequencePosition.clear();
-                delete thePDB;
-                delete tempBundle;
-            }while (nobetter < plateau);
-
-            //--Print final energy and write a pdb file----------------------------------------------------
-            PDBInterface* theModelPDB = new PDBInterface(tempModel);
-            ensemble* theModelEnsemble = theModelPDB->getEnsemblePointer();
-            molecule* modelMol = theModelEnsemble->getMoleculePointer(0);
-            protein* model = static_cast<protein*>(modelMol);
+        //--Run through a single evolutionary path (ancestral line) till hitting plateau
+        do
+        {
+            PDBInterface* thePDB = new PDBInterface(infile);
+            ensemble* theEnsemble = thePDB->getEnsemblePointer();
+            molecule* pMol = theEnsemble->getMoleculePointer(0);
+            protein* bundle = static_cast<protein*>(pMol);
             if (homoSymmetric)
             {
-                Energy = model->intraSoluteEnergy(true, activeChains[0]);
+                for (UInt i = 1; i < bundle->getNumChains(); i++)
+                {
+                    bundle->symmetryLinkChainAtoB(i, activeChains[0]);
+                }
+            }
+
+            //--Mutate current sequence, new mutant and optimize system
+            nobetter++;
+            for (UInt i = 0; i < activeChains.size(); i++)
+            {
+                numResidues = bundle->getNumResidues(activeChains[i]);
+                for (UInt j = 0; j < numResidues; j++)
+                {
+                    bundle->setMoved(activeChains[i], j,1);
+                    bundle->activateForRepacking(activeChains[i],j);
+                    if (activeChains[i] == mutantPosition[0] && j == mutantPosition[1])
+                    {
+                        //--new mutant
+                        sequencePosition.push_back(i);
+                        sequencePosition.push_back(j);
+                        phi = bundle->getPhi(mutantPosition[0], mutantPosition[1]);
+                        if (phi > 0 && phi < 180)
+                        {
+                            mutant = getProbabilisticMutation(sequencePool, possibleMutants, mutantPosition, _activeResidues);
+                            bundle->mutateWBC(mutantPosition[0],mutantPosition[1], mutant);
+                        }
+                        if (phi < 0 && phi > -180)
+                        {
+                            mutant = getProbabilisticMutation(sequencePool, possibleMutants, mutantPosition, _activeResidues);
+                            bundle->mutateWBC(mutantPosition[0],mutantPosition[1], mutant);
+                        }
+                    }
+                    else if (j != frozenResidues[0] && j != frozenResidues[1])
+                    {
+                        bundle->mutateWBC(activeChains[i],j, proteinSequence[i][j]);
+                    }
+                }
+            }
+            if (homoSymmetric)
+            {
+                bundle->protOpt(backboneRelaxation, frozenResidues, activeChains[0]);
             }
             else
             {
-                Energy = model->protEnergy();
+                bundle->protOpt(backboneRelaxation);
             }
-            bindingEnergy.clear();
-            bindingEnergy = model->chainBindingEnergy();
-            if (Energy < randStartE)
-            {
-                name = rand() % 100;
-                sec = time(NULL);
-                timeid = name + sec;
-                stringstream convert;
-                string countstr;
-                convert << timeid, countstr = convert.str();
-                outFile = countstr + ".evo.pdb";
-                pdbWriter(model, outFile);
-                finalSequence.clear(), chainSequence.clear();
-                for (UInt i = 0; i < activeChains.size(); i++)
-                {
-                    chainSequence = getChainSequence(model, activeChains[i]);
-                    finalSequence.push_back(chainSequence);
-                }
-                fstream finalline;
-                finalline.open ("results.out", fstream::in | fstream::out | fstream::app);
-                finalline << timeid << " " << bindingEnergy[0] << " " << bindingEnergy[1] << " ";
+            protein* tempBundle = new protein(*bundle);
 
-                fstream fs;
-                fs.open ("sequencepool.out", fstream::in | fstream::out | fstream::app);
-                for (UInt i = 0; i < activeChains.size(); i++)
-                {
-                    for (UInt j = 0; j < finalSequence[i].size(); j++)
-                    {
-                        finalline << aminoAcidString[finalSequence[i][j]] << " ";
-                        fs << finalSequence[i][j] << ",";
-                    }
-                }
-                fs << endl;
-                finalline << endl;
-                finalline.close();
-                fs.close();
+            //--Determine next mutation position
+            mutantPosition.clear();
+            mutantPosition = getMutationPosition(bundle, activeChains, activeResidues);
+
+            //--Energy test
+            if (homoSymmetric)
+            {
+                Energy = bundle->intraSoluteEnergy(true, activeChains[0]);
             }
-            delete theModelPDB;
+            else
+            {
+                Energy = bundle->protEnergy();
+            }
+            if (Energy < pastEnergy)
+            {
+                if (Energy < bestEnergy)
+                {
+                    bestEnergy = Energy;
+                    pdbWriter(tempBundle, tempModel);
+                }
+                proteinSequence[sequencePosition[0]][sequencePosition[1]] = mutant, pastEnergy = Energy;
+                if (nobetter > 0) { nobetter--;
+                }
+                else{ nobetter = 0;
+                }
+            }
+            sequencePosition.clear();
+            delete thePDB;
+            delete tempBundle;
+        }while (nobetter < plateau);
+
+        //--Print final energy and write a pdb file----------------------------------------------------
+        PDBInterface* theModelPDB = new PDBInterface(tempModel);
+        ensemble* theModelEnsemble = theModelPDB->getEnsemblePointer();
+        molecule* modelMol = theModelEnsemble->getMoleculePointer(0);
+        protein* model = static_cast<protein*>(modelMol);
+        if (homoSymmetric)
+        {
+            Energy = model->intraSoluteEnergy(true, activeChains[0]);
+        }
+        else
+        {
+            Energy = model->protEnergy();
+        }
+        bindingEnergy.clear();
+        bindingEnergy = model->chainBindingEnergy();
+        if (Energy < (randStartE-10))
+        {
+            name = rand() % 100;
+            sec = time(NULL);
+            timeid = name + sec;
+            stringstream convert;
+            string countstr;
+            convert << timeid, countstr = convert.str();
+            outFile = countstr + ".evo.pdb";
+            pdbWriter(model, outFile);
+            finalSequence.clear(), chainSequence.clear();
+            for (UInt i = 0; i < activeChains.size(); i++)
+            {
+                chainSequence = getChainSequence(model, activeChains[i]);
+                finalSequence.push_back(chainSequence);
+            }
+            fstream finalline;
+            finalline.open ("results.out", fstream::in | fstream::out | fstream::app);
+            finalline << timeid << " " << bindingEnergy[0] << " " << bindingEnergy[1] << " ";
+
+            fstream fs;
+            fs.open ("sequencepool.out", fstream::in | fstream::out | fstream::app);
+            for (UInt i = 0; i < activeChains.size(); i++)
+            {
+                for (UInt j = 0; j < finalSequence[i].size(); j++)
+                {
+                    finalline << aminoAcidString[finalSequence[i][j]] << " ";
+                    fs << finalSequence[i][j] << ",";
+                }
+            }
+            fs << endl;
+            finalline << endl;
+            finalline.close();
+            fs.close();
+        }
+        delete theModelPDB;
         bindingEnergy.clear(),sequencePool.clear(),proteinSequence.clear(), chainSequence.clear(), mutantPosition.clear(), chainSequence.clear(), sequencePosition.clear(), randomPosition.clear();
         bindingEnergy.resize(0),sequencePool.resize(0),proteinSequence.resize(0), chainSequence.resize(0), mutantPosition.resize(0), chainSequence.resize(0), sequencePosition.resize(0), randomPosition.resize(0);
     }
@@ -395,7 +395,10 @@ UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector 
         chance = (rand() % 100) + 1;
         entropy = (rand() % 100) + 1; //sequence entropy determined by pooling linear decline to resolve minima after suitable diversity
         mutant = _possibleMutants[position][rand() % positionPossibles];
-        pooling = (-0.316 * count) + 285; //600 sequences equals 5% chance of pooling sequences, 100% at >= 900
+        pooling = (0.1*count) + 110.5; //At 100 sequences start pooling at <1%, at >= 1055 95%
+        if (pooling < 5){
+            pooling = 5;
+        }
         if (entropy > pooling)
         {
             resFreqAccept = resFreqs[mutant];
