@@ -23,9 +23,8 @@ int main (int argc, char* argv[])
     protein* bundle = static_cast<protein*>(pMol);
     t=clock();
     double Energy = bundle->protEnergy();
-    double symEnergy = bundle->intraSoluteEnergy(true, 0);
     t=clock()-t;
-    cout << "Time " << ((float)t)/CLOCKS_PER_SEC << " Energy " << Energy << " SymEnergy " << symEnergy << " TotalSym " << symEnergy+symEnergy+symEnergy+symEnergy+symEnergy+symEnergy << endl;
+    cout << "Time " << ((float)t)/CLOCKS_PER_SEC << " Energy " << Energy << endl;
     pdbWriter(bundle, infile);
 	return 0;
 }

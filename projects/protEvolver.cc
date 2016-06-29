@@ -89,7 +89,7 @@ int main (int argc, char* argv[])
     //--set initial variables
     srand (getpid());
     double phi, bestEnergy, pastEnergy, Energy, randStartE;
-    UInt timeid, sec, mutant = 0, numResidues, plateau = 5, nobetter = 0;
+    UInt timeid, sec, mutant = 0, numResidues, plateau = 10, nobetter = 0;
     vector < UInt > mutantPosition, chainSequence, sequencePosition, randomPosition;
     vector < vector < UInt > > sequencePool, proteinSequence, finalSequence, possibleMutants;
     vector < double > bindingEnergy;
