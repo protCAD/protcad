@@ -27,8 +27,8 @@ int main (int argc, char* argv[])
 		exit(1);
 	}
     string infile = argv[1];
-    enum aminoAcid {A,R,N,D,Dh,C,Cx,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,Hce,Pch,Csf};
-    //string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Q","E","Eh","Hd", "He","Hn","Hp","I","L","K","M","F","P","O","S","T","W","Y", "V","G","dA","dR","dN","dD","dDh","dC","dCx","dQ","dE","dEh","dHd","dHe","dHn","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV","Hce","Pch","Csf"};
+    enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dAT,dW,dY,dV,Hcd,Pch,Csf};
+    //string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hn","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dQ","dE","dEh","dHd","dHe","dHn","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dAT","dW","dY","dV","Hcd","Pch","Csf"};
     PDBInterface* thePDB = new PDBInterface(infile);
     ensemble* theEnsemble = thePDB->getEnsemblePointer();
     molecule* pMol = theEnsemble->getMoleculePointer(0);
@@ -43,38 +43,51 @@ int main (int argc, char* argv[])
     srand (time(NULL));
 	
     //--parameters
-    int chains[] = {0};
-	int chainsSize = sizeof(chains)/sizeof(chains[0]);
-    int residues[] = {0};//61,30,9,129/46,47,61,92,95/,87,91,110,150,152{1,3,5,7,9,13,15,17,19,21,28,30,32,34,36,54,57,59,61,70,72,74,76,78,86,88,90,92,94,108,110,112,114,116,127,129,131,133,151,153,155,157,159,161,166,169,172,174,181,183,185};
+    int chains[] = {1};
+    int chainsSize = sizeof(chains)/sizeof(chains[0]);
+    int residues[] = {95};//61,30,9,129/46,47,61,92,95/,87,91,110,150,152{1,3,5,7,9,13,15,17,19,21,28,30,32,34,36,54,57,59,61,70,72,74,76,78,86,88,90,92,94,108,110,112,114,116,127,129,131,133,151,153,155,157,159,161,166,169,172,174,181,183,185};
     int residuesSize = sizeof(residues)/sizeof(residues[0]);
-    int count = 0;
-
+    //int count = 0;
     //--variables
     UInt restype;
-    double Energy;
-    vector <UIntVec> allowedRots;
+    bool better;
+    double bestE = bundle->intraSoluteEnergy(true), chi;
+    string outFile = "opt." + infile;
     cout << "pdb " << "energy " << endl;
+    UInt randres, randchain, randrot;
+    UIntVec currentRot;
+    UIntVec allowedRots = bundle->getAllowedRotamers(0,47,Hcd,0);
 
-    for (int i = 0; i < chainsSize; i++)
+
+    for (UInt h = 0; h < 1000; h++)
     {
-        for (int j = 0; j < residuesSize; j++)
+        randres = residues[rand() % residuesSize];
+        randchain = chains[rand() % chainsSize];
+        restype = bundle->getTypeFromResNum(randchain, randres);
+        if (restype == Hcd)
         {
-            restype = bundle->getTypeFromResNum(chains[i], residues[j]);
-            allowedRots = bundle->getAllowedRotamers(chains[i], residues[j], restype);
-            for (UInt b = 0; b < residue::getNumBpt(restype); b++)
+            better = false;
+            currentRot = bundle->getCurrentRotamer(randchain, randres);
+            randrot = allowedRots[rand() % allowedRots.size()];
+            bundle->setRotamerWBC(randchain, randres, 0, randrot);
+            for (UInt l = 0; l < 10; l++)
             {
-                for (UInt m = 0; m < allowedRots[b].size(); m ++)
+                chi = l*36;
+                bundle->setChi(randchain,randres,1,0,chi);
+                double Energy = bundle->intraSoluteEnergy(true);
+                if (Energy < bestE)
                 {
-                   bundle->setRotamerWBC(chains[i], residues[j], b, allowedRots[b][m]);
-                   Energy = bundle->protEnergy();
-                   count++;
-                   stringstream convert;
-                   string countstr;
-                   convert << count, countstr = convert.str();
-                   string outFile = countstr + ".pdb";
-                   pdbWriter(bundle, outFile);
-                   cout << count << " " << Energy << " " << endl;
+                    bestE = Energy;
+                    better = true;
+                    pdbWriter(bundle, outFile);
+                    cout << randchain << " " << randres << " " << Energy << " improved!" << endl;
+                    break;
                 }
+            }
+            if (!better)
+            {
+                bundle->setChi(randchain,randres,1,0,(chi*-1));
+                bundle->setRotamerWBC(randchain, randres, 0, currentRot[0]);
             }
         }
     }

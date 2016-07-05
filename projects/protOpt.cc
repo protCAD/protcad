@@ -27,8 +27,26 @@ int main (int argc, char* argv[])
     molecule* pMol = theEnsemble->getMoleculePointer(0);
     protein* _prot = static_cast<protein*>(pMol);
 
+    bool backbone = false;
+    bool homoSymmetric = true;
+    UInt _frozenResidues[] = {3,5,6,13};
+
+    UIntVec frozenResidues;
+    UInt frozenResiduesSize = sizeof(_frozenResidues)/sizeof(_frozenResidues[0]);
+    for (UInt i = 0; i < frozenResiduesSize; i++)
+    {
+        frozenResidues.push_back(_frozenResidues[i]);
+    }
+    if (homoSymmetric)
+    {
+        for (UInt i = 1; i < _prot->getNumChains(); i++)
+        {
+            _prot->symmetryLinkChainAtoB(i, 0);
+        }
+    }
+
     t=clock();
-    _prot->protOpt(false);
+    _prot->protOpt(backbone, frozenResidues, 0);
     t=clock()-t;
     cout << "Time: " << ((float)t)/CLOCKS_PER_SEC << " Energy: " << _prot->protEnergy() << endl;
     pdbWriter(_prot, outFile);

@@ -102,14 +102,6 @@ void PDBAtomRecord::convert(string& _pdbAtomLine)
 	altLoc = _pdbAtomLine.substr(16,1);
 	//cout << "altLoc= " <<altLoc << endl;
 
-    if (resName == "HIS")  // default to primary protonation state
-    {
-        resName = "HIE";
-    }
-    if (resName == "HCE")
-    {
-        resName = "HIN";
-    }
 
 	if(hetflag)
     {
@@ -123,7 +115,10 @@ void PDBAtomRecord::convert(string& _pdbAtomLine)
     }
         
 	else{resName= _pdbAtomLine.substr(17,3);}
-
+    if (resName == "HIS")  // default to primary protonation state
+    {
+        resName = "HIE";
+    }
 	
         //cout << "resName= " <<resName << endl;
 

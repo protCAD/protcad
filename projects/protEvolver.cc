@@ -41,10 +41,10 @@ int main (int argc, char* argv[])
 
     //-- user inputs for evolution run
     UInt _activeChains[] = {0};                                                                 // chains active for mutation
-    UInt _allowedLResidues[] = {A,R,Q,E,I,L,K,M,F,W,Y,V,G};                                     // amino acids allowed with phi < 0
+    UInt _allowedLResidues[] = {A,I,L,M,F,W,Y,V};                                               // amino acids allowed with phi < 0
     UInt _allowedDResidues[] = {G};                                                             // amino acids allowed with phi > 0
-    UInt _activeResidues[] = {1,2,4,7,8,9,10,11,12,14,15,16,17,18,19,20,21,22,23,24,25,26,27};  // positions active for mutation
-    UInt _randomResidues[] = {1,2,4,7,8,9,10,11,12,14,15,16,17,18,19,20,21,22,23,24,25,26,27};  // positions active for a random start sequence initially
+    UInt _activeResidues[] = {7,10,14,17,21,24};                                                // positions active for mutation
+    UInt _randomResidues[] = {7,10,14,17,21,24};                                                // positions active for a random start sequence initially
     UInt _frozenResidues[] = {3,5,6,13};                                                        // positions that cannot move at all
     bool homoSymmetric = true;                                                                  // if true all chains are structurally symmetrical to the one listed active chain above
     bool backboneRelaxation = false;                                                            // if true allow minor backbone relaxation in structural optimization
@@ -285,7 +285,7 @@ int main (int argc, char* argv[])
         }
         bindingEnergy.clear();
         bindingEnergy = model->chainBindingEnergy();
-        if (Energy < (randStartE-10))
+        if (Energy < 0)
         {
             name = rand() % 100;
             sec = time(NULL);
