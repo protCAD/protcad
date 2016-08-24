@@ -23,7 +23,7 @@
 vector <UInt> getChainSequence(protein* _prot, UInt _chainIndex);
 vector <UInt> getMutationPosition(protein* _prot, UIntVec &_activeChains, UIntVec &_activeResidues);
 UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition, UInt *_activeResidues);
-void createPossibleMutantsDatabase(protein* bundle, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedLResidues, bool _homosymmetric);
+void createPossibleMutantsDatabase(protein* bundle, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedLResidues, UIntVec &_allowedDResidues, bool _homosymmetric);
 vector < vector < UInt > > buildSequencePool();
 vector < vector < UInt > > buildPossibleMutants();
 enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dAT,dW,dY,dV,Hce,Pch,Csf};
@@ -109,7 +109,7 @@ int main (int argc, char* argv[])
     possibleMutants = buildPossibleMutants();
     if(possibleMutants.size() < activeResidues.size())
     {
-        createPossibleMutantsDatabase(bundle, activeChains, activeResidues, allowedLResidues, homoSymmetric);
+        createPossibleMutantsDatabase(bundle, activeChains, activeResidues, allowedLResidues, allowedDResidues, homoSymmetric);
         possibleMutants = buildPossibleMutants();
     }
     delete thePDB;
@@ -457,7 +457,7 @@ vector < vector < UInt > > buildPossibleMutants()
     return _possibleMutants;
 }
 
-void createPossibleMutantsDatabase(protein* _bundle, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedLResidues, bool _homoSymmetric)
+void createPossibleMutantsDatabase(protein* _bundle, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedLResidues, UIntVec &_allowedDResidues, bool _homoSymmetric)
 {
     double Energy;
     fstream pm;
@@ -515,7 +515,49 @@ void createPossibleMutantsDatabase(protein* _bundle, UIntVec &_activeChains, UIn
                     }
                 }
             }
-            _bundle->mutateWBC(_activeChains[i], _activeResidues[j], A);
+            for (UInt k = 0; k <_allowedDResidues.size(); k++)
+            {
+                _bundle->activateForRepacking(_activeChains[i], _activeResidues[j]);
+                _bundle->mutateWBC(_activeChains[i], _activeResidues[j], _allowedDResidues[k]);
+                UIntVec allowedRots = _bundle->getAllowedRotamers(_activeChains[i], _activeResidues[j], _allowedDResidues[k], 0);
+                if (allowedRots.size() > 0)
+                {
+                    for (UInt l = 0; l < allowedRots.size(); l++)
+                    {
+                        _bundle->setRotamerWBC(_activeChains[i], _activeResidues[j], 0, allowedRots[l]);
+                        _bundle->setMoved(_activeChains[i], _activeResidues[j], 1);
+                        if (_homoSymmetric)
+                        {
+                            Energy = _bundle->intraSoluteEnergy(true, _activeChains[0]);
+                        }
+                        else
+                        {
+                            Energy = _bundle->protEnergy();
+                        }
+                        if (Energy < 0)
+                        {
+                            pm << _allowedDResidues[k] << ",";
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    if (_homoSymmetric)
+                    {
+                        Energy = _bundle->intraSoluteEnergy(true, _activeChains[0]);
+                    }
+                    else
+                    {
+                        Energy = _bundle->protEnergy();
+                    }
+                    if (Energy < 0)
+                    {
+                        pm << _allowedDResidues[k] << ",";
+                    }
+                }
+            }
+            _bundle->mutateWBC(_activeChains[i], _activeResidues[j], G);
             pm << endl;
         }
     }

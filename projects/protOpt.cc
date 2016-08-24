@@ -28,7 +28,7 @@ int main (int argc, char* argv[])
     protein* _prot = static_cast<protein*>(pMol);
 
     bool backbone = false;
-    bool homoSymmetric = true;
+    /*bool homoSymmetric = true;
     UInt _frozenResidues[] = {3,5,6,13};
 
     UIntVec frozenResidues;
@@ -43,10 +43,10 @@ int main (int argc, char* argv[])
         {
             _prot->symmetryLinkChainAtoB(i, 0);
         }
-    }
+    }*/
 
     t=clock();
-    _prot->protOpt(backbone, frozenResidues, 0);
+    _prot->protOpt(backbone);
     t=clock()-t;
     cout << "Time: " << ((float)t)/CLOCKS_PER_SEC << " Energy: " << _prot->protEnergy() << endl;
     pdbWriter(_prot, outFile);
