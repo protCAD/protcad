@@ -4,6 +4,8 @@
 #include "PDBInterface.h"
 
 #define PI 3.14159
+dblVec SFCentroidChain(protein* _prot, UInt _chain);
+dblVec SFCentroidRes(protein* _prot, UInt _chain, UInt _residue);
 
 int main (int argc, char* argv[])
 {
@@ -16,7 +18,7 @@ int main (int argc, char* argv[])
 	protein* prot = static_cast<protein*>(pMol);
 
 	// center on backbone centroid
-	dblVec center = prot->getBackBoneCentroid();
+    dblVec center = SFCentroidChain(prot, 0);
 	center = center * -1.0;
 	prot->translate(center);
 	double bestProjection = 100000;
@@ -43,13 +45,12 @@ int main (int argc, char* argv[])
 					for (UInt i = 0; i < prot->getNumChains(); i ++)
 					{
 						chain* tempChain = prot->getChain(i);
-						dblVec chainCentroid = tempChain->getBackBoneCentroid();
+                        dblVec chainCentroid = SFCentroidChain(prot,i);
 						dblVec chainSum(3);
 						chainSum[0] = 0.0; chainSum[1] = 0.0; chainSum[2] = 0.0;
 						for (UInt j = 0; j < tempChain->itsResidues.size(); j++)
 						{
-							residue* tempRes = tempChain->getResidue(j);
-							chainSum = chainSum + (chainCentroid - tempRes->getBackBoneCentroid());
+                            chainSum = chainSum + (chainCentroid - SFCentroidRes(prot,i,j));
 							chainSum[2] = 0.0;
 							double magnitude = sqrt(CMath::dotProduct(chainSum,chainSum));
 							projection += magnitude;
@@ -88,6 +89,76 @@ int main (int argc, char* argv[])
 	prot->eulerRotate(bestPhi, bestTheta, bestPsi);
 	pdbWriter(prot, infile);
 	return 0;
+}
+dblVec SFCentroidChain(protein* _prot, UInt _chain)
+{
+    //--initialize and clear variables
+    double number = 0;
+    UInt numRes, numAtoms;
+    string atomType;
+    dblVec coords, coordsSum(3), coordsAve(3);
+    coordsSum[0] = 0.0, coordsSum[1] = 0.0, coordsSum[2] = 0.0;
+    coordsAve[0] = 0.0, coordsAve[1] = 0.0, coordsAve[2] = 0.0;
+
+    //--loop through all atoms of all residues in search of carbon
+    numRes = _prot->getNumResidues(_chain);
+    for (UInt i = 0; i < numRes; i++)
+    {
+        numAtoms = _prot->getNumAtoms(_chain, i);
+        for (UInt j = 0; j < numAtoms; j++)
+        {
+            atomType = _prot->getTypeStringFromAtomNum(_chain, i, j);
+            if (atomType != "C" && atomType != "CA" && atomType != "O" && atomType != "CB" && atomType != "N" && atomType != "SG")
+            {
+                number++;
+                coords = _prot->getCoords(_chain, i, j);
+                coordsSum[0] += coords[0];
+                coordsSum[1] += coords[1];
+                coordsSum[2] += coords[2];
+            }
+        }
+    }
+
+    //--get average of all carbon coordinates
+    coordsAve[0] = ((coordsSum[0])/number);
+    coordsAve[1] = ((coordsSum[1])/number);
+    coordsAve[2] = ((coordsSum[2])/number);
+
+    return coordsAve;
+}
+
+dblVec SFCentroidRes(protein* _prot, UInt _chain, UInt _residue)
+{
+    //--initialize and clear variables
+    double number = 0;
+    UInt numAtoms;
+    string atomType;
+    dblVec coords, coordsSum(3), coordsAve(3);
+    coordsSum[0] = 0.0, coordsSum[1] = 0.0, coordsSum[2] = 0.0;
+    coordsAve[0] = 0.0, coordsAve[1] = 0.0, coordsAve[2] = 0.0;
+
+    //--loop through all atoms of all residues in search of carbon
+
+    numAtoms = _prot->getNumAtoms(_chain, _residue);
+    for (UInt j = 0; j < numAtoms; j++)
+    {
+        atomType = _prot->getTypeStringFromAtomNum(_chain, _residue, j);
+        if (atomType != "C" && atomType != "CA" && atomType != "O" && atomType != "CB" && atomType != "N" && atomType != "SG")
+        {
+            number++;
+            coords = _prot->getCoords(_chain, _residue, j);
+            coordsSum[0] += coords[0];
+            coordsSum[1] += coords[1];
+            coordsSum[2] += coords[2];
+        }
+    }
+
+    //--get average of all carbon coordinates
+    coordsAve[0] = ((coordsSum[0])/number);
+    coordsAve[1] = ((coordsSum[1])/number);
+    coordsAve[2] = ((coordsSum[2])/number);
+
+    return coordsAve;
 }
 
 

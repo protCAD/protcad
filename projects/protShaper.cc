@@ -126,51 +126,81 @@ int main (int argc, char* argv[])
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    double radius;
+    //double radius;
     double best = 1E100;
-    double phase;
+    //double phase;
     UInt count = 0;
 
-    double coil;
-    double offset;
-    /*rotamer optimizations
-    for (UInt k = 0; k < 10; k++)
+    //double coil;
+    //double offset;
+    //rotamer optimizations
+    for (UInt k = 175; k < 185; k++)
     {
-        for (UInt m = 0; m < 50; m++)
+        for (UInt m = 240; m < 250; m++)
         {
-            //for (UInt n = 0; n < 1000; n++)
-            //{
-                count++;
-                PDBInterface* theFramePDB = new PDBInterface(inFile);
-                ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
-                molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
-                protein* frame = static_cast<protein*>(frameMol);
-                frame->silenceMessages();
-                radius = 3+(k*0.1), coil = 360, offset = 1.5 + (m*0.01), phase = 0;
-                buildAntiParallelHelixDimer (frame, radius, phase, coil, offset);
-                double Energy = frame->protEnergy();
-                cout << count << " " << Energy << " " << radius << " " << offset;
-                if (Energy < best)
-                {
-                    cout << " hit!!!!!!!!" << endl;
-                    best = Energy;
-                    stringstream convert;
-                    string countstr;
-                    convert << count, countstr = convert.str();
-                    outFile = countstr + ".dimer.pdb";
-                    pdbWriter(frame, outFile);
-                }
-                else
-                {
-                    cout << endl;
-                }
-                delete theFramePDB;
-            //}
+            count++;
+            PDBInterface* theFramePDB = new PDBInterface(inFile);
+            ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
+            molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
+            protein* frame = static_cast<protein*>(frameMol);
+            frame->silenceMessages();
+            frame->rotateChain(1,Y_axis,k);
+            frame->rotateChain(1,Z_axis,m);
+            double Energy = frame->protEnergy();
+            cout << count << " " << Energy << " " << k << " " << m;
+            if (Energy < best)
+            {
+                cout << " hit!!!!!!!!" << endl;
+                best = Energy;
+                stringstream convert;
+                string countstr;
+                convert << count, countstr = convert.str();
+                outFile = countstr + ".dimer.pdb";
+                pdbWriter(frame, outFile);
+            }
+            else
+            {
+                cout << endl;
+            }
+            delete theFramePDB;
        }
-    }*/
+    }
 
     //bundle optimizations
-    UIntVec allowedRots;
+    /*UIntVec allowedRots;
+     for (UInt k = 175; k < 185; k++)
+    {
+        for (UInt m = 240; m < 250; m++)
+        {
+
+            count++;
+            PDBInterface* theFramePDB = new PDBInterface(inFile);
+            ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
+            molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
+            protein* frame = static_cast<protein*>(frameMol);
+            frame->silenceMessages();
+            radius = 3+(k*0.1), coil = 360, offset = 1.5 + (m*0.01), phase = 0;
+            buildAntiParallelHelixDimer (frame, radius, phase, coil, offset);
+            double Energy = frame->protEnergy();
+            cout << count << " " << Energy << " " << yrotate << " " << zrotate;
+            if (Energy < best)
+            {
+                cout << " hit!!!!!!!!" << endl;
+                best = Energy;
+                stringstream convert;
+                string countstr;
+                convert << count, countstr = convert.str();
+                outFile = countstr + ".dimer.pdb";
+                pdbWriter(frame, outFile);
+            }
+            else
+            {
+                cout << endl;
+            }
+            delete theFramePDB;
+
+       }
+    }
     UInt res1, res2, rot;
     double chi1, chi2;
     double angle1, angle2;
@@ -232,7 +262,7 @@ int main (int argc, char* argv[])
             //}
         //}
     //}
-    /*//dihed0rals
+    ///dihed0rals
     PDBInterface* theFramePDB = new PDBInterface(inFile);
     ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
     molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
