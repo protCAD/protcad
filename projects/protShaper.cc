@@ -36,7 +36,7 @@ int main (int argc, char* argv[])
 	rotamer::setScaleFactor(0.0);
 	amberVDW::setScaleFactor(1.0);
 	amberVDW::setRadiusScaleFactor(1.0);
-    amberElec::setScaleFactor(1.0);
+    amberElec::setScaleFactor(0.0);
     srand (time(NULL));
 
 	//--Initialize variables for loop
@@ -134,9 +134,9 @@ int main (int argc, char* argv[])
     //double coil;
     //double offset;
     //rotamer optimizations
-    for (UInt k = 175; k < 185; k++)
+    for (UInt k = 165; k < 195; k++)
     {
-        for (UInt m = 240; m < 250; m++)
+        for (UInt m = 230; m < 260; m++)
         {
             count++;
             PDBInterface* theFramePDB = new PDBInterface(inFile);

@@ -43,8 +43,8 @@ int main (int argc, char* argv[])
     UInt _activeChains[] = {0};                                                         // chains active for mutation
     UInt _allowedLResidues[] = {A,R,N,D,Q,E,I,L,K,M,F,P,S,T,W,Y,V,G};                   // amino acids allowed with phi < 0
     UInt _allowedDResidues[] = {dA,dR,dN,dD,dQ,dE,dI,dL,dK,dM,dF,dP,dS,dT,dW,dY,dV,G};  // amino acids allowed with phi > 0
-    UInt _activeResidues[] = {0,4,5,7,10,13,15,16,17,21,22,23,24,25,26};                // positions active for mutation
-    UInt _randomResidues[] = {0,4,5,7,10,13,15,16,17,21,22,23,24,25,26};                // positions active for a random start sequence initially
+    UInt _activeResidues[] = {4,5,7,12,13,15,16,17,21,22,23,24,25,26};                  // positions active for mutation
+    UInt _randomResidues[] = {4,5,7,12,13,15,16,17,21,22,23,24,25,26};                  // positions active for a random start sequence initially
     UInt _frozenResidues[] = {1,3,8,9,11,14,18};                                        // positions that cannot move at all
     bool homoSymmetric = true;                                                          // if true all chains are structurally symmetrical to the one listed active chain above
     bool backboneRelaxation = false;                                                    // if true allow minor backbone relaxation in structural optimization
@@ -442,7 +442,6 @@ vector < vector < UInt > > buildPossibleMutants()
 void createPossibleMutantsDatabase(protein* _bundle, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedLResidues, UIntVec &_allowedDResidues, bool _homoSymmetric)
 {
     double Energy, phi;
-    UInt restype;
     fstream pm;
     pm.open ("possiblemutants.out", fstream::in | fstream::out | fstream::app);
     if (_homoSymmetric)
@@ -456,7 +455,6 @@ void createPossibleMutantsDatabase(protein* _bundle, UIntVec &_activeChains, UIn
     {
         for (UInt j = 0; j <_activeResidues.size(); j++)
         {
-            restype = _bundle->getTypeFromResNum(_activeChains[i], _activeResidues[j]);
             phi = _bundle->getPhi(_activeChains[i], _activeResidues[j]);
             if (phi < 0 && phi > -180)
             {
@@ -548,7 +546,7 @@ void createPossibleMutantsDatabase(protein* _bundle, UIntVec &_activeChains, UIn
                     }
                 }
             }
-            _bundle->mutateWBC(_activeChains[i], _activeResidues[j], restype);
+            _bundle->mutateWBC(_activeChains[i], _activeResidues[j], G);
             pm << endl;
         }
     }
