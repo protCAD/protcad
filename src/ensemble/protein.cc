@@ -18,6 +18,8 @@ protein::protein() : molecule()
 	cout << itsName << endl;
 #endif
 	itsChains.resize(0);
+    energies.clear();
+    energies.resize(0);
 	setMoleculeType(1);
 	resetAllBuffers();
 	itsLastModifiedChain = -1;
@@ -32,6 +34,7 @@ protein::protein(const string& _name) : molecule(_name)
 #endif
 	itsChains.resize(0);
     itsIndependentChainsMap.resize(0);
+    energies.clear();
     energies.resize(0);
 	itsChainLinkageMap.resize(0);
 	itsLastModifiedChain = -1;
@@ -1174,6 +1177,24 @@ double protein::intraSoluteEnergy(bool _updateDielectrics)
 	return intraEnergy;
 }
 
+double protein::intraSoluteEnergy(bool _updateDielectrics, UInt _activeChain)
+{
+    double intraEnergy = 0.0;
+    if (_updateDielectrics)
+    {
+        this->updateDielectrics();
+    }
+    intraEnergy += itsChains[_activeChain]->intraSoluteEnergy();
+    for(UInt j=0; j<itsChains.size(); j++)
+    {
+        if (j != _activeChain)
+        {
+            intraEnergy += itsChains[_activeChain]->interSoluteEnergy(itsChains[j]);
+        }
+    }
+    return intraEnergy;
+}
+
 double protein::interSoluteEnergy(bool _updateDielectrics, UInt _chain1, UInt _chain2)
 {
 	if (_updateDielectrics)
@@ -1366,11 +1387,10 @@ double protein::protEnergy()
 
 double protein::resEnergy(UInt chainIndex, UInt resIndex)
 {
-	if (itsChains[chainIndex]->itsResidues[resIndex]->getMoved() != 0)
-	{
+    if (itsChains[chainIndex]->itsResidues[resIndex]->getMoved() != 0)
+    {
         updateEnergyDatabase(energies);
-	}
-
+    }
     double resEnergy = 0;
     UInt chaini, chainj, resi, resj, k;
     for (chaini = 0; chaini < itsChains.size(); chaini++)
@@ -1409,11 +1429,68 @@ double protein::getMedianResEnergy()
 {
     double median, resE;
     vector <double> resEnergies;
+    updateEnergyDatabase(energies);
     for (UInt i = 0; i < itsChains.size(); i++)
     {
         for (UInt j = 0; j < itsChains[i]->itsResidues.size(); j++)
         {
             resE = resEnergy(i,j);
+            resEnergies.push_back(resE);
+        }
+    }
+    size_t size = resEnergies.size();
+
+    sort(resEnergies.begin(), resEnergies.end());
+
+    if (size  % 2 == 0)
+    {
+      median = (resEnergies[size / 2 - 1] + resEnergies[size / 2]) / 2;
+    }
+    else
+    {
+      median = resEnergies[size / 2];
+    }
+    return median;
+}
+
+double protein::getMedianResEnergy(UIntVec _activeChains)
+{
+    double median, resE;
+    vector <double> resEnergies;
+    updateEnergyDatabase(energies);
+    for (UInt i = 0; i < _activeChains.size(); i++)
+    {
+        for (UInt j = 0; j < itsChains[_activeChains[i]]->itsResidues.size(); j++)
+        {
+            resE = resEnergy(_activeChains[i],j);
+            resEnergies.push_back(resE);
+        }
+    }
+    size_t size = resEnergies.size();
+
+    sort(resEnergies.begin(), resEnergies.end());
+
+    if (size  % 2 == 0)
+    {
+      median = (resEnergies[size / 2 - 1] + resEnergies[size / 2]) / 2;
+    }
+    else
+    {
+      median = resEnergies[size / 2];
+    }
+    return median;
+}
+
+double protein::getMedianResEnergy(UIntVec _activeChains, UIntVec _activeResidues)
+{
+    double median, resE;
+    vector <double> resEnergies;
+    updateEnergyDatabase(energies);
+    for (UInt i = 0; i < _activeChains.size(); i++)
+    {
+        for (UInt j = 0; j < _activeResidues.size(); j++)
+        {
+            resE = resEnergy(_activeChains[i], _activeResidues[j]);
             resEnergies.push_back(resE);
         }
     }
@@ -1585,39 +1662,39 @@ double protein::getReferenceEnergy()
     return refEnergy;
 }
 
-double protein::getReferenceEnergy(UInt restype)
+double protein::getReferenceEnergy(UInt restype)   // protEnergy of free amino acids in low energy conformation
 {
     double refEnergy;
-    if (restype == 0  || restype == 27) refEnergy = 6.94721;  //A
-    if (restype == 1  || restype == 28) refEnergy = 13.2347;  //R
-    if (restype == 2  || restype == 29) refEnergy = 19.4047;  //N
-    if (restype == 3  || restype == 30) refEnergy = 36.421;  //D
-    if (restype == 4  || restype == 31) refEnergy = 19.639;  //Dh
-    if (restype == 5  || restype == 32) refEnergy = 8.28941; //C
-    if (restype == 6  || restype == 33) refEnergy = 8.6945; //Cx
-    if (restype == 7  || restype == 34) refEnergy = 15.2746;  //Q
-    if (restype == 8  || restype == 35) refEnergy = 33.5134;  //E
-    if (restype == 9  || restype == 36) refEnergy = 16.7645;  //Eh
-    if (restype == 10 || restype == 37) refEnergy = 10.2095;  //Hd
-    if (restype == 11 || restype == 38) refEnergy = 7.8952;  //He
-    if (restype == 12 || restype == 39) refEnergy = 30.5373;  //Hn
-    if (restype == 13 || restype == 40) refEnergy = 5.17108;  //Hp
-    if (restype == 14 || restype == 41) refEnergy = 9.2771;  //I
-    if (restype == 15 || restype == 42) refEnergy = 2.93547;  //L
-    if (restype == 16 || restype == 43) refEnergy = 13.3458;  //K
-    if (restype == 17 || restype == 44) refEnergy = 5.91433;  //M
-    if (restype == 18 || restype == 45) refEnergy = 3.89894;  //F
-    if (restype == 19 || restype == 46) refEnergy = -1.244;  //P
-    if (restype == 20 || restype == 47) refEnergy = 9.09773;  //O
-    if (restype == 21 || restype == 48) refEnergy = 8.32352;  //S
-    if (restype == 22 || restype == 49) refEnergy = 7.1672;  //T
-    if (restype == 23 || restype == 51) refEnergy = 0.159482;  //W
+    if (restype == 0  || restype == 27) refEnergy = -4.00185;  //A
+    if (restype == 1  || restype == 28) refEnergy = -9.56893;  //R
+    if (restype == 2  || restype == 29) refEnergy = -14.1492;  //N
+    if (restype == 3  || restype == 30) refEnergy = -32.6047;  //D
+    if (restype == 4  || restype == 31) refEnergy = -15.337;  //Dh
+    if (restype == 5  || restype == 32) refEnergy = -5.68933; //C
+    if (restype == 6  || restype == 33) refEnergy = -5.76234; //Cx
+    if (restype == 7  || restype == 34) refEnergy = -10.5521;  //Q
+    if (restype == 8  || restype == 35) refEnergy = -29.8478;  //E
+    if (restype == 9  || restype == 36) refEnergy = -12.7479;  //Eh
+    if (restype == 10 || restype == 37) refEnergy = -10.1365;  //Hd
+    if (restype == 11 || restype == 38) refEnergy = -7.77579;  //He
+    if (restype == 12 || restype == 39) refEnergy = -30.875;  //Hn
+    if (restype == 13 || restype == 40) refEnergy = -4.43897;  //Hp
+    if (restype == 14 || restype == 41) refEnergy = 0.276344;  //I
+    if (restype == 15 || restype == 42) refEnergy = 0.00821211;  //L
+    if (restype == 16 || restype == 43) refEnergy = -11.7659;  //K
+    if (restype == 17 || restype == 44) refEnergy = -4.8753;  //M
+    if (restype == 18 || restype == 45) refEnergy = 9.68713;  //F
+    if (restype == 19 || restype == 46) refEnergy = 3.46036;  //P
+    if (restype == 20 || restype == 47) refEnergy = -6.86;  //O
+    if (restype == 21 || restype == 48) refEnergy = -5.20179;  //S
+    if (restype == 22 || restype == 49) refEnergy = -2.24714;  //T
+    if (restype == 23 || restype == 51) refEnergy = 10.2599;  //W
     if (restype == 24 || restype == 52) refEnergy = 7.8967;  //Y
-    if (restype == 25 || restype == 53) refEnergy = 5.40009;  //V
-    if (restype == 26) refEnergy = 8.77318;  //G
-    if (restype == 50) refEnergy = 8.95223;  //dAT
+    if (restype == 25 || restype == 53) refEnergy = 0.397073;  //V
+    if (restype == 26) refEnergy = -5.44654;  //G
+    if (restype == 50) refEnergy = -0.899271;  //dAT
     if (restype == 54) refEnergy = 141.136;  //Hce
-    if (restype == 55) refEnergy = 236.007;  //Pch
+    if (restype == 55) refEnergy = 236.042;  //Pch
     return refEnergy;
 }
 
@@ -1645,102 +1722,6 @@ double protein::BBEnergy()
 		energy += itsChains[i]->BBEnergy();
 	}
 	return energy;
-}
-
-vector <double> protein::chainFoldingBindingEnergy(UInt _ligandChain)
-{
-	double complexEnergy, complexFoldingBindingEnergy, complexBindingEnergy, ligandEnergy, ligandFoldingEnergy, indChainTotEnergy = 0.0, indChainEnergy, LorD;
-	vector <double> Energy(5);
-	Energy[0] = 0.0, Energy[1] = 0.0, Energy[2] = 0.0, Energy[3] = 0.0, Energy[4] = 0.0;
-    complexEnergy = this->intraSoluteEnergy(true);
-	Energy[0] = complexEnergy;
-    this->updateChainIndependentDielectrics(_ligandChain);
-	ligandEnergy = itsChains[_ligandChain]->intraSoluteEnergy();
-	Energy[3] = ligandEnergy;
-    UInt resNum, restype, numChains = this->getNumChains();
-	for (UInt j = 0; j < numChains; j++)
-	{
-		if (j == _ligandChain)
-		{
-            resNum = this->getNumResidues(_ligandChain);
-			for (UInt k = 0; k < resNum; k++)
-			{
-                restype = this->getTypeFromResNum(_ligandChain,k);
-				if (restype < 26)
-				{
-                    this->setDihedral(_ligandChain, k, -63.68, 0, 0);
-                    this->setDihedral(_ligandChain, k, 155.22, 1, 0);
-				}
-				if (restype > 26)
-				{
-                    this->setDihedral(_ligandChain, k, 63.68, 0, 0);
-                    this->setDihedral(_ligandChain, k, -155.22, 1, 0);
-				}
-				if (restype == 26)
-				{
-					if (k == 0)
-					{
-                        LorD = this->getPhi(j,k+1);
-						if (LorD > 0)
-						{
-                            this->setDihedral(j, k, 63.68, 0, 0);
-                            this->setDihedral(j, k, -155.22, 1, 0);
-						}
-						if (LorD < 0)
-						{
-                            this->setDihedral(j, k, -63.68, 0, 0);
-                            this->setDihedral(j, k, 155.22, 1, 0);
-						}
-					}
-					if (k > 0 && k < resNum-1)
-					{
-                        LorD = (this->getPhi(j,k-1))+(this->getPhi(j,k+1));
-						if (LorD > 0)
-						{
-                            this->setDihedral(j, k, 63.68, 0, 0);
-                            this->setDihedral(j, k, -155.22, 1, 0);
-						}
-						if (LorD < 0)
-						{
-                            this->setDihedral(j, k, -63.68, 0, 0);
-                            this->setDihedral(j, k, 155.22, 1, 0);
-						}
-					}
-					if (k == resNum-1)
-					{
-                        LorD = this->getPhi(j,k-1);
-						if (LorD > 0)
-						{
-                            this->setDihedral(j, k, 63.68, 0, 0);
-                            this->setDihedral(j, k, -155.22, 1, 0);
-						}
-						if (LorD < 0)
-						{
-                            this->setDihedral(j, k, -63.68, 0, 0);
-                            this->setDihedral(j, k, 155.22, 1, 0);
-						}
-					}
-				}
-			}
-            this->chainOptSolvent(200, j);
-		}
-        this->updateChainIndependentDielectrics(j);
-		indChainEnergy = itsChains[j]->intraSoluteEnergy();
-		indChainTotEnergy += indChainEnergy;
-		if (j == _ligandChain)
-		{
-			ligandFoldingEnergy = ligandEnergy - indChainEnergy;
-			Energy[4] = ligandFoldingEnergy;
-		}
-		if (j != _ligandChain)
-		{
-			complexBindingEnergy = complexEnergy - (indChainEnergy + ligandEnergy);
-			Energy[2] = complexBindingEnergy;
-		}
-	}
-	complexFoldingBindingEnergy = complexEnergy - indChainTotEnergy;
-	Energy[1] = complexFoldingBindingEnergy;
-	return Energy;
 }
 
 vector <double> protein::chainFoldingBindingEnergy(bool _unfold)
@@ -3126,107 +3107,6 @@ void protein::chainOptSolvent(UInt _plateau, UInt _chainIndex)
 	return;
 }
 
-void protein::protOptSolvent(UInt _plateau, bool _backbone)
-{	// Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics and corresponding implicit solvation score
-	//    _plateau: the number of consecutive optimization cycles without an energy decrease.
-	//	    	     (250 is recommended for a full minimization without excessive calculation)
-	// -pike 2013
-
-	//--Initialize variables for loop and calculate starting energy-------------------------------------
-	double deltaTheta = 0, totalpreposE = 0, avepreposE = -1E10;
-    double Energy, preposE, currentposE, pastEnergy = this->intraSoluteEnergy(true);
-    UInt randchain, randres, randrestype, allowedRotsize, randrot, number = 0, nobetter = 0;
-    UInt resNum, randtype, chainNum = this->getNumChains(), rotbetter = 0;
-	vector < vector <double> > currentRot;
-	int thisone;
-    UIntVec allowedRots;
-	srand (time(NULL));
-
-	//--Run optimizaiton loop to energetic minima, determined by _plateau-------------------------------
-	do
-	{
-		//--Generate random residue
-		randchain = rand() % chainNum;
-        resNum = this->getNumResidues(randchain);
-		randres = rand() % resNum;
-        randrestype = this->getTypeFromResNum(randchain, randres);
-        preposE = this->getPositionSoluteEnergy(randchain, randres, true);
-		if (randrestype == 0 || randrestype == 19 || randrestype == 20 || randrestype == 26 || randrestype == 27 || randrestype == 46 || randrestype == 47)
-		{
-			nobetter++;
-		}
-		else
-		{
-			nobetter++, nobetter++;
-		}
-
-		//--backbone optimization----------------------------------------------------------------------
-        if (rotbetter > _plateau && preposE > avepreposE && _backbone)
-		{
-			//--choose phi or psi and angle, for a local transformation
-			randtype = rand() % 2;
-			do
-			{ deltaTheta = ((rand() % 3) -1);
-			} while (deltaTheta == 0);
-
-			//--transform angles while energy improves, until energy degrades, then revert one step
-			do
-			{
-                this->setDihedralLocal(randchain, randres, deltaTheta, randtype);
-                currentposE = this->getPositionSoluteEnergy(randchain, randres, true), thisone = 0;
-				//--Energy test
-				if (currentposE < (preposE - .05))
-				{
-                    Energy = this->intraSoluteEnergy(true);
-					if (Energy < pastEnergy)
-					{
-						//cout << Energy << endl;
-						nobetter = 0, thisone = 1, pastEnergy = Energy, preposE = currentposE;
-					}
-				}
-			} while (thisone == 1);
-            this->setDihedralLocal(randchain, randres, (deltaTheta*-1), randtype);
-		}
-
-		//--Rotamer optimization-----------------------------------------------------------------------
-		if (preposE > avepreposE)
-		{
-			//--Get current rotamer and allowed
-			currentRot = this->getSidechainDihedrals(randchain, randres);
-			allowedRots = this->getAllowedRotamers(randchain, randres, randrestype, 0);
-            allowedRotsize = (allowedRots.size() * 0.3333333), rotbetter++, rotbetter++; //changed div to multi "(allowedRots.size()/3"
-
-			//--Try 1/3 of allowed rotamers keep first improvement or revert to previous angles
-			for (UInt j = 0; j < allowedRotsize; j ++)
-			{
-                randrot = rand() % allowedRots.size();
-                this->setRotamerWBC(randchain, randres, 0, allowedRots[randrot]);
-                currentposE = this->getPositionSoluteEnergy(randchain, randres, true);
-
-				if (currentposE < (preposE - .05))
-				{
-                    Energy = this->intraSoluteEnergy(true);
-					if (Energy < pastEnergy)
-					{
-						//cout << Energy << endl;
-						rotbetter--, rotbetter--, nobetter = 0, pastEnergy = Energy, preposE = currentposE;
-						break;
-					}
-				}
-                this->setSidechainDihedralAngles(randchain, randres, currentRot);
-			}
-		}
-
-		//--check status of optimization---------------------------------------------------------------
-		if (number == _plateau)
-		{
-			number = 0, totalpreposE = 0;
-		}
-		number++, number++, totalpreposE = (totalpreposE + preposE), avepreposE = (totalpreposE/number);
-	} while (nobetter < _plateau * 1.2);
-	return;
-}
-
 void protein::protOpt(bool _backbone)
 {   // Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics and corresponding implicit solvation energy
     //    _plateau: the number of consecutive optimization cycles without an energy decrease.
@@ -3304,6 +3184,181 @@ void protein::protOpt(bool _backbone)
             }
             if (breakout == 0)
             {   setSidechainDihedralAngles(randchain, randres, currentRot);
+                itsChains[randchain]->itsResidues[randres]->setMoved(1);
+            }
+        }
+    } while (nobetter < _plateau * 1.2);
+    return;
+}
+
+void protein::protOpt(bool _backbone, UIntVec _activechains) //activechains optimized only
+{   // Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics and corresponding implicit solvation energy
+    //    _plateau: the number of consecutive optimization cycles without an energy decrease.
+    //	    	     (100 is recommended for a full optimization without excessive calculation)
+    // -pike 2013
+
+    //--Initialize variables for loop, calculate starting energy and build energy vectors---------------
+    double deltaTheta = 0, Energy, resE, medResE, pastEnergy = protEnergy();
+    UInt randchain, randres, randrestype, allowedRotsize, randrot, nobetter = 0, _plateau = 100;
+    UInt resNum, randtype, thisone, breakout;
+    UInt activeChainSize = _activechains.size();
+    vector < vector <double> > currentRot;
+    vector <UIntVec> allowedRots;
+
+    //--Run optimizaiton loop to optimization minima, determined by _plateau----------------------------
+    do
+    {   //--choose random residue
+        randchain = _activechains[rand() % activeChainSize];
+        resNum = getNumResidues(randchain);
+        randres = rand() % resNum;
+        randrestype = getTypeFromResNum(randchain, randres);
+        nobetter++;
+        //cout << nobetter << " ";
+
+        //--Backbone optimization-----------------------------------------------------------------------
+        resE = resEnergy(randchain, randres), medResE = getMedianResEnergy(_activechains);
+        if (nobetter > _plateau && resE > medResE && _backbone)
+        {   //--randomly choose phi or psi, and change in angle of -1 or +1 degree
+            randtype = rand() % 2;
+            do
+            { deltaTheta = ((rand() % 3) -1);
+            } while (deltaTheta == 0);
+
+            //--transform angles while energy improves, until energy degrades, then revert
+            do
+            {   setDihedralLocal(randchain, randres, deltaTheta, randtype);
+                itsChains[randchain]->itsResidues[randres]->setMoved(1);
+                thisone = 0;
+                //--Energy test
+                Energy = protEnergy();
+                if (Energy < (pastEnergy-0.05))
+                {   nobetter = 0, thisone = 1, pastEnergy = Energy;
+                    //cout << Energy << " ";
+                }
+            } while (thisone == 1);
+            setDihedralLocal(randchain, randres, (deltaTheta*-1), randtype);
+            itsChains[randchain]->itsResidues[randres]->setMoved(1);
+        }
+
+        //--Rotamer optimization-----------------------------------------------------------------------
+        resE = resEnergy(randchain, randres);
+        if (resE > medResE)
+        {   currentRot = getSidechainDihedrals(randchain, randres);
+            allowedRots = getAllowedRotamers(randchain, randres, randrestype);
+            breakout = 0;
+
+            //--Try a max of 1/3 of allowed rotamers per branchpoint and keep first improvement, else revert
+            for (UInt b = 0; b < residue::getNumBpt(randrestype); b++)
+            {   allowedRotsize = allowedRots[b].size()*0.33;
+                for (UInt j = 0; j < allowedRotsize; j ++)
+                {   randrot = rand() % allowedRots[b].size();
+                    setRotamerWBC(randchain, randres, b, allowedRots[b][randrot]);
+                    itsChains[randchain]->itsResidues[randres]->setMoved(1);
+                    //--Energy test
+                    Energy = protEnergy();
+                    if (Energy < (pastEnergy-0.05))
+                    {   breakout = 1, nobetter = 0, pastEnergy = Energy;
+                        //cout << Energy << " ";
+                        break;
+                    }
+                }
+                if (breakout == 1)
+                {   break;
+                }
+            }
+            if (breakout == 0)
+            {   setSidechainDihedralAngles(randchain, randres, currentRot);
+                itsChains[randchain]->itsResidues[randres]->setMoved(1);
+            }
+        }
+    } while (nobetter < _plateau * 1.2);
+    return;
+}
+
+void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UInt _activeChain) //_activeChain only optimized and energy calculated for it
+{   // Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics and corresponding implicit solvation energy
+    //    _plateau: the number of consecutive optimization cycles without an energy decrease.
+    //	    	     (100 is recommended for a full optimization without excessive calculation)
+    // -pike 2013
+
+    //--Initialize variables for loop, calculate starting energy and build energy vectors---------------
+    double deltaTheta = 0, Energy, resE, medResE, pastEnergy = intraSoluteEnergy(true, _activeChain);
+    UInt randchain, randres, randrestype, allowedRotsize, randrot, nobetter = 0, _plateau = 100;
+    UInt resNum, randtype, thisone, breakout;
+    bool skip;
+    UIntVec activeChains, currentRot, allowedRots;
+    activeChains.push_back(_activeChain);
+    srand (time(NULL));
+
+    //--Run optimizaiton loop to optimization minima, determined by _plateau----------------------------
+    do
+    {   //--choose random residue not frozen
+        randchain = _activeChain;
+        resNum = getNumResidues(randchain);
+        do
+        {
+            skip = false;
+            randres = rand() % resNum;
+            for (UInt i = 0; i < _frozenResidues.size(); i++)
+            {
+                if (randres == _frozenResidues[i])
+                {
+                    skip = true;
+                }
+            }
+        } while (skip);
+        randrestype = getTypeFromResNum(randchain, randres);
+        nobetter++;
+
+        //--Backbone optimization-----------------------------------------------------------------------
+        medResE = getMedianResEnergy(activeChains), resE = resEnergy(randchain, randres);
+        if (nobetter > _plateau && _backbone && resE > medResE)
+        {   //--randomly choose phi or psi, and change in angle of -1 or +1 degree
+            randtype = rand() % 2;
+            do
+            { deltaTheta = ((rand() % 3) -1);
+            } while (deltaTheta == 0);
+
+            //--transform angles while energy improves, until energy degrades, then revert
+            do
+            {   setDihedralLocal(randchain, randres, deltaTheta, randtype);
+                itsChains[randchain]->itsResidues[randres]->setMoved(1);
+                thisone = 0;
+                //--Energy test
+                updatePositionDielectrics(randchain, randres);
+                Energy = intraSoluteEnergy(false, _activeChain);
+                if (Energy < (pastEnergy-0.05))
+                {   nobetter = 0, thisone = 1, pastEnergy = Energy;
+                    //cout << Energy << " ";
+                }
+            } while (thisone == 1);
+            setDihedralLocal(randchain, randres, (deltaTheta*-1), randtype);
+            itsChains[randchain]->itsResidues[randres]->setMoved(1);
+        }
+
+        //--Rotamer optimization-----------------------------------------------------------------------
+        if (resE > medResE)
+        {
+            currentRot = getCurrentRotamer(randchain, randres);
+            allowedRots = getAllowedRotamers(randchain, randres, randrestype, 0);
+            breakout = 0;
+
+            //--Try a max of 1/3 of allowed rotamers per branchpoint and keep first improvement, else revert
+            allowedRotsize = allowedRots.size()*0.33;
+            for (UInt j = 0; j < allowedRotsize; j ++)
+            {   randrot = rand() % allowedRots.size();
+                setRotamerWBC(randchain, randres, 0, allowedRots[randrot]);
+                itsChains[randchain]->itsResidues[randres]->setMoved(1);
+                //--Energy test
+                updatePositionDielectrics(randchain, randres);
+                Energy = intraSoluteEnergy(false, _activeChain);
+                if (Energy < (pastEnergy-0.05))
+                {   breakout = 1, nobetter = 0, pastEnergy = Energy;
+                    break;
+                }
+            }
+            if (breakout == 0)
+            {   setRotamerWBC(randchain, randres, 0, currentRot[0]);
                 itsChains[randchain]->itsResidues[randres]->setMoved(1);
             }
         }

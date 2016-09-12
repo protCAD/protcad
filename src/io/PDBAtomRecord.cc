@@ -102,22 +102,23 @@ void PDBAtomRecord::convert(string& _pdbAtomLine)
 	altLoc = _pdbAtomLine.substr(16,1);
 	//cout << "altLoc= " <<altLoc << endl;
 
+
 	if(hetflag)
+    {
+        string tempName = _pdbAtomLine.substr(17,4);
+        string tempChar="";
+        for(UInt i=0; i<4; i++)
         {
-            string tempName = _pdbAtomLine.substr(17,4);
-            string tempChar="";
-            for(UInt i=0; i<4; i++)
-            {
-                tempChar=tempName.substr(i,1);
-                if(tempChar!=" "){resName+=tempChar;}
-            }
+            tempChar=tempName.substr(i,1);
+            if(tempChar!=" "){resName+=tempChar;}
         }
+    }
         
 	else{resName= _pdbAtomLine.substr(17,3);}
-	if (resName == "HIS")
-	{	
-		resName = "HIE";
-	}
+    if (resName == "HIS")  // default to primary protonation state
+    {
+        resName = "HIE";
+    }
 	
         //cout << "resName= " <<resName << endl;
 

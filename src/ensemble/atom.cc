@@ -408,12 +408,12 @@ double atom::inCubeWithDist(const atom* _pOtherAtom, double _cutoff)
 	return distance;
 }
 
-double atom::inCubeWithDistSQ(const atom* _pOtherAtom, double _cutoffSquared)
+double atom::inCubeWithDistSQ(const atom* _pOtherAtom, double _cutoff)
 {
 	double distance = 0.0;
-	if (fabs(itsCoords[0] - _pOtherAtom->getX()) > _cutoffSquared) return 999.0;
-	if (fabs(itsCoords[1] - _pOtherAtom->getY()) > _cutoffSquared) return 999.0;
-	if (fabs(itsCoords[2] - _pOtherAtom->getZ()) > _cutoffSquared) return 999.0;
+    if (fabs(itsCoords[0] - _pOtherAtom->getX()) > _cutoff) return 999.0;
+    if (fabs(itsCoords[1] - _pOtherAtom->getY()) > _cutoff) return 999.0;
+    if (fabs(itsCoords[2] - _pOtherAtom->getZ()) > _cutoff) return 999.0;
 	distance = CMath::distanceSquared(itsCoords, _pOtherAtom->getCoords());
 	return distance;
 }
