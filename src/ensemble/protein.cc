@@ -1689,7 +1689,7 @@ double protein::getReferenceEnergy(UInt restype)   // protEnergy of free amino a
     if (restype == 21 || restype == 48) refEnergy = -5.20179;  //S
     if (restype == 22 || restype == 49) refEnergy = -2.24714;  //T
     if (restype == 23 || restype == 51) refEnergy = 10.2599;  //W
-    if (restype == 24 || restype == 52) refEnergy = 7.8967;  //Y
+    if (restype == 24 || restype == 52) refEnergy = 6.07919;  //Y
     if (restype == 25 || restype == 53) refEnergy = 0.397073;  //V
     if (restype == 26) refEnergy = -5.44654;  //G
     if (restype == 50) refEnergy = -0.899271;  //dAT
