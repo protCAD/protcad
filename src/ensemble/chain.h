@@ -66,6 +66,7 @@ public:
 	char getChainID() {return itsChainID;}
 	residue* getResidue(UInt _resIndex) { return itsResidues[_resIndex]; }
 	UInt getTypeFromResNum(UInt _resNum) { return itsResidues[_resNum]->getTypeIndex(); }
+    double getRadius(UInt resIndex, UInt atomIndex) {return itsResidues[resIndex]->getRadius(atomIndex);}
 	string getTypeStringFromAtomNum(UInt _resNum, UInt _atomNum) { return itsResidues[_resNum]->getTypeStringFromAtomNum( _atomNum); }
 	string getTypeStringFromResNum(UInt _resNum) {return itsResidues[_resNum]->getType();}
 	double getAtomCharge(UInt _resNum, UInt _atomNum) { return itsResidues[_resNum]->getAtomCharge(_atomNum); }

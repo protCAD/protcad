@@ -21,6 +21,7 @@
 void buildAntiParallelBetaBarrel (protein* _prot, double _pitch);
 void buildAntiParallelHelixDimer (protein* _prot, double _radius, double _phase, double _coil, double _offset);
 void buildAlaCoilHexamer (protein* _prot, double _radius, double _phase);
+void buildAlaCoilTetramer (protein* _prot, double _radius, double _phase);
 
 int main (int argc, char* argv[])
 {
@@ -134,7 +135,7 @@ int main (int argc, char* argv[])
     //double coil;
     //double offset;
     //rotamer optimizations
-    for (UInt k = 165; k < 195; k++)
+    /*for (UInt k = 165; k < 195; k++)
     {
         for (UInt m = 230; m < 260; m++)
         {
@@ -167,7 +168,7 @@ int main (int argc, char* argv[])
     }
 
     //bundle optimizations
-    /*UIntVec allowedRots;
+    UIntVec allowedRots;
      for (UInt k = 175; k < 185; k++)
     {
         for (UInt m = 240; m < 250; m++)
@@ -204,24 +205,21 @@ int main (int argc, char* argv[])
     UInt res1, res2, rot;
     double chi1, chi2;
     double angle1, angle2;
-    cout << "iteration Energy radius angle" << endl;
-    //for (UInt i= 0; i < 10; i++)
-    //{
-        //for (int j= -85; j < -75; j++)
-        //{
-            //for (int m = 25; m < 35; m++)
-            //{
-               for (int k = 320; k < 330; k++)
+    cout << "iteration Energy radius angle" << endl;*/
+    double phase, radius;
+            for (int m = 0; m < 100; m++)
+            {
+               for (int k = 80; k < 110; k++)
                {
                     count++;
-                    phase = 91.37, angle1 = 327, angle2 = 327, rot = 6, radius = 12.5, res1 = 6, res2 = 13, chi1 = -80, chi2 = 30;
+                    phase = k, radius = 4+ (m*0.1);
                     PDBInterface* theFramePDB = new PDBInterface(inFile);
                     ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
                     molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
                     protein* frame = static_cast<protein*>(frameMol);
                     frame->silenceMessages();
-                    buildAlaCoilHexamer(frame, radius, phase);
-                    for (UInt l = 0; l < frame->getNumChains(); l++)
+                    buildAlaCoilTetramer(frame, radius, phase);
+                    /*for (UInt l = 0; l < frame->getNumChains(); l++)
                     {
                         allowedRots = frame->getAllowedRotamers(0, res1, Hcd, 0);
                         frame->activateForRepacking(l, res1);
@@ -236,33 +234,33 @@ int main (int argc, char* argv[])
                         frame->setChi(l, res2, 0, 0, chi1);
                         frame->setChi(l, res2, 0, 1, chi2);
                         frame->setChi(l, res2, 1, 0, angle2);
-                    }
+                    }*/
                     double Energy = frame->protEnergy();                  
-                    cout << count << " " << Energy << " " << radius << " " << angle1 << " " << chi1 << " " << chi2;
+                    cout << count << " " << Energy << " " << radius << " " << phase;
                     if (Energy < best)
                     {
                         best = Energy;
                         cout << " hit!!!!!!!!" << endl;
+                        stringstream convert;
+                        string countstr;
+                        convert << count, countstr = convert.str();
+                        outFile = countstr + ".tetramer.pdb";
+                        pdbWriter(frame, outFile);
                     }
                     else
                     {
                         cout << endl;
                     }
-                    stringstream convert;
-                    string countstr;
-                    convert << count, countstr = convert.str();
-                    outFile = countstr + ".hexamer.pdb";
-                    pdbWriter(frame, outFile);
+
                     //else
                     //{
                     //    cout << endl;
                     //}
                     delete theFramePDB;
                 }
-            //}
-        //}
+            }
     //}
-    ///dihed0rals
+    /*/dihed0rals
     PDBInterface* theFramePDB = new PDBInterface(inFile);
     ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
     molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
@@ -293,6 +291,15 @@ void buildAlaCoilHexamer (protein* _prot, double _radius, double _phase)
     _prot->rotate(3, Z_axis, 120);
     _prot->rotate(4, Z_axis, 240);
     _prot->rotate(5, Z_axis, 240);
+    return;
+}
+
+void buildAlaCoilTetramer (protein* _prot, double _radius, double _phase)
+{
+    _prot->rotate(Z_axis, _phase);
+    _prot->translate(0.0, _radius, 0.0);
+    _prot->rotate(2, Z_axis, 180);
+    _prot->rotate(3, Z_axis, 180);
     return;
 }
 
