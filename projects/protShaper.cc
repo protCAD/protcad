@@ -55,6 +55,8 @@ int main (int argc, char* argv[])
 	vector <double> ppL(2), ppD(2), pBetaL(2), pBetaD(2), aBetaL(2), aBetaD(2), bTurn1L(2), bTurn2L(2), bTurn3L(2), bTurn1D(2), bTurn2D(2), bTurn3D(2);
 	vector < vector <double> > Lfolds(12);
 	vector < vector <double> > Dfolds(12);
+    vector <double> LDphis(6);
+    vector <double> LDpsis(8);
 
 	////Angles///////////////////////////////
     phisL[0] = -63.68, phisL[1] = -99.18, phisL[2] = -139.84;
@@ -135,39 +137,62 @@ int main (int argc, char* argv[])
     //double coil;
     //double offset;
     //rotamer optimizations
-    /*for (UInt k = 165; k < 195; k++)
+    PDBInterface* theFramePDB = new PDBInterface(inFile);
+    ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
+    molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
+    protein* frame = static_cast<protein*>(frameMol);
+    double startE = frame->protEnergy();
+    delete theFramePDB;
+    for (UInt f = 9; f < 13; f++)
     {
-        for (UInt m = 230; m < 260; m++)
+        for (UInt g = 9; g < 13; g++)
         {
-            count++;
-            PDBInterface* theFramePDB = new PDBInterface(inFile);
-            ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
-            molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
-            protein* frame = static_cast<protein*>(frameMol);
-            frame->silenceMessages();
-            frame->rotateChain(1,Y_axis,k);
-            frame->rotateChain(1,Z_axis,m);
-            double Energy = frame->protEnergy();
-            cout << count << " " << Energy << " " << k << " " << m;
-            if (Energy < best)
+            for (UInt h = 9; h < 13; h++)
             {
-                cout << " hit!!!!!!!!" << endl;
-                best = Energy;
-                stringstream convert;
-                string countstr;
-                convert << count, countstr = convert.str();
-                outFile = countstr + ".dimer.pdb";
-                pdbWriter(frame, outFile);
+                for (UInt k = 9; k < 13; h++)
+                {
+                    for (UInt i = 0; i < phisLD.size(); i++)
+                    {
+                        for (UInt j = 0; j < psisLD.size(); j++)
+                        {
+                            count++;
+                            PDBInterface* theFramePDB = new PDBInterface(inFile);
+                            ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
+                            molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
+                            protein* frame = static_cast<protein*>(frameMol);
+                            frame->setDihedral(0,f,phisLD[i],0,0);
+                            frame->setDihedral(0,f,psisLD[j],1,0);
+                            frame->setDihedral(0,g,phisLD[i],0,0);
+                            frame->setDihedral(0,g,psisLD[j],1,0);
+                            frame->setDihedral(0,h,phisLD[i],0,0);
+                            frame->setDihedral(0,h,psisLD[j],1,0);
+                            frame->setDihedral(0,k,phisLD[i],0,0);
+                            frame->setDihedral(0,k,psisLD[j],1,0);
+                            double Energy = frame->protEnergy();
+                            cout << count << " " << Energy << " " << f << " " << phisLD[i] << " " << psisLD[j] << " " << g << " " << phisLD[i] << " " << psisLD[j] << h << " " << phisLD[i] << " " << psisLD[j];
+                            if (Energy < 425)
+                            {
+                                cout << " hit!!!!!!!!" << endl;
+                                best = Energy;
+                                stringstream convert;
+                                string countstr;
+                                convert << count, countstr = convert.str();
+                                outFile = countstr + ".turn.pdb";
+                                pdbWriter(frame, outFile);
+                            }
+                            else
+                            {
+                                cout << endl;
+                            }
+                            delete theFramePDB;
+                       }
+                    }
+                }
             }
-            else
-            {
-                cout << endl;
-            }
-            delete theFramePDB;
-       }
+        }
     }
 
-    //bundle optimizations
+    /*bundle optimizations
     UIntVec allowedRots;
      for (UInt k = 175; k < 185; k++)
     {
@@ -205,7 +230,7 @@ int main (int argc, char* argv[])
     UInt res1, res2, rot;
     double chi1, chi2;
     double angle1, angle2;
-    cout << "iteration Energy radius angle" << endl;*/
+    cout << "iteration Energy radius angle" << endl;/
     double phase, radius;
             for (int m = 0; m < 100; m++)
             {
@@ -219,7 +244,7 @@ int main (int argc, char* argv[])
                     protein* frame = static_cast<protein*>(frameMol);
                     frame->silenceMessages();
                     buildAlaCoilTetramer(frame, radius, phase);
-                    /*for (UInt l = 0; l < frame->getNumChains(); l++)
+                    /for (UInt l = 0; l < frame->getNumChains(); l++)
                     {
                         allowedRots = frame->getAllowedRotamers(0, res1, Hcd, 0);
                         frame->activateForRepacking(l, res1);
@@ -234,7 +259,7 @@ int main (int argc, char* argv[])
                         frame->setChi(l, res2, 0, 0, chi1);
                         frame->setChi(l, res2, 0, 1, chi2);
                         frame->setChi(l, res2, 1, 0, angle2);
-                    }*/
+                    }/
                     double Energy = frame->protEnergy();                  
                     cout << count << " " << Energy << " " << radius << " " << phase;
                     if (Energy < best)
@@ -260,7 +285,7 @@ int main (int argc, char* argv[])
                 }
             }
     //}
-    /*/dihed0rals
+    //dihed0rals
     PDBInterface* theFramePDB = new PDBInterface(inFile);
     ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
     molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
