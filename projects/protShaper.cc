@@ -137,7 +137,7 @@ int main (int argc, char* argv[])
     //double coil;
     //double offset;
     //rotamer optimizations
-    PDBInterface* theFramePDB = new PDBInterface(inFile);
+    /*PDBInterface* theFramePDB = new PDBInterface(inFile);
     ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
     molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
     protein* frame = static_cast<protein*>(frameMol);
@@ -285,7 +285,7 @@ int main (int argc, char* argv[])
                 }
             }
     //}
-    //dihed0rals
+    dihed0rals*/
     PDBInterface* theFramePDB = new PDBInterface(inFile);
     ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
     molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
@@ -298,12 +298,12 @@ int main (int argc, char* argv[])
         resNum = frame->getNumResidues(i);
         for (UInt j = 0; j < resNum; j++)
         {
-            frame->setDihedral(i, j, -65.5, 0, 0);
-            frame->setDihedral(i, j, -37.5, 1, 0);
+            frame->setDihedral(i, j, ppL[0], 0, 0);
+            frame->setDihedral(i, j, ppL[1], 1, 0);
         }
     }
-    outFile = "ideal_ala.pdb";
-    pdbWriter(frame, outFile);*/
+    outFile = "trpcage_pp.pdb";
+    pdbWriter(frame, outFile);
 
 //--Print end and write a pdb file--------------------------------------------------------------
 	return 0;
