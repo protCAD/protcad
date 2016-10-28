@@ -19,9 +19,7 @@
 #include "PDBInterface.h"
 
 void buildAntiParallelBetaBarrel (protein* _prot, double _pitch);
-void buildAntiParallelHelixDimer (protein* _prot, double _radius, double _phase, double _coil, double _offset);
-void buildAlaCoilHexamer (protein* _prot, double _radius, double _phase);
-void buildAlaCoilTetramer (protein* _prot, double _radius, double _phase);
+void buildHelixOligamer (protein* _prot, UInt numChains, bool antiParallel, double _radius, double _phase, double _coil, double _offset);
 
 int main (int argc, char* argv[])
 {
@@ -133,44 +131,44 @@ int main (int argc, char* argv[])
     double best = 1E100;
     //double phase;
     UInt count = 0;
-
     //double coil;
-    //double offset;
+    //double offset = 0.0;
     //rotamer optimizations
     /*PDBInterface* theFramePDB = new PDBInterface(inFile);
     ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
     molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
-    protein* frame = static_cast<protein*>(frameMol);
-    double startE = frame->protEnergy();
-    delete theFramePDB;
-    for (UInt f = 9; f < 13; f++)
+    protein* bundle = static_cast<protein*>(frameMol);
+    double startE = bundle->protEnergy();
+    for (UInt f = 33; f < 37; f++)
     {
-        for (UInt g = 9; g < 13; g++)
+        for (UInt g = 33; g < 37; g++)
         {
-            for (UInt h = 9; h < 13; h++)
+            for (UInt h = 33; h < 37; h++)
             {
-                for (UInt k = 9; k < 13; h++)
+                for (UInt k = 33; k < 37; k++)
                 {
                     for (UInt i = 0; i < phisLD.size(); i++)
                     {
                         for (UInt j = 0; j < psisLD.size(); j++)
                         {
                             count++;
-                            PDBInterface* theFramePDB = new PDBInterface(inFile);
-                            ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
-                            molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
-                            protein* frame = static_cast<protein*>(frameMol);
-                            frame->setDihedral(0,f,phisLD[i],0,0);
-                            frame->setDihedral(0,f,psisLD[j],1,0);
-                            frame->setDihedral(0,g,phisLD[i],0,0);
-                            frame->setDihedral(0,g,psisLD[j],1,0);
-                            frame->setDihedral(0,h,phisLD[i],0,0);
-                            frame->setDihedral(0,h,psisLD[j],1,0);
-                            frame->setDihedral(0,k,phisLD[i],0,0);
-                            frame->setDihedral(0,k,psisLD[j],1,0);
-                            double Energy = frame->protEnergy();
-                            cout << count << " " << Energy << " " << f << " " << phisLD[i] << " " << psisLD[j] << " " << g << " " << phisLD[i] << " " << psisLD[j] << h << " " << phisLD[i] << " " << psisLD[j];
-                            if (Energy < 425)
+                            protein* frame = new protein(*bundle);
+                            frame->setDihedral(1,f,phisLD[i],0,0);
+                            frame->setDihedral(1,f,psisLD[j],1,0);
+                            frame->setDihedral(1,g,phisLD[i],0,0);
+                            frame->setDihedral(1,g,psisLD[j],1,0);
+                            frame->setDihedral(1,h,phisLD[i],0,0);
+                            frame->setDihedral(1,h,psisLD[j],1,0);
+                            frame->setDihedral(1,k,phisLD[i],0,0);
+                            frame->setDihedral(1,k,psisLD[j],1,0);
+                            dblVec Ccoords = frame->getCoords(1, 36, "C");
+                            dblVec Ncoords = frame->getCoords(2, 0, "N");
+                            double dist = CMath::distance(Ccoords, Ncoords);
+                            double Energy = 0.0;
+                            Energy += -1000/dist;
+                            Energy += frame->protEnergy();
+                            cout << count << " " << dist << " " << Energy << " " << f << " " << phisLD[i] << " " << psisLD[j] << " " << g << " " << phisLD[i] << " " << psisLD[j] << h << " " << phisLD[i] << " " << psisLD[j];
+                            if (Energy < best)
                             {
                                 cout << " hit!!!!!!!!" << endl;
                                 best = Energy;
@@ -184,50 +182,62 @@ int main (int argc, char* argv[])
                             {
                                 cout << endl;
                             }
-                            delete theFramePDB;
+                            delete frame;
                        }
                     }
                 }
             }
         }
-    }
+    }*/
 
-    /*bundle optimizations
-    UIntVec allowedRots;
-     for (UInt k = 175; k < 185; k++)
+    ///bundle optimizations/
+    //UIntVec allowedRots;
+    /*PDBInterface* theFramePDB = new PDBInterface(inFile);
+    ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
+    molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
+    protein* bundle = static_cast<protein*>(frameMol);
+     for (int k = 0; k < 10; k++)
     {
-        for (UInt m = 240; m < 250; m++)
+        for (int l = 0; l < 5; l++)
         {
-
-            count++;
-            PDBInterface* theFramePDB = new PDBInterface(inFile);
-            ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
-            molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
-            protein* frame = static_cast<protein*>(frameMol);
-            frame->silenceMessages();
-            radius = 3+(k*0.1), coil = 360, offset = 1.5 + (m*0.01), phase = 0;
-            buildAntiParallelHelixDimer (frame, radius, phase, coil, offset);
-            double Energy = frame->protEnergy();
-            cout << count << " " << Energy << " " << yrotate << " " << zrotate;
-            if (Energy < best)
+            for (int n = 0; n < 30; n++)
             {
-                cout << " hit!!!!!!!!" << endl;
-                best = Energy;
-                stringstream convert;
-                string countstr;
-                convert << count, countstr = convert.str();
-                outFile = countstr + ".dimer.pdb";
-                pdbWriter(frame, outFile);
+                for (int m = 18; m < 37; m++)
+                {
+                    protein* frame = new protein(*bundle);
+                    count++;
+                    radius = 7.5+(k*0.1), coil = m*10, offset = -2.5 - (0.2*l), phase = n;
+                    buildHelixOligamer(frame, 4, true, radius, phase, coil, offset);
+                    dblVec HNcoords = frame->getCoords(0, 18, "NE2");
+                    dblVec YOcoords = frame->getCoords(2, 18, "OH");
+                    double dist = CMath::distance(HNcoords, YOcoords);
+                    double Energy = 0.0;
+                    if (dist <= 2.7 && dist >= 2.5)
+                    {
+                        Energy = -500;
+                    }
+                    Energy += frame->protEnergy();
+                    cout << count << " " << Energy << " " << radius << " " << coil << " " << offset << " " << phase << " " << dist;
+                    if (Energy < best)
+                    {
+                        cout << " hit!!!!!!!!" << endl;
+                        best = Energy;
+                        stringstream convert;
+                        string countstr;
+                        convert << count, countstr = convert.str();
+                        outFile = countstr + ".olig.pdb";
+                        pdbWriter(frame, outFile);
+                    }
+                    else
+                    {
+                        cout << endl;
+                    }
+                    delete frame;
+               }
             }
-            else
-            {
-                cout << endl;
-            }
-            delete theFramePDB;
-
-       }
-    }
-    UInt res1, res2, rot;
+        }
+    }*/
+    /*UInt res1, res2, rot;
     double chi1, chi2;
     double angle1, angle2;
     cout << "iteration Energy radius angle" << endl;/
@@ -249,7 +259,7 @@ int main (int argc, char* argv[])
                         allowedRots = frame->getAllowedRotamers(0, res1, Hcd, 0);
                         frame->activateForRepacking(l, res1);
                         frame->mutateWBC(l, res1, Hcd);
-                        frame->setRotamerWBC(l, res1, 0, allowedRots[rot]);
+                        frame->setRotamerWBC(l,frame res1, 0, allowedRots[rot]);
                         frame->setChi(l, res1, 0, 0, chi1);
                         frame->setChi(l, res1, 0, 1, chi2);
                         frame->setChi(l, res1, 1, 0, angle1);
@@ -284,57 +294,198 @@ int main (int argc, char* argv[])
                     delete theFramePDB;
                 }
             }
-    //}
-    dihed0rals*/
+    //}*/
+    //getdihed0rals
     PDBInterface* theFramePDB = new PDBInterface(inFile);
     ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
     molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
-    protein* frame = static_cast<protein*>(frameMol);
-    UInt chainNum = frame->getNumChains();
-    UInt resNum;
-    for (UInt i = 0; i < chainNum; i++)
+    protein* bundle = static_cast<protein*>(frameMol);
+    double offset, offset2, offset1, offset3, offset4, offset5;
+    for (int c = -10; c < 10; c++)
     {
-        //--mod structure
-        resNum = frame->getNumResidues(i);
-        for (UInt j = 0; j < resNum; j++)
+        for (int d = -10; d < 10; d++)
         {
-            frame->setDihedral(i, j, ppL[0], 0, 0);
-            frame->setDihedral(i, j, ppL[1], 1, 0);
+            for (int e = -10; e < 10; e++)
+            {
+                for (int f = -10; f < 10; f++)
+                {
+                    for (int g = -10; g < 10; g++)
+                    {
+                        for (int h = -10; h < 10; h++)
+                        {
+                            offset = c;
+                            offset1 = d;
+                            offset2 = e;
+                            offset3 = f;
+                            offset4 = g;
+                            offset5 = h;
+
+                            count++;
+                            protein* frame = new protein(*bundle);
+                            for (UInt i = 0; i < frame->getNumAtoms(0,0); i++)
+                            {
+                                frame->makeAtomSilent(0,0,i);
+                                frame->makeAtomSilent(0,13,i);
+                            }
+                            frame->makeAtomSilent(0,1,0);
+                            frame->makeAtomSilent(0,12,2);
+                            for (UInt i = 0; i < frame->getNumChains(); i++)
+                            {
+                                //--mod structure
+                                for (UInt j = 0; j < frame->getNumResidues(i); j++)
+                                {
+                                    if (j == 0)
+                                    {
+                                         frame->setDihedral(i, j, psisD[1]-offset5, 1, 0);
+                                    }
+                                    if (j == 1)
+                                    {
+                                        frame->setDihedral(i, j, alphaL[0]+offset, 0, 0);
+                                        frame->setDihedral(i, j, alphaL[1]+offset1, 1, 0);
+                                    }
+                                    if (j == 2)
+                                    {
+                                        frame->setDihedral(i, j, alphaD[0]-offset2, 0, 0);
+                                        frame->setDihedral(i, j, alphaD[1]-offset3, 1, 0);
+                                    }
+                                    if (j == 3)
+                                    {
+                                        frame->setDihedral(i, j, phisL[1]+offset4, 0, 0);
+                                        frame->setDihedral(i, j, psisL[1]+offset5, 1, 0);
+                                    }
+                                    if (j == 4)
+                                    {
+                                        frame->setDihedral(i, j, alphaD[0]-offset, 0, 0);
+                                        frame->setDihedral(i, j, alphaD[1]-offset1, 1, 0);
+                                    }
+                                    if (j == 5)
+                                    {
+                                        frame->setDihedral(i, j, alphaL[0]+offset2, 0, 0);
+                                        frame->setDihedral(i, j, alphaL[1]+offset3, 1, 0);
+                                    }
+                                    if (j == 6)
+                                    {
+                                        frame->setDihedral(i, j, phisD[1]-offset4, 0, 0);
+                                        frame->setDihedral(i, j, psisD[1]-offset5, 1, 0);
+                                    }
+                                    if (j == 7)
+                                    {
+                                        frame->setDihedral(i, j, alphaL[0]+offset, 0, 0);
+                                        frame->setDihedral(i, j, alphaL[1]+offset1, 1, 0);
+                                    }
+                                    if (j == 8)
+                                    {
+                                        frame->setDihedral(i, j, alphaD[0]-offset2, 0, 0);
+                                        frame->setDihedral(i, j, alphaD[1]-offset3, 1, 0);
+                                    }
+                                    if (j == 9)
+                                    {
+                                        frame->setDihedral(i, j, phisL[1]+offset4, 0, 0);
+                                        frame->setDihedral(i, j, psisL[1]+offset5, 1, 0);
+                                    }
+                                    if (j == 10)
+                                    {
+                                        frame->setDihedral(i, j, alphaD[0]-offset, 0, 0);
+                                        frame->setDihedral(i, j, alphaD[1]-offset1, 1, 0);
+                                    }
+                                    if (j == 11)
+                                    {
+                                        frame->setDihedral(i, j, alphaL[0]+offset2, 0, 0);
+                                        frame->setDihedral(i, j, alphaL[1]+offset3, 1, 0);
+                                    }
+                                    if (j == 12)
+                                    {
+                                        frame->setDihedral(i, j, phisD[1]-offset4, 0, 0);
+                                        frame->setDihedral(i, j, psisD[1]-offset5, 1, 0);
+                                    }
+                                    if (j == 13)
+                                    {
+                                        frame->setDihedral(i, j, alphaL[0]+offset, 0, 0);
+                                    }
+                                }
+                            }
+                            dblVec dSG1coords = frame->getCoords(0, 2, "SG");
+                            dblVec dSG2coords = frame->getCoords(0, 8, "SG");
+                            dblVec SG1coords = frame->getCoords(0, 5, "SG");
+                            dblVec SG2coords = frame->getCoords(0, 11, "SG");
+                            dblVec Ncoords = frame->getCoords(0, 1, "N");
+                            dblVec Ccoords = frame->getCoords(0, 12, "C");
+                            double dist1 = CMath::distance(dSG1coords, dSG2coords);
+                            double dist2 = CMath::distance(SG1coords, SG2coords);
+                            double dist3 = CMath::distance(Ncoords, Ccoords);
+                            double Energy = 0.0;
+                            if (dist1 < 6.5 && dist1 > 6.0)
+                            {
+                                Energy += -500;
+                            }
+                            if (dist2 < 6.5 && dist2 > 6.0)
+                            {
+                                Energy += -500;
+                            }
+                            if (dist3 < 2.0 && dist2 > 1.0)
+                            {
+                                Energy += -500;
+                            }
+                            Energy += frame->protEnergy();
+                            if (Energy < best)
+                            {
+                                cout << count << " " << Energy << " " << alphaL[0]+offset << " " << alphaL[1]+offset1 << " " << alphaD[0]-offset2 << " " << alphaD[1]-offset3 << " " << phisL[1]+offset4 << " " << psisL[1]+offset5;
+                                best = Energy;
+                                cout << " hit!!!!!!!!" << endl;
+                                stringstream convert;
+                                string countstr;
+                                convert << count, countstr = convert.str();
+                                outFile = countstr + ".cycle.pdb";
+                                pdbWriter(frame, outFile);
+                            }
+                            delete frame;
+                        }
+                     }
+                }
+            }
         }
     }
-    outFile = "trpcage_pp.pdb";
-    pdbWriter(frame, outFile);
 
 //--Print end and write a pdb file--------------------------------------------------------------
 	return 0;
 }
-void buildAlaCoilHexamer (protein* _prot, double _radius, double _phase)
+void buildHelixOligamer (protein* _prot, UInt numChains, bool antiParallel, double _radius, double _phase, double _coil, double _offset)
 {
+    double rotationInterval = 360/numChains;
+    double rotation = 0.0;
+    bool odd = false;
     _prot->rotate(Z_axis, _phase);
+    if (antiParallel)
+    {
+        for (UInt i = 0; i < numChains; i++)
+        {
+            if (odd)
+            {
+                _prot->rotate(i, Y_axis, 180);
+                odd = false;
+            }
+            else
+            {
+                odd = true;
+            }
+        }
+        odd = false;
+    }
     _prot->translate(0.0, _radius, 0.0);
-    _prot->rotate(2, Z_axis, 120);
-    _prot->rotate(3, Z_axis, 120);
-    _prot->rotate(4, Z_axis, 240);
-    _prot->rotate(5, Z_axis, 240);
-    return;
-}
-
-void buildAlaCoilTetramer (protein* _prot, double _radius, double _phase)
-{
-    _prot->rotate(Z_axis, _phase);
-    _prot->translate(0.0, _radius, 0.0);
-    _prot->rotate(2, Z_axis, 180);
-    _prot->rotate(3, Z_axis, 180);
-    return;
-}
-
-void buildAntiParallelHelixDimer (protein* _prot, double _radius, double _phase, double _coil, double _offset)
-{
-    _prot->rotate(Z_axis, _phase);
-    _prot->rotate(1, Y_axis, 180);
-    _prot->translate(0.0, _radius, 0.0);
-    _prot->rotate(1, Z_axis, 180);
-    _prot->translate(1, 0.0, 0.0, _offset);
+    for (UInt i = 0; i < numChains; i++)
+    {
+        _prot->rotate(i, Z_axis, rotation);
+        if (odd)
+        {
+            _prot->translate(i, 0.0, 0.0, _offset);
+            odd = false;
+        }
+        else
+        {
+            odd = true;
+        }
+        rotation += rotationInterval;
+    }
     _prot->coilcoil(_coil);
     return;
 }

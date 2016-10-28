@@ -118,18 +118,18 @@ void point::setCoords(const dblVec& _dblVec)
 		     << endl;
 		return;
 	};
-	ASSERT(_dblVec[0] < 1e7 && _dblVec[0] > -1e7);
-	ASSERT(_dblVec[1] < 1e7 && _dblVec[1] > -1e7);
-	ASSERT(_dblVec[2] < 1e7 && _dblVec[2] > -1e7);
+        ASSERT(_dblVec[0] < 1e7 && _dblVec[0] > -1e7);
+        ASSERT(_dblVec[1] < 1e7 && _dblVec[1] > -1e7);
+        ASSERT(_dblVec[2] < 1e7 && _dblVec[2] > -1e7);
 	itsCoords = _dblVec;
 }
 
 void point::setCoords(const double _x, const double _y, const double _z)
 {	
 	
-	ASSERT(_x < 1e7 && _x > -1e7);
-	ASSERT(_y < 1e7 && _y > -1e7);
-	ASSERT(_z < 1e7 && _z > -1e7);
+        ASSERT(_x < 1e7 && _x > -1e7);
+        ASSERT(_y < 1e7 && _y > -1e7);
+        ASSERT(_z < 1e7 && _z > -1e7);
 	itsCoords[0] = _x;
 	itsCoords[1] = _y;
 	itsCoords[2] = _z;

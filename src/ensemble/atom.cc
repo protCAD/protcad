@@ -354,7 +354,7 @@ void atom::setCharge(const double _charge)
 void atom::makeAtomSilent()
 {
 	isSilent = true;
-	cout << "chain: " << getChainID() << " " << getName() << " number: " << getSerialNumber() << " silenced." << endl; 
+    //cout << "chain: " << getChainID() << " " << getName() << " number: " << getSerialNumber() << " silenced." << endl;
 }
 
 // ***********************************************************************
