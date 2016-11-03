@@ -300,35 +300,46 @@ int main (int argc, char* argv[])
     ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
     molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
     protein* bundle = static_cast<protein*>(frameMol);
-    double offset, offset2, offset1, offset3, offset4, offset5;
-    for (int c = -10; c < 10; c++)
+    double offset=0, offset2=0, offset1=0, offset3=0, offset4=0, offset5=0;
+    for (UInt a = 0; a < phisL.size(); a++)
     {
-        for (int d = -10; d < 10; d++)
+        for (UInt b = 0; b < psisL.size(); b++)
         {
-            for (int e = -10; e < 10; e++)
+            int phi1 = 1;
+            int psi1 = 3;
+            int phi2 = 1;
+            int psi2 = 3;
+            int phi3 = a;
+            int psi3 = b;
+            //int range = 20;
+    /*for (int c = -range; c < range; c++)
+    {
+        for (int d = -range; d < range; d++)
+        {
+            for (int e = -range; e < range; e++)
             {
-                for (int f = -10; f < 10; f++)
+                for (int f = -range; f < range; f++)
                 {
-                    for (int g = -10; g < 10; g++)
+                    for (int g = -range; g < range; g++)
                     {
-                        for (int h = -10; h < 10; h++)
+                        for (int h = -range; h < range; h++)
                         {
                             offset = c;
                             offset1 = d;
                             offset2 = e;
                             offset3 = f;
                             offset4 = g;
-                            offset5 = h;
+                            offset5 = h;*/
 
                             count++;
                             protein* frame = new protein(*bundle);
                             for (UInt i = 0; i < frame->getNumAtoms(0,0); i++)
                             {
                                 frame->makeAtomSilent(0,0,i);
-                                frame->makeAtomSilent(0,13,i);
+                                frame->makeAtomSilent(0,9,i);
                             }
                             frame->makeAtomSilent(0,1,0);
-                            frame->makeAtomSilent(0,12,2);
+                            frame->makeAtomSilent(0,8,2);
                             for (UInt i = 0; i < frame->getNumChains(); i++)
                             {
                                 //--mod structure
@@ -336,100 +347,100 @@ int main (int argc, char* argv[])
                                 {
                                     if (j == 0)
                                     {
-                                         frame->setDihedral(i, j, psisD[1]-offset5, 1, 0);
+                                         frame->setDihedral(i, j, psisD[psi3]-offset4, 1, 0);
                                     }
                                     if (j == 1)
                                     {
-                                        frame->setDihedral(i, j, alphaL[0]+offset, 0, 0);
-                                        frame->setDihedral(i, j, alphaL[1]+offset1, 1, 0);
+                                        frame->setDihedral(i, j, phisL[phi1]+offset, 0, 0);
+                                        frame->setDihedral(i, j, psisL[psi1]+offset1, 1, 0);
                                     }
                                     if (j == 2)
                                     {
-                                        frame->setDihedral(i, j, alphaD[0]-offset2, 0, 0);
-                                        frame->setDihedral(i, j, alphaD[1]-offset3, 1, 0);
+                                        frame->setDihedral(i, j, phisD[phi2]-offset2, 0, 0);
+                                        frame->setDihedral(i, j, psisD[psi2]-offset3, 1, 0);
                                     }
                                     if (j == 3)
                                     {
-                                        frame->setDihedral(i, j, phisL[1]+offset4, 0, 0);
-                                        frame->setDihedral(i, j, psisL[1]+offset5, 1, 0);
+                                        frame->setDihedral(i, j, phisL[phi3]+offset4, 0, 0);
+                                        frame->setDihedral(i, j, psisL[psi3]+offset5, 1, 0);
                                     }
                                     if (j == 4)
                                     {
-                                        frame->setDihedral(i, j, alphaD[0]-offset, 0, 0);
-                                        frame->setDihedral(i, j, alphaD[1]-offset1, 1, 0);
+                                        frame->setDihedral(i, j, phisD[phi1]-offset2, 0, 0);
+                                        frame->setDihedral(i, j, psisD[psi1]-offset3, 1, 0);
                                     }
                                     if (j == 5)
                                     {
-                                        frame->setDihedral(i, j, alphaL[0]+offset2, 0, 0);
-                                        frame->setDihedral(i, j, alphaL[1]+offset3, 1, 0);
+                                        frame->setDihedral(i, j, phisL[phi2]+offset, 0, 0);
+                                        frame->setDihedral(i, j, psisL[psi2]+offset1, 1, 0);
                                     }
                                     if (j == 6)
                                     {
-                                        frame->setDihedral(i, j, phisD[1]-offset4, 0, 0);
-                                        frame->setDihedral(i, j, psisD[1]-offset5, 1, 0);
+                                        frame->setDihedral(i, j, phisD[phi3]+offset4, 0, 0);
+                                        frame->setDihedral(i, j, psisD[psi3]+offset5, 1, 0);
                                     }
                                     if (j == 7)
                                     {
-                                        frame->setDihedral(i, j, alphaL[0]+offset, 0, 0);
-                                        frame->setDihedral(i, j, alphaL[1]+offset1, 1, 0);
+                                        frame->setDihedral(i, j, phisL[phi1]+offset, 0, 0);
+                                        frame->setDihedral(i, j, psisL[psi1]+offset1, 1, 0);
                                     }
                                     if (j == 8)
                                     {
-                                        frame->setDihedral(i, j, alphaD[0]-offset2, 0, 0);
-                                        frame->setDihedral(i, j, alphaD[1]-offset3, 1, 0);
+                                        frame->setDihedral(i, j, phisD[phi2]-offset2, 0, 0);
+                                        frame->setDihedral(i, j, psisD[psi2]-offset3, 1, 0);
                                     }
                                     if (j == 9)
                                     {
-                                        frame->setDihedral(i, j, phisL[1]+offset4, 0, 0);
-                                        frame->setDihedral(i, j, psisL[1]+offset5, 1, 0);
+                                        frame->setDihedral(i, j, phisL[phi3]+offset4, 0, 0);
+                                        frame->setDihedral(i, j, psisL[psi3]+offset5, 1, 0);
                                     }
                                     if (j == 10)
                                     {
-                                        frame->setDihedral(i, j, alphaD[0]-offset, 0, 0);
-                                        frame->setDihedral(i, j, alphaD[1]-offset1, 1, 0);
+                                        frame->setDihedral(i, j, phisD[phi1]-offset2, 0, 0);
+                                        frame->setDihedral(i, j, psisD[psi1]-offset3, 1, 0);
                                     }
                                     if (j == 11)
                                     {
-                                        frame->setDihedral(i, j, alphaL[0]+offset2, 0, 0);
-                                        frame->setDihedral(i, j, alphaL[1]+offset3, 1, 0);
+                                        frame->setDihedral(i, j, phisL[phi2]+offset, 0, 0);
+                                        frame->setDihedral(i, j, psisL[psi2]+offset1, 1, 0);
                                     }
                                     if (j == 12)
                                     {
-                                        frame->setDihedral(i, j, phisD[1]-offset4, 0, 0);
-                                        frame->setDihedral(i, j, psisD[1]-offset5, 1, 0);
+                                        frame->setDihedral(i, j, phisD[phi3]+offset4, 0, 0);
+                                        frame->setDihedral(i, j, psisD[psi3]+offset5, 1, 0);
                                     }
                                     if (j == 13)
                                     {
-                                        frame->setDihedral(i, j, alphaL[0]+offset, 0, 0);
+                                        frame->setDihedral(i, j, phisL[phi1]+offset, 0, 0);
                                     }
                                 }
                             }
-                            dblVec dSG1coords = frame->getCoords(0, 2, "SG");
-                            dblVec dSG2coords = frame->getCoords(0, 8, "SG");
-                            dblVec SG1coords = frame->getCoords(0, 5, "SG");
-                            dblVec SG2coords = frame->getCoords(0, 11, "SG");
+                            //dblVec dSG1coords = frame->getCoords(0, 2, "SG");
+                            //dblVec dSG2coords = frame->getCoords(0, 8, "SG");
+                            //dblVec SG1coords = frame->getCoords(0, 5, "SG");
+                            //dblVec SG2coords = frame->getCoords(0, 11, "SG");
                             dblVec Ncoords = frame->getCoords(0, 1, "N");
-                            dblVec Ccoords = frame->getCoords(0, 12, "C");
-                            double dist1 = CMath::distance(dSG1coords, dSG2coords);
-                            double dist2 = CMath::distance(SG1coords, SG2coords);
+                            dblVec Ccoords = frame->getCoords(0, 8, "C");
+                            //double dist1 = CMath::distance(dSG1coords, dSG2coords);
+                            //double dist2 = CMath::distance(SG1coords, SG2coords);
                             double dist3 = CMath::distance(Ncoords, Ccoords);
                             double Energy = 0.0;
-                            if (dist1 < 6.5 && dist1 > 6.0)
+                            /*if (dist1 < 6.5 && dist1 > 6.0)
                             {
                                 Energy += -500;
                             }
                             if (dist2 < 6.5 && dist2 > 6.0)
                             {
                                 Energy += -500;
-                            }
-                            if (dist3 < 2.0 && dist2 > 1.0)
+                            }*/
+                            if (dist3 < 2.0)
                             {
                                 Energy += -500;
                             }
                             Energy += frame->protEnergy();
-                            if (Energy < best)
-                            {
-                                cout << count << " " << Energy << " " << alphaL[0]+offset << " " << alphaL[1]+offset1 << " " << alphaD[0]-offset2 << " " << alphaD[1]-offset3 << " " << phisL[1]+offset4 << " " << psisL[1]+offset5;
+                            //if (Energy < best)
+                            //{
+                                cout << count << " " << Energy << " " << dist3 << " " << phisL[phi1]+offset << " " << psisL[psi1]+offset1 << " " << phisD[phi2]-offset2 << " " << psisD[psi2]-offset3 << " " << phisL[phi3]+offset4 << " " << psisL[psi3]+offset5;
                                 best = Energy;
                                 cout << " hit!!!!!!!!" << endl;
                                 stringstream convert;
@@ -437,12 +448,12 @@ int main (int argc, char* argv[])
                                 convert << count, countstr = convert.str();
                                 outFile = countstr + ".cycle.pdb";
                                 pdbWriter(frame, outFile);
-                            }
+                            //}
                             delete frame;
-                        }
-                     }
-                }
-            }
+                        //}
+                     //}
+                //}
+            //}
         }
     }
 

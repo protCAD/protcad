@@ -47,7 +47,7 @@ int main (int argc, char* argv[])
     //int residuesSize = sizeof(residues)/sizeof(residues[0]);
     int resID[] = {dC}, count = 0;
     UInt resIDsize = sizeof(resID)/sizeof(resID[0]);
-    double Energy, bestE;
+    double Energy, bestE, chi2;
 
 	//--Mutations
     //for (UInt h = 0; h < resIDsize; h++)
@@ -63,17 +63,26 @@ int main (int argc, char* argv[])
                 UInt restype = bundle->getTypeFromResNum(l,i);
                 if (restype == C)
                 {
-                    //bundle->activateForRepacking(0, 2);
-                    //bundle->mutate(l, i, G);
-                    bundle->setChi(l,i,0,0,95);
+                    bundle->activateForRepacking(l, i);
+                    bundle->mutate(l, i, D);
+                    UIntVec allowedRots = bundle->getAllowedRotamers(l, i, D, 0);
+                    bundle->setRotamerWBC(l, i, 0, allowedRots[0]);
+                    chi2 = bundle->getChi(l,i,0,1);
+                    bundle->setChi(l,i,0,0,chi2+20);
+                    //bundle->setChi(l,i,0,0,95);
                    // bundle->activateForRepacking(0, 4);
                     //bundle->mutate(0, 7, dC);
                    // bundle->setChi(0,7,0,0,-60);
                 }
-                //if (restype == dC)
-                //{
-                //     bundle->setChi(l,i,0,0,-82);
-               // }
+                if (restype == dC)
+                {
+                    bundle->activateForRepacking(l, i);
+                    bundle->mutate(l, i, dD);
+                    UIntVec allowedRots = bundle->getAllowedRotamers(l, i, dD, 0);
+                    bundle->setRotamerWBC(l, i, 0, allowedRots[8]);
+                    chi2 = bundle->getChi(l,i,0,1);
+                    bundle->setChi(l,i,0,0,chi2-20);
+                }
                 //if (l == 2 && i == 15)
                 //{
                     //bundle->activateForRepacking(l, i);
@@ -103,7 +112,7 @@ int main (int argc, char* argv[])
             }
         }
     //}
-    string outFile = infile + ".chi1.pdb";
+    string outFile = infile + ".D.pdb";
     pdbWriter(bundle, outFile);
 	return 0;
 }
