@@ -53,8 +53,8 @@ int main (int argc, char* argv[])
 	vector <double> ppL(2), ppD(2), pBetaL(2), pBetaD(2), aBetaL(2), aBetaD(2), bTurn1L(2), bTurn2L(2), bTurn3L(2), bTurn1D(2), bTurn2D(2), bTurn3D(2);
 	vector < vector <double> > Lfolds(12);
 	vector < vector <double> > Dfolds(12);
-    vector <double> LDphis(6);
-    vector <double> LDpsis(8);
+    vector <double> hetPhis(7);
+    vector <double> hetPsis(7);
 
 	////Angles///////////////////////////////
     phisL[0] = -63.68, phisL[1] = -99.18, phisL[2] = -139.84;
@@ -123,6 +123,11 @@ int main (int argc, char* argv[])
 	////D folds/////////////////////////////////
 	Dfolds[0] = alphaD, Dfolds[1] = ppD, Dfolds[2] = pBetaD, Dfolds[3] = aBetaD, Dfolds[4] = coilD, Dfolds[5] = bTurn2D;
 	Dfolds[6] = bTurn3D, Dfolds[7] = bTurn1D, Dfolds[8] = aTurn1D, Dfolds[9] = three10D, Dfolds[10] = aTurn2D, Dfolds[11] = aTurn2D;
+
+    ////////////////////////////////////////////
+    ////denovo heterochiral dihedral set //////
+    hetPhis[0] = -60.0, hetPhis[1] = -100.0, hetPhis[2] = -140.0, hetPhis[3] = -180.0, hetPhis[4] = 140.0, hetPhis[5] = 100.0, hetPhis[6] = 60.0;
+    hetPsis[0] = -40.0, hetPsis[1] = 0.0, hetPsis[2] = 40.0, hetPsis[3] = 120.0, hetPsis[4] = 160.0, hetPsis[5] = -160.0, hetPsis[6] = -120.0;
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
