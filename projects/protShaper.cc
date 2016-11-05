@@ -20,6 +20,7 @@
 
 void buildAntiParallelBetaBarrel (protein* _prot, double _pitch);
 void buildHelixOligamer (protein* _prot, UInt numChains, bool antiParallel, double _radius, double _phase, double _coil, double _offset);
+double getBackboneHBondEnergy (protein* _prot);
 
 int main (int argc, char* argv[])
 {
@@ -35,7 +36,7 @@ int main (int argc, char* argv[])
 	rotamer::setScaleFactor(0.0);
 	amberVDW::setScaleFactor(1.0);
 	amberVDW::setRadiusScaleFactor(1.0);
-    amberElec::setScaleFactor(0.0);
+    amberElec::setScaleFactor(1.0);
     srand (time(NULL));
 
 	//--Initialize variables for loop
@@ -133,7 +134,7 @@ int main (int argc, char* argv[])
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 
     //double radius;
-    double best = 1E100;
+   //double best = 1E100;
     //double phase;
     UInt count = 0;
     //double coil;
@@ -305,160 +306,54 @@ int main (int argc, char* argv[])
     ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
     molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
     protein* bundle = static_cast<protein*>(frameMol);
-    double offset=0, offset2=0, offset1=0, offset3=0, offset4=0, offset5=0;
-    for (UInt a = 0; a < phisL.size(); a++)
+    for (UInt a = 0; a < hetPhis.size(); a++)
     {
-        for (UInt b = 0; b < psisL.size(); b++)
+        for (UInt b = 0; b < hetPsis.size(); b++)
         {
-            int phi1 = 1;
-            int psi1 = 3;
-            int phi2 = 1;
-            int psi2 = 3;
-            int phi3 = a;
-            int psi3 = b;
-            //int range = 20;
-    /*for (int c = -range; c < range; c++)
-    {
-        for (int d = -range; d < range; d++)
-        {
-            for (int e = -range; e < range; e++)
+            for (UInt c = 0; c < hetPhis.size(); c++)
             {
-                for (int f = -range; f < range; f++)
+                for (UInt d = 0; d < hetPsis.size(); d++)
                 {
-                    for (int g = -range; g < range; g++)
+                    count++;
+                    protein* frame = new protein(*bundle);
+                    for (UInt i = 0; i < frame->getNumChains(); i++)
                     {
-                        for (int h = -range; h < range; h++)
+                        bool even = true;
+                        for (UInt j = 0; j < frame->getNumResidues(i); j++)
                         {
-                            offset = c;
-                            offset1 = d;
-                            offset2 = e;
-                            offset3 = f;
-                            offset4 = g;
-                            offset5 = h;*/
-
-                            count++;
-                            protein* frame = new protein(*bundle);
-                            for (UInt i = 0; i < frame->getNumAtoms(0,0); i++)
+                            if (j != 0 && j != frame->getNumResidues(i)-1)
                             {
-                                frame->makeAtomSilent(0,0,i);
-                                frame->makeAtomSilent(0,9,i);
-                            }
-                            frame->makeAtomSilent(0,1,0);
-                            frame->makeAtomSilent(0,8,2);
-                            for (UInt i = 0; i < frame->getNumChains(); i++)
-                            {
-                                //--mod structure
-                                for (UInt j = 0; j < frame->getNumResidues(i); j++)
+                                if (even)
                                 {
-                                    if (j == 0)
-                                    {
-                                         frame->setDihedral(i, j, psisD[psi3]-offset4, 1, 0);
-                                    }
-                                    if (j == 1)
-                                    {
-                                        frame->setDihedral(i, j, phisL[phi1]+offset, 0, 0);
-                                        frame->setDihedral(i, j, psisL[psi1]+offset1, 1, 0);
-                                    }
-                                    if (j == 2)
-                                    {
-                                        frame->setDihedral(i, j, phisD[phi2]-offset2, 0, 0);
-                                        frame->setDihedral(i, j, psisD[psi2]-offset3, 1, 0);
-                                    }
-                                    if (j == 3)
-                                    {
-                                        frame->setDihedral(i, j, phisL[phi3]+offset4, 0, 0);
-                                        frame->setDihedral(i, j, psisL[psi3]+offset5, 1, 0);
-                                    }
-                                    if (j == 4)
-                                    {
-                                        frame->setDihedral(i, j, phisD[phi1]-offset2, 0, 0);
-                                        frame->setDihedral(i, j, psisD[psi1]-offset3, 1, 0);
-                                    }
-                                    if (j == 5)
-                                    {
-                                        frame->setDihedral(i, j, phisL[phi2]+offset, 0, 0);
-                                        frame->setDihedral(i, j, psisL[psi2]+offset1, 1, 0);
-                                    }
-                                    if (j == 6)
-                                    {
-                                        frame->setDihedral(i, j, phisD[phi3]+offset4, 0, 0);
-                                        frame->setDihedral(i, j, psisD[psi3]+offset5, 1, 0);
-                                    }
-                                    if (j == 7)
-                                    {
-                                        frame->setDihedral(i, j, phisL[phi1]+offset, 0, 0);
-                                        frame->setDihedral(i, j, psisL[psi1]+offset1, 1, 0);
-                                    }
-                                    if (j == 8)
-                                    {
-                                        frame->setDihedral(i, j, phisD[phi2]-offset2, 0, 0);
-                                        frame->setDihedral(i, j, psisD[psi2]-offset3, 1, 0);
-                                    }
-                                    if (j == 9)
-                                    {
-                                        frame->setDihedral(i, j, phisL[phi3]+offset4, 0, 0);
-                                        frame->setDihedral(i, j, psisL[psi3]+offset5, 1, 0);
-                                    }
-                                    if (j == 10)
-                                    {
-                                        frame->setDihedral(i, j, phisD[phi1]-offset2, 0, 0);
-                                        frame->setDihedral(i, j, psisD[psi1]-offset3, 1, 0);
-                                    }
-                                    if (j == 11)
-                                    {
-                                        frame->setDihedral(i, j, phisL[phi2]+offset, 0, 0);
-                                        frame->setDihedral(i, j, psisL[psi2]+offset1, 1, 0);
-                                    }
-                                    if (j == 12)
-                                    {
-                                        frame->setDihedral(i, j, phisD[phi3]+offset4, 0, 0);
-                                        frame->setDihedral(i, j, psisD[psi3]+offset5, 1, 0);
-                                    }
-                                    if (j == 13)
-                                    {
-                                        frame->setDihedral(i, j, phisL[phi1]+offset, 0, 0);
-                                    }
+                                    frame->setDihedral(i, j, hetPhis[a], 0, 0);
+                                    frame->setDihedral(i, j, hetPsis[b], 1, 0);
+                                    even = false;
+                                }
+                                else
+                                {
+                                    frame->setDihedral(i, j, hetPhis[c], 0, 0);
+                                    frame->setDihedral(i, j, hetPsis[d], 1, 0);
+                                    even = true;
                                 }
                             }
-                            //dblVec dSG1coords = frame->getCoords(0, 2, "SG");
-                            //dblVec dSG2coords = frame->getCoords(0, 8, "SG");
-                            //dblVec SG1coords = frame->getCoords(0, 5, "SG");
-                            //dblVec SG2coords = frame->getCoords(0, 11, "SG");
-                            dblVec Ncoords = frame->getCoords(0, 1, "N");
-                            dblVec Ccoords = frame->getCoords(0, 8, "C");
-                            //double dist1 = CMath::distance(dSG1coords, dSG2coords);
-                            //double dist2 = CMath::distance(SG1coords, SG2coords);
-                            double dist3 = CMath::distance(Ncoords, Ccoords);
-                            double Energy = 0.0;
-                            /*if (dist1 < 6.5 && dist1 > 6.0)
-                            {
-                                Energy += -500;
-                            }
-                            if (dist2 < 6.5 && dist2 > 6.0)
-                            {
-                                Energy += -500;
-                            }*/
-                            if (dist3 < 2.0)
-                            {
-                                Energy += -500;
-                            }
-                            Energy += frame->protEnergy();
-                            //if (Energy < best)
-                            //{
-                                cout << count << " " << Energy << " " << dist3 << " " << phisL[phi1]+offset << " " << psisL[psi1]+offset1 << " " << phisD[phi2]-offset2 << " " << psisD[psi2]-offset3 << " " << phisL[phi3]+offset4 << " " << psisL[psi3]+offset5;
-                                best = Energy;
-                                cout << " hit!!!!!!!!" << endl;
-                                stringstream convert;
-                                string countstr;
-                                convert << count, countstr = convert.str();
-                                outFile = countstr + ".cycle.pdb";
-                                pdbWriter(frame, outFile);
-                            //}
-                            delete frame;
-                        //}
-                     //}
-                //}
-            //}
+                        }
+                        double intraEnergy = frame->protEnergy();
+                        double HBondEnergy = getBackboneHBondEnergy(frame);
+                        double Energy = intraEnergy+HBondEnergy;
+                        if (Energy < -300)
+                        {
+                            cout << count << " " << Energy << " " << hetPhis[a] << " " << hetPsis[b] << " " << hetPhis[c] << " " << hetPsis[d] <<endl;
+                            stringstream convert;
+                            string countstr;
+                            convert << count, countstr = convert.str();
+                            outFile = countstr + ".struct.pdb";
+                            pdbWriter(frame, outFile);
+                        }
+                        cout << count << " " << Energy << " " << hetPhis[a] << " " << hetPsis[b] << " " << hetPhis[c] << " " << hetPsis[d] <<endl;
+                        delete frame;
+                    }
+                }
+            }
         }
     }
 
@@ -545,5 +440,41 @@ void buildAntiParallelBetaBarrel (protein* _prot, double _pitch)
     }
 
     return;
+}
+
+double getBackboneHBondEnergy (protein* _prot)
+{
+    double Energy = 0.0;
+    UInt numchains = _prot->getNumChains();
+    for (int i = 0; i < numchains; i++)
+    {
+        for (int j = 0; j < _prot->getNumResidues(i); j++)
+        {
+            for (int k = 0; k < numchains; k++)
+            {
+                for (int l = 0; l < _prot->getNumResidues(k); l++)
+                {
+                    if (j != l && (j-l) != 1 && (l-j) != 1)
+                    {
+                        dblVec Ncoords1 = _prot->getCoords(i, j, "N");
+                        dblVec Ocoords1 = _prot->getCoords(k, l, "O");
+                        double dist1 = CMath::distance(Ncoords1, Ocoords1);
+                        dblVec Ncoords2 = _prot->getCoords(i, l, "N");
+                        dblVec Ocoords2 = _prot->getCoords(k, j, "O");
+                        double dist2 = CMath::distance(Ncoords2, Ocoords2);
+                        if (dist1 <= 2.6 && dist1 >= 2.3)
+                        {
+                            Energy += -5.0;
+                        }
+                        if (dist2 <= 2.6 && dist2 >= 2.3)
+                        {
+                            Energy += -5.0;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return Energy;
 }
 // antiparallel_beta test.pdb 5 0 -38.5 180 0 0 test2.pdb
