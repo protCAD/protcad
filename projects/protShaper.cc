@@ -37,6 +37,7 @@ int main (int argc, char* argv[])
 	amberVDW::setScaleFactor(1.0);
 	amberVDW::setRadiusScaleFactor(1.0);
     amberElec::setScaleFactor(1.0);
+    amberVDW::itsRepulsionScaleFactor = 0.8;
     srand (time(NULL));
 
 	//--Initialize variables for loop
@@ -342,7 +343,6 @@ int main (int argc, char* argv[])
                         double Energy = intraEnergy+HBondEnergy;
                         if (Energy < -300)
                         {
-                            cout << count << " " << Energy << " " << hetPhis[a] << " " << hetPsis[b] << " " << hetPhis[c] << " " << hetPsis[d] <<endl;
                             stringstream convert;
                             string countstr;
                             convert << count, countstr = convert.str();
@@ -444,37 +444,62 @@ void buildAntiParallelBetaBarrel (protein* _prot, double _pitch)
 
 double getBackboneHBondEnergy (protein* _prot)
 {
-    double Energy = 0.0;
-    UInt numchains = _prot->getNumChains();
-    for (int i = 0; i < numchains; i++)
+    UInt size = _prot->getNumResidues(0);
+    UInt numHbonds = 0;
+    vector < dblVec > Ncoords;
+    vector < dblVec > Ocoords;
+    vector < dblVec > Ccoords;
+    vector < dblVec > CAcoords;
+
+    for (UInt i = 0; i < size; i ++)
     {
-        for (int j = 0; j < _prot->getNumResidues(i); j++)
+        dblVec tempcoord =_prot->getCoords(0, i, 0);
+        Ncoords.push_back(tempcoord);
+        tempcoord =_prot->getCoords(0, i, 3);
+        Ocoords.push_back(tempcoord);
+        tempcoord =_prot->getCoords(0, i, 1);
+        CAcoords.push_back(tempcoord);
+        tempcoord = _prot->getCoords(0, i, 2);
+        Ccoords.push_back(tempcoord);
+    }
+
+    // for first residue = no angular constraint
+    for (UInt j = 0; j < Ocoords.size(); j ++)
+    {
+        dblVec temp = Ncoords[0] - Ocoords[j];
+        double distance = sqrt(CMath::dotProduct(temp,temp));
+        int resSpace = (0 - j);
+        if (distance < 3.2 && abs(resSpace) > 2 )
         {
-            for (int k = 0; k < numchains; k++)
+            numHbonds ++;
+        }
+    }
+
+
+    for (UInt i = 1; i < Ncoords.size(); i ++)
+    {
+        for (UInt j = 0; j < Ocoords.size(); j ++)
+        {
+            int resSpace = (i - j);
+            if ( abs(resSpace) > 2)
             {
-                for (int l = 0; l < _prot->getNumResidues(k); l++)
+                dblVec NO = Ncoords[i] - Ocoords[j];
+                double distance = sqrt(CMath::dotProduct(NO,NO));
+
+                dblVec pseudoAtom = (Ccoords[i-1] + CAcoords[i])/2.0;
+                dblVec NH = Ncoords[i] - pseudoAtom;
+
+                double magNH = sqrt(CMath::dotProduct(NH,NH));
+                double angle = acos( CMath::dotProduct(NO,NH) / (magNH * distance) );
+                angle = angle * 180 / 3.14159;
+                if (distance < 3.0 && angle > 140)
                 {
-                    if (j != l && (j-l) != 1 && (l-j) != 1)
-                    {
-                        dblVec Ncoords1 = _prot->getCoords(i, j, "N");
-                        dblVec Ocoords1 = _prot->getCoords(k, l, "O");
-                        double dist1 = CMath::distance(Ncoords1, Ocoords1);
-                        dblVec Ncoords2 = _prot->getCoords(i, l, "N");
-                        dblVec Ocoords2 = _prot->getCoords(k, j, "O");
-                        double dist2 = CMath::distance(Ncoords2, Ocoords2);
-                        if (dist1 <= 2.6 && dist1 >= 2.3)
-                        {
-                            Energy += -5.0;
-                        }
-                        if (dist2 <= 2.6 && dist2 >= 2.3)
-                        {
-                            Energy += -5.0;
-                        }
-                    }
+                    numHbonds ++;
                 }
             }
         }
     }
+    double Energy = numHbonds*-20.0;
     return Energy;
 }
 // antiparallel_beta test.pdb 5 0 -38.5 180 0 0 test2.pdb
