@@ -303,6 +303,7 @@ public:
 	void printMainChain() const;
 	void printBranchPoints() const;
 	int getResNum() const {return itsResNum;}
+    double getRadius(UInt atomIndex) {return itsAtoms[atomIndex]->getRadius();}
     static UInt getHowMany() {return howMany;}
 	void setResNum(const UInt _num) {itsResNum = _num;}
 	UInt getNumAtoms() const {return itsAtoms.size();}
