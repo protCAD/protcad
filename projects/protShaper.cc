@@ -37,7 +37,8 @@ int main (int argc, char* argv[])
 	amberVDW::setScaleFactor(1.0);
 	amberVDW::setRadiusScaleFactor(1.0);
     amberElec::setScaleFactor(1.0);
-    amberVDW::itsRepulsionScaleFactor = 0.8;
+    amberVDW::setLinearRepulsionDampeningOn();
+    //amberVDW::itsRepulsionScaleFactor = 0.9;
     srand (time(NULL));
 
 	//--Initialize variables for loop
@@ -341,7 +342,7 @@ int main (int argc, char* argv[])
                         double intraEnergy = frame->protEnergy();
                         double HBondEnergy = getBackboneHBondEnergy(frame);
                         double Energy = intraEnergy+HBondEnergy;
-                        if (Energy < -300)
+                        if (Energy < -300 && Energy > -500)
                         {
                             stringstream convert;
                             string countstr;
@@ -444,6 +445,7 @@ void buildAntiParallelBetaBarrel (protein* _prot, double _pitch)
 
 double getBackboneHBondEnergy (protein* _prot)
 {
+    double Energy = 0;
     UInt size = _prot->getNumResidues(0);
     UInt numHbonds = 0;
     vector < dblVec > Ncoords;
@@ -492,14 +494,13 @@ double getBackboneHBondEnergy (protein* _prot)
                 double magNH = sqrt(CMath::dotProduct(NH,NH));
                 double angle = acos( CMath::dotProduct(NO,NH) / (magNH * distance) );
                 angle = angle * 180 / 3.14159;
-                if (distance < 3.0 && angle > 140)
+                if (distance < 3.6 && angle > 140)
                 {
-                    numHbonds ++;
+                    Energy += -40.0/distance;
                 }
             }
         }
     }
-    double Energy = numHbonds*-20.0;
     return Energy;
 }
 // antiparallel_beta test.pdb 5 0 -38.5 180 0 0 test2.pdb

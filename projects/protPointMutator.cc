@@ -45,9 +45,9 @@ int main (int argc, char* argv[])
     //int chainsSize = sizeof(chains)/sizeof(chains[0]);
     //int residues[] = {1,3,5,7,9,13,15,17,19,21,28,30,32,34,36,54,57,59,61,70,72,74,76,78,86,88,90,92,94,108,110,112,114,116,127,129,131,133,151,153,155,157,159,161,166,169,172,174,181,183,185};//{46,47,61,92,95};//61,30,9,129/46,47,61,92,95/,87,91,110,150,152{1,3,5,7,9,13,15,17,19,21,28,30,32,34,36,54,57,59,61,70,72,74,76,78,86,88,90,92,94,108,110,112,114,116,127,129,131,133,151,153,155,157,159,161,166,169,172,174,181,183,185};
     //int residuesSize = sizeof(residues)/sizeof(residues[0]);
-    int resID[] = {dC}, count = 0;
+    int resID[] = {Csf}, count = 0;
     UInt resIDsize = sizeof(resID)/sizeof(resID[0]);
-    double Energy, bestE, chi2;
+    double Energy, bestE=1E100, chi2;
 
 	//--Mutations
     //for (UInt h = 0; h < resIDsize; h++)
@@ -56,15 +56,16 @@ int main (int argc, char* argv[])
         {
             for (UInt i = 0; i < numres; i++)
             {
-                /*PDBInterface* thePDB = new PDBInterface(infile);
-                ensemble* theEnsemble = thePDB->getEnsemblePointer();
-                molecule* pMol = theEnsemble->getMoleculePointer(0);
-                protein* bundle = static_cast<protein*>(pMol);*/
+
                 UInt restype = bundle->getTypeFromResNum(l,i);
-                if (restype == C)
+                if (restype != Csf && restype != G && restype != Cf)
+                {
+                    bundle->mutate(l, i, A);
+                }
+               /*if (restype == A)
                 {
                     bundle->activateForRepacking(l, i);
-                    bundle->mutate(l, i, D);
+                    bundle->mutate(l, i, Y);
                     UIntVec allowedRots = bundle->getAllowedRotamers(l, i, D, 0);
                     bundle->setRotamerWBC(l, i, 0, allowedRots[0]);
                     chi2 = bundle->getChi(l,i,0,1);
@@ -74,45 +75,52 @@ int main (int argc, char* argv[])
                     //bundle->mutate(0, 7, dC);
                    // bundle->setChi(0,7,0,0,-60);
                 }
-                if (restype == dC)
+                if (restype == Csf || restype == Cf)
                 {
-                    bundle->activateForRepacking(l, i);
-                    bundle->mutate(l, i, dD);
-                    UIntVec allowedRots = bundle->getAllowedRotamers(l, i, dD, 0);
-                    bundle->setRotamerWBC(l, i, 0, allowedRots[8]);
-                    chi2 = bundle->getChi(l,i,0,1);
-                    bundle->setChi(l,i,0,0,chi2-20);
+                    cout << i << " " << bundle->getChi(l,i,0,0) << endl;
                 }
-                //if (l == 2 && i == 15)
-                //{
-                    //bundle->activateForRepacking(l, i);
-                    //bundle->mutate(l, i, resID[1]);
-                    //UIntVec allowedRots = bundle->getAllowedRotamers(l, i, resID[1], 0);
-                    //bundle->setRotamerWBC(l, i, 0, allowedRots[3]);
-                //}
+                /*UIntVec allowedRots = bundle->getAllowedRotamers(l, i, resID[0], 0);
+                if (i == 12)
+                {
+                    bundle->setChi(l,i,0,0,-160);
+                }
+                if (i == 16)
+                {
+                    bundle->setChi(l,i,0,0,-80);
+                }
+                if (i == 60)
+                {
+                    bundle->setChi(l,i,0,0,-160);
+                }
+                if (i == 64)
+                {
+                    bundle->setChi(l,i,0,0,-80);
+                }
 
-                    /*for (UInt j = 0; j < allowedRots.size(); j++)
-                    {
+                     //UIntVec allowedRots = bundle->getAllowedRotamers(0, 16, resID[0], 0);
+                    //for (int j = -80; j < -40; j++)
+                    /*{
                         count++;
-                        bundle->setRotamerWBC(l, i, 0, allowedRots[j]);
-                        Energy = bundle->intraSoluteEnergy(true);
-                        //if (Energy < 0)
-                        //{
+                        bundle->setChi(0,12,0,0,-170);
+                        bundle->setChi(0,60,0,0,-170);
+
+                            //bestE = Energy;
+                            //count++;
                             stringstream convert;
                             string countstr;
                             convert << count, countstr = convert.str();
                             string outFile = countstr + ".good.pdb";
                             pdbWriter(bundle, outFile);
-                            cout << i+l << " " << aminoAcidString[resID[h]] << " " << Energy << endl;
+                            //cout << i+l << " " << aminoAcidString[resID[0]] << " " << Energy << endl;
                         //}
-                    }*/
+                   // }
 
-               // }
-                //delete thePDB;
+
+                //delete thePDB;z*/
             }
         }
     //}
-    string outFile = infile + ".D.pdb";
+    string outFile = infile + ".ALA.pdb";
     pdbWriter(bundle, outFile);
 	return 0;
 }

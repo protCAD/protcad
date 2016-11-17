@@ -42,11 +42,11 @@ int main (int argc, char* argv[])
 
     //-- user inputs for evolution run
     UInt _activeChains[] = {0};                                                         // chains active for mutation
-    UInt _allowedLResidues[] = {A,L,F,V,I,W,Q,E,R,K};                   // amino acids allowed with phi < 0
+    UInt _allowedLResidues[] = {A,L,F,V,I,W,Q,E,R,P,S,T,G};                   // amino acids allowed with phi < 0
     UInt _allowedDResidues[] = {G};  // amino acids allowed with phi > 0
-    UInt _activeResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147};                  // positions active for mutation
-    UInt _randomResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147};                  // positions active for a random start sequence initially
-    UInt _frozenResidues[] = {14,90};                                               // positions that cannot move at all
+    UInt _activeResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,13,14,15,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,61,62,63,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98};                  // positions active for mutation
+    UInt _randomResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,13,14,15,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,61,62,63,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98};                  // positions active for a random start sequence initially
+    UInt _frozenResidues[] = {12,16,60,64};                                               // positions that cannot move at all
     bool homoSymmetric = false;                                                          // if true all chains are structurally symmetrical to the one listed active chain above
     bool backboneRelaxation = false;                                                    // if true allow minor backbone relaxation in structural optimization
 
@@ -429,28 +429,30 @@ vector < vector < UInt > > buildPossibleMutants()
     return _possibleMutants;
 }
 
-void createPossibleMutantsDatabase(protein* _bundle, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedLResidues, UIntVec &_allowedDResidues, bool _homoSymmetric)
+void createPossibleMutantsDatabase(protein* bundle, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedLResidues, UIntVec &_allowedDResidues, bool _homoSymmetric)
 {
     double Energy, phi;
     fstream pm;
     pm.open ("possiblemutants.out", fstream::in | fstream::out | fstream::app);
     if (_homoSymmetric)
     {
-        for (UInt i = 1; i < _bundle->getNumChains(); i++)
+        for (UInt i = 1; i < bundle->getNumChains(); i++)
         {
-            _bundle->symmetryLinkChainAtoB(i, _activeChains[0]);
+            bundle->symmetryLinkChainAtoB(i, _activeChains[0]);
         }
     }
     for (UInt i = 0; i < _activeChains.size(); i++)
     {
         for (UInt j = 0; j <_activeResidues.size(); j++)
         {
-            phi = _bundle->getPhi(_activeChains[i], _activeResidues[j]);
+            phi = bundle->getPhi(_activeChains[i], _activeResidues[j]);
             if ((phi < 0 && phi > -180) || _activeResidues[j] == 0)
             {
                 for (UInt k = 0; k <_allowedLResidues.size(); k++)
                 {
+                    protein* _bundle = new protein(*bundle);
                     _bundle->activateForRepacking(_activeChains[i], _activeResidues[j]);
+                    cout << "test1" << endl;
                     _bundle->mutateWBC(_activeChains[i], _activeResidues[j], _allowedLResidues[k]);
                     UIntVec allowedRots = _bundle->getAllowedRotamers(_activeChains[i], _activeResidues[j], _allowedLResidues[k], 0);
                     if (allowedRots.size() > 0)
@@ -470,6 +472,7 @@ void createPossibleMutantsDatabase(protein* _bundle, UIntVec &_activeChains, UIn
                             if (Energy < 0)
                             {
                                 pm << _allowedLResidues[k] << ",";
+                                delete _bundle;
                                 break;
                             }
                         }
@@ -487,6 +490,7 @@ void createPossibleMutantsDatabase(protein* _bundle, UIntVec &_activeChains, UIn
                         if (Energy < 0)
                         {
                             pm << _allowedLResidues[k] << ",";
+                            delete _bundle;
                         }
                     }
                 }
@@ -495,6 +499,7 @@ void createPossibleMutantsDatabase(protein* _bundle, UIntVec &_activeChains, UIn
             {
                 for (UInt k = 0; k <_allowedDResidues.size(); k++)
                 {
+                    protein* _bundle = new protein(*bundle);
                     _bundle->activateForRepacking(_activeChains[i], _activeResidues[j]);
                     _bundle->mutateWBC(_activeChains[i], _activeResidues[j], _allowedDResidues[k]);
                     UIntVec allowedRots = _bundle->getAllowedRotamers(_activeChains[i], _activeResidues[j], _allowedDResidues[k], 0);
@@ -515,6 +520,7 @@ void createPossibleMutantsDatabase(protein* _bundle, UIntVec &_activeChains, UIn
                             if (Energy < 0)
                             {
                                 pm << _allowedDResidues[k] << ",";
+                                delete _bundle;
                                 break;
                             }
                         }
@@ -532,11 +538,11 @@ void createPossibleMutantsDatabase(protein* _bundle, UIntVec &_activeChains, UIn
                         if (Energy < 0)
                         {
                             pm << _allowedDResidues[k] << ",";
+                            delete _bundle;
                         }
                     }
                 }
             }
-            _bundle->mutateWBC(_activeChains[i], _activeResidues[j], G);
             pm << endl;
         }
     }
