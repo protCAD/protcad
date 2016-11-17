@@ -1664,39 +1664,37 @@ double protein::getReferenceEnergy()
 
 double protein::getReferenceEnergy(UInt restype)   // protEnergy of free amino acids in low energy conformation
 {
-    double refEnergy = 0.0;
-    if (restype == 0  || restype == 28) refEnergy =  8.05555;   //A
-    if (restype == 1  || restype == 29) refEnergy =  15.58;     //R
-    if (restype == 2  || restype == 30) refEnergy =  12.7998;   //N
-    if (restype == 3  || restype == 31) refEnergy =  11.9756;   //D
-    if (restype == 4  || restype == 32) refEnergy =  12.2767;   //Dh
-    if (restype == 5  || restype == 33) refEnergy =  9.40822;   //C
-    if (restype == 6  || restype == 34) refEnergy =  9.58247;   //Cx
-    if (restype == 8  || restype == 35) refEnergy =  13.1857;   //Q
-    if (restype == 9  || restype == 36) refEnergy =  13.1857;   //E
-    if (restype == 10 || restype == 37) refEnergy =  13.4083;   //Eh
-    if (restype == 11 || restype == 38) refEnergy =  12.9446;   //Hd
-    if (restype == 12 || restype == 39) refEnergy =  12.9695;   //He
-    if (restype == 13 || restype == 40) refEnergy =  12.8584;   //Hn
-    if (restype == 14 || restype == 41) refEnergy =  13.2515;   //Hp
-    if (restype == 15 || restype == 42) refEnergy =  15.2759;   //I
-    if (restype == 16 || restype == 43) refEnergy =  11.97;     //L
-    if (restype == 17 || restype == 44) refEnergy =  12.412;    //K
-    if (restype == 18 || restype == 45) refEnergy =  11.2068;   //M
-    if (restype == 19 || restype == 46) refEnergy =  21.2623;   //F
-    if (restype == 20 || restype == 47) refEnergy =  10.4297;   //P
-    if (restype == 21 || restype == 48) refEnergy =  11.4336;   //O
-    if (restype == 22 || restype == 49) refEnergy =  9.25323;   //S
-    if (restype == 23 || restype == 51) refEnergy =  11.4547;   //T
-    if (restype == 24 || restype == 52) refEnergy =  23.2665;   //W
-    if (restype == 25 || restype == 53) refEnergy =  22.5376;   //Y
-    if (restype == 26 || restype == 54) refEnergy =  12.1122;   //V
-    if (restype == 7)  refEnergy =  9.41348;  //Cf
-    if (restype == 27) refEnergy = 6.8801;    //G    
-    if (restype == 51) refEnergy = 13.0211;   //dAT
-    if (restype == 55) refEnergy = 62.9135;   //Hcd
-    if (restype == 56) refEnergy = 292.484;   //Pch
-    if (restype == 57) refEnergy = 36.876;    //Csf
+    double refEnergy;
+    if (restype == 0  || restype == 28) refEnergy =  8.05555;  //A
+    if (restype == 1  || restype == 29) refEnergy =  15.58;  //R
+    if (restype == 2  || restype == 30) refEnergy =  12.7998;  //N
+    if (restype == 3  || restype == 31) refEnergy =  11.9756;  //D
+    if (restype == 4  || restype == 32) refEnergy =  12.2767;  //Dh
+    if (restype == 5  || restype == 33) refEnergy =  9.40822; //C
+    if (restype == 6  || restype == 34) refEnergy =  9.58247; //Cx
+    if (restype == 7)                   refEnergy =  9.41348;  //Cf
+    if (restype == 8  || restype == 35) refEnergy =  13.1857;  //E
+    if (restype == 9  || restype == 36) refEnergy =  13.4083;  //Eh
+    if (restype == 10 || restype == 37) refEnergy =  12.9446;  //Hd
+    if (restype == 11 || restype == 38) refEnergy =  12.9695;  //He
+    if (restype == 12 || restype == 39) refEnergy =  12.8584;  //Hn
+    if (restype == 13 || restype == 40) refEnergy =  13.2515;  //Hp
+    if (restype == 14 || restype == 41) refEnergy =  15.2759;  //I
+    if (restype == 15 || restype == 42) refEnergy =  11.97;  //L
+    if (restype == 16 || restype == 43) refEnergy =  12.412;  //K
+    if (restype == 17 || restype == 44) refEnergy =  11.2068;  //M
+    if (restype == 18 || restype == 45) refEnergy =  21.2623;  //F
+    if (restype == 19 || restype == 46) refEnergy =  10.4297;  //P
+    if (restype == 20 || restype == 47) refEnergy =  11.4336;  //O
+    if (restype == 21 || restype == 48) refEnergy =  9.25323;  //S
+    if (restype == 22 || restype == 49) refEnergy =  11.4547;  //T
+    if (restype == 23 || restype == 51) refEnergy =  23.2665;  //W
+    if (restype == 24 || restype == 52) refEnergy =  22.5376;  //Y
+    if (restype == 25 || restype == 53) refEnergy =  12.1122;  //V
+    if (restype == 26) refEnergy = 6.8801;  //G
+    if (restype == 50) refEnergy = 13.0211;  //dAT
+    if (restype == 54) refEnergy = 141.136;  //Hce
+    if (restype == 55) refEnergy = 292.484;  //Pch
     return refEnergy;
 }
 
