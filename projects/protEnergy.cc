@@ -24,7 +24,7 @@ int main (int argc, char* argv[])
     t=clock();
     double Energy = bundle->protEnergy();
     t=clock()-t;
-    cout << "Time " << ((float)t)/CLOCKS_PER_SEC << " Energy " << Energy << endl;
+    cout << " Energy " << Energy << endl;
     pdbWriter(bundle, infile);
 	return 0;
 }

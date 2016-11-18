@@ -3046,8 +3046,8 @@ double residue::intraSoluteEnergy()
 			{
 				if (!itsAtoms[j]->getSilentStatus())
 				{
-                    bool bonded = isSeparatedByOneOrTwoBonds(i,j);
-					if (!bonded)
+                    UInt bonds = getBondSeparation(i,j);
+                    if (bonds > 2)
 					{
                         // ** get distance
                         double distanceSquared = itsAtoms[i]->distanceSquared(itsAtoms[j]);
@@ -3292,7 +3292,6 @@ double residue::interEnergy(residue* _other)
 
 double residue::interSoluteEnergy(residue* _other)
 {
-
 	double interEnergy = 0.0;
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
@@ -3302,8 +3301,8 @@ double residue::interSoluteEnergy(residue* _other)
 			{
 				if (!_other->itsAtoms[j]->getSilentStatus())
 				{
-                    bool bonded = isSeparatedByOneOrTwoBonds(i,_other,j);
-					if (!bonded)
+                    UInt bonds = getBondSeparation(this,i,_other,j);
+                    if (bonds > 1)
 					{
                         double distanceSquared = itsAtoms[i]->inCubeWithDistSQ(_other->itsAtoms[j], cutoffDistance);
                         if (distanceSquared != 0.0 && distanceSquared <= cutoffDistanceSquared)
@@ -3335,7 +3334,14 @@ double residue::interSoluteEnergy(residue* _other)
 									index2 = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[j][1];
 								}
 								double tempvdwEnergy = residueTemplate::getVDWEnergySQ(index1, index2, distanceSquared);
-                                interEnergy += tempvdwEnergy;
+                                if (bonds == 2)
+                                {
+                                    interEnergy += tempvdwEnergy*0.25;
+                                }
+                                else
+                                {
+                                    interEnergy += tempvdwEnergy;
+                                }
 							}
 						}
 					}
@@ -3592,6 +3598,51 @@ bool residue::isSeparatedByFewBonds(UInt _index1, UInt _index2)
 		}
 	}
 	return false;
+}
+
+UInt residue::getBondSeparation(UInt _index1, UInt _index2)
+{
+    // Note: all interaction up to and including 1-4 interactions are skipped
+
+    vector< UInt > bondedList1;
+    vector< UInt > bondedList2;
+    vector< UInt > bondedList3;
+    UInt sizeOfList1;
+    UInt sizeOfList2;
+    UInt sizeOfList3;
+
+    bondedList1 = dataBase[itsType].getBondingPattern(_index1);
+
+    if ( (sizeOfList1 = bondedList1.size()) )
+    {
+        for (UInt i=0; i < sizeOfList1; i++)
+        {
+            if (bondedList1[i] == _index2)
+            {	return 0;
+            }
+            bondedList2 = dataBase[itsType].getBondingPattern(bondedList1[i]);
+            if ( (sizeOfList2 = bondedList2.size()) )
+            {
+                for (UInt j=0; j< sizeOfList2; j++)
+                {
+                    if (bondedList2[j] == _index2)
+                    {	return 1;
+                    }
+                    bondedList3 = dataBase[itsType].getBondingPattern(bondedList2[j]);
+                    if ( (sizeOfList3 = bondedList3.size()) )
+                    {
+                        for (UInt k=0; k< sizeOfList3; k++)
+                        {
+                            if (bondedList3[k] == _index2)
+                            {	return 2;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return 99;
 }
 
 bool residue::isSeparatedByOneOrTwoBonds(UInt _index1, residue* _pRes2, UInt _index2)
@@ -3888,6 +3939,212 @@ bool residue::isSeparatedByFewBonds(residue* _pRes1, UInt _index1, residue*
 	}
 
 	return false;
+}
+
+UInt residue::getBondSeparation(residue* _pRes1, UInt _index1, residue*
+ _pRes2, UInt _index2)
+{
+    // Note: all interaction up to and including 1-4 interactions are skipped
+
+    // first, check if they are sequential residues
+    int theOrder = 0;
+    // is _pRes1 the residue N-terminal to _pRes2?
+    if ( _pRes1 == _pRes2->getPrevRes())
+        theOrder = 1;
+    // if _pRes1 the residue C-terminal to _pRes2?
+    if ( _pRes1 == _pRes2->getNextRes())
+        theOrder = -1;
+
+    // if they're not sequential, there's no way that their
+    // atoms can be within 3 bonds.... except if they are
+    // Cysteine sulfurs involved in a disulfide bond....
+
+    // Check for disulfide
+    if (_pRes1->getType() == "CYX" || _pRes1->getType() == "CXD" )
+    {	if (_pRes2->getType() == "CYX" ||_pRes1->getType() == "CXD")
+        { 	atom* pAtom1=_pRes1->getAtom(5);
+            atom* pAtom2=_pRes2->getAtom(5);
+            if (pAtom1->distance(pAtom2) < 3.0)
+            {
+                return 1;
+            }
+        }
+    }
+
+    // Check for SF4 Cysteine bond
+    if (_pRes1->getType() == "CYF" || _pRes1->getType() == "CFD" )
+    {	if (_pRes2->getType() == "CSF")
+        { 	atom* pAtom1=_pRes1->getAtom(5);
+            atom* pAtom2=_pRes2->getAtom(6);
+            atom* pAtom3=_pRes2->getAtom(8);
+            atom* pAtom4=_pRes2->getAtom(10);
+            atom* pAtom5=_pRes2->getAtom(12);
+            if (pAtom1->distance(pAtom2) < 3.0)
+            {
+                return 1;
+            }
+            if (pAtom1->distance(pAtom3) < 3.0)
+            {
+                return 1;
+            }
+            if (pAtom1->distance(pAtom4) < 3.0)
+            {
+                return 1;
+            }
+            if (pAtom1->distance(pAtom5) < 3.0)
+            {
+                return 1;
+            }
+        }
+    }
+    if (_pRes2->getType() == "CYF" || _pRes2->getType() == "CFD" )
+    {	if (_pRes1->getType() == "CSF")
+        { 	atom* pAtom1=_pRes2->getAtom(5);
+            atom* pAtom2=_pRes1->getAtom(6);
+            atom* pAtom3=_pRes1->getAtom(8);
+            atom* pAtom4=_pRes1->getAtom(10);
+            atom* pAtom5=_pRes1->getAtom(12);
+            if (pAtom1->distance(pAtom2) < 3.0)
+            {
+                return 1;
+            }
+            if (pAtom1->distance(pAtom3) < 3.0)
+            {
+                return 1;
+            }
+            if (pAtom1->distance(pAtom4) < 3.0)
+            {
+                return 1;
+            }
+            if (pAtom1->distance(pAtom5) < 3.0)
+            {
+                return 1;
+            }
+        }
+    }
+
+    if (theOrder == 0)
+    {
+#ifdef _SKIP_DEBUG
+        cout << "Not sequential amino acids" << endl;
+#endif
+        return 99;
+    }
+
+#ifdef _SKIP_DEBUG
+    cout << "Order = " << theOrder << "  ";
+#endif
+
+    // ok, now we know we've got two sequential amino acids.
+    // find out how far the atom in question in the N-term
+    // amino acid is from the carboxyl carbon (the end).
+    UInt Cindex;
+    vector< UInt > bondedList1;
+    vector< UInt > bondedList2;
+    UInt sizeOfList1;
+    UInt sizeOfList2;
+    UInt typeOfRes1;
+    UInt typeOfRes2;
+    UInt atomIndex1;
+    UInt atomIndex2;
+
+    if (theOrder == 1)
+    {
+        typeOfRes1 = _pRes1->getTypeIndex();
+        atomIndex1 = _index1;
+        typeOfRes2 = _pRes2->getTypeIndex();
+        atomIndex2 = _index2;
+    }
+    else
+    {
+        typeOfRes1 = _pRes2->getTypeIndex();
+        atomIndex1 = _index2;
+        typeOfRes2 = _pRes1->getTypeIndex();
+        atomIndex2 = _index1;
+    }
+
+    // find the index of "C" should be at mainchain end -2
+    UInt mcsize = dataBase[typeOfRes1].mainChain.size();
+    if (mcsize > 2)
+    {	Cindex = mcsize -2;
+#ifdef _SKIP_DEBUG
+        cout << "Cindex=" << Cindex << " ";
+#endif
+    }
+    else
+    {	cout << "Error! mainChain size too small" << endl;
+        return 99;
+    }
+
+    bondedList1 = dataBase[typeOfRes1].getBondingPattern(atomIndex1);
+    UInt firstIterationLevel = 10;
+    if ( atomIndex1 == Cindex)
+    {
+        firstIterationLevel = 0;
+#ifdef _SKIP_DEBUG
+        cout << "| FirstAtom is C | ";
+#endif
+    }
+    else if ( (sizeOfList1 = bondedList1.size()) )
+    {
+        for (UInt i=0; i < sizeOfList1; i++)
+        {
+            if (bondedList1[i] == Cindex)
+            {	firstIterationLevel = 1;
+            }
+            bondedList2 = dataBase[typeOfRes1].getBondingPattern(bondedList1[i]);
+            if ( (sizeOfList2 = bondedList2.size()) )
+            {
+                for (UInt j=0; j< sizeOfList2; j++)
+                {
+                    if (bondedList2[j] == Cindex)
+                    {	firstIterationLevel = 2;
+                    }
+                }
+            }
+        }
+#ifdef _SKIP_DEBUG
+        cout << " Steps To C From atom1 =" << firstIterationLevel << "  ";
+#endif
+    }
+
+    bondedList1 = dataBase[typeOfRes2].getBondingPattern(0);
+    UInt secondIterationLevel = 10;
+
+    if (atomIndex2 == 0)
+    {	secondIterationLevel = 0;
+#ifdef _SKIP_DEBUG
+        cout << " |atom2 is N| ";
+#endif
+    }
+    else if ( (sizeOfList1 = bondedList1.size()) )
+    {
+        for (UInt i=0; i < sizeOfList1; i++)
+        {
+            if (bondedList1[i] == atomIndex2)
+            {	secondIterationLevel = 1;
+            }
+            bondedList2 = dataBase[typeOfRes2].getBondingPattern(bondedList1[i]);
+            if ( (sizeOfList2 = bondedList2.size()) )
+            {
+                for (UInt j=0; j< sizeOfList2; j++)
+                {
+                    if (bondedList2[j] == atomIndex2)
+                    {	secondIterationLevel = 2;
+                    }
+                }
+            }
+        }
+#ifdef _SKIP_DEBUG
+        cout << " Steps To N from atom2 =" << secondIterationLevel << " ";
+#endif
+    }
+
+    UInt numBonds = firstIterationLevel + secondIterationLevel;
+#ifdef _SKIP_DEBUG
+    cout << " numbonds=" << numBonds << " ";
+#endif
+    return numBonds;
 }
 
 bool residue::isBonded(UInt _index1, UInt _index2)

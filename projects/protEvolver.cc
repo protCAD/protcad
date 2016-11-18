@@ -429,31 +429,32 @@ vector < vector < UInt > > buildPossibleMutants()
     return _possibleMutants;
 }
 
-void createPossibleMutantsDatabase(protein* bundle, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedLResidues, UIntVec &_allowedDResidues, bool _homoSymmetric)
+void createPossibleMutantsDatabase(protein* _bundle, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedLResidues, UIntVec &_allowedDResidues, bool _homoSymmetric)
 {
-    double Energy, phi;
+    double Energy, phi, startE = _bundle->protEnergy();
+    UInt restype;
     fstream pm;
     pm.open ("possiblemutants.out", fstream::in | fstream::out | fstream::app);
     if (_homoSymmetric)
     {
-        for (UInt i = 1; i < bundle->getNumChains(); i++)
+        for (UInt i = 1; i < _bundle->getNumChains(); i++)
         {
-            bundle->symmetryLinkChainAtoB(i, _activeChains[0]);
+            _bundle->symmetryLinkChainAtoB(i, _activeChains[0]);
         }
     }
     for (UInt i = 0; i < _activeChains.size(); i++)
     {
         for (UInt j = 0; j <_activeResidues.size(); j++)
         {
-            phi = bundle->getPhi(_activeChains[i], _activeResidues[j]);
+            phi = _bundle->getPhi(_activeChains[i], _activeResidues[j]);
+            restype = _bundle->getTypeFromResNum(_activeChains[i], _activeResidues[j]);
             if ((phi < 0 && phi > -180) || _activeResidues[j] == 0)
             {
                 for (UInt k = 0; k <_allowedLResidues.size(); k++)
                 {
-                    protein* _bundle = new protein(*bundle);
                     _bundle->activateForRepacking(_activeChains[i], _activeResidues[j]);
-                    cout << "test1" << endl;
                     _bundle->mutateWBC(_activeChains[i], _activeResidues[j], _allowedLResidues[k]);
+                    _bundle->setMoved(_activeChains[i], _activeResidues[j], 1);
                     UIntVec allowedRots = _bundle->getAllowedRotamers(_activeChains[i], _activeResidues[j], _allowedLResidues[k], 0);
                     if (allowedRots.size() > 0)
                     {
@@ -487,10 +488,9 @@ void createPossibleMutantsDatabase(protein* bundle, UIntVec &_activeChains, UInt
                         {
                             Energy = _bundle->protEnergy();
                         }
-                        if (Energy < 0)
+                        if (Energy < startE+500)
                         {
                             pm << _allowedLResidues[k] << ",";
-                            delete _bundle;
                         }
                     }
                 }
@@ -499,9 +499,9 @@ void createPossibleMutantsDatabase(protein* bundle, UIntVec &_activeChains, UInt
             {
                 for (UInt k = 0; k <_allowedDResidues.size(); k++)
                 {
-                    protein* _bundle = new protein(*bundle);
                     _bundle->activateForRepacking(_activeChains[i], _activeResidues[j]);
                     _bundle->mutateWBC(_activeChains[i], _activeResidues[j], _allowedDResidues[k]);
+                    _bundle->setMoved(_activeChains[i], _activeResidues[j], 1);
                     UIntVec allowedRots = _bundle->getAllowedRotamers(_activeChains[i], _activeResidues[j], _allowedDResidues[k], 0);
                     if (allowedRots.size() > 0)
                     {
@@ -517,10 +517,9 @@ void createPossibleMutantsDatabase(protein* bundle, UIntVec &_activeChains, UInt
                             {
                                 Energy = _bundle->protEnergy();
                             }
-                            if (Energy < 0)
+                            if (Energy < startE+500)
                             {
                                 pm << _allowedDResidues[k] << ",";
-                                delete _bundle;
                                 break;
                             }
                         }
@@ -535,14 +534,14 @@ void createPossibleMutantsDatabase(protein* bundle, UIntVec &_activeChains, UInt
                         {
                             Energy = _bundle->protEnergy();
                         }
-                        if (Energy < 0)
+                        if (Energy < startE+500)
                         {
                             pm << _allowedDResidues[k] << ",";
-                            delete _bundle;
                         }
                     }
                 }
             }
+            _bundle->mutateWBC(_activeChains[i], _activeResidues[j], restype);
             pm << endl;
         }
     }
