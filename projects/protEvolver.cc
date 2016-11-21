@@ -42,11 +42,11 @@ int main (int argc, char* argv[])
 
     //-- user inputs for evolution run
     UInt _activeChains[] = {0};                                                         // chains active for mutation
-    UInt _allowedLResidues[] = {A,L,F,V,I,W,Q,E,R,P,S,T,G};                   // amino acids allowed with phi < 0
+    UInt _allowedLResidues[] = {A,L,F,V,I,W,Y,Q,E,E,R,K,P,S,T,G,D,N};                   // amino acids allowed with phi < 0
     UInt _allowedDResidues[] = {G};  // amino acids allowed with phi > 0
-    UInt _activeResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,13,14,15,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,61,62,63,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98};                  // positions active for mutation
-    UInt _randomResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,13,14,15,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,61,62,63,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98};                  // positions active for a random start sequence initially
-    UInt _frozenResidues[] = {12,16,60,64};                                               // positions that cannot move at all
+    UInt _activeResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,13,14,15,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,47,48,49,50,51,52,53,54,55,56,57,58,59,61,62,63,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98};                  // positions active for mutation
+    UInt _randomResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,13,14,15,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,47,48,49,50,51,52,53,54,55,56,57,58,59,61,62,63,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98};                  // positions active for a random start sequence initially
+    UInt _frozenResidues[] = {12,16,46,60,64}; //13,17,61,65                                              // positions that cannot move at all
     bool homoSymmetric = false;                                                          // if true all chains are structurally symmetrical to the one listed active chain above
     bool backboneRelaxation = false;                                                    // if true allow minor backbone relaxation in structural optimization
 
@@ -89,7 +89,7 @@ int main (int argc, char* argv[])
 
     //--set initial variables
     srand (getpid());
-    double bestEnergy, pastEnergy, Energy;
+    double bestEnergy, pastEnergy, Energy, startEnergy;
     UInt timeid, sec, mutant = 0, numResidues, plateau = 10, nobetter = 0;
     vector < UInt > mutantPosition, chainSequence, sequencePosition, randomPosition;
     vector < vector < UInt > > sequencePool, proteinSequence, finalSequence, possibleMutants;
@@ -102,11 +102,19 @@ int main (int argc, char* argv[])
     string tempModel = startstr + "_temp.pdb";
 
 
-    //--determine which allowed amino acids are possible for each position from activeResidues
+    //--determine which allowed amino acids are possible for each position from activeResidues and set cutoff energy
     PDBInterface* thePDB = new PDBInterface(infile);
     ensemble* theEnsemble = thePDB->getEnsemblePointer();
     molecule* pMol = theEnsemble->getMoleculePointer(0);
     protein* bundle = static_cast<protein*>(pMol);
+    if (homoSymmetric)
+    {
+        startEnergy = bundle->intraSoluteEnergy(true, _activeChains[0]);
+    }
+    else
+    {
+        startEnergy = bundle->intraSoluteEnergy(true);
+    }
     possibleMutants = buildPossibleMutants();
     if(possibleMutants.size() < activeResidues.size())
     {
@@ -252,11 +260,11 @@ int main (int argc, char* argv[])
         }
         else
         {
-            Energy = model->protEnergy();
+            Energy = model->intraSoluteEnergy(true);
         }
         bindingEnergy.clear();
         bindingEnergy = model->chainBindingEnergy();
-        if (Energy < 0)
+        if (Energy < startEnergy)
         {
             name = rand() % 100;
             sec = time(NULL);
@@ -431,7 +439,7 @@ vector < vector < UInt > > buildPossibleMutants()
 
 void createPossibleMutantsDatabase(protein* _bundle, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedLResidues, UIntVec &_allowedDResidues, bool _homoSymmetric)
 {
-    double Energy, phi, startE = _bundle->protEnergy();
+    double Energy, totEnergy, refEnergy, phi, startE;
     UInt restype;
     fstream pm;
     pm.open ("possiblemutants.out", fstream::in | fstream::out | fstream::app);
@@ -441,6 +449,11 @@ void createPossibleMutantsDatabase(protein* _bundle, UIntVec &_activeChains, UIn
         {
             _bundle->symmetryLinkChainAtoB(i, _activeChains[0]);
         }
+        startE = _bundle->intraSoluteEnergy(true, _activeChains[0]);
+    }
+    else
+    {
+        startE = _bundle->intraSoluteEnergy(true);
     }
     for (UInt i = 0; i < _activeChains.size(); i++)
     {
@@ -464,16 +477,19 @@ void createPossibleMutantsDatabase(protein* _bundle, UIntVec &_activeChains, UIn
                             _bundle->setMoved(_activeChains[i], _activeResidues[j], 1);
                             if (_homoSymmetric)
                             {
-                                Energy = _bundle->intraSoluteEnergy(true, _activeChains[0]);
+                                totEnergy = _bundle->intraSoluteEnergy(true, _activeChains[0]);
+                                refEnergy = _bundle->getReferenceEnergy(_allowedLResidues[k]);
+                                Energy = totEnergy-(refEnergy/2);
                             }
                             else
                             {
-                                Energy = _bundle->protEnergy();
+                                totEnergy = _bundle->intraSoluteEnergy(true);
+                                refEnergy = _bundle->getReferenceEnergy(_allowedLResidues[k]);
+                                Energy = totEnergy-(refEnergy/2);
                             }
-                            if (Energy < 0)
+                            if (Energy <= startE)
                             {
                                 pm << _allowedLResidues[k] << ",";
-                                delete _bundle;
                                 break;
                             }
                         }
@@ -482,13 +498,17 @@ void createPossibleMutantsDatabase(protein* _bundle, UIntVec &_activeChains, UIn
                     {
                         if (_homoSymmetric)
                         {
-                            Energy = _bundle->intraSoluteEnergy(true, _activeChains[0]);
+                            totEnergy = _bundle->intraSoluteEnergy(true, _activeChains[0]);
+                            refEnergy = _bundle->getReferenceEnergy(_allowedLResidues[k]);
+                            Energy = totEnergy-(refEnergy/2);
                         }
                         else
                         {
-                            Energy = _bundle->protEnergy();
+                            totEnergy = _bundle->intraSoluteEnergy(true);
+                            refEnergy = _bundle->getReferenceEnergy(_allowedLResidues[k]);
+                            Energy = totEnergy-(refEnergy/2);
                         }
-                        if (Energy < startE+500)
+                        if (Energy <= startE)
                         {
                             pm << _allowedLResidues[k] << ",";
                         }
@@ -511,13 +531,17 @@ void createPossibleMutantsDatabase(protein* _bundle, UIntVec &_activeChains, UIn
                             _bundle->setMoved(_activeChains[i], _activeResidues[j], 1);
                             if (_homoSymmetric)
                             {
-                                Energy = _bundle->intraSoluteEnergy(true, _activeChains[0]);
+                                totEnergy = _bundle->intraSoluteEnergy(true, _activeChains[0]);
+                                refEnergy = _bundle->getReferenceEnergy(_allowedDResidues[k]);
+                                Energy = totEnergy-(refEnergy/2);
                             }
                             else
                             {
-                                Energy = _bundle->protEnergy();
+                                totEnergy = _bundle->intraSoluteEnergy(true);
+                                refEnergy = _bundle->getReferenceEnergy(_allowedDResidues[k]);
+                                Energy = totEnergy-(refEnergy/2);
                             }
-                            if (Energy < startE+500)
+                            if (Energy <= startE)
                             {
                                 pm << _allowedDResidues[k] << ",";
                                 break;
@@ -528,13 +552,17 @@ void createPossibleMutantsDatabase(protein* _bundle, UIntVec &_activeChains, UIn
                     {
                         if (_homoSymmetric)
                         {
-                            Energy = _bundle->intraSoluteEnergy(true, _activeChains[0]);
+                            totEnergy = _bundle->intraSoluteEnergy(true, _activeChains[0]);
+                            refEnergy = _bundle->getReferenceEnergy(_allowedDResidues[k]);
+                            Energy = totEnergy-(refEnergy/2);
                         }
                         else
                         {
-                            Energy = _bundle->protEnergy();
+                            totEnergy = _bundle->intraSoluteEnergy(true);
+                            refEnergy = _bundle->getReferenceEnergy(_allowedDResidues[k]);
+                            Energy = totEnergy-(refEnergy/2);
                         }
-                        if (Energy < startE+500)
+                        if (Energy <= startE)
                         {
                             pm << _allowedDResidues[k] << ",";
                         }

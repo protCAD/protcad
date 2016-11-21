@@ -39,8 +39,8 @@ int main (int argc, char* argv[])
     //{
         //residue::setTemperature(i);
         vector <double> Energy = bundle->chainBindingEnergy();
-        //double deltah = bundle->deltaH();
-        cout << " " << Energy[0] << " " << Energy[1];
+        double deltah = bundle->deltaH();
+        cout << " " << Energy[0] << " " << Energy[1] << " " << deltah;
         //Energy.clear();
     //}
 	return 0;
