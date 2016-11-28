@@ -158,8 +158,11 @@ public:
 	bool isBonded(atom* _pAtom1, atom* _pAtom2);
 	bool isBonded(UInt _index1, UInt _index2);
 	bool isSeparatedByFewBonds(UInt _index1, UInt _index2);
+    UInt getBondSeparation(UInt _index1, UInt _index2);
 	bool isSeparatedByFewBonds(residue* _pRes1,UInt _index1,
 		       residue* _pRes2, UInt _index2);
+    UInt getBondSeparation(residue* _pRes1,UInt _index1,
+               residue* _pRes2, UInt _index2);
 	atom* getAtom(UInt _index)
 		{	if (_index < itsAtoms.size())
 			{	return itsAtoms[_index];
