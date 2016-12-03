@@ -86,7 +86,7 @@ int main (int argc, char* argv[])
     cout << "psi " << bestPsi << endl;
     cout << "theta " << bestTheta << endl;
     prot->eulerRotate(bestPhi, bestTheta, bestPsi);
-    pdbWriter(prot, "best.pdb");
+    pdbWriter(prot, infile);
     return 0;
 }
 

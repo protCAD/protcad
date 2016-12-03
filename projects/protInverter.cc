@@ -11,49 +11,53 @@
 
 #include "ensemble.h"
 #include "PDBInterface.h"
+#include <sstream>
+
+enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dAT,dW,dY,dV,Hce,Pch,Csf};
+
 int main (int argc, char* argv[])
 {
-    if (argc !=4)
+    if (argc !=3)
     {   cout << "protInverter <inFile.pdb> <outFile.pdb>" << endl;
         exit(1); }
 
     string infile = argv[1];
-    string infile2 = argv[2];
-    string outFile = argv[3];
+    string outFile = argv[2];
     PDBInterface* thePDB = new PDBInterface(infile);
     ensemble* theEnsemble = thePDB->getEnsemblePointer();
     molecule* pMol = theEnsemble->getMoleculePointer(0);
     protein* bundle = static_cast<protein*>(pMol);
-
-    PDBInterface* thePDB2 = new PDBInterface(infile2);
-    ensemble* theEnsemble2 = thePDB2->getEnsemblePointer();
-    molecule* pMol2 = theEnsemble2->getMoleculePointer(0);
-    protein* bundle2 = static_cast<protein*>(pMol2);
-
-    UInt chainNum = bundle->getNumChains();
-    for (UInt i = 0; i < chainNum; i ++)
-    {
-        UInt resNum = bundle->getNumResidues(i);
-        for (UInt j = 0; j < resNum; j ++)
+    //UIntVec rots = bundle->getAllowedRotamers(0,0,L,0);
+    //UInt count = 0;
+    //for (UInt h = 0; h < rots.size(); h++)
+    //{
+        UInt chainNum = bundle->getNumChains();
+        for (UInt i = 0; i < chainNum; i ++)
         {
-            double phi = bundle->getPhi(i,j);
-            double psi = bundle->getPsi(i,j);
-            if (j < 4 || j > 29)
+            UInt resNum = bundle->getNumResidues(i);
+            for (UInt j = 0; j < resNum; j ++)
             {
-
-                if (j != 0)
+                if ((i == 0 || i == 2) && j == 4)
                 {
-                    bundle2->setPhi(i, j, phi*-1);
+                    bundle->mutateWBC(i,j,dC);
+                    //bundle->setRotamerWBC(i,j,0,1);
                 }
-                if (j != resNum)
+                if ((i == 1 || i == 3) && j == 29)
                 {
-                    bundle2->setPsi(i, j, psi*-1);
+                    bundle->mutateWBC(i,j,C);
+                    bundle->setRotamerWBC(i,j,0,2);
                 }
             }
         }
-    }
-    bundle2->protOpt(false);
-    pdbWriter(bundle2, outFile);
+       /* count++;
+        stringstream convert;
+        string countstr;
+        convert << count, countstr = convert.str();
+        string outFile = countstr + ".rot.pdb";
+        pdbWriter(bundle, outFile);
+    }*/
+    //bundle->protOpt(false);
+    pdbWriter(bundle, outFile);
     return 0;
 }
 

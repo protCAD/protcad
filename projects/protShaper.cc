@@ -19,7 +19,7 @@
 #include "PDBInterface.h"
 
 void buildAntiParallelBetaBarrel (protein* _prot, double _pitch);
-void buildHelixOligamer (protein* _prot, UInt numChains, bool antiParallel, double _radius, double _phase, double _coil, double _offset);
+void buildHelixOligamer (protein* _prot, UInt numChains, bool antiParallel, double _radius, double _phase1, double _phase2, double _coil, double _offset);
 double getBackboneHBondEnergy (protein* _prot);
 
 int main (int argc, char* argv[])
@@ -36,8 +36,8 @@ int main (int argc, char* argv[])
 	rotamer::setScaleFactor(0.0);
 	amberVDW::setScaleFactor(1.0);
 	amberVDW::setRadiusScaleFactor(1.0);
-    amberElec::setScaleFactor(1.0);
-    amberVDW::setLinearRepulsionDampeningOn();
+    amberElec::setScaleFactor(0.0);
+    //amberVDW::setLinearRepulsionDampeningOn();
     //amberVDW::itsRepulsionScaleFactor = 0.9;
     srand (time(NULL));
 
@@ -135,12 +135,12 @@ int main (int argc, char* argv[])
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    //double radius;
-   //double best = 1E100;
-    //double phase;
+    double radius;
+   double best = 1E100;
+    double phase1, phase2;
     UInt count = 0;
-    //double coil;
-    //double offset = 0.0;
+    double coil;
+    double offset = 0.0;
     //rotamer optimizations
     /*PDBInterface* theFramePDB = new PDBInterface(inFile);
     ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
@@ -196,36 +196,36 @@ int main (int argc, char* argv[])
                 }
             }
         }
-    }*/
+    }
 
     ///bundle optimizations/
-    //UIntVec allowedRots;
-    /*PDBInterface* theFramePDB = new PDBInterface(inFile);
+    //UIntVec allowedRots;*/
+    PDBInterface* theFramePDB = new PDBInterface(inFile);
     ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
     molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
     protein* bundle = static_cast<protein*>(frameMol);
      for (int k = 0; k < 10; k++)
-    {
-        for (int l = 0; l < 5; l++)
-        {
-            for (int n = 0; n < 30; n++)
+     {
+        //for (int l = 0; l < 10; l++)
+        //{
+            for (int n = 0; n < 20; n++)
             {
-                for (int m = 18; m < 37; m++)
+                for (int m = 0; m < 10; m++)
                 {
                     protein* frame = new protein(*bundle);
                     count++;
-                    radius = 7.5+(k*0.1), coil = m*10, offset = -2.5 - (0.2*l), phase = n;
-                    buildHelixOligamer(frame, 4, true, radius, phase, coil, offset);
-                    dblVec HNcoords = frame->getCoords(0, 18, "NE2");
+                    radius = 7.0+ (k*0.1), coil = 0, offset = -10.0+(0.1*m), phase1 = 0, phase2 = 150+n;
+                    buildHelixOligamer(frame, 4, true, radius, phase1, phase2, coil, offset);
+                    /*dblVec HNcoords = frame->getCoords(0, 18, "NE2");
                     dblVec YOcoords = frame->getCoords(2, 18, "OH");
                     double dist = CMath::distance(HNcoords, YOcoords);
                     double Energy = 0.0;
                     if (dist <= 2.7 && dist >= 2.5)
                     {
                         Energy = -500;
-                    }
-                    Energy += frame->protEnergy();
-                    cout << count << " " << Energy << " " << radius << " " << coil << " " << offset << " " << phase << " " << dist;
+                    }*/
+                    double Energy = frame->intraSoluteEnergy(false);
+                    cout << count << " " << Energy << " " << radius << " " << offset << " " << phase1 << " " << phase2;
                     if (Energy < best)
                     {
                         cout << " hit!!!!!!!!" << endl;
@@ -243,8 +243,8 @@ int main (int argc, char* argv[])
                     delete frame;
                }
             }
-        }
-    }*/
+        //}
+    }
     /*UInt res1, res2, rot;
     double chi1, chi2;
     double angle1, angle2;
@@ -302,7 +302,7 @@ int main (int argc, char* argv[])
                     delete theFramePDB;
                 }
             }
-    //}*/
+    //}
     //getdihed0rals
     PDBInterface* theFramePDB = new PDBInterface(inFile);
     ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
@@ -356,17 +356,22 @@ int main (int argc, char* argv[])
                 }
             }
         }
-    }
+    }*/
 
 //--Print end and write a pdb file--------------------------------------------------------------
 	return 0;
 }
-void buildHelixOligamer (protein* _prot, UInt numChains, bool antiParallel, double _radius, double _phase, double _coil, double _offset)
+void buildHelixOligamer (protein* _prot, UInt numChains, bool antiParallel, double _radius, double _phase1, double _phase2, double _coil, double _offset)
 {
     double rotationInterval = 360/numChains;
     double rotation = 0.0;
     bool odd = false;
-    _prot->rotate(Z_axis, _phase);
+    _prot->rotate(0,Z_axis,_phase1);
+    _prot->rotate(2,Z_axis,_phase1);
+    _prot->rotate(1,Z_axis,_phase2);
+    _prot->rotate(3,Z_axis,_phase2);
+
+
     if (antiParallel)
     {
         for (UInt i = 0; i < numChains; i++)
@@ -398,7 +403,7 @@ void buildHelixOligamer (protein* _prot, UInt numChains, bool antiParallel, doub
         }
         rotation += rotationInterval;
     }
-    _prot->coilcoil(_coil);
+    //_prot->coilcoil(_coil);
     return;
 }
 
