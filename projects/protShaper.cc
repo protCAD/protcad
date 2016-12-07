@@ -135,47 +135,52 @@ int main (int argc, char* argv[])
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    double radius;
+    //double radius;
    double best = 1E100;
-    double phase1, phase2;
+    //double phase1, phase2;
     UInt count = 0;
-    double coil;
-    double offset = 0.0;
+   // double coil;
+   // double offset = 0.0;
     //rotamer optimizations
     PDBInterface* theFramePDB = new PDBInterface(inFile);
     ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
     molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
     protein* bundle = static_cast<protein*>(frameMol);
-    double startE = bundle->protEnergy();
-    for (UInt f = 33; f < 37; f++)
+    //double startE = bundle->protEnergy();
+
+    for (UInt h = 0; h < hetPhis.size(); h++)
     {
-        for (UInt g = 33; g < 37; g++)
+        for (UInt i = 0; i < hetPhis.size(); i++)
         {
-            for (UInt h = 33; h < 37; h++)
+            for (UInt j = 0; j < hetPsis.size(); j++)
             {
-                for (UInt k = 33; k < 37; k++)
+                for (UInt k = 0; k < hetPhis.size(); k++)
                 {
-                    for (UInt i = 0; i < hetPhis.size(); i++)
+                    for (UInt l = 0; l < hetPsis.size(); l++)
                     {
-                        for (UInt j = 0; j < hetPsis.size(); j++)
-                        {
+                       // for (UInt m = 0; m < hetPhis.size(); m++)
+                      //  {
                             count++;
                             protein* frame = new protein(*bundle);
-                            frame->setDihedral(1,f,hetPhis[i],0,0);
-                            frame->setDihedral(1,f,hetPsis[j],1,0);
-                            frame->setDihedral(1,g,hetPhis[i],0,0);
-                            frame->setDihedral(1,g,hetPsis[j],1,0);
-                            frame->setDihedral(1,h,hetPhis[i],0,0);
-                            frame->setDihedral(1,h,hetPsis[j],1,0);
-                            frame->setDihedral(1,k,hetPhis[i],0,0);
-                            frame->setDihedral(1,k,hetPsis[j],1,0);
-                            dblVec Ccoords = frame->getCoords(1, 36, "C");
-                            dblVec Ncoords = frame->getCoords(2, 0, "N");
+                            frame->makeAtomSilent(0,10,2);
+                            frame->makeAtomSilent(0,11,0);
+                            frame->makeAtomSilent(0,11,1);
+                            frame->makeAtomSilent(0,11,2);
+                            frame->makeAtomSilent(0,11,3);
+                            frame->makeAtomSilent(1,0,0);
+                            frame->setDihedral(0,8,hetPsis[j],1,0);
+                            frame->setDihedral(0,9,hetPhis[i],0,0);
+                            frame->setDihedral(0,9,hetPsis[j],1,0);
+                            frame->setDihedral(0,10,hetPhis[k],0,0);
+                            frame->setDihedral(0,10,hetPsis[l],1,0);
+
+                            dblVec Ccoords = frame->getCoords(0, 10, "C");
+                            dblVec Ncoords = frame->getCoords(1, 0, "N");
                             double dist = CMath::distance(Ccoords, Ncoords);
                             double Energy = 0.0;
                             Energy += -1000/dist;
-                            Energy += frame->protEnergy();
-                            cout << count << " " << dist << " " << Energy << " " << f << " " << phisLD[i] << " " << psisLD[j] << " " << g << " " << phisLD[i] << " " << psisLD[j] << h << " " << phisLD[i] << " " << psisLD[j];
+                            Energy += frame->intraSoluteEnergy(true);
+                            cout << count << " " << dist << " " << Energy << " " << 9 << " " << hetPsis[h] << " " << 10 << " " << hetPhis[i] << " " << hetPsis[j] << " " << 11 << " " << hetPhis[k] << " " << hetPsis[l];
                             if (Energy < best)
                             {
                                 cout << " hit!!!!!!!!" << endl;
@@ -191,13 +196,12 @@ int main (int argc, char* argv[])
                                 cout << endl;
                             }
                             delete frame;
-                       }
-                    }
+                       //}
+                   }
                 }
             }
         }
     }
-
     /*bundle optimizations/
     //UIntVec allowedRots;
     PDBInterface* theFramePDB = new PDBInterface(inFile);
