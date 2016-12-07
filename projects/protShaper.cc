@@ -142,7 +142,7 @@ int main (int argc, char* argv[])
     double coil;
     double offset = 0.0;
     //rotamer optimizations
-    /*PDBInterface* theFramePDB = new PDBInterface(inFile);
+    PDBInterface* theFramePDB = new PDBInterface(inFile);
     ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
     molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
     protein* bundle = static_cast<protein*>(frameMol);
@@ -155,20 +155,20 @@ int main (int argc, char* argv[])
             {
                 for (UInt k = 33; k < 37; k++)
                 {
-                    for (UInt i = 0; i < phisLD.size(); i++)
+                    for (UInt i = 0; i < hetPhis.size(); i++)
                     {
-                        for (UInt j = 0; j < psisLD.size(); j++)
+                        for (UInt j = 0; j < hetPsis.size(); j++)
                         {
                             count++;
                             protein* frame = new protein(*bundle);
-                            frame->setDihedral(1,f,phisLD[i],0,0);
-                            frame->setDihedral(1,f,psisLD[j],1,0);
-                            frame->setDihedral(1,g,phisLD[i],0,0);
-                            frame->setDihedral(1,g,psisLD[j],1,0);
-                            frame->setDihedral(1,h,phisLD[i],0,0);
-                            frame->setDihedral(1,h,psisLD[j],1,0);
-                            frame->setDihedral(1,k,phisLD[i],0,0);
-                            frame->setDihedral(1,k,psisLD[j],1,0);
+                            frame->setDihedral(1,f,hetPhis[i],0,0);
+                            frame->setDihedral(1,f,hetPsis[j],1,0);
+                            frame->setDihedral(1,g,hetPhis[i],0,0);
+                            frame->setDihedral(1,g,hetPsis[j],1,0);
+                            frame->setDihedral(1,h,hetPhis[i],0,0);
+                            frame->setDihedral(1,h,hetPsis[j],1,0);
+                            frame->setDihedral(1,k,hetPhis[i],0,0);
+                            frame->setDihedral(1,k,hetPsis[j],1,0);
                             dblVec Ccoords = frame->getCoords(1, 36, "C");
                             dblVec Ncoords = frame->getCoords(2, 0, "N");
                             double dist = CMath::distance(Ccoords, Ncoords);
@@ -198,23 +198,23 @@ int main (int argc, char* argv[])
         }
     }
 
-    ///bundle optimizations/
-    //UIntVec allowedRots;*/
+    /*bundle optimizations/
+    //UIntVec allowedRots;
     PDBInterface* theFramePDB = new PDBInterface(inFile);
     ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
     molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
     protein* bundle = static_cast<protein*>(frameMol);
-     for (int k = 0; k < 10; k++)
+     for (int k = 0; k < 5; k++)
      {
         //for (int l = 0; l < 10; l++)
         //{
-            for (int n = 0; n < 20; n++)
+            for (int n = 0; n < 5; n++)
             {
-                for (int m = 0; m < 10; m++)
+                for (int m = 0; m < 5; m++)
                 {
                     protein* frame = new protein(*bundle);
                     count++;
-                    radius = 7.0+ (k*0.1), coil = 0, offset = -10.0+(0.1*m), phase1 = 0, phase2 = 150+n;
+                    radius = 7.3+(k*0.1), coil = 0, offset = -9.3+(n*0.1), phase1 = 0, phase2 = 123+m;
                     buildHelixOligamer(frame, 4, true, radius, phase1, phase2, coil, offset);
                     /*dblVec HNcoords = frame->getCoords(0, 18, "NE2");
                     dblVec YOcoords = frame->getCoords(2, 18, "OH");
@@ -223,7 +223,7 @@ int main (int argc, char* argv[])
                     if (dist <= 2.7 && dist >= 2.5)
                     {
                         Energy = -500;
-                    }*/
+                    }
                     double Energy = frame->intraSoluteEnergy(false);
                     cout << count << " " << Energy << " " << radius << " " << offset << " " << phase1 << " " << phase2;
                     if (Energy < best)
@@ -245,7 +245,7 @@ int main (int argc, char* argv[])
             }
         //}
     }
-    /*UInt res1, res2, rot;
+    /UInt res1, res2, rot;
     double chi1, chi2;
     double angle1, angle2;
     cout << "iteration Energy radius angle" << endl;/

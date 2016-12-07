@@ -23,7 +23,7 @@ int main (int argc, char* argv[])
 		exit(1);
 	}
     enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dAT,dW,dY,dV,Hce,Pch,Csf};
-    string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hn","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dQ","dE","dEh","dHd","dHe","dHn","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dAT","dW","dY","dV","Hce","Pch","Csf"};
+    string aminoAcidString[] = {"A","R","N","D","D","C","C","C","Q","E","E","H","H","H","H","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dD","dC","dC","dQ","dE","dE","dH","dH","dH","dH","dI","dL","dK","dM","dF","dP","dO","dS","dT","dT","dW","dY","dV","Hce","Pch","C"};
 	string infile = argv[1];
 	PDBInterface* thePDB = new PDBInterface(infile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
@@ -38,7 +38,7 @@ int main (int argc, char* argv[])
 	amberElec::setScaleFactor(1.0);
 
     UInt numChains = _prot->getNumChains();
-    for (UInt i = 0; i < numChains; i++)
+    for (UInt i = 0; i < 1; i++)
     {
         UInt numRes = _prot->getNumResidues(i);
         for (UInt j = 0; j < numRes; j++)

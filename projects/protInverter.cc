@@ -37,12 +37,12 @@ int main (int argc, char* argv[])
             UInt resNum = bundle->getNumResidues(i);
             for (UInt j = 0; j < resNum; j ++)
             {
-                if ((i == 0 || i == 2) && j == 4)
+                if ((i == 0 || i == 2) && (j == 1))
                 {
                     bundle->mutateWBC(i,j,dC);
-                    //bundle->setRotamerWBC(i,j,0,1);
+                    bundle->setRotamerWBC(i,j,0,0);
                 }
-                if ((i == 1 || i == 3) && j == 29)
+                if ((i == 1 || i == 3) && (j == 8))
                 {
                     bundle->mutateWBC(i,j,C);
                     bundle->setRotamerWBC(i,j,0,2);
