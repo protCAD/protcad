@@ -36,7 +36,7 @@ int main (int argc, char* argv[])
 	rotamer::setScaleFactor(0.0);
 	amberVDW::setScaleFactor(1.0);
 	amberVDW::setRadiusScaleFactor(1.0);
-    amberElec::setScaleFactor(0.0);
+    amberElec::setScaleFactor(1.0);
     //amberVDW::setLinearRepulsionDampeningOn();
     //amberVDW::itsRepulsionScaleFactor = 0.9;
     srand (time(NULL));
@@ -148,7 +148,7 @@ int main (int argc, char* argv[])
     protein* bundle = static_cast<protein*>(frameMol);
     //double startE = bundle->protEnergy();
 
-    for (UInt h = 0; h < hetPhis.size(); h++)
+    for (UInt h = 0; h < hetPsis.size(); h++)
     {
         for (UInt i = 0; i < hetPhis.size(); i++)
         {
@@ -158,45 +158,54 @@ int main (int argc, char* argv[])
                 {
                     for (UInt l = 0; l < hetPsis.size(); l++)
                     {
-                       // for (UInt m = 0; m < hetPhis.size(); m++)
-                      //  {
-                            count++;
-                            protein* frame = new protein(*bundle);
-                            frame->makeAtomSilent(0,10,2);
-                            frame->makeAtomSilent(0,11,0);
-                            frame->makeAtomSilent(0,11,1);
-                            frame->makeAtomSilent(0,11,2);
-                            frame->makeAtomSilent(0,11,3);
-                            frame->makeAtomSilent(1,0,0);
-                            frame->setDihedral(0,8,hetPsis[j],1,0);
-                            frame->setDihedral(0,9,hetPhis[i],0,0);
-                            frame->setDihedral(0,9,hetPsis[j],1,0);
-                            frame->setDihedral(0,10,hetPhis[k],0,0);
-                            frame->setDihedral(0,10,hetPsis[l],1,0);
+                        for (UInt m = 0; m < hetPhis.size(); m++)
+                        {
+                            for (UInt n = 0; n < hetPsis.size(); n++)
+                            {
+                                for (UInt o = 0; o < hetPhis.size(); o++)
+                                {
+                                    count++;
+                                    protein* frame = new protein(*bundle);
+                                    frame->makeAtomSilent(0,13,2);
+                                    frame->makeAtomSilent(0,14,0);
+                                    frame->makeAtomSilent(0,14,1);
+                                    frame->makeAtomSilent(0,14,2);
+                                    frame->makeAtomSilent(0,14,3);
+                                    frame->makeAtomSilent(1,0,0);
+                                    frame->setDihedral(0,10,hetPhis[o],0,0);
+                                    frame->setDihedral(0,10,hetPsis[n],1,0);
+                                    frame->setDihedral(0,11,hetPhis[m],0,0);
+                                    frame->setDihedral(0,11,hetPsis[l],1,0);
+                                    frame->setDihedral(0,12,hetPhis[k],0,0);
+                                    frame->setDihedral(0,12,hetPsis[j],1,0);
+                                    frame->setDihedral(0,13,hetPhis[i],0,0);
+                                    frame->setDihedral(0,13,hetPsis[h],1,0);
 
-                            dblVec Ccoords = frame->getCoords(0, 10, "C");
-                            dblVec Ncoords = frame->getCoords(1, 0, "N");
-                            double dist = CMath::distance(Ccoords, Ncoords);
-                            double Energy = 0.0;
-                            Energy += -1000/dist;
-                            Energy += frame->intraSoluteEnergy(true);
-                            cout << count << " " << dist << " " << Energy << " " << 9 << " " << hetPsis[h] << " " << 10 << " " << hetPhis[i] << " " << hetPsis[j] << " " << 11 << " " << hetPhis[k] << " " << hetPsis[l];
-                            if (Energy < best)
-                            {
-                                cout << " hit!!!!!!!!" << endl;
-                                best = Energy;
-                                stringstream convert;
-                                string countstr;
-                                convert << count, countstr = convert.str();
-                                outFile = countstr + ".turn.pdb";
-                                pdbWriter(frame, outFile);
+                                    dblVec Ccoords = frame->getCoords(0, 13, "C");
+                                    dblVec Ncoords = frame->getCoords(1, 0, "N");
+                                    double dist = CMath::distance(Ccoords, Ncoords);
+                                    double Energy = 0.0;
+                                    Energy += -1000/dist;
+                                    Energy += frame->intraSoluteEnergy(true);
+                                    cout << count << " " << dist << " " << Energy << " " << 11 << " " << hetPhis[o] << " " << hetPsis[n] << " " << 12 << " " << hetPhis[m] << " " << hetPsis[l] << " " << 13 << " " << hetPhis[k] << " " << hetPsis[j] << " " << 14 << " " << hetPhis[i] << " " << hetPsis[h];
+                                    if (Energy < best && dist > 1)
+                                    {
+                                        cout << " hit!!!!!!!!" << endl;
+                                        best = Energy;
+                                        stringstream convert;
+                                        string countstr;
+                                        convert << count, countstr = convert.str();
+                                        outFile = countstr + ".turn.pdb";
+                                        pdbWriter(frame, outFile);
+                                    }
+                                    else
+                                    {
+                                        cout << endl;
+                                    }
+                                    delete frame;
+                                }
                             }
-                            else
-                            {
-                                cout << endl;
-                            }
-                            delete frame;
-                       //}
+                        }
                    }
                 }
             }

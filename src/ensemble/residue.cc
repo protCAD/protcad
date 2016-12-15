@@ -3154,7 +3154,7 @@ vector <double> residue::calculateDielectric(residue* _other, UInt _atomIndex)
         if (inCube)
 		{
 			atomEnergyType = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[i][1];
-            if (atomEnergyType == 4) charges += 0.49, volumes += 23.2; //magnesium
+            if (atomEnergyType == 4) charges += 59, volumes += 23.2; //magnesium Ma et al 2015
 			if (atomEnergyType == 11) charges += 1.382, volumes += 8.7;
 			if (atomEnergyType == 12 || atomEnergyType == 15) charges += 1.382, volumes += 8.7;
 			if (atomEnergyType == 13) charges += 1.836, volumes += 23.2;
@@ -3168,8 +3168,9 @@ vector <double> residue::calculateDielectric(residue* _other, UInt _atomIndex)
 			if (atomEnergyType == 55) charges += 0.46, volumes += 15.9;
 			if (atomEnergyType == 56) charges += 0.664, volumes += 18;
 			if (atomEnergyType == 57) charges += 1.05, volumes += 18;
-			if (atomEnergyType == 60) charges += 3.2684, volumes += 29.2;
+            if (atomEnergyType == 60) charges += 20.8, volumes += 29.2; // Bellido 1985 Chem phys letters
 			if (atomEnergyType == 61) charges += 3.6643, volumes += 36.7;
+            if (atomEnergyType == 77) charges += 48.3425, volumes += 21.9; //4 Iron cluster FE theoretical: Calaminici 2004 Chem phys letters
 		}
     }
     chargeDensity[0] = volumes;
@@ -3961,9 +3962,9 @@ UInt residue::getBondSeparation(residue* _pRes1, UInt _index1, residue*
 
     // Check for disulfide
     if (_pRes1->getType() == "CYX" || _pRes1->getType() == "CXD" )
-    {	if (_pRes2->getType() == "CYX" ||_pRes1->getType() == "CXD")
-        { 	atom* pAtom1=_pRes1->getAtom(5);
-            atom* pAtom2=_pRes2->getAtom(5);
+    {	if (_pRes2->getType() == "CYX" ||_pRes1->getType() == "CXD" )
+        {   atom* pAtom1=_pRes1->getAtom(_index1);
+            atom* pAtom2=_pRes2->getAtom(_index2);
             if (pAtom1->distance(pAtom2) < 3.0)
             {
                 return 1;
@@ -3974,24 +3975,9 @@ UInt residue::getBondSeparation(residue* _pRes1, UInt _index1, residue*
     // Check for SF4 Cysteine bond
     if (_pRes1->getType() == "CYF" || _pRes1->getType() == "CFD" )
     {	if (_pRes2->getType() == "CSF")
-        { 	atom* pAtom1=_pRes1->getAtom(5);
-            atom* pAtom2=_pRes2->getAtom(6);
-            atom* pAtom3=_pRes2->getAtom(8);
-            atom* pAtom4=_pRes2->getAtom(10);
-            atom* pAtom5=_pRes2->getAtom(12);
-            if (pAtom1->distance(pAtom2) < 3.0)
-            {
-                return 1;
-            }
-            if (pAtom1->distance(pAtom3) < 3.0)
-            {
-                return 1;
-            }
-            if (pAtom1->distance(pAtom4) < 3.0)
-            {
-                return 1;
-            }
-            if (pAtom1->distance(pAtom5) < 3.0)
+        { 	atom* pAtom1=_pRes1->getAtom(_index1);
+            atom* pAtom2=_pRes2->getAtom(_index2);
+            if (pAtom1->distance(pAtom2) < 4.0)
             {
                 return 1;
             }
@@ -3999,27 +3985,23 @@ UInt residue::getBondSeparation(residue* _pRes1, UInt _index1, residue*
     }
     if (_pRes2->getType() == "CYF" || _pRes2->getType() == "CFD" )
     {	if (_pRes1->getType() == "CSF")
-        { 	atom* pAtom1=_pRes2->getAtom(5);
-            atom* pAtom2=_pRes1->getAtom(6);
-            atom* pAtom3=_pRes1->getAtom(8);
-            atom* pAtom4=_pRes1->getAtom(10);
-            atom* pAtom5=_pRes1->getAtom(12);
-            if (pAtom1->distance(pAtom2) < 3.0)
+        { 	atom* pAtom1=_pRes2->getAtom(_index2);
+            atom* pAtom2=_pRes1->getAtom(_index1);
+            if (pAtom1->distance(pAtom2) < 4.0)
             {
                 return 1;
             }
-            if (pAtom1->distance(pAtom3) < 3.0)
-            {
-                return 1;
-            }
-            if (pAtom1->distance(pAtom4) < 3.0)
-            {
-                return 1;
-            }
-            if (pAtom1->distance(pAtom5) < 3.0)
-            {
-                return 1;
-            }
+        }
+    }
+
+    // Check for peptide bond
+    if ((_index1 == 0 && _index2 == 2) || (_index2 == 0 && _index1 == 2))
+    {
+        atom* pAtom1=_pRes1->getAtom(_index1);
+        atom* pAtom2=_pRes2->getAtom(_index2);
+        if (pAtom1->distance(pAtom2) < 1.6)
+        {
+            return 1;
         }
     }
 

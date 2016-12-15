@@ -37,15 +37,14 @@ int main (int argc, char* argv[])
             UInt resNum = bundle->getNumResidues(i);
             for (UInt j = 0; j < resNum; j ++)
             {
-                if ((i == 0 || i == 2) && (j == 1))
+                UInt restype = bundle->getTypeFromResNum(i,j);
+                if (restype == L)
                 {
-                    bundle->mutateWBC(i,j,dC);
-                    bundle->setRotamerWBC(i,j,0,0);
+                    bundle->mutateWBC(i,j,A);
                 }
-                if ((i == 1 || i == 3) && (j == 8))
+                if (restype == dL)
                 {
-                    bundle->mutateWBC(i,j,C);
-                    bundle->setRotamerWBC(i,j,0,2);
+                    bundle->mutateWBC(i,j,dA);
                 }
             }
         }

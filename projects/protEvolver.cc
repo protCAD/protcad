@@ -27,7 +27,7 @@ void createPossibleMutantsDatabase(protein* bundle, UIntVec &_activeChains, UInt
 bool isFrozen(UIntVec _frozenResidues, UInt resIndex);
 vector < vector < UInt > > buildSequencePool();
 vector < vector < UInt > > buildPossibleMutants();
-enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dAT,dW,dY,dV,Hce,Pch,Csf};
+enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dAT,dW,dY,dV,Hce,Pch,Csf,dCf};
 string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hn","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dQ","dE","dEh","dHd","dHe","dHn","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dAT","dW","dY","dV","Hce","Pch","Csf"};
 
 //--Program setup----------------------------------------------------------------------------------------
@@ -41,14 +41,14 @@ int main (int argc, char* argv[])
     }
 
     //-- user inputs for evolution run
-    UInt _activeChains[] = {0};                                                         // chains active for mutation
-    UInt _allowedLResidues[] = {A,L,F,V,I,W,Y,Q,E,E,R,K,P,S,T,G,D,N};                   // amino acids allowed with phi < 0
-    UInt _allowedDResidues[] = {G};  // amino acids allowed with phi > 0
-    UInt _activeResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,13,14,15,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,47,48,49,50,51,52,53,54,55,56,57,58,59,61,62,63,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98};                  // positions active for mutation
-    UInt _randomResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,13,14,15,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,47,48,49,50,51,52,53,54,55,56,57,58,59,61,62,63,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98};                  // positions active for a random start sequence initially
-    UInt _frozenResidues[] = {12,16,46,60,64}; //13,17,61,65                                              // positions that cannot move at all
-    bool homoSymmetric = false;                                                          // if true all chains are structurally symmetrical to the one listed active chain above
-    bool backboneRelaxation = false;                                                    // if true allow minor backbone relaxation in structural optimization
+    UInt _activeChains[] = {0};                                                                                 // chains active for mutation
+    UInt _allowedLResidues[] = {A,R,N,D,Dh,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,F,P,S,T,W,Y,V};                           // amino acids allowed with phi < 0
+    UInt _allowedDResidues[] = {dA,dR,dN,dD,dDh,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dF,dP,dS,dT,dW,dY,dV};    // amino acids allowed with phi > 0
+    UInt _activeResidues[] = {0,2,3,5,6,8,9,11};                                                                // positions active for mutation
+    UInt _randomResidues[] = {0,2,3,5,6,8,9,11};                                                                // positions active for a random start sequence initially
+    UInt _frozenResidues[] = {1,4,7,10};                                                                            // positions that cannot move at all
+    bool homoSymmetric = false;                                                                                 // if true all chains are structurally symmetrical to the one listed active chain above
+    bool backboneRelaxation = false;                                                                            // if true allow minor backbone relaxation in structural optimization
 
     //--running parameters
     residue::setCutoffDistance(9.0);
@@ -374,7 +374,7 @@ UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector 
         chance = (rand() % 100) + 1;
         entropy = (rand() % 100) + 1;
         mutant = _possibleMutants[position][rand() % positionPossibles];
-        pooling = (0.1*count) + 110.5; //At 100 sequences start pooling at <1%, at >= 1055 95%
+        pooling = -0.3166*count+195; //At 300 sequences start pooling, at 600+ 95%
         if (pooling < 5){
             pooling = 5;
         }
