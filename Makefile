@@ -11,7 +11,7 @@ export MAKE = make
 
 SHELL = /bin/sh
 
-TARGETS = getDielectric protEvolver protMerge getDihedrals protShaper protEnergy protOpt protEvolver protDB protFolder protRandomizer dielectricFit protBindingEnergy triadFinder protMover z_aligner y_aligner protDock protMutator protPointMutator getSequence protInverter protSorter protRotamer protSlipPlane
+TARGETS = protDielectric protEvolver protMerge protDihedrals protShaper protEnergy protOpt protEvolver protDB protFolder protRandomizer protBindingEnergy triadFinder protMover z_aligner y_aligner protDock protMutator protPointMutator protSequence protInverter protSorter protRotamer protSlipPlane
 
 .SUFFIXES:
 .SUFFIXES: .cc .o .h .a
@@ -86,11 +86,7 @@ protSorter : libprotcad.a protSorter.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
 	cd $(OBJDIR) && mv $@ $(BINDIR)
 
-protNetwork : libprotcad.a protNetwork.cc
-	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && mv $@ $(BINDIR)
-
-getSequence : libprotcad.a getSequence.cc
+protSequence : libprotcad.a protSequence.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
 	cd $(OBJDIR) && mv $@ $(BINDIR)
 
@@ -106,15 +102,7 @@ protSlipPlane : libprotcad.a protSlipPlane.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
 	cd $(OBJDIR) && mv $@ $(BINDIR)
 	
-dielectricFit : libprotcad.a dielectricFit.cc
-	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && mv $@ $(BINDIR)
-	
-getDielectric : libprotcad.a getDielectric.cc
-	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && mv $@ $(BINDIR)
-	
-foldingBindingEnergy : libprotcad.a foldingBindingEnergy.cc
+protDielectric : libprotcad.a protDielectric.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
 	cd $(OBJDIR) && mv $@ $(BINDIR)
 
@@ -150,7 +138,7 @@ protEvolver : libprotcad.a protEvolver.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
 	cd $(OBJDIR) && mv $@ $(BINDIR)
 
-getDihedrals : libprotcad.a getDihedrals.cc
+protDihedrals : libprotcad.a protDihedrals.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
 	cd $(OBJDIR) && mv $@ $(BINDIR)	
 

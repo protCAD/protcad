@@ -76,7 +76,7 @@ int main (int argc, char* argv[])
             bundle->activateForRepacking(randchain, randres);
             bundle->mutateWBC(randchain, randres, He);
         }
-        bundle->protOptSolvent(200,false);
+        bundle->protOpt(false);
         pdbWriter(bundle, bestFile);
         joinComplex(bundle);
         pastEnergy = bundle->interSoluteEnergy(true, 0, 1);
@@ -126,7 +126,7 @@ int main (int argc, char* argv[])
             }while (test == 0);
             if (nobetter == totalsize)
             {
-                bundle->protOptSolvent(50, false);
+                bundle->protOpt(false);
             }
 		}while (nobetter < (totalsize * 1.5));
         delete thePDB;
