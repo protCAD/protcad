@@ -47,7 +47,7 @@ int main (int argc, char* argv[])
     UInt _activeResidues[] = {0,1,2,3,4,5,6,7,9,10,11,12,13,14,15,17,18,19,20,21,22,23,24};                                                                // positions active for mutation
     UInt _randomResidues[] = {0,1,2,3,4,5,6,7,9,10,11,12,13,14,15,17,18,19,20,21,22,23,24};                                                                // positions active for a random start sequence initially
     UInt _frozenResidues[] = {8,16};                                                                            // positions that cannot move at all
-    bool homoSymmetric = false;                                                                                 // if true all chains are structurally symmetrical to the one listed active chain above
+    bool homoSymmetric = true;                                                                                 // if true all chains are structurally symmetrical to the one listed active chain above
     bool backboneRelaxation = false;                                                                            // if true allow minor backbone relaxation in structural optimization
 
     //--running parameters
