@@ -23,9 +23,9 @@ vector < vector < UInt > > buildSequencePool();
 //--Program setup----------------------------------------------------------------------------------------
 int main (int argc, char* argv[])
 {
-    enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dAT,dW,dY,dV,Hce,Pch,Csf};
-    string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hn","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dQ","dE","dEh","dHd","dHe","dHn","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dAT","dW","dY","dV","Hce","Pch","Csf"};
-        if (argc !=1)
+    enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dAT,dW,dY,dV,Hce,Pch,Csf,dCf};
+    string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hn","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dQ","dE","dEh","dHd","dHe","dHn","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dAT","dW","dY","dV","Hce","Pch","Csf","dCf"};
+    if (argc !=1)
 	{
                 cout << "protSorter" << endl;
 		exit(1);
@@ -60,19 +60,39 @@ int main (int argc, char* argv[])
             ensemble* theModelEnsemble = theModelPDB->getEnsemblePointer();
             molecule* modelMol = theModelEnsemble->getMoleculePointer(0);
             protein* model = static_cast<protein*>(modelMol);
-            model->silenceMessages();
-            //double E = model->intraSoluteEnergy(true);
-            //if (E < 0)
-            //{
-            	fstream fs;
-                fs.open ("sequencepool.test.out", fstream::in | fstream::out | fstream::app);
-            	for (UInt i = 0; i < model->getNumResidues(0); i++)
-            	{
-                	fs << model->getTypeFromResNum(0,i) << ",";
-            	}
-            	fs << endl;
-            	fs.close();
-        //}
+            UInt neg = 0, pos = 0, his = 0, tyr = 0, tot = 0, restype;
+            for (UInt i = 0; i < 12; i++)
+            {
+                restype = model->getTypeFromResNum(0,i);
+                if (restype == E || restype == Eh || restype == D || restype == Dh)
+                {
+                    neg = 1;
+                }
+                if (restype == R || restype == K)
+                {
+                    pos = 1;
+                }
+                if (restype == Y)
+                {
+                    tyr = 1;
+                }
+                if (restype == He || restype == Hn || restype == Hd || restype == Hp)
+                {
+                    his = 1;
+                }
+                i++;
+            }
+            tot = neg+pos+tyr+his;
+            if (tot == 4)
+            {
+                cout << inFrame << " " << model->intraSoluteEnergy(true);
+                for (UInt i = 0; i < 12; i++)
+                {
+                    cout << " " << aminoAcidString[model->getTypeFromResNum(0,i)];
+                    i++;
+                }
+                cout << endl;
+            }
             delete theModelPDB;
         }
     }

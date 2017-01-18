@@ -44,9 +44,9 @@ int main (int argc, char* argv[])
     UInt _activeChains[] = {0};                                                                                 // chains active for mutation
     UInt _allowedLResidues[] = {A,R,N,D,Dh,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,F,P,S,T,W,Y,V};                           // amino acids allowed with phi < 0
     UInt _allowedDResidues[] = {dA,dR,dN,dD,dDh,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dF,dP,dS,dT,dW,dY,dV};    // amino acids allowed with phi > 0
-    UInt _activeResidues[] = {0,2,3,5,6,8,9,11};                                                                // positions active for mutation
-    UInt _randomResidues[] = {0,2,3,5,6,8,9,11};                                                                // positions active for a random start sequence initially
-    UInt _frozenResidues[] = {1,4,7,10};                                                                            // positions that cannot move at all
+    UInt _activeResidues[] = {0,1,2,3,4,5,6,7,9,10,11,12,13,14,15,17,18,19,20,21,22,23,24};                                                                // positions active for mutation
+    UInt _randomResidues[] = {0,1,2,3,4,5,6,7,9,10,11,12,13,14,15,17,18,19,20,21,22,23,24};                                                                // positions active for a random start sequence initially
+    UInt _frozenResidues[] = {8,16};                                                                            // positions that cannot move at all
     bool homoSymmetric = false;                                                                                 // if true all chains are structurally symmetrical to the one listed active chain above
     bool backboneRelaxation = false;                                                                            // if true allow minor backbone relaxation in structural optimization
 

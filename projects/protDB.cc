@@ -29,8 +29,8 @@ int main (int argc, char* argv[])
 		cout << "amberAnalyzer" << endl;
 		exit(1);
 	}
-	enum aminoAcid {A,R,N,D,Dh,C,Cx,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV};
-	//string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Q","E","Eh","Hd", "He","Hn","Hp","I","L","K","M","F","P","O","S","T","W","Y", "V","G","dA","dR","dN","dD","dDh","dC","dCx","dQ","dE","dEh","dHd","dHe","dHn","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV"};
+    enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dAT,dW,dY,dV,Hce,Pch,Csf,dCf};
+    string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hn","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dQ","dE","dEh","dHd","dHe","dHn","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dAT","dW","dY","dV","Hce","Pch","Csf","dCf"};
 	residue::setCutoffDistance(10.0);
 	rotamer::setScaleFactor(0.0);
 	amberVDW::setScaleFactor(1.0);
@@ -40,7 +40,7 @@ int main (int argc, char* argv[])
 	srand (time(NULL));
 
 	//--load data
-	vector < vector <double> > data;
+    /*vector < vector <double> > data;
 	ifstream infile( "sugarCoords" );
 	while (infile)
 	{
@@ -48,12 +48,12 @@ int main (int argc, char* argv[])
 	    if (!getline( infile, s )) break;
 
 	    istringstream ss( s );
-	    vector <double> record;
+        vector <string> record;
 
 	    while (ss)
 	    {
 		 string s;
-		 if (!getline( ss, s, ',' )) break;
+         if (!getline( ss, s, '.' )) break;
 		 double f;
   		 ss >> f;
 		 record.push_back( f );
@@ -61,68 +61,58 @@ int main (int argc, char* argv[])
 
 	    data.push_back( record );
 	    //cout << record[2] << endl;
-	}
+    }*/
 
 	//--initialize variables for loop
 	//UInt chainNum, resNum;
-	//UInt count = 0;
-	double dist;
-	dblVec coords, coords1(3);
+    UInt counter = 0;
+    //double dist;
 	string inFrame;
-	int skip = 0, name;
-	string startstr;
+	UInt totalres = 0;
+    //int skip = 0, name;
+    //string startstr;
 	DIR *pdir;
 	struct dirent *pent;
 	pdir=opendir(".");
-
+    vector <int> count(28);
+    fill(count.begin(), count.end(),0);
+    cout << "A R N D Dh C Cx Cf Q E Eh Hd He Hn Hp I L K M F P O S T W Y V G" << endl;
 	while ((pent=readdir(pdir)))
 	{ 
 		inFrame = pent->d_name;
-		if (inFrame.find(".pdb") != std::string::npos)
+        if (inFrame.find(".trim") != std::string::npos)
 		{
-			//count++;
-			//cout << inFrame << " " << count << endl;
+            counter++;       
 			PDBInterface* theFramePDB = new PDBInterface(inFrame);
 			ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
 			molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
 			protein* frame = static_cast<protein*>(frameMol);
-			frame->silenceMessages();
-			skip = 0;
-			//cout << "test1" << endl;
-			for (UInt i = 541; i < 757; i++)
-			{
-				//cout << "test2" << endl;
-				coords = frame->getCoords(0, i, "CA");
-				//cout << "test3" << endl;
-				for (UInt j = 0; j < data.size(); j++)
-				{
-					//cout << "test3.5" << endl;
-					coords1[0] = data[j][0];
-					coords1[1] = data[j][1];
-					coords1[2] = data[j][2];
-					//cout << coords1[0] << " " << coords1[1] << " " << coords1[2] << endl;
-					dist = CMath::distance(coords1, coords);
-					if (dist < 8)
-					{
-						skip = 1;
-						break;
-					}
-				}
-				//cout << i << endl;
-			}
-			if (skip == 0)
-			{
-				cout << "good" << endl;
-				stringstream convert;
-				name = rand() % 1000000;
-				convert << name, startstr = convert.str();
-				string bestModel = startstr + "_good";
-				pdbWriter(frame, bestModel); 
-			}
+            for (UInt i = 0; i < frame->getNumChains(); i++)
+            {
+                for (UInt j = 0; j < frame->getNumResidues(i); j++)
+                {
+                    totalres++;
+                    UInt restype = frame->getTypeFromResNum(i,j);
+                    count[restype] = count[restype]+1;
+                }
+            }
+            cout << inFrame << " ";
+            for (UInt i = 0; i < count.size(); i++)
+            {
+                cout << count[i] << " ";
+            }
+            cout << endl;
+            fill(count.begin(), count.end(),0);
 			delete theFramePDB;
 		}	
 	}
 	closedir(pdir);
+    /*cout << "A R N D Dh C Cx Cf Q E Eh Hd He Hn Hp I L K M F P O S T W Y V G" << endl;
+    for (UInt i = 0; i < count.size(); i++)
+    {
+        cout << count[i] << " ";
+    }
+    cout << endl << totalres;*/
 	return 0;
 }
 
