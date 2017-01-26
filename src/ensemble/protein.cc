@@ -1546,7 +1546,7 @@ void protein::buildResidueEnergyPairs(vector < vector < vector <double> > > &_en
     vector <double> E;
 
     //populate energy vector with starting energies
-    if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
+    if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0 || residue::getHydroSolvationScaleFactor() != 0.0 || residue::getElectroSolvationScaleFactor() != 0.0)
     {
         this->updateDielectrics();
     }
@@ -1610,7 +1610,7 @@ void protein::updateProtEnergy(vector < vector < vector <double> > > &_energies)
                     {
                         if (itsChains[chaini]->itsResidues[resi]->getMoved() != 0)
                         {
-                            if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
+                            if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0 || residue::getHydroSolvationScaleFactor() != 0.0 || residue::getElectroSolvationScaleFactor() != 0.0)
                             {
                                 updatePositionDielectrics(chaini, resi);
                             }

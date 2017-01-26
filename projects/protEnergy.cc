@@ -21,6 +21,11 @@ int main (int argc, char* argv[])
     ensemble* theEnsemble = thePDB->getEnsemblePointer();
     molecule* pMol = theEnsemble->getMoleculePointer(0);
     protein* bundle = static_cast<protein*>(pMol);
+    residue::setCutoffDistance(9.0);
+    residue::setElectroSolvationScaleFactor(0.0);
+    residue::setHydroSolvationScaleFactor(1.0);
+    amberVDW::setScaleFactor(0.0);
+    amberElec::setScaleFactor(0.0);
     t=clock();
     double Energy = bundle->protEnergy();
     t=clock()-t;

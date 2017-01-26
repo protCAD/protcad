@@ -340,12 +340,17 @@ public:
 	static double getCutoffDistance() {return cutoffDistance; }
 	static void setCutoffDistance( const double _cutoff ) { cutoffDistance = _cutoff; cutoffDistanceSquared = _cutoff*_cutoff; }
     static void setTemperature( const double _temp ) { temperature = _temp; }
+    static void setElectroSolvationScaleFactor( const double _Esolv ) { EsolvationFactor = _Esolv; }
+    double getElectroSolvationScaleFactor() { return EsolvationFactor; }
+    static void setHydroSolvationScaleFactor( const double _Hsolv ) { HsolvationFactor = _Hsolv; }
+    double getHydroSolvationScaleFactor() { return HsolvationFactor; }
+
 
 // ***********************************************************************
 // ***********************************************************************
 //	Variables
 // ***********************************************************************
-// ***********************************************************************
+// ***********************************************************************Cutoff
 
 private:
 	//variable declarations
@@ -376,6 +381,8 @@ private:
 	static UInt howMany;
 	static bool dataBaseBuilt;
     static double temperature;
+    static double EsolvationFactor;
+    static double HsolvationFactor;
 	static double cutoffDistance;
 	static double cutoffDistanceSquared;
 };
