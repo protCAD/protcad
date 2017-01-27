@@ -91,9 +91,14 @@ PDBInterface::~PDBInterface()
 void PDBInterface::readData(ifstream& _infile)
 {
 	string linebuffer;
+    string hydrogenstr = " H";
 	while (getline(_infile,linebuffer,'\n'))
 	{
-		theLines.push_back(linebuffer);
+        size_t hydrogen = linebuffer.find(hydrogenstr);
+        if (hydrogen == std::string::npos) // do not include hydrogens as we will use internal nomenclature and inclusion criteria
+        {
+           theLines.push_back(linebuffer);
+        }
 	}
 }
 
@@ -103,6 +108,7 @@ void PDBInterface::categorizeLines()
 	for (UInt i=0; i<theLines.size(); i++)
 	{
 		header = theLines[i].substr(0,6);
+
 		if (header == "ATOM  ")
 		{	atomLines.push_back(i);
 			continue;
@@ -255,7 +261,7 @@ void PDBInterface::categorizeLines()
 		{	anisouLines.push_back(i);
 			continue;
 		}
-		if (header == "USER  ")
+        if (header == "USER  ")
 		{	userLines.push_back(i);
 			continue;
 		}
@@ -263,11 +269,11 @@ void PDBInterface::categorizeLines()
 		{	energyLines.push_back(i);
 			continue;
 		}
-		if (header == "END")
+        if (header == "END   ")
 		{
 			continue;
 		}
-		if (header == "TER")
+        if (header == "TER   ")
 		{
 			continue;
 		}
@@ -775,14 +781,14 @@ void PDBInterface::parseAtomLine(const bool _Hflag)
 			lastResSeq = currentResSeq;
 			lastICode = currentICode;
 		}
-		counter++;
+        counter++;
 		// Now, check for the presence of hydrogens in each of the residues,
 		// if they exist, set the value of Hflag to true
 		if (currentRecord.getElement() == "H")
-		{
-			//cout << "Found a hydrogen at " << i << endl;
-			hydrogensFound = true;
-		}
+        {
+            //cout << "Found a hydrogen at " << i << endl;
+            hydrogensFound = true;
+        }
 		if (currentRecord.getElement() == "" ||
 		    currentRecord.getElement() == " " ||
                     currentRecord.getElement() == "  " )
