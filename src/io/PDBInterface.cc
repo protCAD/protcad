@@ -92,10 +92,12 @@ void PDBInterface::readData(ifstream& _infile)
 {
 	string linebuffer;
     string hydrogenstr = " H";
+    string waterstr = "WAT";
 	while (getline(_infile,linebuffer,'\n'))
 	{
         size_t hydrogen = linebuffer.find(hydrogenstr);
-        if (hydrogen == std::string::npos) // do not include hydrogens as we will use internal nomenclature and inclusion criteria
+        size_t water = linebuffer.find(waterstr);
+        if (hydrogen == std::string::npos && water == std::string::npos) // do not include hydrogens as we will use internal nomenclature and inclusion criteria, exclude water
         {
            theLines.push_back(linebuffer);
         }
