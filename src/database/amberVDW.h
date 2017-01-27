@@ -25,7 +25,7 @@ public:
 	double getEnergySQ(const UInt _type1, const UInt _type2, const double _distanceSquared) const;
 	int getIndexFromNameString(string _name);
 	bool isClash(const UInt _type1, const UInt _type2, const double _distance);
-	double getRadius(const UInt _type1);
+    double getRadius(const UInt _type1);
 
 	static double itsScaleFactor;
 	static void setScaleFactor(const double _scale)

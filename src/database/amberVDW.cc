@@ -71,7 +71,7 @@ bool amberVDW::isClash(const UInt _type1, const UInt _type2, const double _dista
 
 double amberVDW::getRadius(const UInt _type1)
 {
-    double radius  = (R_ref[_type1]);
+    double radius  = (R_ref[_type1]) * itsRadiusScaleFactor;
     return radius;
 }
 double amberVDW::getEnergySQ(const UInt _type1, const UInt _type2, const double _distanceSquared) const //optimized to avoid distance calculation if possible

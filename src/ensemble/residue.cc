@@ -3105,8 +3105,8 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
         double atomDielectric = itsAtoms[_atomIndex]->getDielectric();
         double charge = residueTemplate::itsAmberElec.getItsCharge(itsType, _atomIndex);
         double chargeSquared = charge*charge;
-        double waterDielectric = 78;// -0.3195 * (temperature-274.15) + 86.115; //Malmberg and Maryott, 1956 JRNBS
-        proteinSolventEnthalpy =(-166*(atomDielectric/waterDielectric)*chargeSquared/9)*EsolvationFactor;
+        double waterDielectric = 80;// -0.3195 * (temperature-274.15) + 86.115; //Malmberg and Maryott, 1956 JRNBS
+        proteinSolventEnthalpy =((-166*chargeSquared)/((waterDielectric-atomDielectric)*9))*EsolvationFactor;
     }
 
     //Gill Hydrophobic solvation  S.J.Gill, S.F.Dec. J Phys. Chem. 1985
@@ -3114,7 +3114,7 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
     {
         VDWradius = itsAtoms[_atomIndex]->getRadius();
         double waters = itsAtoms[_atomIndex]->getNumberofWaters();
-        double atomShellVol = 4.18*pow((VDWradius),3);
+        double atomShellVol = 4.18*pow((VDWradius+1.4),3);
         double shellVolFraction = atomShellVol/3052;
         double shellWaters = (waters*shellVolFraction)-1;
         proteinSolventEntropy = (-temperature*0.0019872041*log(pow(0.5,(shellWaters))))*HsolvationFactor;

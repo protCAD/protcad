@@ -81,7 +81,7 @@ atom::atom(const string& _atomType)
              << "atom::atom(const string& _atomType) "
              << endl;
 #endif
-	itsRadius = dataBase[itsType].vdwRadius[0];
+    itsRadius = dataBase[itsType].vdwRadius[0];
 	isSilent = false;
 	itsEpsilon = dataBase[itsType].vdwRadius[1];
 	howMany++;
@@ -95,7 +95,7 @@ atom::atom(const UInt _atomType)
 	     << "atom::atom(const UInt ) "
 	     << endl;
 #endif
-	itsRadius = dataBase[itsType].vdwRadius[0];
+    itsRadius = dataBase[itsType].vdwRadius[0];
 	itsEpsilon = dataBase[itsType].vdwRadius[1];
 	howMany++;
 }
@@ -109,7 +109,7 @@ atom::atom(const pdbAtom& _pdbAtomData)
 	     << endl;
 #endif
 	itsCoords = _pdbAtomData.getAtomCoord();
-	itsRadius = dataBase[itsType].vdwRadius[0];
+    itsRadius = dataBase[itsType].vdwRadius[0];
 	itsEpsilon = dataBase[itsType].vdwRadius[1];
 	itsSerialNumber = _pdbAtomData.getSerial();
 	itsOccupancy = _pdbAtomData.getOccupancy();
@@ -197,7 +197,7 @@ atom::atom(const PDBAtomRecord& _theRecord)
 	     << endl;
 #endif
 	itsCoords = _theRecord.getAtomCoord();
-	itsRadius = dataBase[itsType].vdwRadius[0];
+    itsRadius = dataBase[itsType].vdwRadius[0];
 	itsEpsilon = dataBase[itsType].vdwRadius[1];
 	itsSerialNumber = _theRecord.getSerial();
 	itsOccupancy = _theRecord.getOccupancy();
