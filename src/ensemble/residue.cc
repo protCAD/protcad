@@ -1334,7 +1334,7 @@ void residue::interpretBondingPattern()
 residue* residue::mutate(const UInt _newTypeIndex)
 {
 	//cout << "Entering residue::mutate" << endl;
-	residue* newAA = new residue( _newTypeIndex, hydrogensOn );
+    residue* newAA = new residue( _newTypeIndex, hydrogensOn );
 	//cout << "hydrogensOn = " << hydrogensOn << endl;
 	//residue* newAA = new residue( _newTypeIndex );
 	UInt numbpt = getNumBpt(_newTypeIndex);

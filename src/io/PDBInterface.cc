@@ -95,8 +95,8 @@ void PDBInterface::readData(ifstream& _infile)
     string waterstr = "WAT";
 	while (getline(_infile,linebuffer,'\n'))
 	{
-        size_t hydrogen = linebuffer.find(hydrogenstr);
-        size_t water = linebuffer.find(waterstr);
+        size_t hydrogen = linebuffer.find(hydrogenstr,12);
+        size_t water = linebuffer.find(waterstr,17);
         if (hydrogen == std::string::npos && water == std::string::npos) // do not include hydrogens as we will use internal nomenclature and inclusion criteria, exclude water
         {
            theLines.push_back(linebuffer);
@@ -545,7 +545,7 @@ void PDBInterface::parseAtomLine()
 			//continue;
 		}
 		//cout << residue::getDataBaseItem(theType) << "  "<< "Hflags[" << i << "] = " << Hflags[i] << endl;
-		residue* pTheResidue = new residue(theType,Hflags[i]);	
+        residue* pTheResidue = new residue(theType,Hflags[i]);
 		pTheResidue->setResNum(resnums[i]);
 		chain* pCurrentChain = 0;
 		char theChainID;
@@ -619,7 +619,7 @@ void PDBInterface::parseAtomLine()
 		// At this point all the atoms should be initialized in our
 		// new residue, and the residue should be in the chain, which
 		// is in the protein.
-		if (numAtomsInRes < pTheResidue->getNumAtoms())
+        if (numAtomsInRes < pTheResidue->getNumAtoms())
 		{
 			//cout << "Too few atoms in residue ";
 			//cout << pTheResidue->getResNum() ;
