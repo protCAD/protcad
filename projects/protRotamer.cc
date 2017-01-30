@@ -33,76 +33,38 @@ int main (int argc, char* argv[])
     ensemble* theEnsemble = thePDB->getEnsemblePointer();
     molecule* pMol = theEnsemble->getMoleculePointer(0);
     protein* bundle = static_cast<protein*>(pMol);
-    bundle->silenceMessages();
     residue::setCutoffDistance(9.0);
-    rotamer::setScaleFactor(0.0);
+    residue::setElectroSolvationScaleFactor(0.0);
+    residue::setHydroSolvationScaleFactor(0.0);
+    amberElec::setScaleFactor(0.0);
     amberVDW::setScaleFactor(1.0);
-    amberVDW::setRadiusScaleFactor(1.0);
-    amberVDW::setLinearRepulsionDampeningOff();
-    amberElec::setScaleFactor(1.0);
     srand (time(NULL));
 	
-    //--parameters
-    int chains[] = {1};
-    int chainsSize = sizeof(chains)/sizeof(chains[0]);
-    int residues[] = {95};//61,30,9,129/46,47,61,92,95/,87,91,110,150,152{1,3,5,7,9,13,15,17,19,21,28,30,32,34,36,54,57,59,61,70,72,74,76,78,86,88,90,92,94,108,110,112,114,116,127,129,131,133,151,153,155,157,159,161,166,169,172,174,181,183,185};
-    int residuesSize = sizeof(residues)/sizeof(residues[0]);
-    //int count = 0;
-    //--variable
-    UInt chain = 0;
-    UInt res = 99;
-    bool better;
-    double bestE = 1E100, chi1, chi2, chi3;
-    //string outFile = "opt." + infile;
-    cout << "pdb " << "energy " << endl;
-    //UInt randres, randchain, randrot;
-    //UIntVec currentRot;
-    //UIntVec allowedRots = bundle->getAllowedRotamers(chain,res,Hcd,0);
-    //bundle->setChi(chain,res,0,0,-111.592);
-    double chi1start = bundle->getChi(chain,res,0,0);
-    double chi2start = bundle->getChi(chain,res,0,1);
-    //double startEnergy = bundle->protEnergy();
+    UInt _chainIndex = 0;
+    UInt randres = 0;
+    UInt randrestype = bundle->getTypeFromResNum(_chainIndex,randres);
+    double pastEnergy = bundle->protEnergy();
+    //--Get current rotamer and allowed
+    UIntVec allowedRots = bundle->getAllowedRotamers(_chainIndex, randres, randrestype, 0);
 
-    //for (int h = -30; h < 30; h++)
-    //{
-        //for (int i = -15; i < 15; i++)
-        //{
-            better = false;
-            //chi1 = chi1start+h;
-            //chi2 = chi2start+i;
-            //bundle->setChi(chain,res,0,0,chi1);
-            //bundle->setChi(chain,res,0,1,chi2);
-            //currentRot = bundle->getCurrentRotamer(chain, res);
-            //randrot = allowedRots[h];
-            //bundle->setRotamerWBC(chain, res, 0, randrot);
-            for (UInt l = 0; l < 360; l++)
-            {
-                chi3 = l;
-                bundle->setChi(chain,res,1,0,chi3);
-                double Energy = bundle->intraSoluteEnergy(true);
-                //if (Energy < bestE)
-                //{
-                    bestE = Energy;
-                    better = true;
-                    stringstream convert;
-                    string countStr, outFile;
-                    convert << l+1, countStr = convert.str();
-                    outFile = countStr + ".opt.pdb";
-                    pdbWriter(bundle, outFile);
-                    cout << l+1 << " " << chi3 << " " << Energy << " improved!" << endl;
-                    //break;
-                //}
-            }
-            if (!better)
-            {
-                bundle->setChi(chain,res,0,0,(chi1*-1));
-                bundle->setChi(chain,res,0,1,(chi2*-1));
-                bundle->setChi(chain,res,1,0,(chi3*-1));
-                //bundle->setRotamerWBC(chain, res, 0, currentRot[0]);
-            }
-        //}
-    //}
-	return 0;
+    for (UInt j = 0; j < allowedRots.size(); j ++)
+    {
+        vector < vector <double> > currentRot = bundle->getSidechainDihedrals(_chainIndex, randres);
+        UInt randrot = allowedRots[j];
+        bundle->setRotamerWBC(_chainIndex, randres, 0, allowedRots[randrot]);
+        bundle->setMoved(_chainIndex,randres,1);
+        double Energy = bundle->protEnergy();
+        if (Energy < pastEnergy)
+        {
+           pastEnergy = Energy;
+        }
+        else
+        {
+            bundle->setSidechainDihedralAngles(_chainIndex, randres, currentRot);
+        }
+    }
+    pdbWriter(bundle, infile);
+    return 0;
 }
 
 
