@@ -91,15 +91,14 @@ PDBInterface::~PDBInterface()
 void PDBInterface::readData(ifstream& _infile)
 {
 	string linebuffer;
-    string hydrogenstr = " H";
-    string waterstr = "WAT";
 	while (getline(_infile,linebuffer,'\n'))
 	{
-        size_t hydrogen = linebuffer.find(hydrogenstr,12);
-        size_t water = linebuffer.find(waterstr,17);
-        if (hydrogen == std::string::npos && water == std::string::npos) // do not include hydrogens as we will use internal nomenclature and inclusion criteria, exclude water
+        if (linebuffer.length() > 13)
         {
-           theLines.push_back(linebuffer);
+            if (linebuffer.compare(13,1,"H") != 0 && linebuffer.compare(17,3,"WAT") != 0 && linebuffer.compare(17,3,"OXT") != 0)// do not include hydrogens as we will use internal nomenclature and inclusion criteria, exclude water
+            {
+               theLines.push_back(linebuffer);
+            }
         }
 	}
 }
@@ -279,7 +278,7 @@ void PDBInterface::categorizeLines()
 		{
 			continue;
 		}
-		cout << "PDBInterface didn't recognize the header " << header << endl;
+        //cout << "PDBInterface didn't recognize the header " << header << endl;
 	}
         
 	/* 
@@ -380,7 +379,7 @@ void PDBInterface::parseAtomLine()
 	// residue class definition, such as the residue database, etc.
 
 	residue::setupDataBase();
-	bool hydrogensFound = false;
+    bool hydrogensFound = true;
 	bool altLocFound = false;
 	vector<bool> Hflags;
 	vector<bool> altLocFlags;
@@ -419,7 +418,7 @@ void PDBInterface::parseAtomLine()
 			//cout << "start of new res at " << i << endl;
 			Hflags.push_back(hydrogensFound);
 			altLocFlags.push_back(altLocFound);
-			hydrogensFound = false;
+            hydrogensFound = true;
 			altLocFound = false;
 			resend.push_back(i-1);
 			resbegin.push_back(i);
@@ -437,7 +436,7 @@ void PDBInterface::parseAtomLine()
 			//cout << "start of new res at " << i << endl;
 			Hflags.push_back(hydrogensFound);
 			altLocFlags.push_back(altLocFound);
-			hydrogensFound = false;
+            hydrogensFound = true;
 			altLocFound = false;
 			resend.push_back(i-1);
 			resname.push_back(currentResName);
@@ -448,11 +447,11 @@ void PDBInterface::parseAtomLine()
 		}
 		// Now, check for the presence of hydrogens in each of the residues,
 		// if they exist, set the value of Hflag to true
-		if (currentRecord.getElement() == "H")
-		{
-			//cout << "Found a hydrogen at " << i << endl;
+        if (currentRecord.getElement() == "H")
+        {
+            //cout << "Found a hydrogen at " << i << endl;
 			hydrogensFound = true;
-		}
+        }
 		counter++;
 		if (currentRecord.getElement() == "" ||
 		    currentRecord.getElement() == " " ||
@@ -485,12 +484,13 @@ void PDBInterface::parseAtomLine()
 			if (theAtomTypeIndex >= 0)
 			{
 				//cout << "atomTypeIndex = " << theAtomTypeIndex << endl;
-				string atomTypeString = (residue::dataBase[theType].atomList[theAtomTypeIndex]).getType();
+                //string atomTypeString = (residue::dataBase[theType].atomList[theAtomTypeIndex]).getType();
 				//cout << "atomTypeString = " << atomTypeString << endl;
-				if (atomTypeString == "H")
-				{
+                //if (atomTypeString == "H")
+                //{
+                    //cout << "Found a hydrogen at " << i << endl;
 					hydrogensFound = true;
-				}
+                //}
 			}
 			else
 			{
@@ -505,7 +505,7 @@ void PDBInterface::parseAtomLine()
 
 	}
 	resend.push_back(atomLines.size()-1);
-	Hflags.push_back(hydrogensFound);
+    Hflags.push_back(hydrogensFound);
 	altLocFlags.push_back(altLocFound);
 /*	
 	for (UInt i=0; i<resend.size(); i++)
@@ -619,14 +619,12 @@ void PDBInterface::parseAtomLine()
 		// At this point all the atoms should be initialized in our
 		// new residue, and the residue should be in the chain, which
 		// is in the protein.
+        bool withRotamer = true;
         if (numAtomsInRes < pTheResidue->getNumAtoms())
 		{
-			//cout << "Too few atoms in residue ";
-			//cout << pTheResidue->getResNum() ;
-			//cout << " - expected: " << pTheResidue->getNumAtoms();
-			//cout << " found: " <<  numAtomsInRes << endl;
-			pCurrentChain->fixBrokenResidue(pCurrentChain->getNumResidues()-1);
-		}
+            //withRotamer = false;
+        }
+        pCurrentChain->fixBrokenResidue(pCurrentChain->getNumResidues()-1, withRotamer);
 
 	} // end loop over residues
 

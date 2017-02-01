@@ -1484,35 +1484,37 @@ residue* residue::mutate(const UInt _newTypeIndex)
 // now, since we're changing the backbone coordinates, make
 // sure that the amide hydrogen H is in the right place...
 // all other hydrogens should have been taken care of by the
-// code above which sets the coordinates of the branchpoint atoms...
+// code above which sets the coordinates of the branchpoint atoms...*/
 	if (hydrogensOn)
 	{
 		// get the index of "H" if it exists
 		string name = "H";
-		int HIndexNew = dataBase[_newTypeIndex].getAtomIndexOf(name);
-		int HIndexOld = dataBase[getTypeIndex()].getAtomIndexOf(name);
-		atom* pHNew = newAA->getAtom(HIndexNew);
-		atom* pHOld = getAtom(HIndexOld);
-		if (pHNew)
-		{	// OK, the new AA has an H
-			if (pHOld)
-			{	// OK, the old AA has an H
-				dblVec theCoords = pHOld->getCoords();
-				pHNew->setCoords(theCoords);
-			}
-			else
-			{
-				// I'm not sure where to put the H
-				// need to fix this eventually !!!
-			}
-		}
-		else
-		{
-			//nothing needs to be done - no H in new residue
-		}
+        UInt HIndex = 99;
+        for (UInt i = 0; i < newAA->itsAtoms.size(); i++)
+        {
+            //cout << itsAtoms[i]->getName() << " ";
+            string itsName = newAA->itsAtoms[i]->getName();
+            if (itsName == name)
+            {
+                HIndex = i;
+            }
+        }
+        if (HIndex != 99)
+        {
+            atom* pHNew = newAA->getAtom(HIndex);
+            if (pItsPrevRes)
+            {
+                dblVec newCoords(3);
+                dblVec prevCarbon = pItsPrevRes->getCoords("C");
+                dblVec prevOxygen = pItsPrevRes->getCoords("O");
+                dblVec itsNitrogen = getCoords("N");
+                newCoords[0] = ((prevCarbon[0]-prevOxygen[0])*0.8)+itsNitrogen[0];
+                newCoords[1] = ((prevCarbon[1]-prevOxygen[1])*0.8)+itsNitrogen[1];
+                newCoords[2] = ((prevCarbon[2]-prevOxygen[2])*0.8)+itsNitrogen[2];
+                pHNew->setCoords(newCoords); // translate Hydrogen to same plane as C=O of prev residue and axis of Nitrogen
+            }
+        }
 	}
-*/
-
 	return newAA;
 }
 

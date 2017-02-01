@@ -22,14 +22,15 @@ int main (int argc, char* argv[])
     molecule* pMol = theEnsemble->getMoleculePointer(0);
     protein* bundle = static_cast<protein*>(pMol);
     residue::setCutoffDistance(9.0);
-    residue::setElectroSolvationScaleFactor(0.0);
-    residue::setHydroSolvationScaleFactor(0.0);
-    amberElec::setScaleFactor(0.0);
+    residue::setElectroSolvationScaleFactor(1.0);
+    residue::setHydroSolvationScaleFactor(1.0);
+    amberElec::setScaleFactor(1.0);
     amberVDW::setScaleFactor(1.0);
     t=clock();
     double Energy = bundle->protEnergy();
+    //bundle->mutateWBC(0,0,23);
     t=clock()-t;
-    cout << Energy;
-    pdbWriter(bundle, infile);
+    cout << Energy << " " << infile << " ";
+    pdbWriter(bundle, infile +".h");
 	return 0;
 }

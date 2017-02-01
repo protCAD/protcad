@@ -35,7 +35,7 @@ int main (int argc, char* argv[])
     protein* bundle = static_cast<protein*>(pMol);
     residue::setCutoffDistance(9.0);
     residue::setElectroSolvationScaleFactor(0.0);
-    residue::setHydroSolvationScaleFactor(0.0);
+    residue::setHydroSolvationScaleFactor(1.0);
     amberElec::setScaleFactor(0.0);
     amberVDW::setScaleFactor(1.0);
     srand (time(NULL));
