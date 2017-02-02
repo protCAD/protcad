@@ -208,7 +208,7 @@ string amberElec::getItsAtomName(const UInt _resType, const UInt _atomType) cons
 
 void amberElec::buildWithHydrogens()
 {
-	itsFileName = "all_amino94_mod.in";
+    itsFileName = "amino12.in";
 	buildDataBase();
 	//cout << " AMBER all atom electrostatics force field built successfully\n";
 	return;
@@ -216,7 +216,7 @@ void amberElec::buildWithHydrogens()
 
 void amberElec::buildWithOutHydrogens()
 {
-	itsFileName = "uni_mod.in";
+    itsFileName = "amino12.in";
 	buildDataBase();
 	//cout << " AMBER united atom electrostatics force field built successfully\n";
 	return;
@@ -224,7 +224,7 @@ void amberElec::buildWithOutHydrogens()
 
 void amberElec::buildWithPolarHydrogens()
 {
-	itsFileName = "polar_mod.in";
+    itsFileName = "amino12.in";
 	buildDataBase();
 	//cout << " AMBER hybrid electrostatics force field build successfully\n";
 	return;
@@ -359,14 +359,15 @@ void amberElec::orderDataElements()  // NOTE:  this requires that the residue ty
 					{
 						atomNames[i].push_back(residue::getAtomNameBaseItem(i,k));
 						charges[i].push_back(0.00);
+                        //cout << residue::getDataBaseItem(i) << "no charge for atom" << endl;
 					}
 				}
 				if (residue::getAtomNameBaseSize(i) != atomNames[i].size())
 					cout << resNames[i] << " charges not properly built!" << endl;
 			}
 		}
-		if (resFlag != true)
-			cout << residue::getDataBaseItem(i) << " not found in the charge database." << endl;
+        if (resFlag != true)
+            cout << residue::getDataBaseItem(i) << " not found in the charge database." << endl;
 	}
 	if (resNames.size() != residue::dataBase.size())
 		//cout << "Not all residues found during electrostatics database building." << endl;

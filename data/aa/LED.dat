@@ -4,48 +4,48 @@ N CA C O
 CA
 !connectivity
 N	CA	H
-CA	C  	CB	HA
+CA	C	CB	HA
 C	O
 O
-CB	CG	1HB	2HB
+CB	CG	HB2	HB3
 CG	CD1	CD2	HG
-CD1	1HD1	2HD1	3HD1
-CD2	1HD2	2HD2	3HD2
+CD1	HD11	HD12	HD13
+CD2	HD21	HD22	HD23
 H
 HA
-1HB
-2HB
-1HD1
-2HD1
-3HD1
-1HD2
-2HD2
-3HD2
+HB2
+HB3
+HD11
+HD12
+HD13
+HD21
+HD22
+HD23
 !defined dihedral angles
 N	CA	CB	CG	CD1
 !atom types
 # column 1: atom name
 # column 2: AMBER all atom atomtype
-# column 3:	AMBER united atom atomtype
+# column 3: AMBER united atom atomtype
 # column 4: SUMMA atom type
 # column 5: SUMMA environment type
 # column 6: six-atom solvation type
 N		N		N		N		N		N
-CA		CT		CH		CA		C		C
+CA		CX		CH		CA		C		C
 C		C		C		C		C		C
 O		O		O		O		O		O
-CB		CT		C2		C2		C		C
-CG		CT		CH		C3		C		C
+CB		2C		C2		C2		C		C
+CG		3C		CH		C3		C		C
 CD1		CT		C3		C1		C		C
 CD2		CT		C3		C1		C		C
 H		H		-		-		-		H
-HA		HC		-		-		-		H
-1HB		HC		-		-		-		H
-2HB		HC		-		-		-		H
+HA		H1		-		-		-		H
+HB2		HC		-		-		-		H
+HB3		HC		-		-		-		H
 HG		HC		-		-		-		H
-1HD1	HC		-		-		-		H
-2HD1	HC		-		-		-		H
-3HD1	HC		-		-		-		H
-1HD2	HC		-		-		-		H
-2HD2	HC		-		-		-		H
-3HD2	HC		-		-		-		H
+HD11	HC		-		-		-		H
+HD12	HC		-		-		-		H
+HD13	HC		-		-		-		H
+HD21	HC		-		-		-		H
+HD22	HC		-		-		-		H
+HD23	HC		-		-		-		H

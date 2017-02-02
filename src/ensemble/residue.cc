@@ -3056,17 +3056,8 @@ double residue::intraSoluteEnergy()
 						// ** intra AMBER vdW
 						if (residueTemplate::itsAmberVDW.getScaleFactor() != 0.0 )
 						{
-                            int index1, index2;
-							if (hydrogensOn)
-							{
-                                    index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][0];
-                                    index2 = dataBase[itsType].itsAtomEnergyTypeDefinitions[j][0];
-							}
-							else
-							{
-                                    index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][1];
-                                    index2 = dataBase[itsType].itsAtomEnergyTypeDefinitions[j][1];
-							}		
+                            int index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][0];
+                            int index2 = dataBase[itsType].itsAtomEnergyTypeDefinitions[j][0];
 							double tempvdwEnergy = residueTemplate::getVDWEnergySQ(index1,index2,distanceSquared);
                             intraEnergy += tempvdwEnergy;
 						}

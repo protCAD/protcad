@@ -95,7 +95,7 @@ void PDBInterface::readData(ifstream& _infile)
 	{
         if (linebuffer.length() > 13)
         {
-            if (linebuffer.compare(13,1,"H") != 0 && linebuffer.compare(17,3,"WAT") != 0 && linebuffer.compare(17,3,"OXT") != 0)// do not include hydrogens as we will use internal nomenclature and inclusion criteria, exclude water
+            if ((linebuffer.compare(13,1,"H") != 0 || linebuffer.compare(12,1,"H") != 0) && linebuffer.compare(17,3,"WAT") != 0 && linebuffer.compare(17,3,"OXT") != 0)// do not include hydrogens as we will use internal nomenclature and inclusion criteria, exclude water
             {
                theLines.push_back(linebuffer);
             }
