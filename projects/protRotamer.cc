@@ -36,34 +36,31 @@ int main (int argc, char* argv[])
     residue::setCutoffDistance(9.0);
     residue::setElectroSolvationScaleFactor(0.0);
     residue::setHydroSolvationScaleFactor(0.0);
-    amberElec::setScaleFactor(0.0);
+    amberElec::setScaleFactor(1.0);
     amberVDW::setScaleFactor(1.0);
     srand (time(NULL));
 	
     UInt _chainIndex = 0;
     UInt randres = 0;
+    UInt bestrot;
     UInt randrestype = bundle->getTypeFromResNum(_chainIndex,randres);
-    double pastEnergy = bundle->intraSoluteEnergy(true);
+    double pastEnergy = bundle->protEnergy(), Energy;
     //--Get current rotamer and allowed
     UIntVec allowedRots = bundle->getAllowedRotamers(_chainIndex, randres, randrestype, 0);
 
-    for (UInt j = 0; j < allowedRots.size(); j ++)
+    for (UInt j = 0; j < allowedRots.size(); j++)
     {
-        vector < vector <double> > currentRot = bundle->getSidechainDihedrals(_chainIndex, randres);
-        UInt randrot = allowedRots[j];
-        bundle->setRotamerWBC(_chainIndex, randres, 0, allowedRots[randrot]);
+        bundle->setRotamerWBC(_chainIndex, randres, 0, allowedRots[j]);
         bundle->setMoved(_chainIndex,randres,1);
-        double Energy = bundle->intraSoluteEnergy(true);
+        Energy = bundle->protEnergy();
         if (Energy < pastEnergy)
         {
-           //cout << randrestype << " " << Energy << endl;
+           bestrot = j;
            pastEnergy = Energy;
         }
-        else
-        {   //cout << randrestype << " " << Energy << endl;
-            bundle->setSidechainDihedralAngles(_chainIndex, randres, currentRot);
-        }
     }
+    //cout << infile << " " << pastEnergy << endl;
+    bundle->setRotamerWBC(_chainIndex, randres, 0, allowedRots[bestrot]);
     pdbWriter(bundle, infile);
     return 0;
 }
