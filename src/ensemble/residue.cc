@@ -3035,6 +3035,7 @@ double residue::intraEnergy()
 double residue::intraSoluteEnergy()
 {	
 	double intraEnergy = 0.0;
+    bool twoBonds;
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
 		if (!itsAtoms[i]->getSilentStatus())
@@ -3047,8 +3048,8 @@ double residue::intraSoluteEnergy()
 			{
 				if (!itsAtoms[j]->getSilentStatus())
 				{
-                    UInt bonds = getBondSeparation(i,j);
-                    if (bonds > 2)
+                    twoBonds = isSeparatedByOneOrTwoBonds(i,j);
+                    if (!twoBonds)
 					{
                         // ** get distance
                         double distanceSquared = itsAtoms[i]->distanceSquared(itsAtoms[j]);
@@ -3295,6 +3296,7 @@ double residue::interEnergy(residue* _other)
 double residue::interSoluteEnergy(residue* _other)
 {
 	double interEnergy = 0.0;
+    bool twoBonds;
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
 		if (!itsAtoms[i]->getSilentStatus())
@@ -3303,8 +3305,8 @@ double residue::interSoluteEnergy(residue* _other)
 			{
 				if (!_other->itsAtoms[j]->getSilentStatus())
 				{
-                    UInt bonds = getBondSeparation(this,i,_other,j);
-                    if (bonds > 1)
+                    twoBonds = isSeparatedByOneOrTwoBonds(i, _other, j);
+                    if (!twoBonds)
 					{
                         double distanceSquared = itsAtoms[i]->inCubeWithDistSQ(_other->itsAtoms[j], cutoffDistance);
                         if (distanceSquared != 0.0 && distanceSquared <= cutoffDistanceSquared)
@@ -3327,23 +3329,10 @@ double residue::interSoluteEnergy(residue* _other)
 							if (residueTemplate::itsAmberVDW.getScaleFactor() != 0.0)
                             {
                                 int index1, index2;
-                                if (hydrogensOn)
-								{	index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][0];
-									index2 = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[j][0];
-								}
-								else
-								{	index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][1];
-									index2 = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[j][1];
-								}
+                                index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][0];
+                                index2 = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[j][0];
 								double tempvdwEnergy = residueTemplate::getVDWEnergySQ(index1, index2, distanceSquared);
-                                if (bonds == 2)
-                                {
-                                    interEnergy += tempvdwEnergy*0.25;
-                                }
-                                else
-                                {
-                                    interEnergy += tempvdwEnergy;
-                                }
+                                interEnergy += tempvdwEnergy;
 							}
 						}
 					}

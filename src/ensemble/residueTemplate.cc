@@ -412,7 +412,12 @@ double residueTemplate::getVDWEnergySQ(const int _type1, const int _type2, const
 	{
 		return itsAmberVDW.getEnergySQ(UInt(_type1), UInt(_type2), _distanceSquared);
 	}
-	return 0.0;
+    else
+    {
+        cout << "VDW types not found in database: " << _type1 << " " << _type2 << endl;
+        return 0.0;
+    }
+
 }
 
 double residueTemplate::getAABaselineEnergy(const string& _name)

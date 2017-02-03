@@ -35,7 +35,7 @@ int main (int argc, char* argv[])
     protein* bundle = static_cast<protein*>(pMol);
     residue::setCutoffDistance(9.0);
     residue::setElectroSolvationScaleFactor(0.0);
-    residue::setHydroSolvationScaleFactor(1.0);
+    residue::setHydroSolvationScaleFactor(0.0);
     amberElec::setScaleFactor(0.0);
     amberVDW::setScaleFactor(1.0);
     srand (time(NULL));
@@ -43,7 +43,7 @@ int main (int argc, char* argv[])
     UInt _chainIndex = 0;
     UInt randres = 0;
     UInt randrestype = bundle->getTypeFromResNum(_chainIndex,randres);
-    double pastEnergy = bundle->protEnergy();
+    double pastEnergy = bundle->intraSoluteEnergy(true);
     //--Get current rotamer and allowed
     UIntVec allowedRots = bundle->getAllowedRotamers(_chainIndex, randres, randrestype, 0);
 
@@ -53,13 +53,14 @@ int main (int argc, char* argv[])
         UInt randrot = allowedRots[j];
         bundle->setRotamerWBC(_chainIndex, randres, 0, allowedRots[randrot]);
         bundle->setMoved(_chainIndex,randres,1);
-        double Energy = bundle->protEnergy();
+        double Energy = bundle->intraSoluteEnergy(true);
         if (Energy < pastEnergy)
         {
+           //cout << randrestype << " " << Energy << endl;
            pastEnergy = Energy;
         }
         else
-        {
+        {   //cout << randrestype << " " << Energy << endl;
             bundle->setSidechainDihedralAngles(_chainIndex, randres, currentRot);
         }
     }

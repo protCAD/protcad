@@ -359,7 +359,7 @@ void amberElec::orderDataElements()  // NOTE:  this requires that the residue ty
 					{
 						atomNames[i].push_back(residue::getAtomNameBaseItem(i,k));
 						charges[i].push_back(0.00);
-                        //cout << residue::getDataBaseItem(i) << "no charge for atom" << endl;
+                        cout << residue::getDataBaseItem(i) << "no charge for atom" << endl;
 					}
 				}
 				if (residue::getAtomNameBaseSize(i) != atomNames[i].size())
