@@ -3104,11 +3104,10 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
     }
 
     //Gill Hydrophobic solvation  S.J.Gill, S.F.Dec. J Phys. Chem. 1985
-    if (HsolvationFactor != 0.0)
+    if (HsolvationFactor != 0.0 && notHydrogen(_atomIndex))
     {
-        VDWradius = itsAtoms[_atomIndex]->getRadius();
         double waters = itsAtoms[_atomIndex]->getNumberofWaters();
-        double atomShellVol = 4.18*pow((VDWradius+1.4),3);
+        double atomShellVol = 4.18*pow((VDWradius),3);
         double atomVol = 4.18*pow((VDWradius-1.4),3);
         double waterShellVol = atomShellVol-atomVol;
         double shellVolFraction = waterShellVol/3052;
@@ -4121,24 +4120,17 @@ UInt residue::getBondSeparation(residue* _pRes1, UInt _index1, residue*
     return numBonds;
 }
 
-double residue::getTotalVolumeofBondedAtoms(UInt _atomIndex)
+bool residue::notHydrogen(UInt _atomIndex)
 {
-    double totalVolume = 0.0;
-    bool bonded;
-    for (UInt i = 0; i < itsAtoms.size(); i++)
+    string atomType = getTypeStringFromAtomNum(_atomIndex);
+    if (atomType != "H")
     {
-        if(i != _atomIndex)
-        {
-            bonded = isBonded(_atomIndex,i);
-            if (bonded)
-            {
-                double VDWradius = itsAtoms[i]->getRadius();
-                totalVolume += 4.18*pow((VDWradius),3);
-            }
-        }
+        return true;
     }
-    return totalVolume;
+    return false;
 }
+
+
 
 bool residue::isBonded(UInt _index1, UInt _index2)
 {

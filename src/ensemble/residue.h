@@ -254,6 +254,7 @@ public:
 	static double getOneFourAmberElecScaleFactor() { return oneFourAmberElecScaleFactor; }
 	*/
 	double getVolume(UInt _method);
+    bool notHydrogen(UInt _atomIndex);
     double getTotalVolumeofBondedAtoms(UInt _atomIndex);
 
 private:
