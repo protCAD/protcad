@@ -254,6 +254,7 @@ public:
 	static double getOneFourAmberElecScaleFactor() { return oneFourAmberElecScaleFactor; }
 	*/
 	double getVolume(UInt _method);
+    double getTotalVolumeofBondedAtoms(UInt _atomIndex);
 
 private:
 	double wodakVolume();

@@ -3035,7 +3035,7 @@ double residue::intraEnergy()
 double residue::intraSoluteEnergy()
 {	
 	double intraEnergy = 0.0;
-    bool twoBonds;
+    bool threeBonds;
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
 		if (!itsAtoms[i]->getSilentStatus())
@@ -3047,9 +3047,9 @@ double residue::intraSoluteEnergy()
 			for(UInt j=i+1; j<itsAtoms.size(); j++)
 			{
 				if (!itsAtoms[j]->getSilentStatus())
-				{
-                    twoBonds = isSeparatedByOneOrTwoBonds(i,j);
-                    if (!twoBonds)
+                {
+                    threeBonds = isSeparatedByFewBonds(i,j);
+                    if (!threeBonds)
 					{
                         // ** get distance
                         double distanceSquared = itsAtoms[i]->distanceSquared(itsAtoms[j]);
@@ -3112,7 +3112,7 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
         double atomVol = 4.18*pow((VDWradius-1.4),3);
         double waterShellVol = atomShellVol-atomVol;
         double shellVolFraction = waterShellVol/3052;
-        double shellWaters = waters*shellVolFraction;
+        int shellWaters = waters*shellVolFraction;
         proteinSolventEntropy = (-temperature*0.0019872041*log(pow(0.5,(shellWaters))))*HsolvationFactor;
     }
 
@@ -3298,7 +3298,7 @@ double residue::interEnergy(residue* _other)
 double residue::interSoluteEnergy(residue* _other)
 {
 	double interEnergy = 0.0;
-    bool twoBonds;
+    bool threeBonds;
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
 		if (!itsAtoms[i]->getSilentStatus())
@@ -3307,8 +3307,8 @@ double residue::interSoluteEnergy(residue* _other)
 			{
 				if (!_other->itsAtoms[j]->getSilentStatus())
 				{
-                    twoBonds = isSeparatedByOneOrTwoBonds(i, _other, j);
-                    if (!twoBonds)
+                    threeBonds = isSeparatedByFewBonds(this,i,_other,j);
+                    if (!threeBonds)
 					{
                         double distanceSquared = itsAtoms[i]->inCubeWithDistSQ(_other->itsAtoms[j], cutoffDistance);
                         if (distanceSquared != 0.0 && distanceSquared <= cutoffDistanceSquared)
@@ -4119,6 +4119,25 @@ UInt residue::getBondSeparation(residue* _pRes1, UInt _index1, residue*
     cout << " numbonds=" << numBonds << " ";
 #endif
     return numBonds;
+}
+
+double residue::getTotalVolumeofBondedAtoms(UInt _atomIndex)
+{
+    double totalVolume = 0.0;
+    bool bonded;
+    for (UInt i = 0; i < itsAtoms.size(); i++)
+    {
+        if(i != _atomIndex)
+        {
+            bonded = isBonded(_atomIndex,i);
+            if (bonded)
+            {
+                double VDWradius = itsAtoms[i]->getRadius();
+                totalVolume += 4.18*pow((VDWradius),3);
+            }
+        }
+    }
+    return totalVolume;
 }
 
 bool residue::isBonded(UInt _index1, UInt _index2)

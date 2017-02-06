@@ -29,9 +29,10 @@ int main (int argc, char* argv[])
     amberVDW::setScaleFactor(1.0);
     t=clock();
     double Energy = bundle->protEnergy();
+    //cout << bundle->getNumAtoms(0,0) << " " << infile << " ";
     //bundle->mutateWBC(0,0,23);
     t=clock()-t;
     cout << Energy << " " << infile << " ";
-    //pdbWriter(bundle, infile +".h");
+    pdbWriter(bundle, infile);
 	return 0;
 }

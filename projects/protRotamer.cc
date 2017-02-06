@@ -34,8 +34,8 @@ int main (int argc, char* argv[])
     molecule* pMol = theEnsemble->getMoleculePointer(0);
     protein* bundle = static_cast<protein*>(pMol);
     residue::setCutoffDistance(9.0);
-    residue::setElectroSolvationScaleFactor(1.0);
-    residue::setHydroSolvationScaleFactor(1.0);
+    residue::setElectroSolvationScaleFactor(0.0);
+    residue::setHydroSolvationScaleFactor(0.0);
     amberElec::setScaleFactor(1.0);
     amberVDW::setScaleFactor(1.0);
     srand (time(NULL));
