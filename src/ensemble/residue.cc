@@ -3091,28 +3091,37 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
     vector <double> solvationEnergy;
     double proteinSolventEnthalpy = 0.0;
     double proteinSolventEntropy = 0.0;
-    double VDWradius = itsAtoms[_atomIndex]->getRadius()+1.4;
+    double solvatedRadius = itsAtoms[_atomIndex]->getRadius()+1.4;
 
-    //Born Electrostatic solvation  Still WC, et al J Am Chem Soc 1990
+
     if (EsolvationFactor != 0.0)
-    {
+    {   //Born Electrostatic solvation  Still WC, et al J Am Chem Soc 1990
         double atomDielectric = itsAtoms[_atomIndex]->getDielectric();
         double charge = residueTemplate::itsAmberElec.getItsCharge(itsType, _atomIndex);
         double chargeSquared = charge*charge;
         double waterDielectric = 80; // -0.3195 * (temperature-274.15) + 86.115; Malmberg and Maryott, 1956 JRNBS
-        proteinSolventEnthalpy =((-166*chargeSquared/(VDWradius*waterDielectric))/(waterDielectric-atomDielectric))*EsolvationFactor;
+        proteinSolventEnthalpy +=((-166*chargeSquared/(solvatedRadius*waterDielectric))/(waterDielectric-atomDielectric))*EsolvationFactor;
     }
 
-    //Gill Hydrophobic solvation  S.J.Gill, S.F.Dec. J Phys. Chem. 1985
-    if (HsolvationFactor != 0.0 && notHydrogen(_atomIndex))
-    {
+
+    if (HsolvationFactor != 0.0)
+    {   //Gill Hydrophobic solvation  S.J.Gill, S.F.Dec. J Phys. Chem. 1985
         double waters = itsAtoms[_atomIndex]->getNumberofWaters();
-        double atomShellVol = 4.18*pow((VDWradius),3);
-        double atomVol = 4.18*pow((VDWradius-1.4),3);
-        double waterShellVol = atomShellVol-atomVol;
+        double atomShellVol = 4.18*pow((solvatedRadius),3);
+        double atomVol = 4.18*pow((solvatedRadius-1.4),3);
+        double waterShellVol = atomShellVol-(atomVol);
         double shellVolFraction = waterShellVol/3052;
         int shellWaters = waters*shellVolFraction;
-        proteinSolventEntropy = (-temperature*0.0019872041*log(pow(0.5,(shellWaters))))*HsolvationFactor;
+        if (notHydrogen(_atomIndex))
+        {
+            proteinSolventEntropy = (-temperature*0.0019872041*log(pow(0.5,(shellWaters))))*HsolvationFactor;
+        }
+
+        //TIP3P VDW water interaction R. W. Impey, and M. L. Klein, J. Chem. Phys. 79 (1983) 926-935
+        int index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex][0];
+        int water = 74;
+        double tempvdwEnergy = residueTemplate::getVDWWaterEnergy(index1,water);
+        proteinSolventEnthalpy += tempvdwEnergy*shellWaters;
     }
 
     //Total atom solvation Energy
@@ -4129,7 +4138,6 @@ bool residue::notHydrogen(UInt _atomIndex)
     }
     return false;
 }
-
 
 
 bool residue::isBonded(UInt _index1, UInt _index2)

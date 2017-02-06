@@ -22,6 +22,7 @@ public:
 	~amberVDW();
 	
 	double getEnergy(const UInt _type1,const UInt _type2,const double _distance) const;
+    double getWaterEnergy(const UInt _type1,const UInt _type2) const;
 	double getEnergySQ(const UInt _type1, const UInt _type2, const double _distanceSquared) const;
 	int getIndexFromNameString(string _name);
 	bool isClash(const UInt _type1, const UInt _type2, const double _distance);
