@@ -387,6 +387,24 @@ double residueTemplate::getVDWRadius(const int _type1)
 	return 0.0;
 }
 
+double residueTemplate::getPolarizability(const int _type1)
+{
+    if( _type1 >= 0)
+    {
+        return itsAmberVDW.getPolarizability(UInt(_type1));
+    }
+    return 0.0;
+}
+
+double residueTemplate::getVolume(const int _type1)
+{
+    if( _type1 >= 0)
+    {
+        return itsAmberVDW.getVolume(UInt(_type1));
+    }
+    return 0.0;
+}
+
 double residueTemplate::getVDWEnergy(const int _type1, const int _type2, const double _distance)
 {
 	if( _type1 >= 0 && _type2 >= 0)

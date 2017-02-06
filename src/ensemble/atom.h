@@ -109,6 +109,8 @@ public:
 	// Radius Related Operations
 	double getRadius() const {return itsRadius; }
 	double getEpsilon() const {return itsEpsilon; }
+    double getPolarizability() const {return itsPolarizability; }
+    double getVolume() const {return itsVolume; }
 	void setRadius(const double _radius);
 	void setAtomicRadius(double _radius);
 	double getSolvationEnergy() {return itsSolvationEnergy;}
@@ -219,6 +221,8 @@ protected:
 	double itsMaxDielectric;
 	double itsMinDielectric;
 	double itsEpsilon;
+    double itsPolarizability;
+    double itsVolume;
 	bool isSilent;
 	UInt itsType; // e.q. N, C, P ..
 	int itsName; // e. q. NH1, CA, CB ...
@@ -287,7 +291,7 @@ class atom::typeInfo
 {
 public:
 	typeInfo()
-	{	vdwRadius.resize(2);
+    {	vdwRadius.resize(2);
 	}
 
 	string typeName;

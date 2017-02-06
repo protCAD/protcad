@@ -27,6 +27,8 @@ public:
 	int getIndexFromNameString(string _name);
 	bool isClash(const UInt _type1, const UInt _type2, const double _distance);
     double getRadius(const UInt _type1);
+    double getPolarizability(const UInt _type1);
+    double getVolume(const UInt _type1);
 
 	static double itsScaleFactor;
 	static void setScaleFactor(const double _scale)
@@ -80,6 +82,8 @@ private:
 private:
 	vector< double > R_ref;
 	vector< double > EPS;
+    vector< double > Pol_ref;
+    vector< double > Vol_ref;
 	vector< string > amberAtomTypeNames;
 	string itsFileName;
 };

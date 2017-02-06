@@ -33,6 +33,8 @@ double atom::itsProbeRadius = 1.4;
 void atom::atomDefaultValues()
 {	itsRadius = 0;
 	itsEpsilon = 0;
+    itsPolarizability = 0;
+    itsVolume = 0;
 #ifdef USE_SVMT
 	for( UInt i=0;i<itsCoords.extent();i++) itsCoords[i] = 0.0;
 #else

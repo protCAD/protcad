@@ -71,6 +71,8 @@ public:
     static double getVDWWaterEnergy(const int _type1, const int _type2);
 	static double getVDWEnergySQ(const int _type1, const int _type2, const double _distanceSquared);
 	static double getVDWRadius(const int _type1);
+    static double getPolarizability(const int _type1);
+    static double getVolume(const int _type1);
 	static double getAABaselineEnergy(const string& _name);
 	int getAtomEnergyTypeDefinition(const int _index, const int _field) const;
 	void printAtomEnergyTypeDefinitions() const;

@@ -3103,7 +3103,6 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
         proteinSolventEnthalpy +=((-166*chargeSquared/(solvatedRadius*waterDielectric))/(waterDielectric-atomDielectric))*EsolvationFactor;
     }
 
-
     if (HsolvationFactor != 0.0)
     {   //Gill Hydrophobic solvation  S.J.Gill, S.F.Dec. J Phys. Chem. 1985
         double waters = itsAtoms[_atomIndex]->getNumberofWaters();
@@ -3119,8 +3118,8 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
 
         //TIP3P VDW water interaction R. W. Impey, and M. L. Klein, J. Chem. Phys. 79 (1983) 926-935
         int index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex][0];
-        int water = 74;
-        double tempvdwEnergy = residueTemplate::getVDWWaterEnergy(index1,water);
+        int waterIndex = 74;
+        double tempvdwEnergy = residueTemplate::getVDWWaterEnergy(index1,waterIndex);
         proteinSolventEnthalpy += tempvdwEnergy*shellWaters;
     }
 
@@ -3153,79 +3152,48 @@ double residue::getDielectric()
 		
 vector <double> residue::calculateDielectric(residue* _other, UInt _atomIndex)
 {	
-    vector <double> chargeDensity(2);
-	chargeDensity[0] = 0.0;
-	chargeDensity[1] = 0.0;
-	double charges = 0.0;
-	double volumes = 0.0;
+    vector <double> polarizabilities(2);
+    polarizabilities[0] = 0.0;
+    polarizabilities[1] = 0.0;
+    double polarizability = 0.0;
+    double volume = 0.0;
     bool inCube;
-	int atomEnergyType;
 	for(UInt i=0; i<_other->itsAtoms.size(); i++)
 	{
         inCube = itsAtoms[_atomIndex]->inCube(_other->itsAtoms[i], 7.4);
         if (inCube)
 		{
-			atomEnergyType = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[i][1];
-            if (atomEnergyType == 4) charges += 59, volumes += 23.2; //magnesium Ma et al 2015
-			if (atomEnergyType == 11) charges += 1.382, volumes += 8.7;
-			if (atomEnergyType == 12 || atomEnergyType == 15) charges += 1.382, volumes += 8.7;
-			if (atomEnergyType == 13) charges += 1.836, volumes += 23.2;
-			if (atomEnergyType == 14) charges += 2.222, volumes += 36.7;
-			if (atomEnergyType == 16 || atomEnergyType == 27) charges += 1.529, volumes += 8.7;
-			if (atomEnergyType == 18 || atomEnergyType == 21) charges += 1.768, volumes += 21.3;
-			if (atomEnergyType == 22) charges += 1.45, volumes += 20.4;
-			if (atomEnergyType == 46 || atomEnergyType == 50) charges += 1.48, volumes += 13.6;
-			if (atomEnergyType == 48) charges += 1.866, volumes += 22.7;
-			if (atomEnergyType == 49) charges += 2.252, volumes += 21.4;
-			if (atomEnergyType == 55) charges += 0.46, volumes += 15.9;
-			if (atomEnergyType == 56) charges += 0.664, volumes += 18;
-			if (atomEnergyType == 57) charges += 1.05, volumes += 18;
-            if (atomEnergyType == 60) charges += 20.8, volumes += 29.2; // Bellido 1985 Chem phys letters
-			if (atomEnergyType == 61) charges += 3.6643, volumes += 36.7;
-            if (atomEnergyType == 77) charges += 48.3425, volumes += 21.9; //4 Iron cluster FE theoretical: Calaminici 2004 Chem phys letters
+            int vdwIndex = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[i][0];
+            polarizability += residueTemplate::getPolarizability(vdwIndex);
+            volume += residueTemplate::getVolume(vdwIndex);
 		}
     }
-    chargeDensity[0] = volumes;
-    chargeDensity[1] = charges;
-	return chargeDensity;
+    polarizabilities[0] = volume;
+    polarizabilities[1] = polarizability;
+    return polarizabilities;
 }
 
 vector <double> residue::calculateDielectric(residue* _other, atom* _atom)
 {	
-	vector <double> chargeDensity(2);
-	chargeDensity[0] = 0.0;
-	chargeDensity[1] = 0.0;
-	double charges = 0.0;
-	double volumes = 0.0;
+    vector <double> polarizabilities(2);
+    polarizabilities[0] = 0.0;
+    polarizabilities[1] = 0.0;
+    double polarizability = 0.0;
+    double volume = 0.0;
     bool inCube;
-	int atomEnergyType;
 	for(UInt i=0; i<_other->itsAtoms.size(); i++)
 	{
         inCube = _atom->inCube(_other->itsAtoms[i], 7.4);
         if (inCube)
 		{
-			atomEnergyType = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[i][1];
-            if (atomEnergyType == 4) charges += 0.49, volumes += 23.2; //magnesium
-			if (atomEnergyType == 11) charges += 1.382, volumes += 8.7;
-			if (atomEnergyType == 12 || atomEnergyType == 15) charges += 1.382, volumes += 8.7;
-			if (atomEnergyType == 13) charges += 1.836, volumes += 23.2;
-			if (atomEnergyType == 14) charges += 2.222, volumes += 36.7;
-			if (atomEnergyType == 16 || atomEnergyType == 27) charges += 1.529, volumes += 8.7;
-			if (atomEnergyType == 18 || atomEnergyType == 21) charges += 1.768, volumes += 21.3;
-			if (atomEnergyType == 22) charges += 1.45, volumes += 20.4;
-			if (atomEnergyType == 46 || atomEnergyType == 50) charges += 1.48, volumes += 13.6;
-			if (atomEnergyType == 48) charges += 1.866, volumes += 22.7;
-			if (atomEnergyType == 49) charges += 2.252, volumes += 21.4;
-			if (atomEnergyType == 55) charges += 0.46, volumes += 15.9;
-			if (atomEnergyType == 56) charges += 0.664, volumes += 18;
-			if (atomEnergyType == 57) charges += 1.05, volumes += 18;
-			if (atomEnergyType == 60) charges += 3.2684, volumes += 29.2;
-			if (atomEnergyType == 61) charges += 3.6643, volumes += 36.7;
-		}
-	}
-    chargeDensity[0] = volumes;
-    chargeDensity[1] = charges;
-	return chargeDensity;
+            int vdwIndex = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[i][0];
+            polarizability += residueTemplate::getPolarizability(vdwIndex);
+            volume += residueTemplate::getVolume(vdwIndex);
+        }
+    }
+    polarizabilities[0] = volume;
+    polarizabilities[1] = polarizability;
+    return polarizabilities;
 }
 
 

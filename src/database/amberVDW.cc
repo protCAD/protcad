@@ -15,6 +15,8 @@ amberVDW::amberVDW()
 	itsFileName = "amberVDW.frc";
 	R_ref.resize(0);
 	EPS.resize(0);
+    Pol_ref.resize(0);
+    Vol_ref.resize(0);
 	buildDataBase();
 	//cout << " amberVDW database is built " << endl;
 #ifdef AMBERVDW_DEBUG
@@ -35,6 +37,8 @@ amberVDW::amberVDW(int _Dummy)
 	itsFileName = "amberVDW.frc";
 	R_ref.resize(0);
 	EPS.resize(0);
+    Pol_ref.resize(0);
+    Vol_ref.resize(0);
 	buildDataBase();
 	//cout << " amberVDW database is built " << endl;
 #ifdef AMBERVDW_DEBUG
@@ -55,6 +59,8 @@ amberVDW::amberVDW(const amberVDW& _otherAmberVDW)
 	itsFileName = _otherAmberVDW.itsFileName;
 	R_ref = _otherAmberVDW.R_ref;
 	EPS = _otherAmberVDW.EPS;
+    Pol_ref = _otherAmberVDW.Pol_ref;
+    Vol_ref = _otherAmberVDW.Vol_ref;
 	amberAtomTypeNames = _otherAmberVDW.amberAtomTypeNames;
 }
 
@@ -74,6 +80,19 @@ double amberVDW::getRadius(const UInt _type1)
     double radius  = (R_ref[_type1]) * itsRadiusScaleFactor;
     return radius;
 }
+
+double amberVDW::getPolarizability(const UInt _type1)
+{
+    double polarizability  = Pol_ref[_type1];
+    return polarizability;
+}
+
+double amberVDW::getVolume(const UInt _type1)
+{
+    double volume  = Vol_ref[_type1];
+    return volume;
+}
+
 double amberVDW::getEnergySQ(const UInt _type1, const UInt _type2, const double _distanceSquared) const //optimized to avoid distance calculation if possible
 {
     double energy = 0.0;
@@ -181,7 +200,7 @@ void amberVDW::buildDataBase()
 			&& currentLine[0] != '!' && currentLine[0] != '>')
 		{	
 			parsedStrings=Parse::parse(currentLine);
-			if (parsedStrings.size() == 5) convertToDataElements(parsedStrings);
+            if (parsedStrings.size() == 7) convertToDataElements(parsedStrings);
 			parsedStrings.resize(0);
 		}
 	}
@@ -200,6 +219,12 @@ void amberVDW::convertToDataElements(const StrVec& _parsedStrings)
 	tmpDouble = 0.0;
 	sscanf(_parsedStrings[4].c_str(), "%lf", &tmpDouble);
 	EPS.push_back(tmpDouble);
+    tmpDouble = 0.0;
+    sscanf(_parsedStrings[5].c_str(), "%lf", &tmpDouble);
+    Pol_ref.push_back(tmpDouble);
+    tmpDouble = 0.0;
+    sscanf(_parsedStrings[6].c_str(), "%lf", &tmpDouble);
+    Vol_ref.push_back(tmpDouble);
 }
 
 int amberVDW::getIndexFromNameString(string _name)
