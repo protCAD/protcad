@@ -3091,8 +3091,9 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
     vector <double> solvationEnergy;
     double proteinSolventEnthalpy = 0.0;
     double proteinSolventEntropy = 0.0;
-    double solvatedRadius = itsAtoms[_atomIndex]->getRadius()+1.4;
-
+    double sphereVol = 3112;
+    double waterRadius = 1.4;
+    double solvatedRadius = itsAtoms[_atomIndex]->getRadius()+waterRadius;
 
     if (EsolvationFactor != 0.0)
     {   //Born Electrostatic solvation  Still WC, et al J Am Chem Soc 1990
@@ -3107,18 +3108,18 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
     {   //Gill Hydrophobic solvation  S.J.Gill, S.F.Dec. J Phys. Chem. 1985
         double waters = itsAtoms[_atomIndex]->getNumberofWaters();
         double atomShellVol = 4.18*pow((solvatedRadius),3);
-        double atomVol = 4.18*pow((solvatedRadius-1.4),3);
+        double atomVol = 4.18*pow((solvatedRadius-waterRadius),3);
         double waterShellVol = atomShellVol-(atomVol);
-        double shellVolFraction = waterShellVol/3052;
+        double shellVolFraction = waterShellVol/sphereVol;
         int shellWaters = waters*shellVolFraction;
-        if (notHydrogen(_atomIndex))
+        if (notHydrogen(_atomIndex)) //heavy atoms only used for non-polar solvation
         {
             proteinSolventEntropy = (-temperature*0.0019872041*log(pow(0.5,(shellWaters))))*HsolvationFactor;
         }
 
         //TIP3P VDW water interaction R. W. Impey, and M. L. Klein, J. Chem. Phys. 79 (1983) 926-935
         int index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex][0];
-        int waterIndex = 74;
+        int waterIndex = 52;
         double tempvdwEnergy = residueTemplate::getVDWWaterEnergy(index1,waterIndex);
         proteinSolventEnthalpy += tempvdwEnergy*shellWaters;
     }
@@ -3160,7 +3161,7 @@ vector <double> residue::calculateDielectric(residue* _other, UInt _atomIndex)
     bool inCube;
 	for(UInt i=0; i<_other->itsAtoms.size(); i++)
 	{
-        inCube = itsAtoms[_atomIndex]->inCube(_other->itsAtoms[i], 7.2);
+        inCube = itsAtoms[_atomIndex]->inCube(_other->itsAtoms[i], 7.3);
         if (inCube)
 		{
             int vdwIndex = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[i][0];
@@ -3183,7 +3184,7 @@ vector <double> residue::calculateDielectric(residue* _other, atom* _atom)
     bool inCube;
 	for(UInt i=0; i<_other->itsAtoms.size(); i++)
 	{
-        inCube = _atom->inCube(_other->itsAtoms[i], 7.2);
+        inCube = _atom->inCube(_other->itsAtoms[i], 7.3);
         if (inCube)
 		{
             int vdwIndex = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[i][0];
