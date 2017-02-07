@@ -3089,12 +3089,12 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
 {
 	//--requires update of dielectrics at protein level to be accurate.
     vector <double> solvationEnergy;
+    double solvationRadius = residueTemplate::getVDWRadius(52);
+    int atomVDWtype = dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex][0];
+    double solvatedRadius = residueTemplate::getVDWRadius(atomVDWtype)+solvationRadius;
     double proteinSolventEnthalpy = 0.0;
     double proteinSolventEntropy = 0.0;
-    double sphereVol = 3112;
-    double solvationRadius = 1.4;
-    double solvatedRadius = itsAtoms[_atomIndex]->getRadius()+solvationRadius;
-    int atomVDWtype = dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex][0];
+    double sphereVol = 3511;
 
     if (EsolvationFactor != 0.0)
     {   //Born Electrostatic solvation  Still WC, et al J Am Chem Soc 1990
@@ -3109,7 +3109,7 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
     {   //Gill Hydrophobic solvation  S.J.Gill, S.F.Dec. J Phys. Chem. 1985
         double waters = itsAtoms[_atomIndex]->getNumberofWaters();
         double atomShellVol = 4.18*pow((solvatedRadius),3);
-        double atomVol = residueTemplate::getVolume(atomVDWtype);
+        double atomVol = residueTemplate::getVDWRadius(atomVDWtype);
         double waterShellVol = atomShellVol-(atomVol);
         double shellVolFraction = waterShellVol/sphereVol;
         int shellWaters = waters*shellVolFraction;
@@ -3160,7 +3160,7 @@ vector <double> residue::calculateDielectric(residue* _other, UInt _atomIndex)
     bool inCube;
 	for(UInt i=0; i<_other->itsAtoms.size(); i++)
 	{
-        inCube = itsAtoms[_atomIndex]->inCube(_other->itsAtoms[i], 7.3);
+        inCube = itsAtoms[_atomIndex]->inCube(_other->itsAtoms[i], 7.6);
         if (inCube)
 		{
             int vdwIndex = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[i][0];
@@ -3183,7 +3183,7 @@ vector <double> residue::calculateDielectric(residue* _other, atom* _atom)
     bool inCube;
 	for(UInt i=0; i<_other->itsAtoms.size(); i++)
 	{
-        inCube = _atom->inCube(_other->itsAtoms[i], 7.3);
+        inCube = _atom->inCube(_other->itsAtoms[i], 7.6);
         if (inCube)
 		{
             int vdwIndex = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[i][0];
