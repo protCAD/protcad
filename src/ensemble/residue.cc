@@ -3092,8 +3092,8 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
     double proteinSolventEnthalpy = 0.0;
     double proteinSolventEntropy = 0.0;
     double sphereVol = 3112;
-    double waterRadius = 1.4;
-    double solvatedRadius = itsAtoms[_atomIndex]->getRadius()+waterRadius;
+    double solvationRadius = 1.4;
+    double solvatedRadius = itsAtoms[_atomIndex]->getRadius()+solvationRadius;
 
     if (EsolvationFactor != 0.0)
     {   //Born Electrostatic solvation  Still WC, et al J Am Chem Soc 1990
@@ -3108,7 +3108,7 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
     {   //Gill Hydrophobic solvation  S.J.Gill, S.F.Dec. J Phys. Chem. 1985
         double waters = itsAtoms[_atomIndex]->getNumberofWaters();
         double atomShellVol = 4.18*pow((solvatedRadius),3);
-        double atomVol = 4.18*pow((solvatedRadius-waterRadius),3);
+        double atomVol = 4.18*pow((solvatedRadius-solvationRadius),3);
         double waterShellVol = atomShellVol-(atomVol);
         double shellVolFraction = waterShellVol/sphereVol;
         int shellWaters = waters*shellVolFraction;
