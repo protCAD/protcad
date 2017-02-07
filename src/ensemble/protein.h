@@ -190,7 +190,7 @@ public:
     vector <double> calculateDielectric(UInt _chainIndex, UInt _residueIndex, UInt _atomIndex);
     vector <double> calculateDielectric(chain* _chain, residue* _residue, atom* _atom);
     vector <double> calculateSolvationEnergy(UInt _chainIndex, UInt _residueIndex, UInt _atomIndex) {return itsChains[_chainIndex]->itsResidues[_residueIndex]->calculateSolvationEnergy( _atomIndex);}
-    vector <double> calculateChainIndependentDielectric(chain* _chain, residue* _residue, atom* _atom, UInt _atomIndex);
+    vector <double> calculateChainIndependentDielectric(chain* _chain, residue* _residue, atom* _atom);
 	void updateDielectrics();
 	void updatePositionDielectrics(UInt _chainIndex, UInt _residueIndex);
 	void updateChainIndependentDielectrics(UInt _chainIndex);

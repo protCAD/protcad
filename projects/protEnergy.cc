@@ -24,9 +24,9 @@ int main (int argc, char* argv[])
     residue::setCutoffDistance(9.0);
     residue::setTemperature(300);
     residue::setElectroSolvationScaleFactor(1.0);
-    residue::setHydroSolvationScaleFactor(0.0);
-    amberElec::setScaleFactor(0.0);
-    amberVDW::setScaleFactor(0.0);
+    residue::setHydroSolvationScaleFactor(1.0);
+    amberElec::setScaleFactor(1.0);
+    amberVDW::setScaleFactor(1.0);
     t=clock();
     double Energy = bundle->protEnergy();
     //cout << bundle->getNumAtoms(0,0) << " " << infile << " ";

@@ -3160,7 +3160,7 @@ vector <double> residue::calculateDielectric(residue* _other, UInt _atomIndex)
     bool inCube;
 	for(UInt i=0; i<_other->itsAtoms.size(); i++)
 	{
-        inCube = itsAtoms[_atomIndex]->inCube(_other->itsAtoms[i], 7.4);
+        inCube = itsAtoms[_atomIndex]->inCube(_other->itsAtoms[i], 7.2);
         if (inCube)
 		{
             int vdwIndex = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[i][0];
@@ -3183,7 +3183,7 @@ vector <double> residue::calculateDielectric(residue* _other, atom* _atom)
     bool inCube;
 	for(UInt i=0; i<_other->itsAtoms.size(); i++)
 	{
-        inCube = _atom->inCube(_other->itsAtoms[i], 7.4);
+        inCube = _atom->inCube(_other->itsAtoms[i], 7.2);
         if (inCube)
 		{
             int vdwIndex = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[i][0];
