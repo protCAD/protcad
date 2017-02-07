@@ -438,15 +438,15 @@ double residueTemplate::getVDWEnergySQ(const int _type1, const int _type2, const
 
 }
 
-double residueTemplate::getVDWWaterEnergy(const int _type1, const int _type2)
+double residueTemplate::getVDWWaterEnergy(const int _type1)
 {
-    if (_type1 >= 0 && _type2 >=0)
+    if (_type1 >= 0)
     {
-        return itsAmberVDW.getWaterEnergy(UInt(_type1), UInt(_type2));
+        return itsAmberVDW.getWaterEnergy(UInt(_type1));
     }
     else
     {
-        cout << "VDW types not found in database: " << _type1 << " " << _type2 << endl;
+        cout << "VDW types not found in database: " << _type1 << endl;
         return 0.0;
     }
 

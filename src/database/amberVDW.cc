@@ -155,20 +155,18 @@ double amberVDW::getEnergy(const UInt _type1, const UInt _type2, const double _d
 	return energy;
 }
 
-double amberVDW::getWaterEnergy(const UInt _type1, const UInt _type2) const
+double amberVDW::getWaterEnergy(const UInt _type1) const
 {
     double energy = 0.0;
     double EPS_pair = 0.0;
+    UInt waterType = 52;
     if (_type1 < EPS.size())
     {
-        if (_type2 < EPS.size())
-        {
-            if (EPS[_type1] == EPS[_type2])
-                EPS_pair = EPS[_type1];
-            else
-                EPS_pair = sqrt( EPS[_type1] * EPS[_type2]);
-            energy = EPS_pair * ( itsRepulsionScaleFactor - (2 * itsAttractionScaleFactor));
-        }
+        if (EPS[_type1] == EPS[waterType])
+            EPS_pair = EPS[_type1];
+        else
+            EPS_pair = sqrt( EPS[_type1] * EPS[waterType]);
+        energy = EPS_pair * ( itsRepulsionScaleFactor - (2 * itsAttractionScaleFactor));
     }
     return energy;
 }

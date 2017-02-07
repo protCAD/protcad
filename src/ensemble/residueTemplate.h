@@ -68,7 +68,7 @@ public:
 	static double getAmberElecEnergySQ(const int _resType1, const int _atomType1, const int _resType2, const int _atomType2, const double _distanceSquared);
 	static double getPMFEnergy(const int _type1, const int _type2, const double _distance);
 	static double getVDWEnergy(const int _type1, const int _type2, const double _distance);
-    static double getVDWWaterEnergy(const int _type1, const int _type2);
+    static double getVDWWaterEnergy(const int _type1);
 	static double getVDWEnergySQ(const int _type1, const int _type2, const double _distanceSquared);
 	static double getVDWRadius(const int _type1);
     static double getPolarizability(const int _type1);

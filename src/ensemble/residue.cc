@@ -3094,6 +3094,7 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
     double sphereVol = 3112;
     double solvationRadius = 1.4;
     double solvatedRadius = itsAtoms[_atomIndex]->getRadius()+solvationRadius;
+    int atomVDWtype = dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex][0];
 
     if (EsolvationFactor != 0.0)
     {   //Born Electrostatic solvation  Still WC, et al J Am Chem Soc 1990
@@ -3108,7 +3109,7 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
     {   //Gill Hydrophobic solvation  S.J.Gill, S.F.Dec. J Phys. Chem. 1985
         double waters = itsAtoms[_atomIndex]->getNumberofWaters();
         double atomShellVol = 4.18*pow((solvatedRadius),3);
-        double atomVol = 4.18*pow((solvatedRadius-solvationRadius),3);
+        double atomVol = residueTemplate::getVolume(atomVDWtype);
         double waterShellVol = atomShellVol-(atomVol);
         double shellVolFraction = waterShellVol/sphereVol;
         int shellWaters = waters*shellVolFraction;
@@ -3118,9 +3119,7 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
         }
 
         //TIP3P VDW water interaction R. W. Impey, and M. L. Klein, J. Chem. Phys. 79 (1983) 926-935
-        int index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex][0];
-        int waterIndex = 52;
-        double tempvdwEnergy = residueTemplate::getVDWWaterEnergy(index1,waterIndex);
+        double tempvdwEnergy = residueTemplate::getVDWWaterEnergy(atomVDWtype);
         proteinSolventEnthalpy += tempvdwEnergy*shellWaters;
     }
 
