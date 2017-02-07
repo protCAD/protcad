@@ -1212,7 +1212,7 @@ vector <double> protein::calculateDielectric(UInt _chainIndex, UInt _residueInde
     vector <double> dielectric(2);
     double waterPol = residueTemplate::getPolarizability(52);
     double waterVol = residueTemplate::getVolume(52);
-    double sphereVol = 3511;
+    double sphereVol = 3796;
     polarization[0] = 0.0;
     polarization[1] = 0.0;
 
@@ -1243,7 +1243,7 @@ vector <double> protein::calculateDielectric(chain* _chain, residue* _residue, a
     vector <double> dielectric(2);
     double waterPol = residueTemplate::getPolarizability(52);
     double waterVol = residueTemplate::getVolume(52);
-    double sphereVol = 3511;
+    double sphereVol = 3796;
     polarization[0] = 0.0;
     polarization[1] = 0.0;
 
@@ -1274,7 +1274,7 @@ vector <double> protein::calculateChainIndependentDielectric(chain* _chain, resi
     vector <double> dielectric(2);
     double waterPol = residueTemplate::getPolarizability(52);
     double waterVol = residueTemplate::getVolume(52);
-    double sphereVol = 3511;
+    double sphereVol = 3796;
     polarization[0] = 0.0;
     polarization[1] = 0.0;
 
