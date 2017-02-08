@@ -74,6 +74,7 @@ public:
     static double getPolarizability(const int _type1);
     static double getVolume(const int _type1);
 	static double getAABaselineEnergy(const string& _name);
+    vector<string> getAABaselineList();
 	int getAtomEnergyTypeDefinition(const int _index, const int _field) const;
 	void printAtomEnergyTypeDefinitions() const;
 	static double getSolvationEnergy(double _surfaceArea, UInt _atomType, UInt _paramSet);

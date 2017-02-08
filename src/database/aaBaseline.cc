@@ -61,6 +61,11 @@ double aaBaseline::getEnergy(const string& _name) const
 	return energy;
 }
 
+vector <string> aaBaseline::list() const
+{
+    return residueNameStrings;
+}
+
 void aaBaseline::buildDataBase()
 {	
 	string evname = "PROTCADDIR";

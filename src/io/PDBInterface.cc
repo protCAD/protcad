@@ -4,13 +4,15 @@
 #include <vector>
 #include <stdio.h>
 
+aaBaseline PDBInterface::itsAABaseline(0);
+
 PDBInterface::PDBInterface()
 {
 }
 
 PDBInterface::PDBInterface(const string& _filename)
 {
-
+	resNames = itsAABaseline.list();
 	ifstream inFile(_filename.c_str());
 	if(!inFile)
 	{	cout << "ERROR: cannot open file: " << _filename << endl;
@@ -91,15 +93,28 @@ PDBInterface::~PDBInterface()
 void PDBInterface::readData(ifstream& _infile)
 {
 	string linebuffer;
+	bool inLibrary;
 	while (getline(_infile,linebuffer,'\n'))
 	{
         if (linebuffer.length() > 13)
         {
-            if ((linebuffer.compare(13,1,"H") != 0 || linebuffer.compare(12,1,"H") != 0) && linebuffer.compare(17,3,"WAT") != 0 && linebuffer.compare(17,3,"OXT") != 0)// do not include hydrogens as we will use internal nomenclature and inclusion criteria, exclude water
-            {
-               theLines.push_back(linebuffer);
-            }
-        }
+			inLibrary = false;
+			for (UInt i = 0; i < resNames.size(); i++)
+			{
+				if (linebuffer.compare(17,3,resNames[i]) != 0)
+				{
+					inLibrary = true;
+					break;
+				}
+			}
+			if (inLibrary)
+			{
+				if (linebuffer.compare(13,1,"H") != 0 || linebuffer.compare(12,1,"H") != 0)// do not include hydrogens as we will use internal nomenclature and inclusion criteria
+				{
+				   theLines.push_back(linebuffer);
+				}
+			}
+		}
 	}
 }
 
@@ -114,171 +129,18 @@ void PDBInterface::categorizeLines()
 		{	atomLines.push_back(i);
 			continue;
 		}
-		if (header == "HEADER")
-		{	headerLines.push_back(i);
-			continue;
-		}
 		if (header == "HETATM")
 		{	hetatmLines.push_back(i);
-			continue;
-		}
-		if (header == "TITLE ")
-		{	titleLines.push_back(i);
-			continue;
-		}
-		if (header == "COMPND")
-		{	compndLines.push_back(i);
-			continue;
-		}
-		if (header == "SOURCE")
-		{	sourceLines.push_back(i);
-			continue;
-		}
-		if (header == "KEYWDS")
-		{	keywdsLines.push_back(i);
-			continue;
-		}
-		if (header == "EXPDTA")
-		{	expdtaLines.push_back(i);
-			continue;
-		}
-		if (header == "AUTHOR")
-		{	authorLines.push_back(i);
-			continue;
-		}
-		if (header == "REVDAT")
-		{	revdatLines.push_back(i);
-			continue;
-		}
-		if (header == "JRNL  ")
-		{	jrnlLines.push_back(i);
-			continue;
-		}
-		if (header == "REMARK")
-		{	remarkLines.push_back(i);
-			continue;
-		}
-		if (header == "DBREF ")
-		{	dbrefLines.push_back(i);
-			continue;
-		}
-		if (header == "SEQRES")
-		{	seqresLines.push_back(i);
-			continue;
-		}
-		if (header == "FORMUL")
-		{	formulLines.push_back(i);
-			continue;
-		}
-		if (header == "HELIX ")
-		{	helixLines.push_back(i);
-			continue;
-		}
-		if (header == "SHEET ")
-		{	sheetLines.push_back(i);
-			continue;
-		}
-		if (header == "SITE  ")
-		{	siteLines.push_back(i);
-			continue;
-		}
-		if (header.substr(0,5) == "CRYST")
-		{	crystLines.push_back(i);
-			continue;
-		}
-		if (header.substr(0,5) == "ORIGX")
-		{	origxLines.push_back(i);
-			continue;
-		}
-		if (header.substr(0,5) == "SCALE")
-		{	scaleLines.push_back(i);
-			continue;
-		}
-		if (header == "MTRIX ")
-		{	mtrixLines.push_back(i);
 			continue;
 		}
 		if (header == "TER   ")
 		{	terLines.push_back(i);
 			continue;
 		}
-		if (header == "MASTER")
-		{	masterLines.push_back(i);
-			continue;
-		}
-		if (header == "CONECT")
-		{	conectLines.push_back(i);
-			continue;
-		}
 		if (header == "END   ")
-		{	endLines.push_back(i);
-			continue;
-		}
-		if (header == "FTNOTE")
-		{	ftnoteLines.push_back(i);
-			continue;
-		}
-		if (header == "SEQADV")
-		{	seqadvLines.push_back(i);
-			continue;
-		}
-		if (header == "TURN  ")
-		{	turnLines.push_back(i);
-			continue;
-		}
-		if (header == "HET   ")
-		{	hetLines.push_back(i);
-			continue;
-		}
-		if (header == "HETNAM")
-		{	hetnamLines.push_back(i);
-			continue;
-		}
-		if (header == "SSBOND")
-		{	ssbondLines.push_back(i);
-			continue;
-		}
-		if (header == "LINK  ")
-		{	linkLines.push_back(i);
-			continue;
-		}
-		if (header == "MODRES")
-		{	modresLines.push_back(i);
-			continue;
-		}
-		if (header == "SLTBRG")
-		{	sltbrgLines.push_back(i);
-			continue;
-		}
-		if (header == "SPRSDE")
-		{	sprsdeLines.push_back(i);
-			continue;
-		}
-		if (header == "MODEL ")
-		{	modelLines.push_back(i);
-			continue;
-		}
-		if (header == "ANISOU")
-		{	anisouLines.push_back(i);
-			continue;
-		}
-        if (header == "USER  ")
-		{	userLines.push_back(i);
-			continue;
-		}
-		if (header == "ENERGY")
-		{	energyLines.push_back(i);
-			continue;
-		}
-        if (header == "END   ")
 		{
 			continue;
 		}
-        if (header == "TER   ")
-		{
-			continue;
-		}
-        //cout << "PDBInterface didn't recognize the header " << header << endl;
 	}
         
 	/* 
@@ -624,7 +486,7 @@ void PDBInterface::parseAtomLine()
 		{
             //withRotamer = false;
         }
-        pCurrentChain->fixBrokenResidue(pCurrentChain->getNumResidues()-1, withRotamer);
+		pCurrentChain->fixBrokenResidue(pCurrentChain->getNumResidues()-1, withRotamer);
 
 	} // end loop over residues
 

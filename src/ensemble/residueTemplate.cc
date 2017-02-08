@@ -104,7 +104,7 @@ void residueTemplate::initializeHasPolarHRotamers()
 			hasPolarHRotamers=true;
 			break;
 		case 18: // Tyr
-			hasPolarHRotamers=true;
+			hasPolarHRotamers=false;
 			break;
 		default: hasPolarHRotamers=false;
 	}
@@ -455,6 +455,11 @@ double residueTemplate::getVDWWaterEnergy(const int _type1)
 double residueTemplate::getAABaselineEnergy(const string& _name)
 {
 	return itsAABaseline.getEnergy(_name);
+}
+
+vector<string> residueTemplate::getAABaselineList()
+{
+	return itsAABaseline.list();
 }
 
 int residueTemplate::getAtomEnergyTypeDefinition(const int _type, const int _field) const

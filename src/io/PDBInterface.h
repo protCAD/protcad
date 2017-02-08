@@ -7,6 +7,7 @@
 #include <iostream>
 #include <fstream>
 #include "typedef.h"
+#include "aaBaseline.h"
 #include "ensemble.h"
 #include "molecule.h"
 #include "protein.h"
@@ -23,9 +24,9 @@ class PDBInterface
 	public:
 		PDBInterface();
 		PDBInterface(const string& _filename);
-                PDBInterface(const string& _filename, const bool _Hflag);
+		PDBInterface(const string& _filename, const bool _Hflag);
 		PDBInterface(const string& _filename, const bool _Hflag, const bool _HPflag, const bool _dummyBool);
-                PDBInterface(const PDBInterface& _otherPdb);
+		PDBInterface(const PDBInterface& _otherPdb);
 		PDBInterface(const string& _filename, bool _hetflag, bool _atomflag);
 		~PDBInterface();
 
@@ -38,7 +39,7 @@ class PDBInterface
 		void readData(ifstream& _infile);
 		void categorizeLines();
 		void parseAtomLine();
-                void parseAtomLine(const bool _Hflag);
+		void parseAtomLine(const bool _Hflag);
 		void parseAtomLine(const bool _Hflag, const bool _HPflag);
 		void parseHetatmLine();
 		void parseBIOMT();
@@ -49,6 +50,7 @@ class PDBInterface
 		vector<string> theLines;
 		bool itsHetatmFlag;
 		bool itsAtomFlag;
+		vector<string> resNames;
 
 		vector<UInt> atomLines;
 		vector<UInt> headerLines;
@@ -90,8 +92,8 @@ class PDBInterface
 		vector<UInt> anisouLines;
 		vector<UInt> userLines;
 		vector<UInt> energyLines;
-                
-                vector<ligand*> ligandSet;
+		vector<ligand*> ligandSet;
+		static aaBaseline itsAABaseline;
 
 };
 #endif
