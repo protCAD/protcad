@@ -21,8 +21,8 @@ bool residue::dataBaseBuilt = false;
 double residue::temperature = 300.0;
 double residue::HsolvationFactor = 1.0;
 double residue::EsolvationFactor = 1.0;
-double residue::cutoffDistance = 9.0;
-double residue::cutoffDistanceSquared = 81.0;
+double residue::cutoffDistance = 8;
+double residue::cutoffDistanceSquared = 64.0;
 void residue::setupDataBase()
 {	if (!dataBaseBuilt)
 	{	residue* dummyRes = new residue(1);
@@ -3094,14 +3094,14 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
     double solvatedRadius = residueTemplate::getVDWRadius(atomVDWtype)+solvationRadius;
     double proteinSolventEnthalpy = 0.0;
     double proteinSolventEntropy = 0.0;
-    double sphereVol = 3796;
+	double totalVol = pow((cutoffDistance*2),3);
 
     if (EsolvationFactor != 0.0)
     {   //Born Electrostatic solvation  Still WC, et al J Am Chem Soc 1990
         double atomDielectric = itsAtoms[_atomIndex]->getDielectric();
         double charge = residueTemplate::itsAmberElec.getItsCharge(itsType, _atomIndex);
         double chargeSquared = charge*charge;
-        double waterDielectric = 80; // -0.3195 * (temperature-274.15) + 86.115; Malmberg and Maryott, 1956 JRNBS
+		double waterDielectric = 79; // -0.3195 * (temperature-274.15) + 86.115; Malmberg and Maryott, 1956 JRNBS
         proteinSolventEnthalpy +=((-166*chargeSquared/(solvatedRadius*waterDielectric))/(waterDielectric-atomDielectric))*EsolvationFactor;
     }
 
@@ -3111,7 +3111,7 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
         double atomShellVol = 4.18*pow((solvatedRadius),3);
         double atomVol = residueTemplate::getVolume(atomVDWtype);
         double waterShellVol = atomShellVol-atomVol;
-        double shellVolFraction = waterShellVol/sphereVol;
+		double shellVolFraction = waterShellVol/totalVol;
         int shellWaters = waters*shellVolFraction;
         if (notHydrogen(_atomIndex)) //heavy atoms only used for non-polar solvation
         {
@@ -3160,7 +3160,7 @@ vector <double> residue::calculateDielectric(residue* _other, UInt _atomIndex)
 	bool inCube;
 	for(UInt i=0; i<_other->itsAtoms.size(); i++)
 	{
-		inCube = itsAtoms[_atomIndex]->inCube(_other->itsAtoms[i], 7.8);
+		inCube = itsAtoms[_atomIndex]->inCube(_other->itsAtoms[i], cutoffDistance);
 		if (inCube)
 		{
 			int vdwIndex = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[i][0];
@@ -3183,7 +3183,7 @@ vector <double> residue::calculateDielectric(residue* _other, atom* _atom)
 	bool inCube;
 	for(UInt i=0; i<_other->itsAtoms.size(); i++)
 	{
-		inCube = _atom->inCube(_other->itsAtoms[i], 7.8);
+		inCube = _atom->inCube(_other->itsAtoms[i], cutoffDistance);
 		if (inCube)
 		{
 			int vdwIndex = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[i][0];
