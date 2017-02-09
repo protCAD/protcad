@@ -15,7 +15,7 @@
 //--Program setup-------------------------------------------------------------
 int main (int argc, char* argv[])
 {	
-    clock_t t;
+    //clock_t t;
     string infile = argv[1];
     PDBInterface* thePDB = new PDBInterface(infile);
     ensemble* theEnsemble = thePDB->getEnsemblePointer();
@@ -23,7 +23,7 @@ int main (int argc, char* argv[])
     protein* bundle = static_cast<protein*>(pMol);
 	residue::setCutoffDistance(8.0);
     residue::setTemperature(300);
-	residue::setElectroSolvationScaleFactor(0.0);
+    residue::setElectroSolvationScaleFactor(1.0);
     residue::setHydroSolvationScaleFactor(1.0);
     amberElec::setScaleFactor(0.0);
     amberVDW::setScaleFactor(0.0);
@@ -36,7 +36,7 @@ int main (int argc, char* argv[])
 	}
     //bundle->mutateWBC(0,0,23);
 	//t=clock()-t;*/
-    cout << Energy << " " << bundle->getDielectric(0,112) << endl;
+    cout << Energy << " ";
     pdbWriter(bundle, infile);
 	return 0;
 }

@@ -22,7 +22,9 @@ double residue::temperature = 300.0;
 double residue::HsolvationFactor = 1.0;
 double residue::EsolvationFactor = 1.0;
 double residue::cutoffDistance = 8;
-double residue::cutoffDistanceSquared = 64.0;
+double residue::cutoffDistanceSquared = residue::cutoffDistance*residue::cutoffDistance;
+double residue::cutoffCubeVolume = pow((residue::cutoffDistance*2),3);
+
 void residue::setupDataBase()
 {	if (!dataBaseBuilt)
 	{	residue* dummyRes = new residue(1);
@@ -3094,7 +3096,7 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
     double solvatedRadius = residueTemplate::getVDWRadius(atomVDWtype)+solvationRadius;
     double proteinSolventEnthalpy = 0.0;
     double proteinSolventEntropy = 0.0;
-	double totalVol = pow((cutoffDistance*2),3);
+    double totalVol = cutoffCubeVolume;
 
     if (EsolvationFactor != 0.0)
     {   //Born Electrostatic solvation  Still WC, et al J Am Chem Soc 1990
@@ -3107,7 +3109,7 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
 
     if (HsolvationFactor != 0.0)
     {   //Gill Hydrophobic solvation  S.J.Gill, S.F.Dec. J Phys. Chem. 1985
-        double waters = itsAtoms[_atomIndex]->getNumberofWaters();
+        double waters = itsAtoms[_atomIndex]->getNumberofWaters()/1.288;
         double atomShellVol = 4.18*pow((solvatedRadius),3);
         double atomVol = residueTemplate::getVolume(atomVDWtype);
         double waterShellVol = atomShellVol-atomVol;

@@ -387,6 +387,7 @@ private:
     static double HsolvationFactor;
 	static double cutoffDistance;
 	static double cutoffDistanceSquared;
+    static double cutoffCubeVolume;
 };
 
 #endif
