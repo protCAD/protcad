@@ -1225,7 +1225,7 @@ vector <double> protein::calculateDielectric(UInt _chainIndex, UInt _residueInde
 	}
 
     // calculate local dielectric for atom
-	double totalWaterVol = totalVol-(polarization[0]/1.95);
+    double totalWaterVol = totalVol-(polarization[0]/1.9);
     int waters = totalWaterVol/waterVol;
     double totalWaterPol = waters*waterPol;
 	double die = 1+4*3.14*((waters)/totalVol)*(totalWaterPol+polarization[1]);
@@ -1256,7 +1256,7 @@ vector <double> protein::calculateDielectric(chain* _chain, residue* _residue, a
     }
 
     // calculate local dielectric for atom
-	double totalWaterVol = totalVol-(polarization[0]/1.95);
+    double totalWaterVol = totalVol-(polarization[0]/1.9);
     int waters = totalWaterVol/waterVol;
     double totalWaterPol = waters*waterPol;
 	double die = 1+4*3.14*((waters)/totalVol)*(totalWaterPol+polarization[1]);
@@ -1284,7 +1284,7 @@ vector <double> protein::calculateChainIndependentDielectric(chain* _chain, resi
      polarization[1] += _polarization[1];
 
     // calculate local dielectric for atom
-	double totalWaterVol = totalVol-(polarization[0]/1.95);
+    double totalWaterVol = totalVol-(polarization[0]/1.9);
     int waters = totalWaterVol/waterVol;
     double totalWaterPol = waters*waterPol;
 	double die = 1+4*3.14*((waters)/totalVol)*(totalWaterPol+polarization[1]);

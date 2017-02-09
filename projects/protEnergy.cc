@@ -36,7 +36,7 @@ int main (int argc, char* argv[])
 	}
     //bundle->mutateWBC(0,0,23);
 	//t=clock()-t;*/
-	cout << Energy << " ";
+    cout << Energy << " " << bundle->getDielectric(0,112) << endl;
     pdbWriter(bundle, infile);
 	return 0;
 }
