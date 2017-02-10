@@ -70,7 +70,7 @@ amberVDW::~amberVDW()
 
 bool amberVDW::isClash(const UInt _type1, const UInt _type2, const double _distance)
 {
-	double R_ref_pair = itsRadiusScaleFactor * ((R_ref[_type1] + R_ref[_type2])/2);
+	double R_ref_pair = itsRadiusScaleFactor * (R_ref[_type1] + R_ref[_type2]);
 	if (_distance < R_ref_pair) return true;
 	return false;
 }
@@ -102,7 +102,7 @@ double amberVDW::getEnergySQ(const UInt _type1, const UInt _type2, const double 
     {
         if (_type2 < R_ref.size())
         {       
-            R_ref_pair  = itsRadiusScaleFactor * ((R_ref[_type1] + R_ref[_type2])/2);
+			R_ref_pair  = itsRadiusScaleFactor * (R_ref[_type1] + R_ref[_type2]);
             if (EPS[_type1] == EPS[_type2])
 				EPS_pair = EPS[_type1]; // save a sqrt operation
 			else
@@ -137,7 +137,7 @@ double amberVDW::getEnergy(const UInt _type1, const UInt _type2, const double _d
 	{
 		if (_type2 < R_ref.size())
 		{		
-			R_ref_pair  = itsRadiusScaleFactor * ((R_ref[_type1] + R_ref[_type2])/2);
+			R_ref_pair  = itsRadiusScaleFactor * (R_ref[_type1] + R_ref[_type2]);
 			if (EPS[_type1] == EPS[_type2])
 				EPS_pair = EPS[_type1];
 			else

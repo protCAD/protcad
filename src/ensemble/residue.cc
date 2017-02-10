@@ -3198,6 +3198,29 @@ vector <double> residue::calculateDielectric(residue* _other, atom* _atom)
 	return polarizabilities;
 }
 
+vector <double> residue::calculateDielectric(atom* _atom)
+{
+	vector <double> polarizabilities(2);
+	polarizabilities[0] = 0.0;
+	polarizabilities[1] = 0.0;
+	double polarizability = 0.0;
+	double volume = 0.0;
+	bool inCube;
+	for(UInt i=0; i < itsAtoms.size(); i++)
+	{
+		inCube = _atom->inCube(itsAtoms[i], cutoffDistance);
+		if (inCube)
+		{
+			int vdwIndex = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][0];
+			polarizability += residueTemplate::getPolarizability(vdwIndex);
+			volume += residueTemplate::getVolume(vdwIndex);
+		}
+	}
+	polarizabilities[0] = volume;
+	polarizabilities[1] = polarizability;
+	return polarizabilities;
+}
+
 
 double residue::interEnergy(residue* _other)
 {

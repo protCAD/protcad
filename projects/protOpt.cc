@@ -27,7 +27,7 @@ int main (int argc, char* argv[])
     molecule* pMol = theEnsemble->getMoleculePointer(0);
     protein* _prot = static_cast<protein*>(pMol);
 
-    bool backbone = false;
+	bool backbone = true;
     /*bool homoSymmetric = true;
     UInt _frozenResidues[] = {3,5,6,13};
 
