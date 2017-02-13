@@ -33,10 +33,10 @@ int main (int argc, char* argv[])
     ensemble* theEnsemble = thePDB->getEnsemblePointer();
     molecule* pMol = theEnsemble->getMoleculePointer(0);
     protein* bundle = static_cast<protein*>(pMol);
-    residue::setCutoffDistance(9.0);
+    residue::setCutoffDistance(8.0);
     residue::setElectroSolvationScaleFactor(0.0);
     residue::setHydroSolvationScaleFactor(0.0);
-    amberElec::setScaleFactor(1.0);
+    amberElec::setScaleFactor(0.0);
     amberVDW::setScaleFactor(1.0);
     srand (time(NULL));
 	
@@ -44,19 +44,28 @@ int main (int argc, char* argv[])
     UInt randres = 0;
     UInt bestrot;
     UInt randrestype = bundle->getTypeFromResNum(_chainIndex,randres);
-    double pastEnergy = bundle->protEnergy(), Energy;
+    double pastEnergy = 1E100, Energy;
     //--Get current rotamer and allowed
     UIntVec allowedRots = bundle->getAllowedRotamers(_chainIndex, randres, randrestype, 0);
 
-    for (UInt j = 0; j < allowedRots.size(); j++)
+    if (allowedRots.size() > 1)
     {
-        bundle->setRotamerWBC(_chainIndex, randres, 0, allowedRots[j]);
-        bundle->setMoved(_chainIndex,randres,1);
-        Energy = bundle->protEnergy();
-        if (Energy < pastEnergy)
+        for (UInt j = 0; j < allowedRots.size(); j++)
         {
-           bestrot = j;
-           pastEnergy = Energy;
+            bundle->setRotamerWBC(_chainIndex, randres, 0, allowedRots[j]);
+            bundle->setMoved(_chainIndex,randres,1);
+            Energy = bundle->protEnergy();
+            stringstream convert;
+            string countstr;
+            convert << j, countstr = convert.str();
+            string outFile = countstr + ".rot.pdb";
+            pdbWriter(bundle, outFile);
+            cout << j+1 << " " << Energy << endl;
+            if (Energy < pastEnergy)
+            {
+                bestrot = j;
+                pastEnergy = Energy;
+            }
         }
     }
     //cout << infile << " " << pastEnergy << endl;
