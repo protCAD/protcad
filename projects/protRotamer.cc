@@ -43,34 +43,38 @@ int main (int argc, char* argv[])
     UInt _chainIndex = 0;
     UInt randres = 0;
     UInt bestrot;
+	UInt count = 0;
     UInt randrestype = bundle->getTypeFromResNum(_chainIndex,randres);
     double pastEnergy = 1E100, Energy;
     //--Get current rotamer and allowed
-    UIntVec allowedRots = bundle->getAllowedRotamers(_chainIndex, randres, randrestype, 0);
 
-    if (allowedRots.size() > 1)
-    {
-        for (UInt j = 0; j < allowedRots.size(); j++)
-        {
-            bundle->setRotamerWBC(_chainIndex, randres, 0, allowedRots[j]);
-            bundle->setMoved(_chainIndex,randres,1);
-            Energy = bundle->protEnergy();
-            stringstream convert;
-            string countstr;
-            convert << j, countstr = convert.str();
-            string outFile = countstr + ".rot.pdb";
-            pdbWriter(bundle, outFile);
-            cout << j+1 << " " << Energy << endl;
-            if (Energy < pastEnergy)
-            {
-                bestrot = j;
-                pastEnergy = Energy;
-            }
-        }
-    }
+
+
+		for (UInt b = 0; b < residue::getNumBpt(randrestype); b++)
+		{
+			vector <UIntVec> allowedRots = bundle->getAllowedRotamers(_chainIndex, randres, randrestype);
+			for (UInt j = 0; j < allowedRots[b].size(); j++)
+			{
+				count++;
+				bundle->setRotamerWBC(_chainIndex, randres, b, allowedRots[b][j]);
+				bundle->setMoved(_chainIndex,randres,1);
+				Energy = bundle->protEnergy();
+				stringstream convert;
+				string countstr;
+				convert << count, countstr = convert.str();
+				string outFile = countstr + ".rot.pdb";
+				pdbWriter(bundle, outFile);
+				cout << count << " " << Energy << endl;
+				if (Energy < pastEnergy)
+				{
+					bestrot = j;
+					pastEnergy = Energy;
+				}
+			}
+		}
     //cout << infile << " " << pastEnergy << endl;
-    bundle->setRotamerWBC(_chainIndex, randres, 0, allowedRots[bestrot]);
-    pdbWriter(bundle, infile);
+	//bundle->setRotamerWBC(_chainIndex, randres, 0, allowedRots[bestrot]);
+	//pdbWriter(bundle, infile);
     return 0;
 }
 

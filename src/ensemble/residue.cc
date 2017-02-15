@@ -3062,6 +3062,10 @@ double residue::intraSoluteEnergy()
 							int index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][0];
 							int index2 = dataBase[itsType].itsAtomEnergyTypeDefinitions[j][0];
 							double tempvdwEnergy = residueTemplate::getVDWEnergySQ(index1,index2,distanceSquared);
+							if (tempvdwEnergy > 100)
+							{
+								cout << "Bond connectivity wrong: " << getNameStringFromAtomNum(i) << " " << getNameStringFromAtomNum(j) << endl;
+							}
 							intraEnergy += tempvdwEnergy;
 						}
 

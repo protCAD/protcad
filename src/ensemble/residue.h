@@ -214,6 +214,7 @@ public:
 	void rotate_new(atom* _pivotAtom, const dblMat& _RMatrix);
 	void rotate_new(atom* _pivotAtom, atom* _firstAtom, const dblMat& _RMatrix);
 	string getTypeStringFromAtomNum(UInt _atomNum) { return itsAtoms[_atomNum]->getType(); }
+	string getNameStringFromAtomNum(UInt _atomNum) { return itsAtoms[_atomNum]->getName(); }
 	void translate(dblVec* _pDoubleVector);
 	void translate(const dblVec& _dblVec);
 	void recursiveTranslateWithDirection(dblVec& _dblVec, UInt _direction);

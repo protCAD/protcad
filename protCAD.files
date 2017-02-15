@@ -1,3 +1,5 @@
+bin/protEnergy
+bin/protOpt
 bin/README
 data/aa/AHD.dat
 data/aa/ALA.dat
@@ -25,14 +27,13 @@ data/aa/GLU.dat
 data/aa/GLY.dat
 data/aa/GND.dat
 data/aa/GUD.dat
+data/aa/HCA.dat
 data/aa/HCD.dat
 data/aa/HDD.dat
 data/aa/HED.dat
 data/aa/HID.dat
 data/aa/HIE.dat
-data/aa/HIN.dat
 data/aa/HIP.dat
-data/aa/HND.dat
 data/aa/HPD.dat
 data/aa/HYD.dat
 data/aa/HYP.dat
@@ -103,6 +104,7 @@ data/rotamerLib/GLN.rot
 data/rotamerLib/GLU.rot
 data/rotamerLib/GND.rot
 data/rotamerLib/GUD.rot
+data/rotamerLib/HCA.rot
 data/rotamerLib/HCD.rot
 data/rotamerLib/HDD.rot
 data/rotamerLib/HED.rot
@@ -139,13 +141,13 @@ data/rotamerLib/VAD.rot
 data/rotamerLib/VAL.rot
 data/aa.lib
 data/aaBaseline.frc
-data/amber.frc
 data/amberVDW.frc
+data/amino12.in
 data/ATOMTYPE
 data/helixPropensity.frc
 data/README.atomtype
-data/uni_amino03.in
 data/uni_mod.in
+obj/libprotcad.a
 obj/README
 projects/protBindingEnergy.cc
 projects/protDB.cc
@@ -380,8 +382,6 @@ src/io/pdbData.h
 src/io/pdbEnums.h
 src/io/PDBInterface.cc
 src/io/PDBInterface.h
-src/io/PDBInterfaceWithPolarH.cc
-src/io/PDBInterfaceWithPolarH.h
 src/io/pdbReader.cc
 src/io/pdbReader.h
 src/io/pdbWriter.cc
