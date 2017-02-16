@@ -15,6 +15,8 @@ amberVDW::amberVDW()
 	itsFileName = "amberVDW.frc";
 	R_ref.resize(0);
 	EPS.resize(0);
+    Pol_ref.resize(0);
+    Vol_ref.resize(0);
 	buildDataBase();
 	//cout << " amberVDW database is built " << endl;
 #ifdef AMBERVDW_DEBUG
@@ -35,6 +37,8 @@ amberVDW::amberVDW(int _Dummy)
 	itsFileName = "amberVDW.frc";
 	R_ref.resize(0);
 	EPS.resize(0);
+    Pol_ref.resize(0);
+    Vol_ref.resize(0);
 	buildDataBase();
 	//cout << " amberVDW database is built " << endl;
 #ifdef AMBERVDW_DEBUG
@@ -55,6 +59,8 @@ amberVDW::amberVDW(const amberVDW& _otherAmberVDW)
 	itsFileName = _otherAmberVDW.itsFileName;
 	R_ref = _otherAmberVDW.R_ref;
 	EPS = _otherAmberVDW.EPS;
+    Pol_ref = _otherAmberVDW.Pol_ref;
+    Vol_ref = _otherAmberVDW.Vol_ref;
 	amberAtomTypeNames = _otherAmberVDW.amberAtomTypeNames;
 }
 
@@ -64,16 +70,29 @@ amberVDW::~amberVDW()
 
 bool amberVDW::isClash(const UInt _type1, const UInt _type2, const double _distance)
 {
-	double R_ref_pair = itsRadiusScaleFactor * ((R_ref[_type1] + R_ref[_type2])/2);
+	double R_ref_pair = itsRadiusScaleFactor * (R_ref[_type1] + R_ref[_type2]);
 	if (_distance < R_ref_pair) return true;
 	return false;
 }
 
 double amberVDW::getRadius(const UInt _type1)
 {
-    double radius  = (R_ref[_type1]);
+    double radius  = (R_ref[_type1]) * itsRadiusScaleFactor;
     return radius;
 }
+
+double amberVDW::getPolarizability(const UInt _type1)
+{
+    double polarizability  = Pol_ref[_type1];
+    return polarizability;
+}
+
+double amberVDW::getVolume(const UInt _type1)
+{
+    double volume  = Vol_ref[_type1];
+    return volume;
+}
+
 double amberVDW::getEnergySQ(const UInt _type1, const UInt _type2, const double _distanceSquared) const //optimized to avoid distance calculation if possible
 {
     double energy = 0.0;
@@ -83,7 +102,7 @@ double amberVDW::getEnergySQ(const UInt _type1, const UInt _type2, const double 
     {
         if (_type2 < R_ref.size())
         {       
-            R_ref_pair  = itsRadiusScaleFactor * ((R_ref[_type1] + R_ref[_type2])/2);
+			R_ref_pair  = itsRadiusScaleFactor * (R_ref[_type1] + R_ref[_type2]);
             if (EPS[_type1] == EPS[_type2])
 				EPS_pair = EPS[_type1]; // save a sqrt operation
 			else
@@ -118,7 +137,7 @@ double amberVDW::getEnergy(const UInt _type1, const UInt _type2, const double _d
 	{
 		if (_type2 < R_ref.size())
 		{		
-			R_ref_pair  = itsRadiusScaleFactor * ((R_ref[_type1] + R_ref[_type2])/2);
+			R_ref_pair  = itsRadiusScaleFactor * (R_ref[_type1] + R_ref[_type2]);
 			if (EPS[_type1] == EPS[_type2])
 				EPS_pair = EPS[_type1];
 			else
@@ -134,6 +153,22 @@ double amberVDW::getEnergy(const UInt _type1, const UInt _type2, const double _d
 	}
 	energy *= itsScaleFactor;
 	return energy;
+}
+
+double amberVDW::getWaterEnergy(const UInt _type1) const
+{
+    double energy = 0.0;
+    double EPS_pair = 0.0;
+    UInt waterType = 52;
+    if (_type1 < EPS.size())
+    {
+        if (EPS[_type1] == EPS[waterType])
+            EPS_pair = EPS[_type1];
+        else
+            EPS_pair = sqrt( EPS[_type1] * EPS[waterType]);
+        energy = EPS_pair * ( itsRepulsionScaleFactor - (2 * itsAttractionScaleFactor));
+    }
+    return energy;
 }
 
 void amberVDW::buildDataBase()
@@ -163,7 +198,7 @@ void amberVDW::buildDataBase()
 			&& currentLine[0] != '!' && currentLine[0] != '>')
 		{	
 			parsedStrings=Parse::parse(currentLine);
-			if (parsedStrings.size() == 5) convertToDataElements(parsedStrings);
+            if (parsedStrings.size() == 7) convertToDataElements(parsedStrings);
 			parsedStrings.resize(0);
 		}
 	}
@@ -182,6 +217,12 @@ void amberVDW::convertToDataElements(const StrVec& _parsedStrings)
 	tmpDouble = 0.0;
 	sscanf(_parsedStrings[4].c_str(), "%lf", &tmpDouble);
 	EPS.push_back(tmpDouble);
+    tmpDouble = 0.0;
+    sscanf(_parsedStrings[5].c_str(), "%lf", &tmpDouble);
+    Pol_ref.push_back(tmpDouble);
+    tmpDouble = 0.0;
+    sscanf(_parsedStrings[6].c_str(), "%lf", &tmpDouble);
+    Vol_ref.push_back(tmpDouble);
 }
 
 int amberVDW::getIndexFromNameString(string _name)

@@ -1207,114 +1207,149 @@ double protein::interSoluteEnergy(bool _updateDielectrics, UInt _chain1, UInt _c
 
 vector <double> protein::calculateDielectric(UInt _chainIndex, UInt _residueIndex, UInt _atomIndex)
 {
-	vector <double> chargeDensity(2);
-	vector <double> _chargeDensity(2);
+    vector <double> polarization(2);
+    vector <double> _polarization(2);
     vector <double> dielectric(2);
-	chargeDensity[0] = 0.0;
-	chargeDensity[1] = 0.0;
-	double watervol = 0.0;
-	double waters = 0.0;
-	double waterpol = 0.0;
-    double die;
+    double waterPol = residueTemplate::getPolarizability(52);
+    double waterVol = residueTemplate::getVolume(52);
+    double totalVol = residue::cutoffCubeVolume;
+    polarization[0] = 0.0;
+    polarization[1] = 0.0;
+
+    // get volume and polarizabilities through protein around atom
 	for(UInt i=0; i<itsChains.size(); i++)
 	{
-		_chargeDensity = itsChains[_chainIndex]->calculateDielectric(itsChains[i], _residueIndex, _atomIndex);
-		chargeDensity[0] += _chargeDensity[0];
-		chargeDensity[1] += _chargeDensity[1];
+        _polarization = itsChains[_chainIndex]->calculateDielectric(itsChains[i], _residueIndex, _atomIndex);
+        polarization[0] += _polarization[0];
+        polarization[1] += _polarization[1];
 	}
-    watervol = 3052-chargeDensity[0];
-    waters = watervol/27;
-    waterpol = waters*1.4907;
-    die = 1+4*3.14*((waters)/3052)*(waterpol+chargeDensity[1]);
-    if (die > 2)
-    {
-        dielectric[0] = die;
-    }
-    else
-    {
-        dielectric[0] = 2;
-    }
+
+    // calculate local dielectric for atom
+	double totalWaterVol = totalVol-(polarization[0]/1.89);
+    int waters = totalWaterVol/waterVol;
+    double totalWaterPol = waters*waterPol;
+	double die = 1+4*3.14*((waters)/totalVol)*(totalWaterPol+polarization[1]);
+    if (die < 2) { die = 2.0;}
+    if (die > 78) { die = 78.0;}
+    dielectric[0] = die;
     dielectric[1] = waters;
     return dielectric;
 }
 
 vector <double> protein::calculateDielectric(chain* _chain, residue* _residue, atom* _atom)
 {
-    vector <double> chargeDensity(2);
-    vector <double> _chargeDensity(2);
+    vector <double> polarization(2);
+    vector <double> _polarization(2);
     vector <double> dielectric(2);
-	chargeDensity[0] = 0.0;
-	chargeDensity[1] = 0.0;
-	double watervol = 0.0;
-	double waters = 0.0;
-	double waterpol = 0.0;
-    double die;
-	for(UInt i=0; i<itsChains.size(); i++)
-	{
-		_chargeDensity = _chain->calculateDielectric(itsChains[i], _residue, _atom);
-		chargeDensity[0] += _chargeDensity[0];
-		chargeDensity[1] += _chargeDensity[1];
-	}
-    watervol = 3052-chargeDensity[0];
-    waters = watervol/27;
-    waterpol = waters*1.4907;
-    die = 1+4*3.14*((waters)/3052)*(waterpol+chargeDensity[1]);
-    if (die > 2)
+    double waterPol = residueTemplate::getPolarizability(52);
+    double waterVol = residueTemplate::getVolume(52);
+    double totalVol = residue::cutoffCubeVolume;
+    polarization[0] = 0.0;
+    polarization[1] = 0.0;
+
+    // get volume and polarizabilities through protein around atom
+    for(UInt i=0; i<itsChains.size(); i++)
     {
-        dielectric[0] = die;
+        _polarization = _chain->calculateDielectric(itsChains[i], _residue, _atom);
+        polarization[0] += _polarization[0];
+        polarization[1] += _polarization[1];
     }
-    else
-    {
-        dielectric[0] = 2;
-    }
+
+    // calculate local dielectric for atom
+	double totalWaterVol = totalVol-(polarization[0]/1.89);
+    int waters = totalWaterVol/waterVol;
+    double totalWaterPol = waters*waterPol;
+	double die = 1+4*3.14*((waters)/totalVol)*(totalWaterPol+polarization[1]);
+    if (die < 2) { die = 2.0;}
+    if (die > 78) { die = 78.0;}
+    dielectric[0] = die;
     dielectric[1] = waters;
     return dielectric;
 }
 
-vector <double> protein::calculateChainIndependentDielectric(chain* _chain, residue* _residue, atom* _atom, UInt _atomIndex)
+vector <double> protein::calculateChainIndependentDielectric(chain* _chain, residue* _residue, atom* _atom)
 {
-    vector <double> chargeDensity(2);
-    vector <double> _chargeDensity(2);
+    vector <double> polarization(2);
+    vector <double> _polarization(2);
     vector <double> dielectric(2);
-	chargeDensity[0] = 0.0;
-	chargeDensity[1] = 0.0;
-	double watervol = 0.0;
-	double waters = 0.0;
-    double waterpol = 0.0;
-    double die;
-	_chargeDensity = _chain->calculateDielectric(_chain, _residue, _atom);
-	chargeDensity[0] += _chargeDensity[0];
-	chargeDensity[1] += _chargeDensity[1];
-    watervol = 3052-chargeDensity[0];
-    waters = watervol/27;
-    waterpol = waters*1.4907;
-    die = 1+4*3.14*((waters)/3052)*(waterpol+chargeDensity[1]);
-    if (die > 2)
-    {
-        dielectric[0] = die;
-    }
-    else
-    {
-        dielectric[0] = 2;
-    }
+    double waterPol = residueTemplate::getPolarizability(52);
+    double waterVol = residueTemplate::getVolume(52);
+    double totalVol = residue::cutoffCubeVolume;
+    polarization[0] = 0.0;
+    polarization[1] = 0.0;
+
+    // get volume and polarizabilities through protein around atom
+     _polarization = _chain->calculateDielectric(_chain, _residue, _atom);
+     polarization[0] += _polarization[0];
+     polarization[1] += _polarization[1];
+
+    // calculate local dielectric for atom
+	double totalWaterVol = totalVol-(polarization[0]/1.89);
+    int waters = totalWaterVol/waterVol;
+    double totalWaterPol = waters*waterPol;
+	double die = 1+4*3.14*((waters)/totalVol)*(totalWaterPol+polarization[1]);
+    if (die < 2) { die = 2.0;}
+    if (die > 78) { die = 78.0;}
+    dielectric[0] = die;
     dielectric[1] = waters;
-	return dielectric;
+    return dielectric;
 }
 
 void protein::updateChainIndependentDielectrics(UInt _chainIndex)
 {
-    vector <double> dielectric(2);
-    for(UInt i=0; i<itsChains[_chainIndex]->itsResidues.size(); i++)
-    {
-        for(UInt j=0; j<itsChains[_chainIndex]->itsResidues[i]->itsAtoms.size(); j++)
-        {
-            dielectric = this->calculateChainIndependentDielectric(itsChains[_chainIndex], itsChains[_chainIndex]->itsResidues[i], itsChains[_chainIndex]->itsResidues[i]->itsAtoms[j], j);
-            itsChains[_chainIndex]->itsResidues[i]->itsAtoms[j]->setDielectric(dielectric[0]);
-            itsChains[_chainIndex]->itsResidues[i]->itsAtoms[j]->setNumberofWaters(dielectric[1]);
+	vector <double> dielectric(2);
+	for(UInt i=0; i<itsChains[_chainIndex]->itsResidues.size(); i++)
+	{
+		for(UInt j=0; j<itsChains[_chainIndex]->itsResidues[i]->itsAtoms.size(); j++)
+		{
+			dielectric = this->calculateChainIndependentDielectric(itsChains[_chainIndex], itsChains[_chainIndex]->itsResidues[i], itsChains[_chainIndex]->itsResidues[i]->itsAtoms[j]);
+			itsChains[_chainIndex]->itsResidues[i]->itsAtoms[j]->setDielectric(dielectric[0]);
+			itsChains[_chainIndex]->itsResidues[i]->itsAtoms[j]->setNumberofWaters(dielectric[1]);
 
-        }
-    }
+		}
+	}
 }
+
+vector <double> protein::calculateResidueIndependentDielectric(residue* _residue, atom* _atom)
+{
+	vector <double> polarization(2);
+	vector <double> _polarization(2);
+	vector <double> dielectric(2);
+	double waterPol = residueTemplate::getPolarizability(52);
+	double waterVol = residueTemplate::getVolume(52);
+	double totalVol = residue::cutoffCubeVolume;
+	polarization[0] = 0.0;
+	polarization[1] = 0.0;
+
+	// get volume and polarizabilities through protein around atom
+	 _polarization = _residue->calculateDielectric(_atom);
+	 polarization[0] += _polarization[0];
+	 polarization[1] += _polarization[1];
+
+	// calculate local dielectric for atom
+	double totalWaterVol = totalVol-(polarization[0]/1.89);
+	int waters = totalWaterVol/waterVol;
+	double totalWaterPol = waters*waterPol;
+	double die = 1+4*3.14*((waters)/totalVol)*(totalWaterPol+polarization[1]);
+	if (die < 2) { die = 2.0;}
+	if (die > 78) { die = 78.0;}
+	dielectric[0] = die;
+	dielectric[1] = waters;
+	return dielectric;
+}
+
+void protein::updateResidueIndependentDielectrics(UInt _chainIndex, UInt _resIndex)
+{
+	vector <double> dielectric(2);
+	for(UInt j=0; j<itsChains[_chainIndex]->itsResidues[_resIndex]->itsAtoms.size(); j++)
+	{
+		dielectric = calculateResidueIndependentDielectric(itsChains[_chainIndex]->itsResidues[_resIndex], itsChains[_chainIndex]->itsResidues[_resIndex]->itsAtoms[j]);
+		itsChains[_chainIndex]->itsResidues[_resIndex]->itsAtoms[j]->setDielectric(dielectric[0]);
+		itsChains[_chainIndex]->itsResidues[_resIndex]->itsAtoms[j]->setNumberofWaters(dielectric[1]);
+	}
+}
+
+
 
 void protein::updateTotalNumResidues()
 {
@@ -1546,7 +1581,7 @@ void protein::buildResidueEnergyPairs(vector < vector < vector <double> > > &_en
     vector <double> E;
 
     //populate energy vector with starting energies
-    if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
+    if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0 || residue::getHydroSolvationScaleFactor() != 0.0 || residue::getElectroSolvationScaleFactor() != 0.0)
     {
         this->updateDielectrics();
     }
@@ -1610,7 +1645,7 @@ void protein::updateProtEnergy(vector < vector < vector <double> > > &_energies)
                     {
                         if (itsChains[chaini]->itsResidues[resi]->getMoved() != 0)
                         {
-                            if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
+                            if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0 || residue::getHydroSolvationScaleFactor() != 0.0 || residue::getElectroSolvationScaleFactor() != 0.0)
                             {
                                 updatePositionDielectrics(chaini, resi);
                             }
@@ -1647,70 +1682,38 @@ void protein::updateProtEnergy(vector < vector < vector <double> > > &_energies)
     return;
 }
 
-double protein::getReferenceEnergy()
+double protein::getFreeAminoAcidEnergy()
 {
     double refEnergy = 0;
-    UInt chaini, resi, restype;
+	UInt chaini, resi;
     for (chaini = 0; chaini < itsChains.size(); chaini++)
     {
         for (resi = 0; resi < itsChains[chaini]->itsResidues.size(); resi++)
         {
-            restype = getTypeFromResNum(chaini, resi);
-            refEnergy += getReferenceEnergy(restype);
+			refEnergy += getFreeAminoAcidEnergy(chaini,resi);
         }
     }
     return refEnergy;
 }
 
-double protein::getReferenceEnergy(UInt restype)   // protEnergy of free amino acids in low energy conformation
+double protein::getFreeAminoAcidEnergy(UInt _chainIndex, UInt _resIndex)   // protEnergy of free amino acids in current conformation
 {
-    double refEnergy = 0.0;
-    if (restype == 0  || restype == 28) refEnergy =  6.56731;   //A
-    if (restype == 1  || restype == 29) refEnergy =  13.4184;     //R
-    if (restype == 2  || restype == 30) refEnergy =  9.56316;   //N
-    if (restype == 3  || restype == 31) refEnergy =  9.09457;   //D
-    if (restype == 4  || restype == 32) refEnergy =  9.34069;   //Dh
-    if (restype == 5  || restype == 33) refEnergy =  8.07309;   //C
-    if (restype == 6  || restype == 34) refEnergy =  8.08981;   //Cx
-    if (restype == 8  || restype == 35) refEnergy =  11.0187;   //Q
-    if (restype == 9  || restype == 36) refEnergy =  10.8961;   //E
-    if (restype == 10 || restype == 37) refEnergy =  10.951;   //Eh
-    if (restype == 11 || restype == 38) refEnergy =  12.2839;   //Hd
-    if (restype == 12 || restype == 39) refEnergy =  12.1331;   //He
-    if (restype == 13 || restype == 40) refEnergy =  12.1577;   //Hn
-    if (restype == 14 || restype == 41) refEnergy =  12.4291;   //Hp
-    if (restype == 15 || restype == 42) refEnergy =  10.0466;   //I
-    if (restype == 16 || restype == 43) refEnergy =  9.87042;     //L
-    if (restype == 17 || restype == 44) refEnergy =  11.5147;    //K
-    if (restype == 18 || restype == 45) refEnergy =  10.1067;   //M
-    if (restype == 19 || restype == 46) refEnergy =  13.6676;   //F
-    if (restype == 20 || restype == 47) refEnergy =  8.90165;   //P
-    if (restype == 21 || restype == 48) refEnergy =  9.5635;   //O
-    if (restype == 22 || restype == 49) refEnergy =  7.69196;   //S
-    if (restype == 23 || restype == 51) refEnergy =  8.95622;   //T
-    if (restype == 24 || restype == 52) refEnergy =  16.1092;   //W
-    if (restype == 25 || restype == 53) refEnergy =  14.4728;   //Y
-    if (restype == 26 || restype == 54) refEnergy =  8.96477;   //V
-    if (restype == 7)  refEnergy =  8.30904;  //Cf
-    if (restype == 27) refEnergy = 5.20153;    //G
-    if (restype == 51) refEnergy = 9.20518;   //dAT
-    if (restype == 55) refEnergy = 63.8735;   //Hcd
-    if (restype == 56) refEnergy = 116.61;   //Pch
-    if (restype == 57) refEnergy = 32.4358;    //Csf
-    return refEnergy;
+	updateResidueIndependentDielectrics(_chainIndex, _resIndex);
+	double refEnergy = itsChains[_chainIndex]->itsResidues[_resIndex]->intraSoluteEnergy();
+	itsChains[_chainIndex]->itsResidues[_resIndex]->setMoved(1);
+	return refEnergy;
 }
 
 double protein::deltaH()
 {
     double deltaH;
-    deltaH = protEnergy()-getReferenceEnergy();
+	deltaH = protEnergy()-getFreeAminoAcidEnergy();
     return deltaH;
 }
 
 double protein::deltaH(UInt chainIndex, UInt resIndex)
 {
-    UInt restype = getTypeFromResNum(chainIndex, resIndex);
-    double deltaH = resEnergy(chainIndex, resIndex)-getReferenceEnergy(restype);
+	double deltaH = resEnergy(chainIndex, resIndex)-getFreeAminoAcidEnergy(chainIndex, resIndex);
     return deltaH;
 }
 

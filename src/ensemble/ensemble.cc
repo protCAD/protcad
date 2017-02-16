@@ -4,7 +4,7 @@
 #include "ensemble.h"
 #include "residue.h"
 
-double ensemble::itscutoffDistance=9.0;
+double ensemble::itscutoffDistance=8.0;
 
 ensemble::ensemble()
 {	//cout<< "default ensemble constructor called" << endl;

@@ -409,11 +409,34 @@ void chain::fixBrokenResidue(const UInt _indexInChain)
 {	if (_indexInChain < itsResidues.size())
 	{	// Now check if this position is allowed to be mutated
 		// to this residue type
+
 		residue* pOldRes = itsResidues[_indexInChain];
+        vector < vector <double> > currentRot = getSidechainDihedralAngles(_indexInChain);
 		itsResidues[_indexInChain] = pOldRes->mutate( itsResidues[_indexInChain]->getTypeIndex() );
+        setSidechainDihedralAngles(_indexInChain, currentRot);
 		itsResidues[_indexInChain]->isArtificiallyBuilt = true;
 		delete pOldRes;
 	}
+}
+
+void chain::fixBrokenResidue(const UInt _indexInChain, bool withRotamer)
+{	if (_indexInChain < itsResidues.size())
+    {	// Now check if this position is allowed to be mutated
+        // to this residue type
+        vector < vector <double> > currentRot;
+        residue* pOldRes = itsResidues[_indexInChain];
+        if (withRotamer)
+        {
+            currentRot = getSidechainDihedralAngles(_indexInChain);
+        }
+        itsResidues[_indexInChain] = pOldRes->mutate( itsResidues[_indexInChain]->getTypeIndex() );
+        if (withRotamer)
+        {
+            setSidechainDihedralAngles(_indexInChain, currentRot);
+        }
+        itsResidues[_indexInChain]->isArtificiallyBuilt = true;
+        delete pOldRes;
+    }
 }
 
 vector<chainModBuffer> chain::performRandomMutation(ran& _ran)
@@ -1700,32 +1723,32 @@ double chain::intraSoluteEnergy()
 
 vector <double> chain::calculateDielectric(chain* _other, UInt _residueIndex, UInt _atomIndex)
 {	
-    vector <double> chargeDensity(2);
-    vector <double> _chargeDensity(2);
-	chargeDensity[0] = 0.0;
-	chargeDensity[1] = 0.0;
+    vector <double> polarization(2);
+    vector <double> _polarization(2);
+    polarization[0] = 0.0;
+    polarization[1] = 0.0;
 	for(UInt i=0; i<_other->itsResidues.size(); i++)
 	{
-        _chargeDensity = itsResidues[_residueIndex]->calculateDielectric(_other->itsResidues[i], _atomIndex);
-        chargeDensity[0] += _chargeDensity[0];
-        chargeDensity[1] += _chargeDensity[1];
+        _polarization = itsResidues[_residueIndex]->calculateDielectric(_other->itsResidues[i], _atomIndex);
+        polarization[0] += _polarization[0];
+        polarization[1] += _polarization[1];
 	}
-	return chargeDensity;
+    return polarization;
 }
 
 vector <double> chain::calculateDielectric(chain* _other, residue* _residue, atom* _atom)
 {	
-    vector <double> chargeDensity(2);
-    vector <double> _chargeDensity(2);
-	chargeDensity[0] = 0.0;
-	chargeDensity[1] = 0.0;
+    vector <double> polarization(2);
+    vector <double> _polarization(2);
+    polarization[0] = 0.0;
+    polarization[1] = 0.0;
 	for(UInt i=0; i<_other->itsResidues.size(); i++)
 	{
-        _chargeDensity = _residue->calculateDielectric(_other->itsResidues[i], _atom);
-        chargeDensity[0] += _chargeDensity[0];
-        chargeDensity[1] += _chargeDensity[1];
+        _polarization = _residue->calculateDielectric(_other->itsResidues[i], _atom);
+        polarization[0] += _polarization[0];
+        polarization[1] += _polarization[1];
 	}
-	return chargeDensity;
+    return polarization;
 }
 
 

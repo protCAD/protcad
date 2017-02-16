@@ -214,6 +214,7 @@ public:
 	void rotate_new(atom* _pivotAtom, const dblMat& _RMatrix);
 	void rotate_new(atom* _pivotAtom, atom* _firstAtom, const dblMat& _RMatrix);
 	string getTypeStringFromAtomNum(UInt _atomNum) { return itsAtoms[_atomNum]->getType(); }
+	string getNameStringFromAtomNum(UInt _atomNum) { return itsAtoms[_atomNum]->getName(); }
 	void translate(dblVec* _pDoubleVector);
 	void translate(const dblVec& _dblVec);
 	void recursiveTranslateWithDirection(dblVec& _dblVec, UInt _direction);
@@ -235,6 +236,7 @@ public:
 	double intraSoluteEnergy();
 	vector <double> calculateDielectric(residue* _other, UInt _atomIndex);
 	vector <double> calculateDielectric(residue* _other, atom* _atom);
+	vector <double> calculateDielectric(atom* _atom);
     vector <double> calculateSolvationEnergy(UInt _atomIndex);
     double getSolvationEnergy();
     double getDielectric();
@@ -254,6 +256,8 @@ public:
 	static double getOneFourAmberElecScaleFactor() { return oneFourAmberElecScaleFactor; }
 	*/
 	double getVolume(UInt _method);
+    bool notHydrogen(UInt _atomIndex);
+    double getTotalVolumeofBondedAtoms(UInt _atomIndex);
 
 private:
 	double wodakVolume();
@@ -340,12 +344,17 @@ public:
 	static double getCutoffDistance() {return cutoffDistance; }
 	static void setCutoffDistance( const double _cutoff ) { cutoffDistance = _cutoff; cutoffDistanceSquared = _cutoff*_cutoff; }
     static void setTemperature( const double _temp ) { temperature = _temp; }
+    static void setElectroSolvationScaleFactor( const double _Esolv ) { EsolvationFactor = _Esolv; }
+    static double getElectroSolvationScaleFactor() { return EsolvationFactor; }
+    static void setHydroSolvationScaleFactor( const double _Hsolv ) { HsolvationFactor = _Hsolv; }
+    static double getHydroSolvationScaleFactor() { return HsolvationFactor; }
+
 
 // ***********************************************************************
 // ***********************************************************************
 //	Variables
 // ***********************************************************************
-// ***********************************************************************
+// ***********************************************************************Cutoff
 
 private:
 	//variable declarations
@@ -376,8 +385,11 @@ private:
 	static UInt howMany;
 	static bool dataBaseBuilt;
     static double temperature;
+    static double EsolvationFactor;
+    static double HsolvationFactor;
 	static double cutoffDistance;
 	static double cutoffDistanceSquared;
+    static double cutoffCubeVolume;
 };
 
 #endif

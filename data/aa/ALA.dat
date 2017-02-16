@@ -4,30 +4,30 @@ N CA C O
 CA
 !connectivity
 N	CA	H
-CA	C  	CB	HA
+CA	C	CB	HA
 C	O
 O
-CB	1HB	2HB     3HB 
+CB	HB1	HB2	HB3
 H
 HA
-1HB
-2HB
-3HB
+HB1
+HB2
+HB3
 !defined dihedral angles
 !atom types
 # column 1: atom name
 # column 2: AMBER all atom atomtype
-# column 3:	AMBER united atom atomtype
+# column 3: AMBER united atom atomtype
 # column 4: SUMMA atom type
 # column 5: SUMMA environment type
 # column 6: 6-atom solvation type
 N		N		N		N		N		N
-CA		CT		CH		CA		C		C
+CA		CX		CH		CA		C		C
 C		C		C		C		C		C
 O		O		O		O		O		O
 CB		CT		C3		C1		C		C
 H		H		-		-		-		H
-HA		HC		-		-		-		H
-1HB		HC		-		-		-		H
-2HB		HC		-		-		-		H
-3HB		HC		-		-		-		H
+HA		H1		-		-		-		H
+HB1		HC		-		-		-		H
+HB2		HC		-		-		-		H
+HB3		HC		-		-		-		H

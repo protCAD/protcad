@@ -4,23 +4,23 @@ N CA C O
 CA
 !connectivity
 N	CA	H
-CA	C  	1HA	2HA
+CA	C	HA2	HA3
 C	O
 O
 H
-1HA
-2HA
+HA2
+HA3
 !atom types
 # column 1: atom name
 # column 2: AMBER all atom atomtype
-# column 3:	AMBER united atom atomtype
+# column 3: AMBER united atom atomtype
 # column 4: SUMMA atom type
 # column 5: SUMMA environment type
 # column 6: six-atom solvation type
 N		N		N		N		N		N
-CA		CT		C2		CA		C		C
+CA		CX		C2		CA		C		C
 C		C		C		C		C		C
 O		O		O		O		O		O
 H		H		-		-		-		H
-1HA		HC		-		-		-		H
-2HA		HC		-		-		-		H
+HA2		H1		-		-		-		H
+HA3		H1		-		-		-		H
