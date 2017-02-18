@@ -8,7 +8,7 @@ protCAD is an implementation of the protein design software library that origina
  Installation
 ===========================
 
--Install dependencies
+-Install dependencies and download source
 
 sudo apt-get install g++ git 
 
@@ -19,7 +19,9 @@ git clone https://github.com/protCAD/protcad
 export PROTCADDIR=/home/username/protcad
 export PATH=$PATH:$PROTCADDIR:$PROTCADDIR/bin
 
--protCAD can be installed from the root directory of protcad (protcad/) by entering this statement into the terminal: make lib
+-protCAD can be installed from the root directory of protcad (protcad/) by entering this statement into the terminal: 
+
+make lib
 
 
  Usage
