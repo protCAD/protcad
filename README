@@ -29,9 +29,11 @@ make lib
 
 -New programs are written in C++ and added to the projects directory for compilation and usage
 
--In protcad/projects is an example program (example.cc) that can be compiled by typing this into the terminal in the protcad root directory: make example 
+-In protcad/projects is an example program (example.cc) that can be compiled by typing this into the terminal in the protcad root directory: 
 
--New programs need to be added to the makefile called 'Makefile' in protcad/ for compilation, like example has been. 
+make example 
+
+-New programs need to be added to the Makefile in protcad/ for compilation, like example has been. 
 
 -Additional examples are in the protcad/src/examples folder for reference and can be added to the projects directory and MakeFile for compilation.
 
