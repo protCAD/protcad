@@ -2093,14 +2093,13 @@ int residue::setDihedral(double _dihedral, UInt _angleType, UInt _direction)
 	return 0;
 }
 
-
 double residue::getOmega()
 {
 	double tempdouble;
-	if (residue::getNumBpt(itsType) == 2)
+	if (pItsNextRes != 0)
 	{
-		vector<atom*> fourAtomPointers;
 		UInt i = dataBase[itsType].mainChain.size()-1;
+		vector<atom*> fourAtomPointers;
 		fourAtomPointers.push_back(getMainChain(i-4));
 		fourAtomPointers.push_back(getMainChain(i-3));
 		fourAtomPointers.push_back(getMainChain(i-2));
@@ -2109,10 +2108,23 @@ double residue::getOmega()
 	}
 	else
 	{
-		cout << "Cannot calcualate OMEGA for this amino acid" << endl;
+		//cout << "Cannot calcualate OMEGA for this amino acid" << endl;
 		tempdouble = 1000.0;
 	}
 	return tempdouble;
+}
+
+void residue::setOmega(double _omega)
+{
+	if (pItsNextRes != 0)
+	{
+		UInt i = dataBase[itsType].mainChain.size()-1;
+		double currentOmega = getOmega();
+		ASSERT(currentOmega < 1e5 && currentOmega > -1e5);
+		double angle = _omega - currentOmega;
+		rotate(getMainChain(i-3), getMainChain(i-2), angle, false);
+	}
+	return;
 }
 
 double residue::getAmide()
@@ -3092,7 +3104,7 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
 	//--requires update of dielectrics at protein level to be accurate.
     vector <double> solvationEnergy;
     int atomVDWtype = dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex][0];
-    double solvationRadius = residueTemplate::getVDWRadius(52);
+	double solvationRadius = residueTemplate::getVDWRadius(52);
     double solvatedRadius = residueTemplate::getVDWRadius(atomVDWtype)+solvationRadius;
     double proteinSolventEnthalpy = 0.0;
     double proteinSolventEntropy = 0.0;
@@ -3109,7 +3121,7 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
 
     if (HsolvationFactor != 0.0)
     {   //Gill Hydrophobic solvation  S.J.Gill, S.F.Dec. J Phys. Chem. 1985
-        double waters = itsAtoms[_atomIndex]->getNumberofWaters()/1.288;
+		double waters = itsAtoms[_atomIndex]->getNumberofWaters();
         double atomShellVol = 4.18*pow((solvatedRadius),3);
         double atomVol = residueTemplate::getVolume(atomVDWtype);
         double waterShellVol = atomShellVol-atomVol;
@@ -3117,7 +3129,7 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
         int shellWaters = waters*shellVolFraction;
         if (notHydrogen(_atomIndex)) //heavy atoms only used for non-polar solvation
         {
-            proteinSolventEntropy = (-temperature*0.0019872041*log(pow(0.5,(shellWaters))))*HsolvationFactor;
+			proteinSolventEntropy = (-temperature*0.0019872041*log(pow(0.5,(shellWaters))))*HsolvationFactor;
         }
 
         //TIP3P VDW water interaction R. W. Impey, and M. L. Klein, J. Chem. Phys. 79 (1983) 926-935
@@ -3774,32 +3786,47 @@ bool residue::isSeparatedByFewBonds(residue* _pRes1, UInt _index1, residue*
 	// Cysteine sulfurs involved in a disulfide bond....
 
 	// Check for disulfide
-	if (_pRes1->getType() == "CYS")
-	{	if (_pRes2->getType() == "CYS")
-		{ 	atom* pAtom1=_pRes1->getAtom(5);
-			atom* pAtom2=_pRes2->getAtom(5);
+	if ((_pRes1->getType() == "CYX" || _pRes1->getType() == "CXD") && _index1 == 5 )
+	{	if ((_pRes2->getType() == "CYX" ||_pRes1->getType() == "CXD") && _index2 == 5)
+		{   atom* pAtom1=_pRes1->getAtom(_index1);
+			atom* pAtom2=_pRes2->getAtom(_index2);
 			if (pAtom1->distance(pAtom2) < 3.0)
 			{
-#ifdef _SKIP_DEBUG
-				cout << "Disulfide bond detected! Between Res ";
-			 	cout << _pRes1->getResNum() << " atom num " << _index1;
-				cout << " and Res ";
-				cout << _pRes2->getResNum() << " atom num " << _index2 << " !" << endl;
-#endif
-				if ( ((_index1==5) && ((_index2==5)||(_index2==4)||(_index2==1))) ||
-			             ((_index2==5) && ((_index1==5)||(_index1==4)||(_index1==1))) ||
-				     ((_index1==4) && ((_index2==5)||(_index2==4))) ||
-				     ((_index2==4) && ((_index1==5)||(_index1==4))) )
-				{
-#ifdef _SKIP_DEBUG
-					cout << "Ignoring interaction between Res ";
-			 		cout << _pRes1->getResNum() << " atom num " << _index1;
-					cout << " and Res ";
-					cout << _pRes2->getResNum() << " atom num " << _index2 << " !" << endl;
-#endif
-					return true;
-				}
+				return true;
 			}
+		}
+	}
+
+	// Check for SF4 Cysteine bond
+	if ((_pRes1->getType() == "CYF" || _pRes1->getType() == "CFD") && _index1 == 5 )
+	{	if (_pRes2->getType() == "CSF" && (_index2 == 6 || _index2 == 8 || _index2 == 10 || _index2 == 12))
+		{ 	atom* pAtom1=_pRes1->getAtom(_index1);
+			atom* pAtom2=_pRes2->getAtom(_index2);
+			if (pAtom1->distance(pAtom2) < 3.0)
+			{
+				return true;
+			}
+		}
+	}
+	if ((_pRes2->getType() == "CYF" || _pRes2->getType() == "CFD") && _index2 == 5)
+	{	if (_pRes1->getType() == "CSF" && (_index1 == 6 || _index1 == 8 || _index1 == 10 || _index1 == 12))
+		{ 	atom* pAtom1=_pRes2->getAtom(_index2);
+			atom* pAtom2=_pRes1->getAtom(_index1);
+			if (pAtom1->distance(pAtom2) < 3.0)
+			{
+				return true;
+			}
+		}
+	}
+
+	// Check for peptide bond
+	if ((_index1 == 0 && _index2 == 2) || (_index2 == 0 && _index1 == 2))
+	{
+		atom* pAtom1=_pRes1->getAtom(_index1);
+		atom* pAtom2=_pRes2->getAtom(_index2);
+		if (pAtom1->distance(pAtom2) < 2.0)
+		{
+			return true;
 		}
 	}
 

@@ -124,7 +124,7 @@ public:
 	double calculateDihedral(const vector<UInt>& _quad) const;
 	double calculateDihedral(vector<atom*>& _quad) const;
 	void calculateSidechainDihedralAngles();
-        void calculatePolarHDihedralAngle();
+	void calculatePolarHDihedralAngle();
 	vector< vector< double > > getSidechainDihedralAngles();
 	double getPhi();
 	double getPsi();
@@ -132,6 +132,7 @@ public:
 	double getOmega();
 	double getAmide();
 	double getAtomCharge(UInt _atomNum) {return residueTemplate::itsAmberElec.getItsCharge(itsType, itsAtoms[_atomNum]->itsType); }
+	void setOmega(double _omega);
 	int setPhi(double _phi);
 	int setPsi(double _psi);
 	int setAngleLocal(double _angle, double deltaAngle, UInt angleType, int distance, int direction);

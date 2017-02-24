@@ -424,14 +424,17 @@ void chain::fixBrokenResidue(const UInt _indexInChain, bool withRotamer)
     {	// Now check if this position is allowed to be mutated
         // to this residue type
         vector < vector <double> > currentRot;
+		double omega;
         residue* pOldRes = itsResidues[_indexInChain];
         if (withRotamer)
         {
+			omega = itsResidues[_indexInChain]->getOmega();
             currentRot = getSidechainDihedralAngles(_indexInChain);
         }
         itsResidues[_indexInChain] = pOldRes->mutate( itsResidues[_indexInChain]->getTypeIndex() );
         if (withRotamer)
         {
+			itsResidues[_indexInChain]->setOmega(omega);
             setSidechainDihedralAngles(_indexInChain, currentRot);
         }
         itsResidues[_indexInChain]->isArtificiallyBuilt = true;
