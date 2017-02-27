@@ -19,7 +19,7 @@ int main (int argc, char* argv[])
     {   cout << "protOpt <inFile.pdb> <outFile.pdb>" << endl;
         exit(1); }
 
-    clock_t t;
+	//clock_t t;
     string infile = argv[1];
     string outFile = argv[2];
     PDBInterface* thePDB = new PDBInterface(infile);
@@ -27,7 +27,7 @@ int main (int argc, char* argv[])
     molecule* pMol = theEnsemble->getMoleculePointer(0);
     protein* _prot = static_cast<protein*>(pMol);
 
-	bool backbone = true;
+	bool backbone = false;
     /*bool homoSymmetric = true;
     UInt _frozenResidues[] = {3,5,6,13};
 
@@ -45,10 +45,8 @@ int main (int argc, char* argv[])
         }
     }*/
 
-    t=clock();
     _prot->protOpt(backbone);
-    t=clock()-t;
-    cout << "Time: " << ((float)t)/CLOCKS_PER_SEC << " Energy: " << _prot->protEnergy() << endl;
+	cout << infile << " " << _prot->protEnergy();
     pdbWriter(_prot, outFile);
 
     return 0;
