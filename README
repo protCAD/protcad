@@ -5,14 +5,17 @@ protCAD is an implementation of the protein design software library that origina
 
 -Computational Methods and their Applications for de novo Functional Protein Design and Memebrane Protein Solubilization Summa CM 2002
 
- Installation
+
+ Installation (Ubuntu)
 ===========================
--Add protcad to your bash file and link in path as follows (in ubuntu edit .bashrc and add this to the end of file with directory of choosing)
 
-export PROTCADDIR=/home/username/protcad
-export PATH=$PATH:$PROTCADDIR:$PROTCADDIR/bin
+sudo apt-get install g++ git 
 
--protCAD can be installed from the root directory of protcad (protcad/) by entering this statement into the terminal: make lib
+git clone https://github.com/protCAD/protcad 
+
+make install
+
+source ~/.bashrc
 
 
  Usage
@@ -20,9 +23,11 @@ export PATH=$PATH:$PROTCADDIR:$PROTCADDIR/bin
 
 -New programs are written in C++ and added to the projects directory for compilation and usage
 
--In protcad/projects is an example program (example.cc) that can be compiled by typing this into the terminal in the protcad root directory: make example 
+-In protcad/projects is an example program (example.cc) that can be compiled by typing this into the terminal in the protcad root directory: 
 
--New programs need to be added to the makefile called 'Makefile' in protcad/ for compilation, like example has been. 
+make example 
+
+-New programs need to be added to the Makefile in protcad/ for compilation, like example has been. 
 
 -Additional examples are in the protcad/src/examples folder for reference and can be added to the projects directory and MakeFile for compilation.
 
