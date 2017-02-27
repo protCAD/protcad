@@ -6,10 +6,21 @@ protCAD is an implementation of the protein design software library that origina
 -Computational Methods and their Applications for de novo Functional Protein Design and Memebrane Protein Solubilization Summa CM 2002
 
 
- Installation (Ubuntu)
+ Installation
 ===========================
 
-sudo apt-get install g++ git 
+-Install dependencies
+
+Ubuntu:
+
+sudo apt-get install g++ git
+
+Mac:
+
+xcode-select --install 
+
+
+-Download source and compile
 
 git clone https://github.com/protCAD/protcad 
 
