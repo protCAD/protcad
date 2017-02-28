@@ -1784,6 +1784,21 @@ double residue::getChi(const UInt _index) const
         return getChi(bpt, _index);
 }
 
+double residue::getBetaChi()
+{	if(pItsPrevRes != 0 && itsAtoms[4]->getType() != "H")
+    {
+        vector< dblVec > quadVect(4);
+        quadVect[0] = pItsPrevRes->getMainChain(2)->getCoords();
+        quadVect[1] = getMainChain(0)->getCoords();
+        quadVect[2] = getMainChain(1)->getCoords();
+        quadVect[3] = itsAtoms[4]->getCoords();
+        return CMath::dihedral(quadVect[0], quadVect[1], quadVect[2], quadVect[3]);
+    }
+    else{
+        return 1000.0;
+    }
+}
+
 double residue::calculateDihedral(const vector<UInt>& _quad) const
 {	if( _quad.size() != 4)
 	{	return 1000.0;

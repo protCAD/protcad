@@ -151,7 +151,8 @@ public:
 	void setPolarHChiByDelta(const UInt _atom1, const UInt _atom2, const double _angle);
 	double getChi(const UInt _bpt, const UInt _index) const;
 	double getChi(const UInt _index) const;
-        double getPolarHChi() const;
+    double getBetaChi();
+    double getPolarHChi() const;
 
 public:
 	atom* getMainChain(UInt _index);
