@@ -32,6 +32,5 @@ int main (int argc, char* argv[])
 
 	double Energy = bundle->protEnergy();
 	cout << "Energy: " << Energy << " " << infile << endl;
-	pdbWriter(bundle, infile);
 	return 0;
 }

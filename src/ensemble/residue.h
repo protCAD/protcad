@@ -124,7 +124,7 @@ public:
 	double calculateDihedral(const vector<UInt>& _quad) const;
 	double calculateDihedral(vector<atom*>& _quad) const;
 	void calculateSidechainDihedralAngles();
-        void calculatePolarHDihedralAngle();
+	void calculatePolarHDihedralAngle();
 	vector< vector< double > > getSidechainDihedralAngles();
 	double getPhi();
 	double getPsi();
@@ -132,6 +132,7 @@ public:
 	double getOmega();
 	double getAmide();
 	double getAtomCharge(UInt _atomNum) {return residueTemplate::itsAmberElec.getItsCharge(itsType, itsAtoms[_atomNum]->itsType); }
+	void setOmega(double _omega);
 	int setPhi(double _phi);
 	int setPsi(double _psi);
 	int setAngleLocal(double _angle, double deltaAngle, UInt angleType, int distance, int direction);
@@ -140,17 +141,19 @@ public:
 	void setRotamer(const UInt _lib, const UInt _bpt, const UInt _rotamer);
 	void setRotamer(const UInt _bpt, const DouVec _chis);
 	void setRotamerWithCheck(const UInt _lib, const UInt _bpt, const UInt _rotamer);
-        void setPolarHRotamer(const UInt _rotamerIndex);
+	void setPolarHRotamer(const UInt _rotamerIndex);
 	void setPolarHRotamerWithCheck(const UInt _rotamerIndex);
 	DouVec setRotamerWithCheckTest(const UInt _lib, const UInt _bpt, const UInt _rotamer);
 	void setChiByDelta(const UInt _bpt, const UInt _index, const double _angleDelta);
 	void setChi(const UInt _bpt, const UInt _index, const double _angle);
 	void setChi(const UInt _index, const double _angle);
-        void setPolarHChi(const UInt _rotamerIndex);
+	void setBetaChi(const double _angle);
+	void setPolarHChi(const UInt _rotamerIndex);
 	void setPolarHChiByDelta(const UInt _atom1, const UInt _atom2, const double _angle);
 	double getChi(const UInt _bpt, const UInt _index) const;
 	double getChi(const UInt _index) const;
-        double getPolarHChi() const;
+    double getBetaChi();
+    double getPolarHChi() const;
 
 public:
 	atom* getMainChain(UInt _index);

@@ -1335,10 +1335,12 @@ void residue::interpretBondingPattern()
 // ************************************************************************
 residue* residue::mutate(const UInt _newTypeIndex)
 {
-	//cout << "Entering residue::mutate" << endl;
-    residue* newAA = new residue( _newTypeIndex, hydrogensOn );
-	//cout << "hydrogensOn = " << hydrogensOn << endl;
-	//residue* newAA = new residue( _newTypeIndex );
+	residue* newAA = new residue( _newTypeIndex, hydrogensOn );
+	bool betapivot = false;
+	if (itsType == newAA->itsType)
+	{
+		betapivot = true;
+	}
 	UInt numbpt = getNumBpt(_newTypeIndex);
 	for (UInt i=0; i<numbpt; i++)
 	{
@@ -1355,11 +1357,11 @@ residue* residue::mutate(const UInt _newTypeIndex)
 		dblVec Coord_A_new(3);
 		dblVec Coord_B_new(3);
 		dblVec Coord_C_new(3);
-
 		Coord_B_new = newAA->getMainChain(i+1)->getCoords();
 
-// This equivalences the coordinates of the branchpoint atoms
-// in the new amino acid to that of the original amino acid
+
+		// This equivalences the coordinates of the branchpoint atoms
+		// in the new amino acid to that of the original amino acid
 		newAA->translate(Coord_B_target - Coord_B_new);
 
 		Coord_A_new = newAA->getMainChain(i)->getCoords();
@@ -1372,46 +1374,25 @@ residue* residue::mutate(const UInt _newTypeIndex)
 		cout << "Coord_B_new : " << Coord_B_new << endl;
 		cout << "Coord_C_new : " << Coord_C_new<< endl;
 #endif
-
+		//Using a backbone atom plane determine necessary rotation matrix
+		//to align mutant residue to old residue's backbone position
 		vector<dblVec> eTarget;
-
 		dblVec vec_B_A_target = Coord_A_target - Coord_B_target;
-// norm = length of vec_B_A_target
-#ifdef USE_SVMT
-		double norm = sqrt(vec_B_A_target.dot(vec_B_A_target));
-#else
 		double norm = sqrt(CMath::dotProduct(vec_B_A_target,vec_B_A_target));
-#endif
 		eTarget.push_back( vec_B_A_target / norm );
-
 		dblVec vec_B_C_target = Coord_C_target - Coord_B_target;
-
-#ifdef USE_SVMT
-		dblVec jason = vec_B_C_target - vec_B_C_target.dot(eTarget[0]) * eTarget[0];
-		norm = sqrt(jason.dot(jason));
-#else
 		dblVec jason = vec_B_C_target - CMath::dotProduct(vec_B_C_target,eTarget[0]) * eTarget[0];
 		norm = sqrt(CMath::dotProduct(jason,jason));
-#endif
 		eTarget.push_back(jason/norm);
 		eTarget.push_back(CMath::cross(eTarget[0],eTarget[1]));
 
 		vector<dblVec> eNew;
 		dblVec tempVec = Coord_A_new- Coord_B_new;
-#ifdef USE_SVMT
-		norm = sqrt(tempVec.dot(tempVec));
-#else
 		norm = sqrt(CMath::dotProduct(tempVec,tempVec));
-#endif
 		eNew.push_back(tempVec/norm);
 		tempVec = Coord_C_new - Coord_B_new;
-#ifdef USE_SVMT
-		tempVec = tempVec - tempVec.dot(eNew[0])*eNew[0];
-		norm = sqrt(tempVec.dot(tempVec));
-#else
 		tempVec = tempVec - CMath::dotProduct(tempVec,eNew[0])*eNew[0];
 		norm = sqrt(CMath::dotProduct(tempVec,tempVec));
-#endif
 		eNew.push_back(tempVec/norm);
 		eNew.push_back(CMath::cross(eNew[0],eNew[1]));
 
@@ -1441,7 +1422,6 @@ residue* residue::mutate(const UInt _newTypeIndex)
 		// we want to rotate all the sidechain atoms which branch
 		// from that atom only.
 		atom* pivotAtom = newAA->getMainChain(i+1);
-
 		if (i==0)
 		{
 			newAA->rotate_new(pivotAtom,newAA->getMainChain(0), RotMat);
@@ -1452,6 +1432,7 @@ residue* residue::mutate(const UInt _newTypeIndex)
 		}
 	}
 
+	//position new residue with proper position context
 	if (pItsNextRes)
 	{
 		newAA->setNextRes(pItsNextRes);
@@ -1461,7 +1442,6 @@ residue* residue::mutate(const UInt _newTypeIndex)
 	{
 		newAA->setNextRes(pItsNextRes);
 	}
-
 	if (pItsPrevRes)
 	{
 		newAA->setPrevRes(pItsPrevRes);
@@ -1471,22 +1451,28 @@ residue* residue::mutate(const UInt _newTypeIndex)
 	{
 		newAA->setPrevRes(pItsPrevRes);
 	}
-
 	newAA->setResNum(itsResNum);
 
-// ensure that we have not modified the main chain
-// coordinates in any way
+	// When mutating the same residue in place of old
+	// make sure same amino acid has near identical Calpha-Cbeta angle
+	// and Cbeta position relative to backbone
+	if (betapivot)
+	{
+		newAA->setBetaChi(getBetaChi());
+		newAA->getAtom(4)->setCoords(itsAtoms[4]->getCoords());
+	}
 
+	// ensure that we have not modified the main chain
+	// coordinates in any way
 	for (UInt i=0;i<dataBase[itsType].mainChain.size(); i++)
 	{
 		newAA->getMainChain(i)->setCoords( getMainChain(i)->getCoords());
 	}
 
-/*
-// now, since we're changing the backbone coordinates, make
-// sure that the amide hydrogen H is in the right place...
-// all other hydrogens should have been taken care of by the
-// code above which sets the coordinates of the branchpoint atoms...*/
+	// now, since we're changing the backbone coordinates, make
+	// sure that the amide hydrogen H is in the right place...
+	// all other hydrogens should have been taken care of by the
+	// code above which sets the coordinates of the branchpoint atoms.
 	if (hydrogensOn)
 	{
 		// get the index of "H" if it exists
@@ -1700,14 +1686,25 @@ DouVec residue::setRotamerWithCheckTest(const UInt _lib, const UInt _bpt, const 
 	return theAngles;
 }
 
+void residue::setBetaChi(const double _angle)
+{
+	if (_angle != 1000.0)
+	{
+		double currentBetaChi = getBetaChi();
+		ASSERT(currentBetaChi < 1e5 && currentBetaChi > -1e5);
+		double diff = _angle - currentBetaChi;
+		rotate(0,1, diff);
+		setMoved(1);
+	}
+}
+
 void residue::setChi(const UInt _bpt, const UInt _index, const double _angle)
 {	double currentChi = getChi(_bpt,_index);
 	//cout << "cc:" << currentChi << " ";
 	ASSERT(currentChi < 1e5 && currentChi > -1e5);
 	double diff = _angle - currentChi;
 	setChiByDelta(_bpt, _index, diff);
-    setMoved(1);
-//	calculateSidechainDihedralAngles();
+	setMoved(1);
 }
 
 void residue::setChiByDelta(const UInt _bpt, const UInt _index, const double _angleDelta)
@@ -1757,10 +1754,6 @@ void residue::setPolarHChiByDelta(const UInt _atom1, const UInt _atom2, const do
 double residue::getPolarHChi() const
 {
 	vector<UInt> theAtomIndices = dataBase[itsType].getAtomsOfPolarHChi();
-	//dblVec coordfoo;
-	//for(UInt k=0;k<theAtomIndices.size();k++)
-		//{ cout << theAtomIndices[k] << "\t"; }
-	//cout << endl;
 	return calculateDihedral(theAtomIndices);
 	return 0;
 }
@@ -1769,19 +1762,29 @@ double residue::getPolarHChi() const
 double residue::getChi(const UInt _bpt, const UInt _index) const
 {       
 	vector<UInt> theAtomIndices = dataBase[itsType].getAtomsOfChi(_bpt, _index);
-
-//	for (UInt i=0; i< theAtomIndices.size(); i++)
-//	{	cout << theAtomIndices[i] << " ";
-//	}
-//	cout << endl;
-
 	double theAngle = calculateDihedral(theAtomIndices);
 	return theAngle;
 }
 
 double residue::getChi(const UInt _index) const
-{       UInt bpt = 0;
-        return getChi(bpt, _index);
+{
+	UInt bpt = 0;
+	return getChi(bpt, _index);
+}
+
+double residue::getBetaChi()
+{	if(pItsPrevRes != 0 && itsAtoms[4]->getType() != "H")
+	{
+		vector< dblVec > quadVect(4);
+		quadVect[0] = pItsPrevRes->getMainChain(2)->getCoords();
+		quadVect[1] = getMainChain(0)->getCoords();
+		quadVect[2] = getMainChain(1)->getCoords();
+		quadVect[3] = itsAtoms[4]->getCoords();
+		return CMath::dihedral(quadVect[0], quadVect[1], quadVect[2], quadVect[3]);
+	}
+	else{
+		return 1000.0;
+	}
 }
 
 double residue::calculateDihedral(const vector<UInt>& _quad) const
@@ -2093,14 +2096,13 @@ int residue::setDihedral(double _dihedral, UInt _angleType, UInt _direction)
 	return 0;
 }
 
-
 double residue::getOmega()
 {
 	double tempdouble;
-	if (residue::getNumBpt(itsType) == 2)
+	if (pItsNextRes != 0)
 	{
-		vector<atom*> fourAtomPointers;
 		UInt i = dataBase[itsType].mainChain.size()-1;
+		vector<atom*> fourAtomPointers;
 		fourAtomPointers.push_back(getMainChain(i-4));
 		fourAtomPointers.push_back(getMainChain(i-3));
 		fourAtomPointers.push_back(getMainChain(i-2));
@@ -2109,10 +2111,23 @@ double residue::getOmega()
 	}
 	else
 	{
-		cout << "Cannot calcualate OMEGA for this amino acid" << endl;
+		//cout << "Cannot calcualate OMEGA for this amino acid" << endl;
 		tempdouble = 1000.0;
 	}
 	return tempdouble;
+}
+
+void residue::setOmega(double _omega)
+{
+	if (pItsNextRes != 0)
+	{
+		UInt i = dataBase[itsType].mainChain.size()-1;
+		double currentOmega = getOmega();
+		ASSERT(currentOmega < 1e5 && currentOmega > -1e5);
+		double angle = _omega - currentOmega;
+		rotate(getMainChain(i-3), getMainChain(i-2), angle, false);
+	}
+	return;
 }
 
 double residue::getAmide()
@@ -3774,32 +3789,47 @@ bool residue::isSeparatedByFewBonds(residue* _pRes1, UInt _index1, residue*
 	// Cysteine sulfurs involved in a disulfide bond....
 
 	// Check for disulfide
-	if (_pRes1->getType() == "CYS")
-	{	if (_pRes2->getType() == "CYS")
-		{ 	atom* pAtom1=_pRes1->getAtom(5);
-			atom* pAtom2=_pRes2->getAtom(5);
+	if ((_pRes1->getType() == "CYX" || _pRes1->getType() == "CXD") && _index1 == 5 )
+	{	if ((_pRes2->getType() == "CYX" ||_pRes1->getType() == "CXD") && _index2 == 5)
+		{   atom* pAtom1=_pRes1->getAtom(_index1);
+			atom* pAtom2=_pRes2->getAtom(_index2);
 			if (pAtom1->distance(pAtom2) < 3.0)
 			{
-#ifdef _SKIP_DEBUG
-				cout << "Disulfide bond detected! Between Res ";
-			 	cout << _pRes1->getResNum() << " atom num " << _index1;
-				cout << " and Res ";
-				cout << _pRes2->getResNum() << " atom num " << _index2 << " !" << endl;
-#endif
-				if ( ((_index1==5) && ((_index2==5)||(_index2==4)||(_index2==1))) ||
-			             ((_index2==5) && ((_index1==5)||(_index1==4)||(_index1==1))) ||
-				     ((_index1==4) && ((_index2==5)||(_index2==4))) ||
-				     ((_index2==4) && ((_index1==5)||(_index1==4))) )
-				{
-#ifdef _SKIP_DEBUG
-					cout << "Ignoring interaction between Res ";
-			 		cout << _pRes1->getResNum() << " atom num " << _index1;
-					cout << " and Res ";
-					cout << _pRes2->getResNum() << " atom num " << _index2 << " !" << endl;
-#endif
-					return true;
-				}
+				return true;
 			}
+		}
+	}
+
+	// Check for SF4 Cysteine bond
+	if ((_pRes1->getType() == "CYF" || _pRes1->getType() == "CFD") && _index1 == 5 )
+	{	if (_pRes2->getType() == "CSF" && (_index2 == 6 || _index2 == 8 || _index2 == 10 || _index2 == 12))
+		{ 	atom* pAtom1=_pRes1->getAtom(_index1);
+			atom* pAtom2=_pRes2->getAtom(_index2);
+			if (pAtom1->distance(pAtom2) < 3.0)
+			{
+				return true;
+			}
+		}
+	}
+	if ((_pRes2->getType() == "CYF" || _pRes2->getType() == "CFD") && _index2 == 5)
+	{	if (_pRes1->getType() == "CSF" && (_index1 == 6 || _index1 == 8 || _index1 == 10 || _index1 == 12))
+		{ 	atom* pAtom1=_pRes2->getAtom(_index2);
+			atom* pAtom2=_pRes1->getAtom(_index1);
+			if (pAtom1->distance(pAtom2) < 3.0)
+			{
+				return true;
+			}
+		}
+	}
+
+	// Check for peptide bond
+	if ((_index1 == 0 && _index2 == 2) || (_index2 == 0 && _index1 == 2))
+	{
+		atom* pAtom1=_pRes1->getAtom(_index1);
+		atom* pAtom2=_pRes2->getAtom(_index2);
+		if (pAtom1->distance(pAtom2) < 2.0)
+		{
+			return true;
 		}
 	}
 
