@@ -481,11 +481,9 @@ void PDBInterface::parseAtomLine()
 		// At this point all the atoms should be initialized in our
 		// new residue, and the residue should be in the chain, which
 		// is in the protein.
-        bool withRotamer = true;
-        if (numAtomsInRes < pTheResidue->getNumAtoms())
-		{
-            //withRotamer = false;
-        }
+		// Now mutate in, library version of amino acid, while preserving
+		// sidechain dihedrals, which includes hydrogen positions and internal nomenclature
+		bool withRotamer = true;
 		pCurrentChain->fixBrokenResidue(pCurrentChain->getNumResidues()-1, withRotamer);
 
 	} // end loop over residues

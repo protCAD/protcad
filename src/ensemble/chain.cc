@@ -421,28 +421,22 @@ void chain::fixBrokenResidue(const UInt _indexInChain)
 
 void chain::fixBrokenResidue(const UInt _indexInChain, bool withRotamer)
 {	if (_indexInChain < itsResidues.size())
-    {	// Now check if this position is allowed to be mutated
-        // to this residue type
-        vector < vector <double> > currentRot;
-        double betaChi;
-        residue* pOldRes = itsResidues[_indexInChain];
-        if (withRotamer)
-        {
-            betaChi = itsResidues[_indexInChain]->getBetaChi();
-            currentRot = getSidechainDihedralAngles(_indexInChain);
-        }
-        itsResidues[_indexInChain] = pOldRes->mutate( itsResidues[_indexInChain]->getTypeIndex() );
-        if (withRotamer)
-        {
-            if (betaChi != 1000.0)
-            {
-                //itsResidues[_indexInChain]->setBetaChi(betaChi);
-            }
-            setSidechainDihedralAngles(_indexInChain, currentRot);
-        }
-        itsResidues[_indexInChain]->isArtificiallyBuilt = true;
-        delete pOldRes;
-    }
+	{	// Now check if this position is allowed to be mutated
+		// to this residue type
+		vector < vector <double> > currentRot;
+		residue* pOldRes = itsResidues[_indexInChain];
+		if (withRotamer)
+		{
+			currentRot = getSidechainDihedralAngles(_indexInChain);
+		}
+		itsResidues[_indexInChain] = pOldRes->mutate( itsResidues[_indexInChain]->getTypeIndex() );
+		if (withRotamer)
+		{
+			setSidechainDihedralAngles(_indexInChain, currentRot);
+		}
+		itsResidues[_indexInChain]->isArtificiallyBuilt = true;
+		delete pOldRes;
+	}
 }
 
 vector<chainModBuffer> chain::performRandomMutation(ran& _ran)
