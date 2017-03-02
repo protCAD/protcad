@@ -41,7 +41,7 @@ int main (int argc, char* argv[])
     srand (time(NULL));
 	
     UInt _chainIndex = 0;
-    UInt randres = 0;
+	UInt randres = 8;
     UInt bestrot;
 	UInt count = 0;
     UInt randrestype = bundle->getTypeFromResNum(_chainIndex,randres);
@@ -55,7 +55,6 @@ int main (int argc, char* argv[])
     {
         count++;
         bundle->setRotamerWBC(_chainIndex, randres, b, allowedRots[b][j]);
-        bundle->setMoved(_chainIndex,randres,1);
         Energy = bundle->protEnergy();
         stringstream convert;
         string countstr;
