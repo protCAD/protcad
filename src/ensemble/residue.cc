@@ -1616,7 +1616,7 @@ void residue::setRotamer(const UInt _lib, const UInt _bpt, const UInt _rotamer)
 	for (UInt i=0;i<itsSidechainDihedralAngles[_bpt].size();i++)
 	{	setChi(_bpt,i,itsSidechainDihedralAngles[_bpt][i]);
 	}
-	calculateSidechainDihedralAngles();
+	//calculateSidechainDihedralAngles();
 }
 
 void residue::setRotamer(const UInt _bpt, const DouVec _rotamer)
@@ -1625,7 +1625,7 @@ void residue::setRotamer(const UInt _bpt, const DouVec _rotamer)
 	for (UInt i=0;i<itsSidechainDihedralAngles[_bpt].size();i++)
 	{	setChi(_bpt,i,itsSidechainDihedralAngles[_bpt][i]);
 	}
-	calculateSidechainDihedralAngles();
+	//calculateSidechainDihedralAngles();
 }
 
 void residue::setRotamerWithCheck(const UInt _lib, const UInt _bpt, const UInt _rotamer)
@@ -1648,7 +1648,7 @@ void residue::setRotamerWithCheck(const UInt _lib, const UInt _bpt, const UInt _
 		//else cout << "ERROR in setRotamerWithCheck...\n rotamer " << _bpt << ", " << _rotamer << " does not exist." << endl;
 	}
 	//else cout << "ERROR in setRotamerWithCheck...\n bpt " << _bpt << " does not exist." << endl;
-	calculateSidechainDihedralAngles();
+	//calculateSidechainDihedralAngles();
 }
 
 void residue::setPolarHRotamer(UInt _rotamerIndex)
@@ -1714,13 +1714,11 @@ void residue::setChiByDelta(const UInt _bpt, const UInt _index, const double _an
 				dataBase[itsType].chiDefinitions[_bpt][_index+2],
 				_angleDelta);
 	}
-//	calculateSidechainDihedralAngles();
 }
 
 void residue::setChi(const UInt _index, const double _angle)
 {	UInt bpt = 0;
 	setChi(bpt, _index, _angle);
-//	calculateSidechainDihedralAngles();
 }
 
 void residue::setPolarHChi(const UInt _rotamerIndex)

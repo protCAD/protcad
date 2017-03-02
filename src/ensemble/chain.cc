@@ -683,7 +683,7 @@ void chain::setRotamerWithoutBuffering(const UInt _indexInChain, const UInt _bpt
 {	if (_indexInChain >=0 && _indexInChain < itsChainPositions.size())
 	{	if (itsChainPositions[_indexInChain])
 		{	UInt lib = itsChainPositions[_indexInChain]->getRotamerLibIndex();
-			itsResidues[_indexInChain]->setRotamerWithCheck(lib,_bpt, _rotamerIndex);
+			itsResidues[_indexInChain]->setRotamer(lib,_bpt, _rotamerIndex);
 			itsChainPositions[_indexInChain]->setCurrentRotamerIndex(_rotamerIndex);
 		}
 	}

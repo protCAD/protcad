@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 3.4.1, 2017-03-01T14:37:45. -->
+<!-- Written by QtCreator 3.4.1, 2017-03-02T10:21:41. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -41,7 +41,7 @@
    <value type="bool" key="EditorConfiguration.ShowMargin">false</value>
    <value type="int" key="EditorConfiguration.SmartBackspaceBehavior">0</value>
    <value type="bool" key="EditorConfiguration.SpacesForTabs">false</value>
-   <value type="int" key="EditorConfiguration.TabKeyBehavior">1</value>
+   <value type="int" key="EditorConfiguration.TabKeyBehavior">0</value>
    <value type="int" key="EditorConfiguration.TabSize">4</value>
    <value type="bool" key="EditorConfiguration.UseGlobal">false</value>
    <value type="int" key="EditorConfiguration.Utf8BomBehavior">1</value>
