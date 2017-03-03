@@ -129,9 +129,7 @@ public:
 	
     //--Optimization functions
     void protOpt(bool _backbone); // --Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics-- dpike
-    void protOpt(bool _backbone, UIntVec _activechains);
-    void protOpt(bool _backbone, UIntVec _frozenResidues, UInt _activeChain);
-    void chainOptSolvent(UInt _plateau, UInt _chainIndex);
+	void protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeChains);
 	void optimizeSmallRotations(UInt _steps, double _stepSize);
 	void optimizeSmallRotations(vector <UIntVec> _positions, UInt _steps, double _stepSize);
 	void optimizeSmallRotations(UIntVec _position, UInt _steps, double _stepSize);

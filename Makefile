@@ -49,6 +49,8 @@ install : $(LIB_TARGETS)
 	@echo export PROTCADDIR=$(PROTCADDIR) >> ~/.bashrc
 	@echo export PATH=$(PATH):$(PROTCADDIR):$(PROTCADDIR)/bin >> ~/.bashrc
 
+all : $(LIB_TARGETS) $(TARGETS)
+
 lib : libprotcad.a
 
 libprotcad.a : $(LIB_CC_OBJECTS)

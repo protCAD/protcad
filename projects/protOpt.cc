@@ -15,40 +15,27 @@
 #include <time.h>
 int main (int argc, char* argv[])
 {
-    if (argc !=3)
-    {   cout << "protOpt <inFile.pdb> <outFile.pdb>" << endl;
-        exit(1); }
+	if (argc !=3)
+	{   cout << "protOpt <inFile.pdb> <outFile.pdb>" << endl;
+		exit(1); }
 
-	//clock_t t;
-    string infile = argv[1];
-    string outFile = argv[2];
-    PDBInterface* thePDB = new PDBInterface(infile);
-    ensemble* theEnsemble = thePDB->getEnsemblePointer();
-    molecule* pMol = theEnsemble->getMoleculePointer(0);
-    protein* _prot = static_cast<protein*>(pMol);
+	string infile = argv[1];
+	string outFile = argv[2];
+	PDBInterface* thePDB = new PDBInterface(infile);
+	ensemble* theEnsemble = thePDB->getEnsemblePointer();
+	molecule* pMol = theEnsemble->getMoleculePointer(0);
+	protein* _prot = static_cast<protein*>(pMol);
 
 	bool backbone = true;
-    /*bool homoSymmetric = true;
-    UInt _frozenResidues[] = {3,5,6,13};
+	double startEnergy = _prot->protEnergy();
+	time_t start,end;
+	time (&start);
+	_prot->protOpt(backbone);
+	time (&end);
+	double endEnergy = _prot->protEnergy();
+	cout << _prot->protEnergy() << " " << (endEnergy-startEnergy)/difftime(end,start) << " ";
+	pdbWriter(_prot, outFile);
 
-    UIntVec frozenResidues;
-    UInt frozenResiduesSize = sizeof(_frozenResidues)/sizeof(_frozenResidues[0]);
-    for (UInt i = 0; i < frozenResiduesSize; i++)
-    {
-        frozenResidues.push_back(_frozenResidues[i]);
-    }
-    if (homoSymmetric)
-    {
-        for (UInt i = 1; i < _prot->getNumChains(); i++)
-        {
-            _prot->symmetryLinkChainAtoB(i, 0);
-        }
-    }*/
-
-    _prot->protOpt(backbone);
-	cout << infile << " " << _prot->protEnergy();
-    pdbWriter(_prot, outFile);
-
-    return 0;
+	return 0;
 }
 
