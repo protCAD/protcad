@@ -3117,7 +3117,7 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
         double charge = residueTemplate::itsAmberElec.getItsCharge(itsType, _atomIndex);
         double chargeSquared = charge*charge;
 		double waterDielectric = 79; // -0.3195 * (temperature-274.15) + 86.115; Malmberg and Maryott, 1956 JRNBS
-		proteinSolventEnthalpy +=((-166*chargeSquared/(solvatedRadius*atomDielectric))/(waterDielectric-atomDielectric))*EsolvationFactor;
+		proteinSolventEnthalpy +=((-332*chargeSquared/(solvatedRadius*waterDielectric))/(waterDielectric-atomDielectric))*EsolvationFactor;
     }
 
     if (HsolvationFactor != 0.0)
