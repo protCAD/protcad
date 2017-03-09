@@ -36,20 +36,20 @@ int main (int argc, char* argv[])
     residue::setCutoffDistance(8.0);
     residue::setElectroSolvationScaleFactor(0.0);
     residue::setHydroSolvationScaleFactor(0.0);
-    amberElec::setScaleFactor(0.0);
+	amberElec::setScaleFactor(1.0);
     amberVDW::setScaleFactor(1.0);
     srand (time(NULL));
 	
     UInt _chainIndex = 0;
-	UInt randres = 8;
+	UInt randres = 64;
     UInt bestrot;
 	UInt count = 0;
-    UInt randrestype = bundle->getTypeFromResNum(_chainIndex,randres);
+	//UInt randrestype = bundle->getTypeFromResNum(_chainIndex,randres);
     double pastEnergy = 1E100, Energy;
     //--Get current rotamer and allowed
 
 
-    vector <UIntVec> allowedRots = bundle->getAllowedRotamers(_chainIndex, randres, randrestype);
+	/*vector <UIntVec> allowedRots = bundle->getAllowedRotamers(_chainIndex, randres, randrestype);
     UInt b = 0;
     for (UInt j = 0; j < allowedRots[b].size(); j++)
     {
@@ -67,7 +67,25 @@ int main (int argc, char* argv[])
             bestrot = j;
             pastEnergy = Energy;
         }
-    }
+	}*/
+	double betachi = bundle->getBetaChi(_chainIndex, randres);
+	for (int j = -10; j < 0; j++)
+	{
+		count++;
+		bundle->setBetaChi(_chainIndex, randres, betachi+j);
+		Energy = bundle->protEnergy();
+		stringstream convert;
+		string countstr;
+		convert << count, countstr = convert.str();
+		string outFile = countstr + ".rot.pdb";
+		pdbWriter(bundle, outFile);
+		cout << count << " " << Energy << endl;
+		if (Energy < pastEnergy)
+		{
+			bestrot = j;
+			pastEnergy = Energy;
+		}
+	}
     //cout << infile << " " << pastEnergy << endl;
 	//bundle->setRotamerWBC(_chainIndex, randres, 0, allowedRots[bestrot]);
 	//pdbWriter(bundle, infile);

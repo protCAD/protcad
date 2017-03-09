@@ -1503,6 +1503,7 @@ residue* residue::mutate(const UInt _newTypeIndex)
             }
         }
 	}
+	setMoved(1);
 	return newAA;
 }
 

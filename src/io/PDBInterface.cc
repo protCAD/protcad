@@ -96,8 +96,8 @@ void PDBInterface::readData(ifstream& _infile)
 	bool inLibrary;
 	while (getline(_infile,linebuffer,'\n'))
 	{
-        if (linebuffer.length() > 13)
-        {
+		if (linebuffer.length() > 16)
+		{
 			inLibrary = false;
 			for (UInt i = 0; i < resNames.size(); i++)
 			{
@@ -111,7 +111,7 @@ void PDBInterface::readData(ifstream& _infile)
 			{
 				if (linebuffer.compare(13,1,"H") != 0 || linebuffer.compare(12,1,"H") != 0)// do not include hydrogens as we will use internal nomenclature and inclusion criteria
 				{
-				   theLines.push_back(linebuffer);
+					theLines.push_back(linebuffer);
 				}
 			}
 		}
