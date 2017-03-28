@@ -20,7 +20,6 @@
 #include <vector>
 #include "typedef.h"
 #include <stdio.h>
-//#include "CMath.h"
 #include "assert.h"
 #include <string.h>
 
@@ -42,12 +41,6 @@ class amberElec
 		amberElec(const amberElec& _other);
 		~amberElec();
 
-                //Ligand/Residue Energy Functions
-                double getEnergy(const UInt _resType, const UInt _atomType, double _ligAtomCharge, const double _distance) const;
-                double getEnergySQ(const UInt _resType, const UInt _atomType, double _ligAtomCharge, const double _distanceSquared) const;
-                
-                //end Ligand/Residue Energy Functions
-
 		double getEnergy(const UInt _restype1, const UInt _atomtype1, const UInt _restype2, const UInt _atomtype2, const double _distance) const;
 		double getSoluteEnergy(const UInt _resType1, const UInt _atomType1, const UInt _resType2, const UInt _atomType2, const double _distance, const double _dielectric) const;
 		double getSoluteEnergySQ(const UInt _resType1, const UInt _atomType1, const UInt _resType2, const UInt _atomType2, const double _distanceSquared, const double _dielectric) const;
@@ -55,9 +48,7 @@ class amberElec
 		double getItsCharge(const UInt _restype, const UInt _atomtype) const;
 		string getItsAtomName(const UInt _restype, const UInt _atomtype) const;
 
-		void buildWithHydrogens();
-		void buildWithOutHydrogens();
-                void buildWithPolarHydrogens();
+		void buildElectrostatics();
 
 		void dummy();
 		static void distanceDependanceOn()

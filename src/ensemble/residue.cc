@@ -326,51 +326,10 @@ void residue::removeResidue()
 
 void residue::generateAtoms()
 {
-	if(hydrogensOn)
-	{	for(UInt i=0; i < dataBase[itsType].atomList.size(); i++)
-		{	itsAtoms.push_back(new atom(dataBase[itsType].atomList[i]));
-		}
-	}
-
-	if(polarHydrogensOn) //not working yet
+	cout << dataBase[itsType].atomList.size() << endl;
+	for(UInt i=0; i < dataBase[itsType].atomList.size(); i++)
 	{
-		vector < string > allowedH;
-		//allowedH = polarHDataBase.getAllowedH[itsType];
-		string temp1 = "OH";
-		allowedH.push_back(temp1);
-		temp1 = "HH";
-		allowedH.push_back(temp1);
-		for(UInt i=0; i < dataBase[itsType].atomList.size(); i++)
-		{
-			//string tmpAtmName = dataBase[itsType].atomList[i].getType();
-			if(dataBase[itsType].atomList[i].getType() == "H")
-			{
-				bool allowed = false;
-				for(UInt j=0;j<allowedH.size();j++)
-				{
-					if(dataBase[itsType].atomList[i].getType()==allowedH[j]) {allowed=true;}
-				}
-				if(allowed) {itsAtoms.push_back(new atom(dataBase[itsType].atomList[i]));}
-			}
-			else
-			{ itsAtoms.push_back(new atom(dataBase[itsType].atomList[i])); }
-		}
-	}
-
-	if(!hydrogensOn && !polarHydrogensOn)
-	{	for(UInt i=0; i<dataBase[itsType].atomList.size(); i++)
-		{	if(dataBase[itsType].atomList[i].getType() == "H")
-			{	// when 1st Hydrogen is reached, exit the loop
-				// so Hydrogens should be arranged last in the database pdb
-				// it doesn't matter where the hydrogen is in the actual data
-				// this is a time-saving device when doing lots and lots
-				// of mutations and/or constructing of new residues
-				break;
-			}
-			else
-			{	itsAtoms.push_back(new atom(dataBase[itsType].atomList[i]));
-			}
-		}
+		itsAtoms.push_back(new atom(dataBase[itsType].atomList[i]));
 	}
 }
 
@@ -747,14 +706,7 @@ void residue::buildDataBase()
 	dataBaseBuilt = true;
 
 	// now that database has been constructed, build electrostatics forcefields
-	if (hydrogensOn)
-		residueTemplate::itsAmberElec.buildWithHydrogens();
-	else
-	if (polarHydrogensOn)
-	{ residueTemplate::itsAmberElec.buildWithPolarHydrogens(); }
-	else
-	{  residueTemplate::itsAmberElec.buildWithOutHydrogens(); }
-
+	residueTemplate::itsAmberElec.buildElectrostatics();
 	residueTemplate::itsHelixPropensity.buildDatabase();
 	//cout << "Done!!!" << endl;
 }
@@ -772,7 +724,7 @@ void residue::buildResidueDataBaseAminoAcids()
 	string evname = "PROTCADDIR";
 	string path = getEnvironmentVariable(evname);
 	
-	string aaLib = "/data/aa.lib";
+	string aaLib = "/data/res.lib";
 	string iFile;
 	ifstream inFile;
 
@@ -833,7 +785,7 @@ void residue::buildDataBaseAA()
 	string evname = "PROTCADDIR";
 	string path = getEnvironmentVariable(evname);
 
-	string aaLib = "/data/aa.lib";
+	string aaLib = "/data/res.lib";
 	string iFile;
 	ifstream inFile;
 
@@ -911,7 +863,7 @@ void residue::buildDataBaseCC()
 	string evname = "PROTCADDIR";
 	string path = getEnvironmentVariable(evname);
 	
-	string aaDat = "/data/aa/";
+	string aaDat = "/data/res/";
 
 	path += aaDat;
 	string iFile;
@@ -1345,8 +1297,8 @@ residue* residue::mutate(const UInt _newTypeIndex)
 	for (UInt i=0; i<numbpt; i++)
 	{
 		dblVec Coord_A_target = getMainChain(i)->getCoords();
-		dblVec Coord_B_target = getMainChain(i+1)->getCoords();
 		dblVec Coord_C_target = getMainChain(i+2)->getCoords();
+		dblVec Coord_B_target = getMainChain(i+1)->getCoords();
 
 #ifdef _MUTATE_DEBUG
 		cout << "Coord_A_target : " << Coord_A_target << endl;
@@ -1359,14 +1311,13 @@ residue* residue::mutate(const UInt _newTypeIndex)
 		dblVec Coord_C_new(3);
 		Coord_B_new = newAA->getMainChain(i+1)->getCoords();
 
-
 		// This equivalences the coordinates of the branchpoint atoms
 		// in the new amino acid to that of the original amino acid
 		newAA->translate(Coord_B_target - Coord_B_new);
 
 		Coord_A_new = newAA->getMainChain(i)->getCoords();
-		Coord_B_new = newAA->getMainChain(i+1)->getCoords();
 		Coord_C_new = newAA->getMainChain(i+2)->getCoords();
+		Coord_B_new = newAA->getMainChain(i+1)->getCoords();
 
 #ifdef _MUTATE_DEBUG
 		cout << "After translation : " << endl;
@@ -1422,6 +1373,7 @@ residue* residue::mutate(const UInt _newTypeIndex)
 		// we want to rotate all the sidechain atoms which branch
 		// from that atom only.
 		atom* pivotAtom = newAA->getMainChain(i+1);
+
 		if (i==0)
 		{
 			newAA->rotate_new(pivotAtom,newAA->getMainChain(0), RotMat);
@@ -1458,8 +1410,8 @@ residue* residue::mutate(const UInt _newTypeIndex)
 	// and Cbeta position relative to backbone
 	if (betapivot)
 	{
-		newAA->setBetaChi(getBetaChi());
 		newAA->getAtom(4)->setCoords(itsAtoms[4]->getCoords());
+		newAA->setBetaChi(getBetaChi());
 	}
 
 	// ensure that we have not modified the main chain
@@ -1504,6 +1456,7 @@ residue* residue::mutate(const UInt _newTypeIndex)
         }
 	}
 	setMoved(1);
+	newAA->setMoved(1);
 	return newAA;
 }
 
@@ -1815,11 +1768,7 @@ double residue::calculateDihedral(vector<atom*>& _quad) const
 	quadVect.resize(4);
 	for(UInt i=0; i<quadVect.size(); i++)
 	{
-#ifdef USE_SVMT
-		quadVect[i].resize(3);
-#else
 		quadVect[i].newsize(3);
-#endif
 		quadVect[i] = (_quad[i])->getCoords();
 	}
 	//cout << endl << "residue::calculateDihedral(vector(atom*)) called" << endl;
@@ -3812,6 +3761,27 @@ bool residue::isSeparatedByFewBonds(residue* _pRes1, UInt _index1, residue*
 	}
 	if ((_pRes2->getType() == "CYF" || _pRes2->getType() == "CFD") && _index2 == 5)
 	{	if (_pRes1->getType() == "CSF" && (_index1 == 6 || _index1 == 8 || _index1 == 10 || _index1 == 12))
+		{ 	atom* pAtom1=_pRes2->getAtom(_index2);
+			atom* pAtom2=_pRes1->getAtom(_index1);
+			if (pAtom1->distance(pAtom2) < 3.0)
+			{
+				return true;
+			}
+		}
+	}
+
+	if ((_pRes1->getType() == "CYF" || _pRes1->getType() == "CFD") && _index1 == 5 )
+	{	if (_pRes2->getType() == "SF4")
+		{ 	atom* pAtom1=_pRes1->getAtom(_index1);
+			atom* pAtom2=_pRes2->getAtom(_index2);
+			if (pAtom1->distance(pAtom2) < 3.0)
+			{
+				return true;
+			}
+		}
+	}
+	if ((_pRes2->getType() == "CYF" || _pRes2->getType() == "CFD") && _index2 == 5)
+	{	if (_pRes1->getType() == "SF4")
 		{ 	atom* pAtom1=_pRes2->getAtom(_index2);
 			atom* pAtom2=_pRes1->getAtom(_index1);
 			if (pAtom1->distance(pAtom2) < 3.0)

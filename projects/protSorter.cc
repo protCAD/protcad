@@ -23,8 +23,8 @@ vector < vector < UInt > > buildSequencePool();
 //--Program setup----------------------------------------------------------------------------------------
 int main (int argc, char* argv[])
 {
-    enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dAT,dW,dY,dV,Hce,Pch,Csf,dCf};
-    string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hn","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dQ","dE","dEh","dHd","dHe","dHn","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dAT","dW","dY","dV","Hce","Pch","Csf","dCf"};
+	enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,Csf,Hca,Oec};
+	string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hn","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dQ","dE","dEh","dHd","dHe","dHn","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dAT","dW","dY","dV","Hce","Pch","Csf","dCf"};
     if (argc !=1)
 	{
                 cout << "protSorter" << endl;
@@ -50,53 +50,33 @@ int main (int argc, char* argv[])
     UInt count = 0;
 
     //--get sequence evolution results for position
-    while ((pent=readdir(pdir)))
-    {
-        inFrame = pent->d_name;
-        if (inFrame.find("evo.pdb") != std::string::npos)
-        {
-            count++;
-            PDBInterface* theModelPDB = new PDBInterface(inFrame);
-            ensemble* theModelEnsemble = theModelPDB->getEnsemblePointer();
-            molecule* modelMol = theModelEnsemble->getMoleculePointer(0);
-            protein* model = static_cast<protein*>(modelMol);
-            UInt neg = 0, pos = 0, his = 0, tyr = 0, tot = 0, restype;
-            for (UInt i = 0; i < 12; i++)
-            {
-                restype = model->getTypeFromResNum(0,i);
-                if (restype == E || restype == Eh || restype == D || restype == Dh)
-                {
-                    neg = 1;
-                }
-                if (restype == R || restype == K)
-                {
-                    pos = 1;
-                }
-                if (restype == Y)
-                {
-                    tyr = 1;
-                }
-                if (restype == He || restype == Hn || restype == Hd || restype == Hp)
-                {
-                    his = 1;
-                }
-                i++;
-            }
-            tot = neg+pos+tyr+his;
-            if (tot == 4)
-            {
-                cout << inFrame << " " << model->intraSoluteEnergy(true);
-                for (UInt i = 0; i < 12; i++)
-                {
-                    cout << " " << aminoAcidString[model->getTypeFromResNum(0,i)];
-                    i++;
-                }
-                cout << endl;
-            }
-            delete theModelPDB;
-        }
-    }
-    closedir(pdir);
+	while ((pent=readdir(pdir)))
+	{
+		inFrame = pent->d_name;
+		if (inFrame.find(".trim") != std::string::npos)
+		{
+			count++;
+			PDBInterface* theModelPDB = new PDBInterface(inFrame);
+			ensemble* theModelEnsemble = theModelPDB->getEnsemblePointer();
+			molecule* modelMol = theModelEnsemble->getMoleculePointer(0);
+			protein* model = static_cast<protein*>(modelMol);
+			UInt restype;
+			for (UInt i = 0; i < model->getNumChains(); i++)
+			{
+				for (UInt j = 0; j < model->getNumResidues(i); j++)
+				{
+					restype = model->getTypeFromResNum(i,j);
+					if (restype == He || restype == Hd || restype == Hp)
+					{
+						string outfile = inFrame + ".his";
+						pdbWriter(model, outfile);
+					}
+				}
+			}
+			delete theModelPDB;
+		}
+	}
+	closedir(pdir);
 
     //create evo final file
     /*string inFrame;

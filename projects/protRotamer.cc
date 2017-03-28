@@ -44,10 +44,15 @@ int main (int argc, char* argv[])
 	UInt randres = 64;
     UInt bestrot;
 	UInt count = 0;
-	//UInt randrestype = bundle->getTypeFromResNum(_chainIndex,randres);
+	UInt randrestype = bundle->getTypeFromResNum(_chainIndex,randres);
     double pastEnergy = 1E100, Energy;
     //--Get current rotamer and allowed
 
+	double chi = bundle->getChi(_chainIndex,randres,0,0);
+	//double chi2 = bundle->getChi(_chainIndex,randres,0,2);
+	//bundle->setChi(_chainIndex,randres,0,0,-142.9);
+	bundle->setChi(_chainIndex,randres,0,0,chi+20);
+	//bundle->setChi(_chainIndex,randres,0,2,chi2+10);
 
 	/*vector <UIntVec> allowedRots = bundle->getAllowedRotamers(_chainIndex, randres, randrestype);
     UInt b = 0;
@@ -59,7 +64,7 @@ int main (int argc, char* argv[])
         stringstream convert;
         string countstr;
         convert << count, countstr = convert.str();
-        string outFile = countstr + ".rot.pdb";
+		string outFile = countstr + ".rot.pdb";
         pdbWriter(bundle, outFile);
         cout << count << " " << Energy << endl;
         if (Energy < pastEnergy)
@@ -67,7 +72,7 @@ int main (int argc, char* argv[])
             bestrot = j;
             pastEnergy = Energy;
         }
-	}*/
+	}
 	double betachi = bundle->getBetaChi(_chainIndex, randres);
 	for (int j = -10; j < 0; j++)
 	{
@@ -85,10 +90,10 @@ int main (int argc, char* argv[])
 			bestrot = j;
 			pastEnergy = Energy;
 		}
-	}
+	}*/
     //cout << infile << " " << pastEnergy << endl;
 	//bundle->setRotamerWBC(_chainIndex, randres, 0, allowedRots[bestrot]);
-	//pdbWriter(bundle, infile);
+	pdbWriter(bundle, infile);
     return 0;
 }
 

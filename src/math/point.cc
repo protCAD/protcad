@@ -11,11 +11,7 @@ UInt point::howMany = 0;
 
 point::point()
 {	
-#ifdef USE_SVMT
-	itsCoords.resize(3);
-#else
 	itsCoords.newsize(3);
-#endif
 	itsCoords[0] = 0.00;
 	itsCoords[1] = 0.00;
 	itsCoords[2] = 0.00;
@@ -30,11 +26,7 @@ point::point()
 
 point::point(const dblVec&  _dblVec)
 {     	
-#ifdef USE_SVMT
-	itsCoords.resize(3); 
-#else
 	itsCoords.newsize(3);
-#endif
 #ifdef __POINT_DEBUG
 	cout << "Point constructor called: " << endl
 	     << "point::point(const dblVec&) "
@@ -46,11 +38,7 @@ point::point(const dblVec&  _dblVec)
 
 point::point(const double _x, const double _y, const double _z)
 {      
-#ifdef USE_SVMT
-	itsCoords.resize(3); 
-#else
 	itsCoords.newsize(3);
-#endif
 #ifdef __POINT_DEBUG
 	cout << "Point constructor called: "
 	     << "point::point(const double, const double, const double) "
@@ -64,11 +52,7 @@ point::point(const double _x, const double _y, const double _z)
 
 point::point(const point& rhs)
 {	
-#ifdef USE_SVMT
-	itsCoords.resize(3);	
-#else
 	itsCoords.newsize(3);
-#endif
 #ifdef __POINT_DEBUG
 	cout << "Point copy constructor called " << endl;
 #endif
@@ -105,11 +89,7 @@ dblVec point::operator- (const point& rhs)
 
 void point::setCoords(const dblVec& _dblVec)
 {	
-#ifdef USE_SVMT
-	double theSize = _dblVec.extent();
-#else
 	double theSize = _dblVec.dim();
-#endif
 	if (theSize!=3)
 	{	cout << "Error: setCoords with a vector of extent "
 		     << theSize << " !" << endl;

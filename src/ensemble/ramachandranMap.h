@@ -3,7 +3,6 @@
 #include "assert.h"
 #include <vector>
 #include "typedef.h"
-//#include "svmt.h"
 
 #ifndef RAMACHANDRANMAP_H
 #define RAMACHANDRANMAP_H

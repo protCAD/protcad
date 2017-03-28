@@ -102,19 +102,8 @@ void PDBAtomRecord::convert(string& _pdbAtomLine)
 	altLoc = _pdbAtomLine.substr(16,1);
 	//cout << "altLoc= " <<altLoc << endl;
 
-
-	if(hetflag)
-    {
-        string tempName = _pdbAtomLine.substr(17,4);
-        string tempChar="";
-        for(UInt i=0; i<4; i++)
-        {
-            tempChar=tempName.substr(i,1);
-            if(tempChar!=" "){resName+=tempChar;}
-        }
-    }
         
-	else{resName= _pdbAtomLine.substr(17,3);}
+	resName= _pdbAtomLine.substr(17,3);
     if (resName == "HIS")  // default to primary protonation state
     {
         resName = "HIE";
@@ -122,26 +111,11 @@ void PDBAtomRecord::convert(string& _pdbAtomLine)
 	
         //cout << "resName= " <<resName << endl;
 
-	if(hetflag){
-		bool endSpace=false;
-
-		chainID=_pdbAtomLine.substr(21,6);
-		for(UInt i=0; i<chainID.size();)
-		{
-			if (chainID.substr(i,1)==" ")
-			{
-				if(!endSpace){
-					chainID=chainID.substr(i+1,chainID.size()-1);
-				}
-				else{chainID=chainID.substr(0,i);}
-			} 
-			else{endSpace=true; i++;}
-		}
-		//cout << "Ligand chainID=*" << chainID <<"*"<< endl;
+	if(hetflag)
+	{
+		chainID = "X";
 	}
-
 	else{chainID = _pdbAtomLine.substr(21,1);}
-	//cout << "chainID= " << chainID << endl;
 
 	string sResSeq = _pdbAtomLine.substr(22,4);
 	sscanf(sResSeq.c_str(), "%d", &tempint);

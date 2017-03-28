@@ -33,37 +33,26 @@ double atom::itsProbeRadius = 1.4;
 void atom::atomDefaultValues()
 {	itsRadius = 0;
 	itsEpsilon = 0;
-    itsPolarizability = 0;
-    itsVolume = 0;
-#ifdef USE_SVMT
-	for( UInt i=0;i<itsCoords.extent();i++) itsCoords[i] = 0.0;
-#else
+	itsPolarizability = 0;
+	itsVolume = 0;
 	for( int i=0;i<itsCoords.dim();i++) itsCoords[i] = 0.0;
-#endif
 	itsType = 0; // 0 means "C"
 	itsName = -1; // 0 means "UNK"
-        itsSerialNumber = 0;
+	itsSerialNumber = 0;
 	// indicating not set, valid serial number starts from 1
-        itsOccupancy = -1.0; // indicating not set with real data
+	itsOccupancy = -1.0; // indicating not set with real data
 	itsChainID = ' ';
 	itsLigChainID= "UNK";
-        itsTempFactor = -1.0;// indicating not set with real data
-        itsCharge = 0; // starting with neutral charge
-       itsSolvationEnergy = 0.0;
-	   itsDielectric = 1.0;
-       itsWaters = 0;
-	   itsMaxDielectric = 80.4;
-	   itsMinDielectric = 2.25;
-        itsResType = -1; // 0 means "UNK"
+	itsTempFactor = -1.0;// indicating not set with real data
+	itsCharge = 0; // starting with neutral charge
+	itsSolvationEnergy = 0.0;
+	itsDielectric = 1.0;
+	itsWaters = 0;
+	itsMaxDielectric = 80.4;
+	itsMinDielectric = 2.25;
+	itsResType = -1; // 0 means "UNK"
 	itsAtomEnergyType = -1;
-	
-        //ligand properties...
-        itsAmberAllType=-9999;
-        itsAmberUnitedType=-9999;
-        itsAmberAllCharge=0.0;
-        itsAmberUnitedCharge=0.0;
-        
-        generateNewSpherePoints();
+	generateNewSpherePoints();
 	isSilent = false;
 	fullySpecified = false;
 	hetatmFlag=false;
@@ -123,15 +112,7 @@ atom::atom(const pdbAtom& _pdbAtomData)
     itsWaters = 0;
 	itsMaxDielectric = 80.4;
 	itsMinDielectric = 2.25;
-	
-        itsLigChainID="UNK"; // need to make it so pdbAtomData can read ligand chains
-        
-        itsAmberAllType=-9999;  //Default values... set when the atom is added to a ligand
-        itsAmberUnitedType=-9999;
-        itsAmberAllCharge=0.0;
-        itsAmberUnitedCharge=0.0;
-	
-        howMany++;
+	howMany++;
 	hetatmFlag=false;
 	generateNewSpherePoints();
 }
@@ -171,12 +152,6 @@ atom::atom(const PDBAtomRecord& _theRecord, bool _hetflag)
        		char theChainID = *pTheChainID;
         	itsChainID = theChainID;
 	}
-
-        itsAmberAllType=-9999;  //Default values... set when the atom is added to a ligand
-        itsAmberUnitedType=-9999;
-        itsAmberAllCharge=0.0;
-        itsAmberUnitedCharge=0.0;
-        
         isSilent = false;
         fullySpecified = false;
         howMany++;
@@ -214,13 +189,6 @@ atom::atom(const PDBAtomRecord& _theRecord)
 	const char* pTheChainID  = (_theRecord.getChainID()).c_str();
 	char theChainID = *pTheChainID;
 	itsChainID = theChainID;
-        
-        itsAmberAllType=-9999;  //Default values... set when the atom is added to a ligand
-        itsAmberUnitedType=-9999;
-        itsAmberAllCharge=0.0;
-        itsAmberUnitedCharge=0.0;
-        
-        
 	isSilent = false;
 	fullySpecified = false;
 	howMany++;
@@ -251,17 +219,11 @@ atom::atom(const atom& _rhs)
 	itsCharge = _rhs.itsCharge;
 	itsType = _rhs.itsType;
 	itsChainID = _rhs.itsChainID;
-        itsLigChainID=_rhs.itsLigChainID;
-        
-        itsAmberAllType=_rhs.itsAmberAllType;
-        itsAmberUnitedType=_rhs.itsAmberUnitedType;
-        itsAmberAllCharge=_rhs.itsAmberAllCharge;
-        itsAmberUnitedCharge=_rhs.itsAmberUnitedCharge;
-        itsSolvationEnergy = 0.0;
-        itsDielectric = 1.0;
-        itsWaters = 0;
-	   itsMaxDielectric = 80.4;
-	   itsMinDielectric = 2.25;
+	itsSolvationEnergy = 0.0;
+	itsDielectric = 1.0;
+	itsWaters = 0;
+	itsMaxDielectric = 80.4;
+	itsMinDielectric = 2.25;
 	isSilent = _rhs.isSilent;
 	itsAtomEnergyType = _rhs.itsAtomEnergyType;
 	fullySpecified = _rhs.fullySpecified;

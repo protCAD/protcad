@@ -18,9 +18,6 @@
 #include "molecule.h"
 #include "chain.h"
 #include "chainModBuffer.h"
-//#include "CMath.h"
-//#include "svmt.h"
-//#include "./stack.h"
 #ifndef PDBWRITER_H
 #include "pdbWriter.h"
 #endif
@@ -141,17 +138,6 @@ public:
 	void optimizeRotamersPN();
 	void optimizeRotamers(vector <UIntVec> _positions);
 	void optimizeRotamers(vector <UIntVec> _positions, vector <UIntVec> _rotamerArray);
-	
-	//--Ligand functions
-	void optimizeRotamers(vector<ligand*> _ligVec);
-	void optimizeRotamers(vector <UIntVec> _activePositions, vector <UIntVec> _rotamerArray,vector<ligand*> _ligVec);
-	UIntVec getEnergySurface(vector <UIntVec> _activePositions, vector <UIntVec> _rotamerArray, UIntVec _currentArray, UIntVec _bestArray, UInt _index, double& _lowestEnergy, vector<ligand*> _ligVec);
-	void optimizeRotamers(ligand* _lig);
-	void optimizeRotamers(vector <UIntVec> _activePositions, vector <UIntVec> _rotamerArray,ligand* _lig);
-	UIntVec getEnergySurface(vector <UIntVec> _activePositions, vector <UIntVec> _rotamerArray, UIntVec _currentArray, UIntVec _bestArray, UInt _index, double& _lowestEnergy, ligand* _lig);
-	double getInterEnergy(ligand* _other);
-	double getInterEnergy(vector <ligand*> _ligVec);
-	double getInterEnergy(UInt _chain, ligand* _other);
 	
 	//--Energy functions
 	void setMoved (UInt chainIndex, UInt resIndex, UInt _moved) {itsChains[chainIndex]->setMoved(resIndex, _moved);}

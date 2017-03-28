@@ -319,30 +319,6 @@ void residueTemplate::convertAtomTypeStringsToIndices(const StrVec& _strVect)
 #endif
 }
 
-// begin ligand/residue amberElec Code
-
-double residueTemplate::getAmberElecEnergySQ(const int _resType1, const int _atomType1, const double _ligAtomCharge, const double _distanceSquared)
-{
-      if (_resType1 >= 0 && _atomType1 >= 0)
-        {
-            return itsAmberElec.getEnergySQ(UInt(_resType1), UInt(_atomType1), _ligAtomCharge, _distanceSquared);
-        }
-    
-    return 0.0;
-}
-
-double residueTemplate::getAmberElecEnergy(const int _resType1, const int _atomType1, const double _ligAtomCharge, const double _distance)
-{
-    if (_resType1 >= 0 && _atomType1 >= 0)
-    {
-            return itsAmberElec.getEnergy(UInt(_resType1), UInt(_atomType1), _ligAtomCharge, _distance);
-    }
-    
-    return 0.0;
-}
-
-// end ligand/residue amberElec Code
-
 double residueTemplate::getAmberElecEnergy (const int _resType1, const int _atomType1, const int _resType2, const int _atomType2, const double _distance)
 {
 	if (_resType1 >= 0 && _atomType1 >= 0 && _resType2 >= 0 && _atomType2 >= 0)

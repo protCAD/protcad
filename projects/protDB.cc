@@ -29,8 +29,8 @@ int main (int argc, char* argv[])
 		cout << "amberAnalyzer" << endl;
 		exit(1);
 	}
-    enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dAT,dW,dY,dV,Hce,Pch,Csf,dCf};
-    string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hn","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dQ","dE","dEh","dHd","dHe","dHn","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dAT","dW","dY","dV","Hce","Pch","Csf","dCf"};
+	enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,Csf,Hca,Oec};
+	string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hn","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dQ","dE","dEh","dHd","dHe","dHn","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dAT","dW","dY","dV","Hce","Pch","Csf","dCf"};
 	residue::setCutoffDistance(10.0);
 	rotamer::setScaleFactor(0.0);
 	amberVDW::setScaleFactor(1.0);
@@ -80,7 +80,7 @@ int main (int argc, char* argv[])
 	while ((pent=readdir(pdir)))
 	{ 
 		inFrame = pent->d_name;
-        if (inFrame.find(".trim") != std::string::npos)
+		if (inFrame.find(".his") != std::string::npos)
 		{
             counter++;       
 			PDBInterface* theFramePDB = new PDBInterface(inFrame);
@@ -102,17 +102,17 @@ int main (int argc, char* argv[])
                 cout << count[i] << " ";
             }
             cout << endl;
-            fill(count.begin(), count.end(),0);
+			fill(count.begin(), count.end(),0);
 			delete theFramePDB;
 		}	
 	}
 	closedir(pdir);
-    /*cout << "A R N D Dh C Cx Cf Q E Eh Hd He Hn Hp I L K M F P O S T W Y V G" << endl;
+	/*cout << "A R N D Dh C Cx Cf Q E Eh Hd He Hn Hp I L K M F P O S T W Y V G" << endl;
     for (UInt i = 0; i < count.size(); i++)
     {
         cout << count[i] << " ";
     }
-    cout << endl << totalres;*/
+	cout << endl << totalres;*/
 	return 0;
 }
 

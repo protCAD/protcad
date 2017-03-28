@@ -11,17 +11,10 @@ void chain::initialize()
 	itsChainPositions.resize(0);
 	itsSecondaryStructures.resize(0);
 	itsRepackActivePositionMap.resize(0);
-    itsIndependentPositions.resize(0);
-    itsResidueLinkageMap.resize(0);
-
-#ifdef USE_SVMT
-	itsSpaceLink.resize(3);
-	itsSpinLink.resize(3);
-#else
+	itsIndependentPositions.resize(0);
+	itsResidueLinkageMap.resize(0);
 	itsSpaceLink.newsize(3);
 	itsSpinLink.newsize(3);
-#endif
-
 	itsLastTargetResidue = -1;
 	for (UInt i = 0; i < 3; i++)
 	{

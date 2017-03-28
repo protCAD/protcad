@@ -2563,16 +2563,12 @@ void protein::undoEulerRotate(const double _phi, const double _theta, const doub
 }
 
 void protein::translate(const UInt _index, const double _x,const double _y,const double _z)
-{   dblVec _vec;
-#ifdef USE_SVMT
-    _vec.resize(3);
-#else
-    _vec.newsize(3);
-#endif
-    _vec[0] = _x;
-    _vec[1] = _y;
-    _vec[2] = _z;
-    translate(_index, _vec);
+{	dblVec _vec;
+	_vec.newsize(3);
+	_vec[0] = _x;
+	_vec[1] = _y;
+	_vec[2] = _z;
+	translate(_index, _vec);
 }
 
 void protein::translate(const double _x, const double _y, const double _z)
@@ -2594,58 +2590,46 @@ void protein::transform(const UInt _index, const dblMat& _dblMat)
 }
 
 void protein::rotate(const UInt _index, const axis _axis, const double _theta)
-{   point origin;
-    // The default is to set this point to the origin
+{	point origin;
+	// The default is to set this point to the origin
 	//cout << "ROTATING CHAIN " << _index << endl;
-    origin.setCoords(0.0,0.0,0.0);
-    dblVec vec = dblVec(3);
-#ifdef USE_SVMT
-    for (UInt i = 0; i<vec.extent(); i++)
-    {   vec[i] = 0.0;
-    }
-#else
-    for (int i = 0; i<vec.dim(); i++)
-    {   vec[i] = 0.0;
-    }
-#endif
-    if (_axis == X_axis)
-    {   vec[0] = 1.0;
-    }
-    else if (_axis == Y_axis)
-    {   vec[1] = 1.0;
-    }
-    else if (_axis == Z_axis)
-    {   vec[2]  = 1.0;
-    }
-    rotate(_index, origin , vec, _theta);
+	origin.setCoords(0.0,0.0,0.0);
+	dblVec vec = dblVec(3);
+	for (int i = 0; i<vec.dim(); i++)
+	{   vec[i] = 0.0;
+	}
+	if (_axis == X_axis)
+	{   vec[0] = 1.0;
+	}
+	else if (_axis == Y_axis)
+	{   vec[1] = 1.0;
+	}
+	else if (_axis == Z_axis)
+	{   vec[2]  = 1.0;
+	}
+	rotate(_index, origin , vec, _theta);
 }
 
 void protein::rotate(const axis _axis, const double _theta)
-{   point origin;
-    // The default is to set this point to the origin
-    origin.setCoords(0.0,0.0,0.0);
-    dblVec vec = dblVec(3);
-#ifdef USE_SVMT
-    for (UInt i = 0; i<vec.extent(); i++)
-    {   vec[i] = 0.0;
-    }
-#else
-    for (int i = 0; i<vec.dim(); i++)
-    {   vec[i] = 0.0;
-    }
-#endif
-    if (_axis == X_axis)
-    {   vec[0] = 1.0;
-    }
-    else if (_axis == Y_axis)
-    {   vec[1] = 1.0;
-    }
-    else if (_axis == Z_axis)
-    {   vec[2]  = 1.0;
-    }
-    for (UInt i=0; i<itsChains.size(); i++)
-    {
-    	rotate(i, origin , vec, _theta);
+{	point origin;
+	// The default is to set this point to the origin
+	origin.setCoords(0.0,0.0,0.0);
+	dblVec vec = dblVec(3);
+	for (int i = 0; i<vec.dim(); i++)
+	{   vec[i] = 0.0;
+	}
+	if (_axis == X_axis)
+	{   vec[0] = 1.0;
+	}
+	else if (_axis == Y_axis)
+	{   vec[1] = 1.0;
+	}
+	else if (_axis == Z_axis)
+	{   vec[2]  = 1.0;
+	}
+	for (UInt i=0; i<itsChains.size(); i++)
+	{
+		rotate(i, origin , vec, _theta);
 	}
 }
 
