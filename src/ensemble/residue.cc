@@ -326,7 +326,7 @@ void residue::removeResidue()
 
 void residue::generateAtoms()
 {
-	cout << dataBase[itsType].atomList.size() << endl;
+	//cout << dataBase[itsType].atomList.size() << endl;
 	for(UInt i=0; i < dataBase[itsType].atomList.size(); i++)
 	{
 		itsAtoms.push_back(new atom(dataBase[itsType].atomList[i]));
