@@ -11,7 +11,7 @@ protCAD is an implementation of the protein design software library that origina
 
 -Install dependencies
 
-Ubuntu:
+Ubuntu, Windows (via Windows 10 Ubuntu sub-system: https://msdn.microsoft.com/en-us/commandline/wsl/about):
 
 sudo apt-get install g++ git
 
