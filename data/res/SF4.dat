@@ -1,0 +1,30 @@
+!main chain atoms
+FE1	FE2	FE3	FE4
+!sidechain branch points
+FE2
+!connectivity
+FE1	S2	S3	S4
+FE2	S1	S3	S4
+FE3	S1	S2	S4
+FE4	S1	S2	S3
+S1
+S2
+S3
+S4
+!defined dihedral angles
+!atom types
+# column 1: atom name
+# column 2: AMBER all atom atomtype
+# column 3:	AMBER united atom atomtype
+# column 4: SUMMA atom type
+# column 5: SUMMA environment type
+# column 6: six-atom solvation type
+FE1		F1		FE		-		-		-
+FE2		F2		FE		-		-		-
+FE3		F3		FE		-		-		-
+FE4		F4		FE		-		-		-
+S1		S1		S		-		-		-
+S2		S2		S		-		-		-
+S3		S3		S		-		-		-
+S4		S4		S		-		-		-
+

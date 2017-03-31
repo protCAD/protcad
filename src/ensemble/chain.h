@@ -116,7 +116,9 @@ public:
 
     void setMoved (UInt resIndex, UInt _moved) {itsResidues[resIndex]->setMoved(_moved);}
     double getSolvationEnergy(const UInt _resIndex) {return itsResidues[_resIndex]->getSolvationEnergy();}
-    double getDielectric(const UInt _resIndex) {return itsResidues[_resIndex]->getDielectric();}
+	double getDielectric(const UInt _resIndex) {return itsResidues[_resIndex]->getDielectric();}
+	double getBetaChi(const UInt _resIndex) {return itsResidues[_resIndex]->getBetaChi();}
+	void setBetaChi(const UInt _resIndex, double _chi) {return itsResidues[_resIndex]->setBetaChi(_chi);}
 	UIntVec getActiveResidues() { return itsRepackActivePositionMap;}
 	void setRotamerNotAllowed (const UInt _indexInChain, const UInt aaType, const UInt _bpt, const UInt _rotamer);
 	UIntVec getAllowedRotamers ( const UInt _indexInChain, const UInt  _aaType, const UInt _bpt);

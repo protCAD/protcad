@@ -49,7 +49,6 @@ protected:
 	friend class residue;
 	friend class atomIterator;
 	friend class unitSphere;
-        friend class ligand;
 
 // ***********************************************************************
 // ***********************************************************************
@@ -137,19 +136,6 @@ public:
         void  setLigChainID(string _ID){itsLigChainID= _ID;}
 	string getResType() const;
 	bool getSilentStatus() { return isSilent; }
-        
-        //Forcefield Accessors. Currently only ligand is using these.
-        // ... Residue accesses these properties from a database instead
-        int getAmberAllType(){return itsAmberAllType;}
-        int getAmberUnitedType(){return itsAmberUnitedType;}
-        double getAmberAllCharge(){return itsAmberAllCharge;}
-        double getAmberUnitedCharge(){return itsAmberUnitedCharge;}
-        
-        void setAmberAllType(int _type){itsAmberAllType=_type;}
-        void setAmberUnitedType(int _type){itsAmberUnitedType=_type;}
-        void setAmberAllCharge(double _charge){itsAmberAllCharge=_charge;}
-        void setAmberUnitedCharge(double _charge){itsAmberUnitedCharge=_charge;}
-        
 
 protected:
 	void  setOccupancy(const double _o);

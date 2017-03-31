@@ -11,17 +11,10 @@ void chain::initialize()
 	itsChainPositions.resize(0);
 	itsSecondaryStructures.resize(0);
 	itsRepackActivePositionMap.resize(0);
-    itsIndependentPositions.resize(0);
-    itsResidueLinkageMap.resize(0);
-
-#ifdef USE_SVMT
-	itsSpaceLink.resize(3);
-	itsSpinLink.resize(3);
-#else
+	itsIndependentPositions.resize(0);
+	itsResidueLinkageMap.resize(0);
 	itsSpaceLink.newsize(3);
 	itsSpinLink.newsize(3);
-#endif
-
 	itsLastTargetResidue = -1;
 	for (UInt i = 0; i < 3; i++)
 	{
@@ -683,7 +676,7 @@ void chain::setRotamerWithoutBuffering(const UInt _indexInChain, const UInt _bpt
 {	if (_indexInChain >=0 && _indexInChain < itsChainPositions.size())
 	{	if (itsChainPositions[_indexInChain])
 		{	UInt lib = itsChainPositions[_indexInChain]->getRotamerLibIndex();
-			itsResidues[_indexInChain]->setRotamerWithCheck(lib,_bpt, _rotamerIndex);
+			itsResidues[_indexInChain]->setRotamer(lib,_bpt, _rotamerIndex);
 			itsChainPositions[_indexInChain]->setCurrentRotamerIndex(_rotamerIndex);
 		}
 	}

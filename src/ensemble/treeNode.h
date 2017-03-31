@@ -4,7 +4,6 @@
 #include "assert.h"
 #include <vector>
 #include <iostream>
-//#include "svmt.h"
 #include "typedef.h"
 
 #ifndef LIGNODE_H

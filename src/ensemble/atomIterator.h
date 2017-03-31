@@ -12,7 +12,6 @@ class atomIterator
 {
 public:
 	atomIterator(protein* _pProtein);
-	atomIterator(ligand* _pLigand);
 	~atomIterator();
 
 	atomIterator& operator++ (int _x);	
@@ -33,7 +32,6 @@ public:
 	chain* getChainPointer() {return pItsCurrentChain;}
 	residue* getResiduePointer() {return pItsCurrentResidue;}
 	atom* getAtomPointer() {return pItsCurrentAtom;}
-	ligand* getLigandPointer() {return pInputLigand;}
 	UInt getChainIndex() {return itsCurrentChainIndex;}
 	UInt getResidueIndex() {return itsCurrentResidueIndex;}
 	UInt getAtomIndex() {return itsCurrentAtomIndex;}
@@ -43,7 +41,6 @@ private:
 	chain*   pItsCurrentChain;
 	residue* pItsCurrentResidue;
 	atom*    pItsCurrentAtom;
-	ligand*  pInputLigand;
 
 	UInt itsCurrentChainIndex;
 	UInt itsCurrentResidueIndex;

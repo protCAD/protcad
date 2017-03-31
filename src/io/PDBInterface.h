@@ -92,7 +92,6 @@ class PDBInterface
 		vector<UInt> anisouLines;
 		vector<UInt> userLines;
 		vector<UInt> energyLines;
-		vector<ligand*> ligandSet;
 		static aaBaseline itsAABaseline;
 
 };

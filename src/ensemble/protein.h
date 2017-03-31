@@ -18,9 +18,6 @@
 #include "molecule.h"
 #include "chain.h"
 #include "chainModBuffer.h"
-//#include "CMath.h"
-//#include "svmt.h"
-//#include "./stack.h"
 #ifndef PDBWRITER_H
 #include "pdbWriter.h"
 #endif
@@ -129,9 +126,7 @@ public:
 	
     //--Optimization functions
     void protOpt(bool _backbone); // --Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics-- dpike
-    void protOpt(bool _backbone, UIntVec _activechains);
-    void protOpt(bool _backbone, UIntVec _frozenResidues, UInt _activeChain);
-    void chainOptSolvent(UInt _plateau, UInt _chainIndex);
+	void protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeChains);
 	void optimizeSmallRotations(UInt _steps, double _stepSize);
 	void optimizeSmallRotations(vector <UIntVec> _positions, UInt _steps, double _stepSize);
 	void optimizeSmallRotations(UIntVec _position, UInt _steps, double _stepSize);
@@ -143,17 +138,6 @@ public:
 	void optimizeRotamersPN();
 	void optimizeRotamers(vector <UIntVec> _positions);
 	void optimizeRotamers(vector <UIntVec> _positions, vector <UIntVec> _rotamerArray);
-	
-	//--Ligand functions
-	void optimizeRotamers(vector<ligand*> _ligVec);
-	void optimizeRotamers(vector <UIntVec> _activePositions, vector <UIntVec> _rotamerArray,vector<ligand*> _ligVec);
-	UIntVec getEnergySurface(vector <UIntVec> _activePositions, vector <UIntVec> _rotamerArray, UIntVec _currentArray, UIntVec _bestArray, UInt _index, double& _lowestEnergy, vector<ligand*> _ligVec);
-	void optimizeRotamers(ligand* _lig);
-	void optimizeRotamers(vector <UIntVec> _activePositions, vector <UIntVec> _rotamerArray,ligand* _lig);
-	UIntVec getEnergySurface(vector <UIntVec> _activePositions, vector <UIntVec> _rotamerArray, UIntVec _currentArray, UIntVec _bestArray, UInt _index, double& _lowestEnergy, ligand* _lig);
-	double getInterEnergy(ligand* _other);
-	double getInterEnergy(vector <ligand*> _ligVec);
-	double getInterEnergy(UInt _chain, ligand* _other);
 	
 	//--Energy functions
 	void setMoved (UInt chainIndex, UInt resIndex, UInt _moved) {itsChains[chainIndex]->setMoved(resIndex, _moved);}
@@ -208,6 +192,8 @@ public:
 	double BBEnergy();
 
 	//--Transformation functions
+	double getBetaChi(UInt _chainIndex, UInt _residueIndex) {return itsChains[_chainIndex]->getBetaChi(_residueIndex); }
+	void setBetaChi(UInt _chainIndex, UInt _residueIndex, double _chi) {return itsChains[_chainIndex]->setBetaChi(_residueIndex, _chi); }
 	int setPhi(const UInt _chain, const UInt _res, double _angle);
 	int setPsi(const UInt _chain, const UInt _res, double _angle);
 	int setAngleLocal(const UInt _chain, const UInt _res, double _angle, double deltaTheta, UInt angleType, int distance, int direction);

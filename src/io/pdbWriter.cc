@@ -1,6 +1,5 @@
 #include "protein.h"
 #include "pdbWriter.h"
-//#include "svmt.h"
 #include <iomanip>
 #include <iostream>
 #include <fstream>

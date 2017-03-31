@@ -1,6 +1,5 @@
 #include <string.h>
 #include <stdlib.h>
-//#include "svmt.h"
 #ifndef PDBDATA_H
 #include "pdbData.h"
 #endif

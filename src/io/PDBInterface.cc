@@ -41,7 +41,7 @@ PDBInterface::PDBInterface(const string& _filename, bool _hetflag, bool _atomfla
 	categorizeLines();
 
 	setHetatmFlag(_hetflag);
-        setAtomFlag(_atomflag);
+	setAtomFlag(_atomflag);
 	
 	if(itsAtomFlag){parseAtomLine();}
 	if(itsHetatmFlag){parseHetatmLine();}
@@ -96,8 +96,8 @@ void PDBInterface::readData(ifstream& _infile)
 	bool inLibrary;
 	while (getline(_infile,linebuffer,'\n'))
 	{
-        if (linebuffer.length() > 13)
-        {
+		if (linebuffer.length() > 16)
+		{
 			inLibrary = false;
 			for (UInt i = 0; i < resNames.size(); i++)
 			{
@@ -111,7 +111,7 @@ void PDBInterface::readData(ifstream& _infile)
 			{
 				if (linebuffer.compare(13,1,"H") != 0 || linebuffer.compare(12,1,"H") != 0)// do not include hydrogens as we will use internal nomenclature and inclusion criteria
 				{
-				   theLines.push_back(linebuffer);
+					theLines.push_back(linebuffer);
 				}
 			}
 		}
@@ -125,12 +125,8 @@ void PDBInterface::categorizeLines()
 	{
 		header = theLines[i].substr(0,6);
 
-		if (header == "ATOM  ")
+		if (header == "ATOM  " || header == "HETATM")
 		{	atomLines.push_back(i);
-			continue;
-		}
-		if (header == "HETATM")
-		{	hetatmLines.push_back(i);
 			continue;
 		}
 		if (header == "TER   ")
@@ -483,8 +479,11 @@ void PDBInterface::parseAtomLine()
 		// is in the protein.
 		// Now mutate in, library version of amino acid, while preserving
 		// sidechain dihedrals, which includes hydrogen positions and internal nomenclature
-		bool withRotamer = true;
-		pCurrentChain->fixBrokenResidue(pCurrentChain->getNumResidues()-1, withRotamer);
+		if (!itsHetatmFlag)
+		{
+			bool withRotamer = true;
+			pCurrentChain->fixBrokenResidue(pCurrentChain->getNumResidues()-1, withRotamer);
+		}
 
 	} // end loop over residues
 
