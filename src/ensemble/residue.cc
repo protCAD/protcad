@@ -3748,6 +3748,28 @@ bool residue::isSeparatedByFewBonds(residue* _pRes1, UInt _index1, residue*
 		}
 	}
 
+	// Check for ASP/GLU - OEC
+	if ((_pRes1->getType() == "ASP" && (_index1 == 6 || _index1 == 7)) || (_pRes1->getType() == "GLU" && (_index1 == 8 || _index1 == 7)))
+	{	if (_pRes2->getType() == "OEC" && (_index2 == 0 || _index2 == 2 || _index2 == 4 || _index2 == 6 || _index2 == 8))
+		{ 	atom* pAtom1=_pRes1->getAtom(_index1);
+			atom* pAtom2=_pRes2->getAtom(_index2);
+			if (pAtom1->distance(pAtom2) < 3.0)
+			{
+				return true;
+			}
+		}
+	}
+	if ((_pRes2->getType() == "ASP" && (_index2 == 6 || _index2 == 7)) || (_pRes2->getType() == "GLU" && (_index2 == 8 || _index2 == 7)))
+	{	if (_pRes1->getType() == "OEC" && (_index1 == 0 || _index1 == 2 || _index1 == 4 || _index1 == 6 || _index1 == 8))
+		{ 	atom* pAtom1=_pRes1->getAtom(_index1);
+			atom* pAtom2=_pRes2->getAtom(_index2);
+			if (pAtom1->distance(pAtom2) < 3.0)
+			{
+				return true;
+			}
+		}
+	}
+
 	// Check for SF4 Cysteine bond
 	if ((_pRes1->getType() == "CYF" || _pRes1->getType() == "CFD") && _index1 == 5 )
 	{	if (_pRes2->getType() == "CSF" && (_index2 == 6 || _index2 == 8 || _index2 == 10 || _index2 == 12))

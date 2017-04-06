@@ -27,8 +27,8 @@ void createPossibleMutantsDatabase(protein* bundle, UIntVec &_activeChains, UInt
 bool isFrozen(UIntVec _frozenResidues, UInt resIndex);
 vector < vector < UInt > > buildSequencePool();
 vector < vector < UInt > > buildPossibleMutants();
-enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,Csf,Hca,Oec};
-string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hn","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dQ","dE","dEh","dHd","dHe","dHn","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dAT","dW","dY","dV","Hce","Pch","Csf","dCf"};
+enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,Csf,Sf4,Hca,Eoc,Oec};
+string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dCf","dQ","dE","dEh","dHd","dHe","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV","Csf","Sf4","Hca","Eoc","Oec"};
 
 //--Program setup----------------------------------------------------------------------------------------
 int main (int argc, char* argv[])
@@ -45,9 +45,9 @@ int main (int argc, char* argv[])
 	UInt _allowedDResidues[] = {G};  // amino acids allowed with phi > 0
 	UInt _activeResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,13,14,15,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,47,48,49,50,51,52,53,54,55,56,57,58,59,61,62,63,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98};                  // positions active for mutation
 	UInt _randomResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,13,14,15,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,47,48,49,50,51,52,53,54,55,56,57,58,59,61,62,63,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98};                  // positions active for a random start sequence initially
-	UInt _frozenResidues[] = {12,16,46,60,64}; //13,17,61,65                                              // positions that cannot move at all
+	UInt _frozenResidues[] = {12,16,46,60,64,99}; //13,17,61,65                                              // positions that cannot move at all
 	bool homoSymmetric = false;                                                          // if true all chains are structurally symmetrical to the one listed active chain above
-	bool backboneRelaxation = true;                                             // if true allow backrub relaxation in structural optimization
+	bool backboneRelaxation = false;                                             // if true allow backrub relaxation in structural optimization
 
 	//--running parameters
 	residue::setCutoffDistance(8.0);
