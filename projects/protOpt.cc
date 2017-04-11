@@ -26,11 +26,24 @@ int main (int argc, char* argv[])
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* _prot = static_cast<protein*>(pMol);
 
+	UInt _frozenResidues[] = {4,8,23,64,66,71,89};
+	UInt _activeChains[] = {0};
+	UInt activeChainsSize = sizeof(_activeChains)/sizeof(_activeChains[0]), frozenResiduesSize = sizeof(_frozenResidues)/sizeof(_frozenResidues[0]);
+	UIntVec activeChains, frozenResidues;
+	for (UInt i = 0; i < activeChainsSize; i++)
+	{
+		activeChains.push_back(_activeChains[i]);
+	}
+	for (UInt i = 0; i < frozenResiduesSize; i++)
+	{
+		frozenResidues.push_back(_frozenResidues[i]);
+	}
+
 	bool backbone = true;
 	double startEnergy = _prot->protEnergy();
 	time_t start,end;
 	time (&start);
-	_prot->protOpt(backbone);
+	_prot->protOpt(backbone, frozenResidues, activeChains);
 	time (&end);
 	double endEnergy = _prot->protEnergy();
 	cout << _prot->protEnergy() << " " << (endEnergy-startEnergy)/difftime(end,start) << " ";
