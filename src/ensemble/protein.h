@@ -67,6 +67,7 @@ public:
 	UInt getNumHardClashes();
 	UInt getNumHardClashes(const UInt _chainIndex) {return itsChains[_chainIndex]->getNumHardClashes(); }
     double getRadius(UInt chainIndex, UInt resIndex, UInt atomIndex) {return itsChains[chainIndex]->getRadius(resIndex, atomIndex);}
+	char getChainID(UInt chainIndex) {return itsChains[chainIndex]->getChainID();}
 	
 	//--Organization functions
     void updateTotalNumResidues();

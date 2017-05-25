@@ -23,7 +23,7 @@ int main (int argc, char* argv[])
 		exit(1);
 	}
 	enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,Csf,Sf4,Hca,Eoc,Oec};
-	string aminoAcidString[] = {"A","R","N","D","D","C","C","","Q","E","E","H","H","H","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dD","dC","dC","dC","dQ","dE","dE","dH","dH","dH","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV","C","SF4","H","E","OEC"};
+	string aminoAcidString[] = {"A","R","N","D","D","C","C","C","Q","E","E","H","H","H","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dD","dC","dC","dC","dQ","dE","dE","dH","dH","dH","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV","C","SF4","H","E","OEC"};
 
 	string infile = argv[1];
 	PDBInterface* thePDB = new PDBInterface(infile);
@@ -38,17 +38,18 @@ int main (int argc, char* argv[])
 	amberVDW::setLinearRepulsionDampeningOff();
 	amberElec::setScaleFactor(1.0);
 
+	cout << infile << "\t";
     UInt numChains = _prot->getNumChains();
     for (UInt i = 0; i < numChains; i++)
-    {
+	{	cout << " " << _prot->getChainID(i) << " ";
         UInt numRes = _prot->getNumResidues(i);
         for (UInt j = 0; j < numRes; j++)
         {
             UInt restype = _prot->getTypeFromResNum(i,j);
-            cout << aminoAcidString[restype];
+			cout << aminoAcidString[restype];
         }
-        cout << endl;
     }
+	cout << endl;
 	return 0;
 }
 

@@ -101,7 +101,7 @@ void PDBInterface::readData(ifstream& _infile)
 			inLibrary = false;
 			for (UInt i = 0; i < resNames.size(); i++)
 			{
-				if (linebuffer.compare(17,3,resNames[i]) != 0)
+				if (linebuffer.compare(17,3,resNames[i]) == 0)
 				{
 					inLibrary = true;
 					break;
@@ -124,30 +124,11 @@ void PDBInterface::categorizeLines()
 	for (UInt i=0; i<theLines.size(); i++)
 	{
 		header = theLines[i].substr(0,6);
-
 		if (header == "ATOM  " || header == "HETATM")
 		{	atomLines.push_back(i);
 			continue;
 		}
-		if (header == "TER   ")
-		{	terLines.push_back(i);
-			continue;
-		}
-		if (header == "END   ")
-		{
-			continue;
-		}
 	}
-        
-	/* 
-	//USEFUL STRING COMPARISON CODE
-	int where;
-	where = string1.find(string2);
-	// const npos in the string class is a non-valid position
-	if  (where == string::npos)
-	// means i didn't find it!
-	*/
-
 }
 
 void PDBInterface::parseHetatmLine()
@@ -479,11 +460,11 @@ void PDBInterface::parseAtomLine()
 		// is in the protein.
 		// Now mutate in, library version of amino acid, while preserving
 		// sidechain dihedrals, which includes hydrogen positions and internal nomenclature
-		if (!itsHetatmFlag)
-		{
+		//if (!itsHetatmFlag)
+		//{
 			bool withRotamer = true;
 			pCurrentChain->fixBrokenResidue(pCurrentChain->getNumResidues()-1, withRotamer);
-		}
+		//}
 
 	} // end loop over residues
 

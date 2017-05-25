@@ -47,15 +47,16 @@ int main (int argc, char* argv[])
     DIR *pdir;
     struct dirent *pent;
     pdir=opendir(".");
-    UInt count = 0;
+	UInt his;
 
     //--get sequence evolution results for position
 	while ((pent=readdir(pdir)))
 	{
 		inFrame = pent->d_name;
-		if (inFrame.find(".trim") != std::string::npos)
+		if (inFrame.find(".pdb") != std::string::npos)
 		{
-			count++;
+			his = 0;
+			//cout << inFrame << endl;
 			PDBInterface* theModelPDB = new PDBInterface(inFrame);
 			ensemble* theModelEnsemble = theModelPDB->getEnsemblePointer();
 			molecule* modelMol = theModelEnsemble->getMoleculePointer(0);
@@ -68,10 +69,14 @@ int main (int argc, char* argv[])
 					restype = model->getTypeFromResNum(i,j);
 					if (restype == He || restype == Hd || restype == Hp)
 					{
-						string outfile = inFrame + ".his";
-						pdbWriter(model, outfile);
+						his++;
 					}
 				}
+			}
+			if (his == 1)
+			{
+				string outfile = inFrame + ".h";
+				pdbWriter(model, outfile);
 			}
 			delete theModelPDB;
 		}

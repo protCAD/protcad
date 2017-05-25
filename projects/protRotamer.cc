@@ -27,7 +27,7 @@ int main (int argc, char* argv[])
 		exit(1);
 	}
     string infile = argv[1];
-    enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dAT,dW,dY,dV,Hcd,Pch,Csf};
+	enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,Csf,Sf4,Hca,Eoc,Oec};
     //string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hn","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dQ","dE","dEh","dHd","dHe","dHn","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dAT","dW","dY","dV","Hcd","Pch","Csf"};
     PDBInterface* thePDB = new PDBInterface(infile);
     ensemble* theEnsemble = thePDB->getEnsemblePointer();
@@ -40,26 +40,30 @@ int main (int argc, char* argv[])
     amberVDW::setScaleFactor(1.0);
     srand (time(NULL));
 	
-    UInt _chainIndex = 0;
-	UInt randres = 64;
+	UInt _chainIndex = 2;
+	UInt randres = 8;
     UInt bestrot;
 	UInt count = 0;
-	UInt randrestype = bundle->getTypeFromResNum(_chainIndex,randres);
+
     double pastEnergy = 1E100, Energy;
     //--Get current rotamer and allowed
 
-	double chi = bundle->getChi(_chainIndex,randres,0,0);
+	//double chi = bundle->getChi(_chainIndex,randres,0,0);
 	//double chi2 = bundle->getChi(_chainIndex,randres,0,2);
 	//bundle->setChi(_chainIndex,randres,0,0,-142.9);
-	bundle->setChi(_chainIndex,randres,0,0,chi+20);
+	//bundle->setChi(_chainIndex,randres,0,0,chi+20);
 	//bundle->setChi(_chainIndex,randres,0,2,chi2+10);
-
-	/*vector <UIntVec> allowedRots = bundle->getAllowedRotamers(_chainIndex, randres, randrestype);
+	bundle->mutateWBC(_chainIndex,randres,dDh);
+	UInt randrestype = bundle->getTypeFromResNum(_chainIndex,randres);
+	//bundle->mutateWBC(2,randres,dD);
+	vector <UIntVec> allowedRots = bundle->getAllowedRotamers(_chainIndex, randres, randrestype);
     UInt b = 0;
     for (UInt j = 0; j < allowedRots[b].size(); j++)
     {
         count++;
-        bundle->setRotamerWBC(_chainIndex, randres, b, allowedRots[b][j]);
+
+		bundle->setRotamerWBC(_chainIndex, randres, b, allowedRots[b][j]);
+		//bundle->setRotamerWBC(2, randres, b, allowedRots[b][j]);
         Energy = bundle->protEnergy();
         stringstream convert;
         string countstr;
@@ -73,7 +77,7 @@ int main (int argc, char* argv[])
             pastEnergy = Energy;
         }
 	}
-	double betachi = bundle->getBetaChi(_chainIndex, randres);
+	/*double betachi = bundle->getBetaChi(_chainIndex, randres);
 	for (int j = -10; j < 0; j++)
 	{
 		count++;
@@ -93,7 +97,7 @@ int main (int argc, char* argv[])
 	}*/
     //cout << infile << " " << pastEnergy << endl;
 	//bundle->setRotamerWBC(_chainIndex, randres, 0, allowedRots[bestrot]);
-	pdbWriter(bundle, infile);
+	//pdbWriter(bundle, infile);
     return 0;
 }
 
