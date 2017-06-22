@@ -40,8 +40,8 @@ int main (int argc, char* argv[])
     amberVDW::setScaleFactor(1.0);
     srand (time(NULL));
 	
-	UInt _chainIndex = 2;
-	UInt randres = 8;
+	UInt _chainIndex = 0;
+	UInt randres = 7;
     UInt bestrot;
 	UInt count = 0;
 
@@ -53,7 +53,7 @@ int main (int argc, char* argv[])
 	//bundle->setChi(_chainIndex,randres,0,0,-142.9);
 	//bundle->setChi(_chainIndex,randres,0,0,chi+20);
 	//bundle->setChi(_chainIndex,randres,0,2,chi2+10);
-	bundle->mutateWBC(_chainIndex,randres,dDh);
+	//bundle->mutateWBC(_chainIndex,randres,dDh);
 	UInt randrestype = bundle->getTypeFromResNum(_chainIndex,randres);
 	//bundle->mutateWBC(2,randres,dD);
 	vector <UIntVec> allowedRots = bundle->getAllowedRotamers(_chainIndex, randres, randrestype);

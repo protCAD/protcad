@@ -27,7 +27,7 @@ int main (int argc, char* argv[])
     cout << "mutantMaker <inFile.pdb>" << endl;
 	exit(1);
 	}
-    enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dAT,dW,dY,dV,Hce,Pch};
+	enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,Csf,Sf4,Hca,Eoc,Oec};
 	string infile = argv[1];
 	PDBInterface* thePDB = new PDBInterface(infile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
@@ -117,7 +117,7 @@ int main (int argc, char* argv[])
     vector<vector<UInt> > resIDs;
     vector <UInt> v;
 
-    UInt resID1[] = {He,He,E,F,E,C,S,K,V,I,P,E,R,K,K,He,A,V,I,K,G,K,G,E,T,L,A,D,A,L,P,Q,G,Y,L,N,T,I,P,G,S,I,S,E,R,G,C,A,Y,C,G,A,K,He,V,I,G,T,P,M,K,D,V,I,He,I,S,He,G,P,V,G,C,T,Y,D,T,W,Q,T,K,R,Y,I,S,D,N,D,N,F,Q,L,K,Y,T,Y,A,T,D,V,K,E,K,He,I,V,F,G,A,E,K,L,L,K,Q,N,I,I,E,A,F,K,A,F,P,Q,I,K,R,M,T,I,Y,Q,T,C,A,T,A,L,I,G,D,D,I,N,A,I,A,E,E,V,M,E,E,M,P,E,V,I,F,V,C,N,S,P,G,F,A,G,P,S,Q,S,G,G,He,He,K,I,N,I,A,W,I,N,Q,K,V,G,T,V,E,P,E,I,T,G,D,He,V,I,N,Y,V,G,E,Y,N,I,Q,G,D,Q,E,V,M,V,D,Y,F,K,R,M,G,I,Q,V,L,S,T,F,T,G,N,G,S,Y,D,G,L,R,A,M,He,R,A,He,L,N,V,L,E,C,A,R,S,A,E,Y,I,C,N,E,L,R,V,R,Y,G,I,P,R,L,D,I,D,G,F,G,F,K,P,L,A,D,S,L,R,K,I,G,M,F,F,G,I,E,D,R,A,K,A,I,I,D,E,E,V,A,R,W,K,P,E,L,D,W,Y,K,E,R,L,M,G,K,K,V,C,L,W,P,G,G,S,K,L,W,He,W,A,He,V,I,E,E,M,G,L,K,V,V,S,V,Y,I,K,F,G,He,Q,G,D,M,E,K,G,I,A,R,C,G,E,G,T,L,A,I,D,D,P,N,E,L,E,G,L,E,A,L,E,M,L,K,P,D,I,I,L,T,G,K,R,P,G,E,V,A,K,K,V,R,V,P,Y,L,N,A,He,A,Y,He,N,G,P,Y,K,G,F,E,G,W,V,R,F,A,R,D,I,Y,N,A,I,Y,S,P,I,He,Q,L,S,G,I,D,I};// -design1a
+	UInt resID1[] = {G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G};// -design1a
     v.insert (v.begin(), resID1, resID1 + sizeof(resID1)/sizeof(resID1[0]));
     resIDs.push_back(v);
     v.clear();/*
@@ -285,9 +285,10 @@ int main (int argc, char* argv[])
         ensemble* theEnsemble = thePDB->getEnsemblePointer();
         molecule* pMol = theEnsemble->getMoleculePointer(0);
         protein* bundle = static_cast<protein*>(pMol);
-        chainNum = bundle->getNumChains();
-        for (UInt i = 0; i < chainNum; i ++)
-        {
+		//chainNum = bundle->getNumChains();
+		//for (UInt i = 0; i < chainNum; i ++)
+		//{
+			UInt i = 0;
             UInt resNum = bundle->getNumResidues(i);
             for (UInt j = 0; j < resNum; j++)
             {
@@ -314,22 +315,22 @@ int main (int argc, char* argv[])
                     //}
                 }
             }
-        }
+		//}
         stringstream convert;
         string countStr, outFile;
         convert << h+1, countStr = convert.str();
         outFile = countStr + ".mut.pdb";
         pdbWriter(bundle, outFile);
         delete thePDB;
-        PDBInterface* thePDB2 = new PDBInterface(outFile);
+		/*PDBInterface* thePDB2 = new PDBInterface(outFile);
         ensemble* theEnsemble2 = thePDB2->getEnsemblePointer();
         molecule* pMol2 = theEnsemble2->getMoleculePointer(0);
         protein* bundle2 = static_cast<protein*>(pMol2);
         //bundle2->protOpt(false);
         double Energy = bundle2->protEnergy();
         cout << Energy << endl;
-        pdbWriter(bundle2, outFile);
-        delete thePDB2;
+		pdbWriter(bundle2, outFile);
+		delete thePDB2;*/
     }
 	return 0;
 }

@@ -30,21 +30,22 @@ int main (int argc, char* argv[])
         cout << "structShaper <inFile.pdb>" << endl;
 		exit(1);
 	}
-    enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dAT,dW,dY,dV,Hcd,Pch};
+	enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,Csf,Sf4,Hca,Eoc,Oec};
 	//string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Q","E","Eh","Hd", "He","Hn","Hp","I","L","K","M","F","P","O","S","T","W","Y", "V","G","dA","dR","dN","dD","dDh","dC","dCx","dQ","dE","dEh","dHd","dHe","dHn","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV"};
-    residue::setCutoffDistance(9.0);
-	rotamer::setScaleFactor(0.0);
+
+	//--running parameters
+	residue::setCutoffDistance(8.0);
+	residue::setTemperature(300);
+	residue::setElectroSolvationScaleFactor(0.0);
+	residue::setHydroSolvationScaleFactor(0.0);
+	amberElec::setScaleFactor(0.0);
 	amberVDW::setScaleFactor(1.0);
-	amberVDW::setRadiusScaleFactor(1.0);
-    amberElec::setScaleFactor(1.0);
-    //amberVDW::setLinearRepulsionDampeningOn();
-    //amberVDW::itsRepulsionScaleFactor = 0.9;
     srand (time(NULL));
 
 	//--Initialize variables for loop
-	stringstream convertphi, convertpsi;
+	//stringstream convertphi, convertpsi;
     string outFile = "out.pdb", inFile = argv[1];
-	string phistr, psistr;
+	//string phistr, psistr;
 
 
 	//secondary structure library////////////////////////////////////////////////////////////////////////
@@ -70,7 +71,6 @@ int main (int argc, char* argv[])
 	////L Motifs////////////////////////////
 	//Random Coil
 	randCoilL[0] = -81.43, randCoilL[1] = 79.65;
-
 	//Alpha-type
 	//unfolded
 	coilL[0] = phisL[1], coilL[1] = psisL[1];
@@ -94,7 +94,7 @@ int main (int argc, char* argv[])
 	bTurn3L[0] = phisL[2], bTurn3L[1] = psisL[2];
 
 	////D Motifs//////////////////////////////
-	//Random Coil
+	//Random Coilbundle->mutateWBC(i, j, P);
 	randCoilD[0] = 81.43, randCoilL[1] = -79.65;
 
 	//Alpha-type
@@ -120,12 +120,12 @@ int main (int argc, char* argv[])
 	bTurn3D[0] = phisD[2], bTurn3D[1] = psisD[2];
 
 	////L folds/////////////////////////////////
-	Lfolds[0] = alphaL, Lfolds[1] = ppL, Lfolds[2] = pBetaL, Lfolds[3] = aBetaL, Lfolds[4] = coilL, Lfolds[5] = bTurn2L;
-	Lfolds[6] = bTurn3L, Lfolds[7] = bTurn1L, Lfolds[8] = aTurn1L, Lfolds[9] = three10L, Lfolds[10] = aTurn2L, Lfolds[11] = aTurn2L;
+	//Lfolds[0] = alphaL, Lfolds[1] = ppL, Lfolds[2] = pBetaL, Lfolds[3] = aBetaL, Lfolds[4] = coilL, Lfolds[5] = bTurn2L;
+	//Lfolds[6] = bTurn3L, Lfolds[7] = Turn1L, Lfolds[8] = aTurn1L, Lfolds[9] = three10L, Lfolds[10] = aTurn2L, Lfolds[11] = aTurn2L;
 
 	////D folds/////////////////////////////////
-	Dfolds[0] = alphaD, Dfolds[1] = ppD, Dfolds[2] = pBetaD, Dfolds[3] = aBetaD, Dfolds[4] = coilD, Dfolds[5] = bTurn2D;
-	Dfolds[6] = bTurn3D, Dfolds[7] = bTurn1D, Dfolds[8] = aTurn1D, Dfolds[9] = three10D, Dfolds[10] = aTurn2D, Dfolds[11] = aTurn2D;
+	//Dfolds[0] = alphaD, Dfolds[1] = ppD, Dfolds[2] = pBetaD, Dfolds[3] = aBetaD, Dfolds[4] = coilD, Dfolds[5] = bTurn2D;
+	//Dfolds[6] = bTurn3D, Dfolds[7] = bTurn1D, Dfolds[8] = aTurn1D, Dfolds[9] = three10D, Dfolds[10] = aTurn2D, Dfolds[11] = aTurn2D;
 
     ////////////////////////////////////////////
     ////denovo heterochiral dihedral set //////
@@ -135,20 +135,58 @@ int main (int argc, char* argv[])
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    //double radius;
-   double best = 1E100;
-    //double phase1, phase2;
-    UInt count = 0;
-   // double coil;
-   // double offset = 0.0;
-    //rotamer optimizations
-    PDBInterface* theFramePDB = new PDBInterface(inFile);
-    ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
-    molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
-    protein* bundle = static_cast<protein*>(frameMol);
+	// double radius;
+	// double best = 1E100;
+	// double phase1, phase2;
+	// UInt count = 0;
+	// double coil;
+	// double offset = 0.0;
+	// rotamer optimizations
+	UInt count = 0, lefthanded;
+	double Energy;
+	for (UInt f = 0; f < 10000; f++)
+	{
+		PDBInterface* theFramePDB = new PDBInterface(inFile);
+		ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
+		molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
+		protein* frame = static_cast<protein*>(frameMol);
+		UInt chainNum = frame->getNumChains(), resNum,  h=0;
+		count++;
+		for (UInt i = 0; i < chainNum; i++)
+		{
+			resNum = frame->getNumResidues(i);
+			for (UInt j = 0; j < resNum; j++)
+			{
+				lefthanded = rand() % 2;
+				if (lefthanded == 0)
+				{
+					frame->mutateWBC(i, j, P);
+					frame->setDihedral(i, j, hetPhis[0]-h, 0, 0);
+					frame->setDihedral(i, j, hetPsis[4]-h, 1, 0);
+				}
+				if (lefthanded == 1)
+				{
+					frame->mutateWBC(i, j, dP);
+					frame->setDihedral(i, j, hetPhis[6]-h, 0, 0);
+					frame->setDihedral(i, j, hetPsis[5]-h, 1, 0);
+				}
+			}
+		}
+		Energy = frame->protEnergy();
+		//cout << Energy << endl;
+		if (Energy < 1000)
+		{
+			stringstream convert;
+			string countstr;
+			convert << count, countstr = convert.str();
+			outFile = countstr + ".helix.pdb";
+			pdbWriter(frame, outFile);
+		}
+		delete theFramePDB;
+	}
     //double startE = bundle->protEnergy();
 
-    for (UInt h = 0; h < hetPsis.size(); h++)
+	/*for (UInt h = 0; h < hetPsis.size(); h++)
     {
         for (UInt i = 0; i < hetPhis.size(); i++)
         {
@@ -200,7 +238,35 @@ int main (int argc, char* argv[])
                                     }
                                     else
                                     {
-                                        cout << endl;
+										cout << endl;PDBInterface* theFramePDB = new PDBInterface(inFile);
+	ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
+	molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
+	protein* frame = static_cast<protein*>(frameMol);
+	frame->silenceMessages();
+	chainNum = frame->getNumChains();
+	for (UInt i = 0; i < chainNum; i++)
+	{
+		resNum = frame->getNumResidues(i);
+		for (UInt j = 0; j < resNum; j++)
+		{
+			randomizeSideChain(frame, i, j);
+			restype = frame->getTypeFromResNum(i, j);
+			if (backbone)
+			{
+				if (restype < 27)
+				{
+					frame->setDihedral(i, j, -81.43, 0, 0);
+					frame->setDihedral(i, j, 79.65, 1, 0);
+				}
+				else
+				{
+					frame->setDihedral(i, j, 81.43, 0, 0);
+					frame->setDihedral(i, j, -79.65, 1, 0);
+				}
+			}
+		}
+	}
+	pdbWriter(frame, outFile);
                                     }
                                     delete frame;
                                 }
@@ -211,7 +277,7 @@ int main (int argc, char* argv[])
             }
         }
     }
-    /*bundle optimizations/
+	bundle optimizations/
     //UIntVec allowedRots;
     PDBInterface* theFramePDB = new PDBInterface(inFile);
     ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
@@ -239,7 +305,35 @@ int main (int argc, char* argv[])
                     }
                     double Energy = frame->intraSoluteEnergy(false);
                     cout << count << " " << Energy << " " << radius << " " << offset << " " << phase1 << " " << phase2;
-                    if (Energy < best)
+					if (Energy < best)PDBInterface* theFramePDB = new PDBInterface(inFile);
+	ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
+	molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
+	protein* frame = static_cast<protein*>(frameMol);
+	frame->silenceMessages();
+	chainNum = frame->getNumChains();
+	for (UInt i = 0; i < chainNum; i++)
+	{
+		resNum = frame->getNumResidues(i);
+		for (UInt j = 0; j < resNum; j++)
+		{
+			randomizeSideChain(frame, i, j);
+			restype = frame->getTypeFromResNum(i, j);
+			if (backbone)
+			{
+				if (restype < 27)
+				{
+					frame->setDihedral(i, j, -81.43, 0, 0);
+					frame->setDihedral(i, j, 79.65, 1, 0);
+				}
+				else
+				{
+					frame->setDihedral(i, j, 81.43, 0, 0);
+					frame->setDihedral(i, j, -79.65, 1, 0);
+				}
+			}
+		}
+	}
+	pdbWriter(frame, outFile);
                     {
                         cout << " hit!!!!!!!!" << endl;
                         best = Energy;
@@ -263,7 +357,35 @@ int main (int argc, char* argv[])
     double angle1, angle2;
     cout << "iteration Energy radius angle" << endl;/
     double phase, radius;
-            for (int m = 0; m < 100; m++)
+			for (int m = 0; m < 100; m++)PDBInterface* theFramePDB = new PDBInterface(inFile);
+	ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
+	molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
+	protein* frame = static_cast<protein*>(frameMol);
+	frame->silenceMessages();
+	chainNum = frame->getNumChains();
+	for (UInt i = 0; i < chainNum; i++)
+	{
+		resNum = frame->getNumResidues(i);
+		for (UInt j = 0; j < resNum; j++)
+		{
+			randomizeSideChain(frame, i, j);
+			restype = frame->getTypeFromResNum(i, j);
+			if (backbone)
+			{
+				if (restype < 27)
+				{
+					frame->setDihedral(i, j, -81.43, 0, 0);
+					frame->setDihedral(i, j, 79.65, 1, 0);
+				}
+				else
+				{
+					frame->setDihedral(i, j, 81.43, 0, 0);
+					frame->setDihedral(i, j, -79.65, 1, 0);
+				}
+			}
+		}
+	}
+	pdbWriter(frame, outFile);
             {
                for (int k = 80; k < 110; k++)
                {
