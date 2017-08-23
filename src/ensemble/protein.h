@@ -57,6 +57,7 @@ public:
 	void setCoords(UInt _chainIndex, UInt _resIndex, UInt _atomIndex, dblVec _coords)
 		{ return itsChains[_chainIndex]->setCoords(_resIndex, _atomIndex, _coords);}
 	void makeAtomSilent(const UInt _chainIndex, const UInt _residueIndex, const UInt _atomIndex);
+	void makeResidueSilent(const UInt _chainIndex, const UInt _residueIndex);
 	vector <chainPosition*> getChainPositionVector(const UInt _chain);
 	UIntVec getItsIndependentChainsMap() { return itsIndependentChainsMap; }
 	vector <vector <int> > getItsChainLinkageMap() { return itsChainLinkageMap; }

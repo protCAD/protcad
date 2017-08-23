@@ -2812,6 +2812,15 @@ void residue::makeAtomSilent(const UInt _atomIndex)
 	return;
 }
 
+void residue::makeResidueSilent()
+{
+	for (UInt i = 0; i < itsAtoms.size(); i++)
+	{
+		itsAtoms[i]->makeAtomSilent();
+	}
+	return;
+}
+
 double residue::getIntraEnergy(const UInt _atom1, residue* _other, const UInt _atom2)
 {
 	if (_atom1 >=0 && _atom1 < itsAtoms.size() && _atom2 >=0 && _atom2 < _other->itsAtoms.size())

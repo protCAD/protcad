@@ -533,6 +533,17 @@ void protein::makeAtomSilent(const UInt _chainIndex, const UInt _resIndex, const
 	return;
 }
 
+void protein::makeResidueSilent(const UInt _chainIndex, const UInt _resIndex)
+{
+	if ( _chainIndex >=0 && _chainIndex < itsChains.size())
+	{
+		itsChains[_chainIndex]->makeResidueSilent(_resIndex);
+	}
+	else
+		cout << "ERROR in protein::makeAtomSilent(...) ...\n\t" << _chainIndex << " value for chain index is out of range." << endl;
+	return;
+}
+
 vector <int> protein::getLastModification()
 {
 	vector <int> position;

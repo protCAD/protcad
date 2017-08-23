@@ -189,6 +189,17 @@ void chain::makeAtomSilent(const UInt _resIndex, const UInt _atomIndex)
 	return;
 }
 
+void chain::makeResidueSilent(const UInt _resIndex)
+{
+	if (_resIndex >=0 && _resIndex < itsResidues.size())
+	{
+		itsResidues[_resIndex]->makeResidueSilent();
+	}
+	else
+		cout << "ERROR in chain::makeAtomSilent ...\n\t" << _resIndex << " is not a valid residue number." << endl;
+	return;
+}
+
 bool chain::activateForRepacking(UInt _indexInChain)
 {
 	if (_indexInChain < itsResidues.size())

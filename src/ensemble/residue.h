@@ -109,6 +109,7 @@ public:
 	void addAtom(PDBAtomRecord& _theRecord);
 	void addAtom(pdbAtom& _pdbAtom);
 	void makeAtomSilent(const UInt _atomIndex);
+	void makeResidueSilent();
         
         //******************testing junk************************
 	void accessMe();

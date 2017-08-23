@@ -76,7 +76,7 @@ public:
     void fixBrokenResidue(const UInt _indexInChain, bool withRotamer);
 	void redoModification(chainModBuffer _redoBuffer);
 	void makeAtomSilent(const UInt _resIndex, const UInt _atomIndex);
-
+	void makeResidueSilent(const UInt _resIndex);
 	int getLastModificationPosition() { return itsLastTargetResidue; }
 	void randomizeSystem(ran& _ran);
 	void makeAllAlanine();
