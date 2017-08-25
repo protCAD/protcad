@@ -129,8 +129,8 @@ int main (int argc, char* argv[])
 
 	vector < double > angles(6);
 	vector < vector < double > > XCXmotifs;
-	UInt interval = 30, count = 0;
-	for (int h1 = -150; h1 < 180; h1+=interval)///2
+	UInt count = 0;//interval = 30;
+	/*for (int h1 = -150; h1 < 180; h1+=interval)///2
 	{
 		for (int s1 = -150; s1 < 180; s1+=interval)
 		{
@@ -178,7 +178,7 @@ int main (int argc, char* argv[])
 								else { frame->mutateWBC(0,3,A);}
 
 								double Energy = frame->protEnergy();
-								if (Energy < 11)
+								if (Energy < 10.4)
 								{
 									cout << count << " " << Energy << " " << h1 << " " << s1 << " " << h2 << " " << s2 << " " << h3 << " " << s3 << endl;
 									angles[0] = h1,angles[1] = s1,angles[2] = h2,angles[3] = s2,angles[4] = h3,angles[5] = s3;
@@ -240,9 +240,9 @@ int main (int argc, char* argv[])
 				if (dist < 10.6)
 				{
 					double Energy = frame->protEnergy();
-					cout << count << " " << Energy << " " << frame->getAngle(0,1,0) << " " << frame->getAngle(0,1,1) << " " << frame->getAngle(0,2,0) << " " << frame->getAngle(0,2,1) << " " << frame->getAngle(0,3,0) << " " << frame->getAngle(0,3,1) << " " << XCXmotifs[i][0] << " " << XCXmotifs[i][1] << " " << XCXmotifs[i][2] << " " << XCXmotifs[i][3] << " " << XCXmotifs[i][4] << " " << XCXmotifs[i][5] << endl;
-					if (Energy < 50)
+					if (Energy < 25)
 					{
+						cout << count << " " << Energy << " " << frame->getAngle(0,1,0) << " " << frame->getAngle(0,1,1) << " " << frame->getAngle(0,2,0) << " " << frame->getAngle(0,2,1) << " " << frame->getAngle(0,3,0) << " " << frame->getAngle(0,3,1) << " " << XCXmotifs[i][0] << " " << XCXmotifs[i][1] << " " << XCXmotifs[i][2] << " " << XCXmotifs[i][3] << " " << XCXmotifs[i][4] << " " << XCXmotifs[i][5] << endl;
 						stringstream convert;
 						string countstr;
 						convert << count, countstr = convert.str();
@@ -254,10 +254,14 @@ int main (int argc, char* argv[])
 			}
 		}
 	}
-	while ((pent=readdir(pdir)))
+	closedir(pdir);
+	DIR *pdir2;
+	struct dirent *pent2;
+	pdir2=opendir(".");
+	while ((pent2=readdir(pdir2)))
 	{
-		string inFrame = pent->d_name;
-		if (inFrame.find(".XCXXCX.pdb") != std::string::npos)
+		string inFrame = pent2->d_name;
+		if (inFrame.find(".XCXXCX.pdk") != std::string::npos)
 		{
 			for (UInt i = 0; i < XCXmotifs.size(); i++)
 			{
@@ -298,9 +302,9 @@ int main (int argc, char* argv[])
 					if (dist2 < 10.6)
 					{
 						double Energy = frame->protEnergy();
-						cout << count << " " << Energy << " " << frame->getAngle(0,1,0) << " " << frame->getAngle(0,1,1) << " " << frame->getAngle(0,2,0) << " " << frame->getAngle(0,2,1) << " " << frame->getAngle(0,3,0) << " " << frame->getAngle(0,3,1) << " " << frame->getAngle(0,4,0) << " " << frame->getAngle(0,4,1) << " " << frame->getAngle(0,5,0) << " " << frame->getAngle(0,5,1) << " " << frame->getAngle(0,6,0) << " " << frame->getAngle(0,6,1) << " "<< XCXmotifs[i][0] << " " << XCXmotifs[i][1] << " " << XCXmotifs[i][2] << " " << XCXmotifs[i][3] << " " << XCXmotifs[i][4] << " " << XCXmotifs[i][5] << endl;
-						if (Energy < 100)
+						if (Energy < 35)
 						{
+							cout << count << " " << Energy << " " << frame->getAngle(0,1,0) << " " << frame->getAngle(0,1,1) << " " << frame->getAngle(0,2,0) << " " << frame->getAngle(0,2,1) << " " << frame->getAngle(0,3,0) << " " << frame->getAngle(0,3,1) << " " << frame->getAngle(0,4,0) << " " << frame->getAngle(0,4,1) << " " << frame->getAngle(0,5,0) << " " << frame->getAngle(0,5,1) << " " << frame->getAngle(0,6,0) << " " << frame->getAngle(0,6,1) << " "<< XCXmotifs[i][0] << " " << XCXmotifs[i][1] << " " << XCXmotifs[i][2] << " " << XCXmotifs[i][3] << " " << XCXmotifs[i][4] << " " << XCXmotifs[i][5] << endl;
 							stringstream convert;
 							string countstr;
 							convert << count, countstr = convert.str();
@@ -313,9 +317,26 @@ int main (int argc, char* argv[])
 			}
 		}
 	}
+	closedir(pdir2);*/
 	while ((pent=readdir(pdir)))
 	{
 		string inFrame = pent->d_name;
+		if (inFrame.find(".XCX.pdb") != std::string::npos)
+		{
+			PDBInterface* thePDB = new PDBInterface(inFrame);
+			ensemble* theEnsemble = thePDB->getEnsemblePointer();
+			molecule* pMol = theEnsemble->getMoleculePointer(0);
+			protein* frame = static_cast<protein*>(pMol);
+			angles[0] = frame->getAngle(0,1,0),angles[1] = frame->getAngle(0,1,1),angles[2] = frame->getAngle(0,2,0),angles[3] = frame->getAngle(0,2,1),angles[4] = frame->getAngle(0,3,0),angles[5] = frame->getAngle(0,3,1);
+			XCXmotifs.push_back(angles);
+		}
+	}
+	DIR *pdir3;
+	struct dirent *pent3;
+	pdir3=opendir(".");
+	while ((pent3=readdir(pdir3)))
+	{
+		string inFrame = pent3->d_name;
 		if (inFrame.find(".XCXXCXXCX.pdb") != std::string::npos)
 		{
 			for (UInt i = 0; i < XCXmotifs.size(); i++)
@@ -358,9 +379,9 @@ int main (int argc, char* argv[])
 						if (dist3 < 10.6)
 						{
 							double Energy = frame->protEnergy();
-							cout << count << " " << Energy << " " << frame->getAngle(0,1,0) << " " << frame->getAngle(0,1,1) << " " << frame->getAngle(0,2,0) << " " << frame->getAngle(0,2,1) << " " << frame->getAngle(0,3,0) << " " << frame->getAngle(0,3,1) << " " << frame->getAngle(0,4,0) << " " << frame->getAngle(0,4,1) << " " << frame->getAngle(0,5,0) << " " << frame->getAngle(0,5,1) << " " << frame->getAngle(0,6,0) << " " << frame->getAngle(0,6,1) << " " << frame->getAngle(0,7,0) << " " << frame->getAngle(0,7,1) << " " << frame->getAngle(0,8,0) << " " << frame->getAngle(0,8,1) << " " << frame->getAngle(0,9,0) << " " << frame->getAngle(0,9,1) << " " << XCXmotifs[i][0] << " " << XCXmotifs[i][1] << " " << XCXmotifs[i][2] << " " << XCXmotifs[i][3] << " " << XCXmotifs[i][4] << " " << XCXmotifs[i][5] << endl;
-							if (Energy < 200)
+							if (Energy < 48)
 							{
+								cout << count << " " << Energy << " " << frame->getAngle(0,1,0) << " " << frame->getAngle(0,1,1) << " " << frame->getAngle(0,2,0) << " " << frame->getAngle(0,2,1) << " " << frame->getAngle(0,3,0) << " " << frame->getAngle(0,3,1) << " " << frame->getAngle(0,4,0) << " " << frame->getAngle(0,4,1) << " " << frame->getAngle(0,5,0) << " " << frame->getAngle(0,5,1) << " " << frame->getAngle(0,6,0) << " " << frame->getAngle(0,6,1) << " " << frame->getAngle(0,7,0) << " " << frame->getAngle(0,7,1) << " " << frame->getAngle(0,8,0) << " " << frame->getAngle(0,8,1) << " " << frame->getAngle(0,9,0) << " " << frame->getAngle(0,9,1) << " " << XCXmotifs[i][0] << " " << XCXmotifs[i][1] << " " << XCXmotifs[i][2] << " " << XCXmotifs[i][3] << " " << XCXmotifs[i][4] << " " << XCXmotifs[i][5] << endl;
 								stringstream convert;
 								string countstr;
 								convert << count, countstr = convert.str();

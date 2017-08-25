@@ -42,40 +42,43 @@ int main (int argc, char* argv[])
         cout << endl;
     }*/
 
+	residue::setCutoffDistance(8.0);
+	residue::setTemperature(300);
+	residue::setElectroSolvationScaleFactor(0.0);
+	residue::setHydroSolvationScaleFactor(0.0);
+	amberElec::setScaleFactor(0.0);
+	amberVDW::setScaleFactor(1.0);
+
     //create evo data file
     string inFrame;
     DIR *pdir;
     struct dirent *pent;
     pdir=opendir(".");
-	UInt his;
 
     //--get sequence evolution results for position
 	while ((pent=readdir(pdir)))
 	{
 		inFrame = pent->d_name;
-		if (inFrame.find(".pdb") != std::string::npos)
+		if (inFrame.find("XCXXCX.pdb") != std::string::npos)
 		{
-			his = 0;
-			//cout << inFrame << endl;
 			PDBInterface* theModelPDB = new PDBInterface(inFrame);
 			ensemble* theModelEnsemble = theModelPDB->getEnsemblePointer();
 			molecule* modelMol = theModelEnsemble->getMoleculePointer(0);
 			protein* model = static_cast<protein*>(modelMol);
-			UInt restype;
-			for (UInt i = 0; i < model->getNumChains(); i++)
+			model->makeResidueSilent(0,0);
+			model->makeResidueSilent(0,7);
+			model->makeResidueSilent(0,8);
+			model->makeResidueSilent(0,9);
+			model->makeResidueSilent(0,10);
+			model->makeResidueSilent(0,11);
+			model->makeResidueSilent(0,12);
+			model->makeResidueSilent(0,13);
+			double E = model->protEnergy();
+			if (E < 23)
 			{
-				for (UInt j = 0; j < model->getNumResidues(i); j++)
-				{
-					restype = model->getTypeFromResNum(i,j);
-					if (restype == He || restype == Hd || restype == Hp)
-					{
-						his++;
-					}
-				}
-			}
-			if (his == 1)
-			{
-				string outfile = inFrame + ".h";
+				cout << "K" << endl;
+				replace (inFrame.begin(), inFrame.end(),'b', 'k');
+				string outfile = inFrame;
 				pdbWriter(model, outfile);
 			}
 			delete theModelPDB;
