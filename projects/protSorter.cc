@@ -65,21 +65,33 @@ int main (int argc, char* argv[])
 			ensemble* theModelEnsemble = theModelPDB->getEnsemblePointer();
 			molecule* modelMol = theModelEnsemble->getMoleculePointer(0);
 			protein* model = static_cast<protein*>(modelMol);
-			model->makeResidueSilent(0,0);
-			model->makeResidueSilent(0,7);
-			model->makeResidueSilent(0,8);
-			model->makeResidueSilent(0,9);
-			model->makeResidueSilent(0,10);
-			model->makeResidueSilent(0,11);
-			model->makeResidueSilent(0,12);
-			model->makeResidueSilent(0,13);
-			double E = model->protEnergy();
-			if (E < 23)
+			double phi;
+			phi = model->getAngle(0,1,0);
+			if (phi < 0)
 			{
-				cout << "K" << endl;
-				replace (inFrame.begin(), inFrame.end(),'b', 'k');
-				string outfile = inFrame;
-				pdbWriter(model, outfile);
+				phi = model->getAngle(0,2,0);
+				if(phi > 0)
+				{
+					phi = model->getAngle(0,3,0);
+					if (phi < 0)
+					{
+						phi = model->getAngle(0,4,0);
+						if (phi > 0)
+						{
+							phi = model->getAngle(0,5,0);
+							if (phi < 0)
+							{
+								phi = model->getAngle(0,6,0);
+								if (phi > 0)
+								{
+									replace (inFrame.begin(), inFrame.end(),'b', 'h');
+									string outfile = inFrame;
+									pdbWriter(model, outfile);
+								}
+							}
+						}
+					}
+				}
 			}
 			delete theModelPDB;
 		}

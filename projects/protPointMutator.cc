@@ -28,7 +28,7 @@ int main (int argc, char* argv[])
 		exit(1);
 	}
     string infile = argv[1];
-    enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dAT,dW,dY,dV,Hce,Pch,Csf};
+	enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,Csf,Sf4,Hca,Eoc,Oec};
     string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hn","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dQ","dE","dEh","dHd","dHe","dHn","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dAT","dW","dY","dV","Hce","Pch","Csf"};
     PDBInterface* thePDB = new PDBInterface(infile);
     ensemble* theEnsemble = thePDB->getEnsemblePointer();
@@ -52,16 +52,20 @@ int main (int argc, char* argv[])
 	//--Mutations
     //for (UInt h = 0; h < resIDsize; h++)
     //{
-        for (UInt l = 0 ; l < numchains; l++)
+		for (UInt l = 0 ; l < 1; l++)
         {
             for (UInt i = 0; i < numres; i++)
             {
 
                 UInt restype = bundle->getTypeFromResNum(l,i);
-                if (restype != Csf && restype != G && restype != Cf)
+				if (restype == dK)
                 {
-                    bundle->mutate(l, i, A);
+					bundle->mutate(l, i, dR);
                 }
+				if (restype == K)
+				{
+					bundle->mutate(l, i, R);
+				}
                /*if (restype == A)
                 {
                     bundle->activateForRepacking(l, i);
@@ -120,7 +124,7 @@ int main (int argc, char* argv[])
             }
         }
     //}
-    string outFile = infile + ".ALA.pdb";
+	string outFile = infile + ".RW.pdb";
     pdbWriter(bundle, outFile);
 	return 0;
 }
