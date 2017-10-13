@@ -3060,14 +3060,15 @@ double residue::intraSoluteEnergy()
 }
 
 vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
-{
-	//--requires update of dielectrics at protein level to be accurate.
+{	// note: Requires update of dielectrics at protein level to be accurate for water count and local dielctric. Meant to be part of protEnergy().
 	vector <double> solvationEnergy;
+	double soluteSolventEnthalpy = 0.0;
+	double soluteSolventEntropy = 0.0;
+
+	// First estimate water occupancy around solute atom in solvent volume shells of total proximal solute atom excluded volume
 	int atomVDWtype = dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex][0];
 	double solvationRadius = residueTemplate::getVDWRadius(52);
 	double solvatedRadius = residueTemplate::getVDWRadius(atomVDWtype)+solvationRadius;
-	double proteinSolventEnthalpy = 0.0;
-	double proteinSolventEntropy = 0.0;
 	double totalVol = cutoffCubeVolume;
 	double waters = itsAtoms[_atomIndex]->getNumberofWaters();
 	double atomShellVol = 4.18*pow((solvatedRadius),3);
@@ -3076,30 +3077,33 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
 	double shellVolFraction = waterShellVol/totalVol;
 	int shellWaters = waters*shellVolFraction;
 
+	// Polar solvation
 	if (EsolvationFactor != 0.0)
-	{   //Born Electrostatic solvation  Still WC, et al J Am Chem Soc 1990
+	{	// Electrostatic enthalpy estimate of solute atom and solvent
+		// with variable dielectric and water occupancy estimate
+		// Born Electrostatic solvation Still WC, et al J Am Chem Soc 1990
 		double atomDielectric = itsAtoms[_atomIndex]->getDielectric();
 		double charge = residueTemplate::itsAmberElec.getItsCharge(itsType, _atomIndex);
 		double chargeSquared = charge*charge;
-		proteinSolventEnthalpy +=(-166*chargeSquared/(solvatedRadius*atomDielectric))*shellWaters*EsolvationFactor;
+		soluteSolventEnthalpy += (-166*chargeSquared/(solvatedRadius*atomDielectric))*shellWaters*EsolvationFactor;
 	}
 
+	// Non-Polar solvation
 	if (HsolvationFactor != 0.0)
-	{   //Gill Hydrophobic solvation  S.J.Gill, S.F.Dec. J Phys. Chem. 1985
-		if (notHydrogen(_atomIndex)) //heavy atoms only used for non-polar solvation
-		{
-			proteinSolventEntropy = (-temperature*0.0019872041*log(pow(0.5,(shellWaters))))*HsolvationFactor;
-		}
-
-		//TIP3P VDW water interaction R. W. Impey, and M. L. Klein, J. Chem. Phys. 79 (1983) 926-935
+	{	// Lennard Jones dipole packing ethalpy estimate assuming ideal interaction of solute atom and solvent
+		// TIP3P VDW water interaction R. W. Impey, and M. L. Klein, J. Chem. Phys. 79 (1983) 926-935
 		double tempvdwEnergy = residueTemplate::getVDWWaterEnergy(atomVDWtype);
-		proteinSolventEnthalpy += tempvdwEnergy*shellWaters;
+		soluteSolventEnthalpy += tempvdwEnergy*shellWaters;
+
+		// Solvent Entropy loss estimate due to lack of ideal water lattice hydrogen bond network formation (hydrophobic effect)
+		// Gill Hydrophobic solvation  S.J.Gill, S.F.Dec. J Phys. Chem. 1985
+		soluteSolventEntropy = (-temperature*0.0019872041*log(pow(0.5,(shellWaters))))*HsolvationFactor;
 	}
 
 	//Total atom solvation Energy
-	solvationEnergy.push_back(proteinSolventEnthalpy);
-	solvationEnergy.push_back(proteinSolventEntropy);
-	itsAtoms[_atomIndex]->setSolvationEnergy(proteinSolventEntropy+proteinSolventEnthalpy);
+	solvationEnergy.push_back(soluteSolventEnthalpy);
+	solvationEnergy.push_back(soluteSolventEntropy);
+	itsAtoms[_atomIndex]->setSolvationEnergy(soluteSolventEntropy+soluteSolventEnthalpy);
 	return solvationEnergy;
 }
 
