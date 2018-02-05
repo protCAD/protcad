@@ -1,0 +1,59 @@
+!main chain atoms
+N1	N2	N3	N4
+!sidechain branch points
+N1
+!connectivity
+!defined dihedral angles
+!atom types
+# column 1: atom name
+# column 2: AMBER all atom atomtype
+# column 3: AMBER united atom atomtype
+# column 4: SUMMA atom type
+# column 5: SUMMA environment type
+# column 6: six-atom solvation type
+N1		NA		-		-		-
+N2		NB		-		-		-
+N3		NH		-		-		-
+N4		NH		-		-		-
+C1		CA		-		-		-
+C2		CA		-		-		-
+C3		CA		-		-		-
+C4		CA		-		-		-
+C5		CA		-		-		-
+C6		CA		-		-		-
+C7		CA		-		-		-
+C8		CA		-		-		-
+C9		CA		-		-		-
+C10		CA		-		-		-
+C11		CA		-		-		-
+C12		CA		-		-		-
+C13		CP		-		-		-
+C14		CA		-		-		-
+C15		CA		-		-		-
+C16		CA		-		-		-
+C17		CA		-		-		-
+C18		CA		-		-		-
+C19		C3		-		-		-
+C20		C3		-		-		-
+C21		C3		-		-		-
+H1		HA		-		-		-
+H2		HA		-		-		-
+H3		HA		-		-		-
+H4		HA		-		-		-
+H5		HA		-		-		-
+H6		HA		-		-		-
+H7		HA		-		-		-
+H8		HA		-		-		-
+H9		HC		-		-		-
+H10		HC		-		-		-
+H11		HC		-		-		-
+H12		HN		-		-		-
+H13		HN		-		-		-
+H14		HC		-		-		-
+H15		HC		-		-		-
+H16		HC		-		-		-
+H17		HN		-		-		-
+H18		HN		-		-		-
+H19		HC		-		-		-
+H20		HC		-		-		-
+H21		HC		-		-		-
