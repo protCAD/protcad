@@ -28,7 +28,6 @@ int main (int argc, char* argv[])
 	amberVDW::setScaleFactor(1.0);
 
 	double Energy = bundle->protEnergy();
-	cout << Energy << " " << infile << endl;
 	pdbWriter(bundle, infile);
 	return 0;
 }

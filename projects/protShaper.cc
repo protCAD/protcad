@@ -123,7 +123,7 @@ int main (int argc, char* argv[])
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
-	DIR *pdir;
+	/*DIR *pdir;
 	struct dirent *pent;
 	pdir=opendir(".");
 
@@ -193,7 +193,7 @@ int main (int argc, char* argv[])
 						}
 					}
 				}
-			}
+			}2
 		}
 	}
 	while ((pent=readdir(pdir)))
@@ -256,7 +256,7 @@ int main (int argc, char* argv[])
 		}
 	}
 	closedir(pdir);
-	/*while ((pent=readdir(pdir)))
+	while ((pent=readdir(pdir)))
 	{
 		string inFrame = pent->d_name;
 		if (inFrame.find(".XCXXCX.pdh") != std::string::npos)
@@ -269,7 +269,7 @@ int main (int argc, char* argv[])
 			XCXXCXmotifs.push_back(angles);
 		}
 	}
-	closedir(pdir);*/
+	closedir(pdir);
 	DIR *pdir2;
 	struct dirent *pent2;
 	pdir2=opendir(".");
@@ -358,7 +358,7 @@ int main (int argc, char* argv[])
 		}
 	}
 	closedir(pdir2);
-	/*DIR *pdir3;
+	DIR *pdir3;
 	struct dirent *pent3;
 	pdir3=opendir(".");
 	while ((pent3=readdir(pdir3)))
@@ -422,6 +422,66 @@ int main (int argc, char* argv[])
 			}
 		}
 	}*/
+	PDBInterface* thePDB = new PDBInterface(inFile);
+	ensemble* theEnsemble = thePDB->getEnsemblePointer();
+	molecule* pMol = theEnsemble->getMoleculePointer(0);
+	protein* frame = static_cast<protein*>(pMol);
+	double Buffer2 = 0;
+	double Buffer1 = 0;
+	UInt res;
+
+	res=0;
+	frame->mutateWBC(0,res, G);
+	frame->setDihedral(0,res,psisL[3]+Buffer2,1,0);
+
+	res=1;
+	frame->mutateWBC(0,res, G);
+	frame->setDihedral(0,res,hetPsis[3]+Buffer1,0,0);
+	frame->setDihedral(0,res,psisD[3]-Buffer1,1,0);
+
+	res=2;
+	frame->mutateWBC(0,res, G);
+	frame->setDihedral(0,res,hetPsis[6]-Buffer1,0,0);
+	frame->setDihedral(0,res,psisL[3]+Buffer1,1,0);
+
+	res=3;
+	frame->mutateWBC(0,res, G);
+	frame->setDihedral(0,res,hetPsis[3]+Buffer2,0,0);
+	frame->setDihedral(0,res,psisD[3]-Buffer2,1,0);
+
+	res=4;
+	frame->mutateWBC(0,res, G);
+	frame->setDihedral(0,res,hetPsis[6]-Buffer1,0,0);
+	frame->setDihedral(0,res,psisL[3]+Buffer1,1,0);
+
+	res=5;
+	frame->mutateWBC(0,res, G);
+	frame->setDihedral(0,res,hetPsis[3]+Buffer1,0,0);
+	frame->setDihedral(0,res,psisD[3]-Buffer1,1,0);
+
+	res=6;
+	frame->mutateWBC(0,res, G);
+	frame->setDihedral(0,res,hetPsis[6]-Buffer2,0,0);
+	frame->setDihedral(0,res,psisL[3]+Buffer2,1,0);
+
+	res=7;
+	frame->mutateWBC(0,res, G);
+	frame->setDihedral(0,res,hetPsis[3]+Buffer1,0,0);
+	frame->setDihedral(0,res,psisD[3]-Buffer1,1,0);
+
+	res=8;
+	frame->mutateWBC(0,res, G);
+	frame->setDihedral(0,res,hetPsis[6]-Buffer1,0,0);
+	frame->setDihedral(0,res,psisL[3]+Buffer1,1,0);
+
+	res=9;
+	frame->mutateWBC(0,res, G);
+	frame->setDihedral(0,res,hetPsis[3]+Buffer2,0,0);
+
+	pdbWriter(frame, "test.pdb");
+
+
+
 	return 0;
 }
 void buildHelixOligamer (protein* _prot, UInt numChains, bool antiParallel, double _radius, double _phase1, double _phase2, double _coil, double _offset)
