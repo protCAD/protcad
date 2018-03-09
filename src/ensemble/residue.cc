@@ -3104,8 +3104,6 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
 	solvationEnergy.push_back(soluteSolventEnthalpy);
 	solvationEnergy.push_back(soluteSolventEntropy);
 	itsAtoms[_atomIndex]->setSolvationEnergy(soluteSolventEntropy+soluteSolventEnthalpy);
-	if (((soluteSolventEntropy+soluteSolventEnthalpy)/shellWaters)+((1.38E-23/4.18E3)*temperature)<0)
-	{cout << 1 << endl;}
 	return solvationEnergy;
 }
 
