@@ -460,11 +460,8 @@ void PDBInterface::parseAtomLine()
 		// is in the protein.
 		// Now mutate in, library version of amino acid, while preserving
 		// sidechain dihedrals, which includes hydrogen positions and internal nomenclature
-		//if (!itsHetatmFlag)
-		//{
-			bool withRotamer = true;
-			pCurrentChain->fixBrokenResidue(pCurrentChain->getNumResidues()-1, withRotamer);
-		//}
+		bool withRotamer = true;
+		pCurrentChain->fixBrokenResidue(pCurrentChain->getNumResidues()-1, withRotamer);
 
 	} // end loop over residues
 

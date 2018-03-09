@@ -37,9 +37,10 @@ int main (int argc, char* argv[])
 		UInt resNum = bundle->getNumResidues(i);
 		for (UInt j = 0; j < resNum; j ++)
 		{	
-            double phi = bundle->getPhi(i,j);
-            double psi = bundle->getPsi(i,j);
-            cout << i+1 << " " << j+1 << " " << phi << " " << psi << endl;
+			double phi = bundle->getPhi(i,j);
+			double psi = bundle->getPsi(i,j);
+			double chi = bundle->getBetaChi(i,j);
+			cout << i+1 << " " << j+1 << " " << phi << " " << psi << " " << chi << endl;
 		}
 	}
 	return 0;
