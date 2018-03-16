@@ -22,7 +22,6 @@
 void buildAntiParallelBetaBarrel (protein* _prot, double _pitch);
 void buildHelixOligamer (protein* _prot, UInt numChains, bool antiParallel, double _radius, double _phase1, double _phase2, double _coil, double _offset);
 double getBackboneHBondEnergy (protein* _prot);
-void setDihedrals (UInt res, UInt maxres, UInt angletype, UInt angletypemax);
 
 int main (int argc, char* argv[])
 {
@@ -421,7 +420,7 @@ int main (int argc, char* argv[])
 				delete thePDB;
 			}
 		}
-	}*/
+	}
 	PDBInterface* thePDB = new PDBInterface(inFile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
@@ -479,9 +478,28 @@ int main (int argc, char* argv[])
 	frame->setDihedral(0,res,hetPsis[3]+Buffer2,0,0);
 
 	pdbWriter(frame, "test.pdb");
-
-
-
+	*/
+	PDBInterface* thePDB = new PDBInterface(inFile);
+	ensemble* theEnsemble = thePDB->getEnsemblePointer();
+	molecule* pMol = theEnsemble->getMoleculePointer(0);
+	protein* start = static_cast<protein*>(pMol);
+	for (int phi = -180; phi < 0; phi++)
+	{
+		for (int psi = -180; psi < 180; psi++)
+		{
+			protein* frame = new protein(*start);
+			frame->setDihedral(0,0,psi,1,0);
+			frame->setDihedral(0,1,phi,0,0);
+			frame->setDihedral(0,1,psi,1,0);
+			frame->setDihedral(0,2,-1*phi,0,0);
+			double Energy = frame->protEnergy();
+			if (Energy < 40)
+			{
+				cout << Energy << " " << phi << " " << psi << endl;
+			}
+			delete frame;
+		}
+	}
 	return 0;
 }
 void buildHelixOligamer (protein* _prot, UInt numChains, bool antiParallel, double _radius, double _phase1, double _phase2, double _coil, double _offset)
@@ -630,21 +648,6 @@ double getBackboneHBondEnergy (protein* _prot)
         }
     }
     return Energy;
-}
-
-void setDihedrals (UInt res, UInt maxres, UInt angletype, UInt angletypemax)
-{
-
-	if (res == maxres)
-	{
-		res = 0;
-	}
-	if (angletype == 2)
-	{
-		angletype = 0;
-	}
-	cout << res << " " << angletype << " || ";
-	setDihedrals(res+1, maxres, angletype+1,angletypemax);
 }
 
 // antiparallel_beta test.pdb 5 0 -38.5 180 0 0 test2.pdb
