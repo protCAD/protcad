@@ -113,6 +113,7 @@ public:
 	void listAllowedRotamers(UInt _indexInChain) const;
 	void listChiDefinitions() const;
 	UInt getNumChis(const UInt _resIndex, const UInt _bpt);
+    double netCharge();
 
     void setMoved (UInt resIndex, UInt _moved) {itsResidues[resIndex]->setMoved(_moved);}
     double getSolvationEnergy(const UInt _resIndex) {return itsResidues[_resIndex]->getSolvationEnergy();}

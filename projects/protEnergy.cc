@@ -27,7 +27,6 @@ int main (int argc, char* argv[])
 	amberElec::setScaleFactor(1.0);
 	amberVDW::setScaleFactor(1.0);
 
-	double Energy = bundle->protEnergy();
-	pdbWriter(bundle, infile);
+    cout << bundle->protEnergy() << " " << bundle->netCharge() << endl;
 	return 0;
 }

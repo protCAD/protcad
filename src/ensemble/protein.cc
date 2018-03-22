@@ -457,6 +457,16 @@ void protein::setAllPolarHydrogensOn(const bool _polarHydrogensOn)
 	}
 }
 
+double protein::netCharge()
+{
+    double nCharge = 0.0;
+    for(UInt i=0;i<itsChains.size();i++)
+    {
+        nCharge += itsChains[i]->netCharge();
+    }
+    return nCharge;
+}
+
 
 void protein::stripToGlycine()
 {

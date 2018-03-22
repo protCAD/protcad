@@ -125,6 +125,7 @@ public:
 	int modify(ran& _ran, vector <int> _position);
 	void acceptModification();
 	void rejectModification();
+    double netCharge();
 	
     //--Optimization functions
     void protOpt(bool _backbone); // --Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics-- dpike

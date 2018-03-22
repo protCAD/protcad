@@ -155,6 +155,7 @@ public:
 	double getChi(const UInt _index) const;
     double getBetaChi();
     double getPolarHChi() const;
+    double netCharge();
 
 public:
 	atom* getMainChain(UInt _index);
