@@ -45,13 +45,13 @@ int main (int argc, char* argv[])
     //int chainsSize = sizeof(chains)/sizeof(chains[0]);
     //int residues[] = {1,3,5,7,9,13,15,17,19,21,28,30,32,34,36,54,57,59,61,70,72,74,76,78,86,88,90,92,94,108,110,112,114,116,127,129,131,133,151,153,155,157,159,161,166,169,172,174,181,183,185};//{46,47,61,92,95};//61,30,9,129/46,47,61,92,95/,87,91,110,150,152{1,3,5,7,9,13,15,17,19,21,28,30,32,34,36,54,57,59,61,70,72,74,76,78,86,88,90,92,94,108,110,112,114,116,127,129,131,133,151,153,155,157,159,161,166,169,172,174,181,183,185};
     //int residuesSize = sizeof(residues)/sizeof(residues[0]);
-    int resID[] = {Csf}, count = 0;
-    UInt resIDsize = sizeof(resID)/sizeof(resID[0]);
-    double Energy, bestE=1E100, chi2;
+    //int resID[] = {Csf}, count = 0;
+    //UInt resIDsize = sizeof(resID)/sizeof(resID[0]);
+    //double Energy, bestE=1E100, chi2;
 
 	//--Mutations
     //for (UInt h = 0; h < resIDsize; h++)
-    //{
+    /*{
 		for (UInt l = 0 ; l < 1; l++)
         {
             for (UInt i = 0; i < numres; i++)
@@ -121,10 +121,18 @@ int main (int argc, char* argv[])
 
 
                 //delete thePDB;z*/
-            }
-        }
+           // }
+       // }
     //}
-	string outFile = infile + ".RW.pdb";
+    bundle->mutateWBC(0,0,R);
+    bundle->mutateWBC(0,2,W);
+    bundle->mutateWBC(0,3,dR);
+    bundle->mutateWBC(0,5,dR);
+    bundle->mutateWBC(0,6,R);
+    bundle->mutateWBC(0,8,R);
+    bundle->mutateWBC(0,9,dR);
+    bundle->mutateWBC(0,11,dR);
+    string outFile = infile + ".CRW.pdb";
     pdbWriter(bundle, outFile);
 	return 0;
 }

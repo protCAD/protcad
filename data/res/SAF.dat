@@ -1,8 +1,9 @@
 !main chain atoms
 N1	N2	N3	N4
 !sidechain branch points
-N1
+C13
 !connectivity
+N1	N2
 !defined dihedral angles
 !atom types
 # column 1: atom name

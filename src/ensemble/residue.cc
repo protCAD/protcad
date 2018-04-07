@@ -4337,6 +4337,25 @@ double residue::getVolume(UInt _method)
 	return itsVolume;
 }
 
+double residue::netCharge()
+{
+    double nCharge = 0.0;
+    string residueType = getDataBaseItem(itsType);
+    if (residueType == "ARG") nCharge =  1.0;
+    if (residueType == "ASP") nCharge = -1.0;
+    if (residueType == "GLU") nCharge = -1.0;
+    if (residueType == "HIN") nCharge = -1.0;
+    if (residueType == "HIP") nCharge =  1.0;
+    if (residueType == "LYS") nCharge =  1.0;
+    if (residueType == "ARD") nCharge =  1.0;
+    if (residueType == "APD") nCharge = -1.0;
+    if (residueType == "GUD") nCharge = -1.0;
+    if (residueType == "HND") nCharge = -1.0;
+    if (residueType == "HPD") nCharge =  1.0;
+    if (residueType == "LYD") nCharge =  1.0;
+    return nCharge;
+}
+
 
 // wodakVolume() returns mean residue volume in cubic Angstroms based on parameterization
 // in Pontius, Richelle, Wodak, JMB v 264 p 121 (1996).  Volumes refer specifically to

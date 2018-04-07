@@ -749,6 +749,16 @@ void chain::setAllPolarHydrogensOn(const bool _polarHydrogensOn)
 	}
 }
 
+double chain::netCharge()
+{
+    double nCharge = 0.0;
+    for(UInt i=0;i<itsResidues.size();i++)
+    {
+        nCharge += itsResidues[i]->netCharge();
+    }
+    return nCharge;
+}
+
 vector<chainModBuffer> chain::performRandomRotamerChange(ran& _ran)
 {
 	if (itsRepackActivePositionMap.size() == 0)
