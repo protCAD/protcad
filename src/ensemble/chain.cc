@@ -433,12 +433,7 @@ void chain::fixBrokenResidue(const UInt _indexInChain, bool withRotamer)
 		{
 			currentRot = getSidechainDihedralAngles(_indexInChain);
 		}
-		// if betachi is negative and amino acid has L nomenclature, build D-amino acid
-		double betaChi = pOldRes->getBetaChi();
-		if (betaChi < 0 && itsResidues[_indexInChain]->getTypeIndex() < 26){
-			itsResidues[_indexInChain] = pOldRes->mutate( itsResidues[_indexInChain]->getTypeIndex()+27);}
-		else{
-			itsResidues[_indexInChain] = pOldRes->mutate( itsResidues[_indexInChain]->getTypeIndex() );}
+		itsResidues[_indexInChain] = pOldRes->mutate( itsResidues[_indexInChain]->getTypeIndex() );
 		if (withRotamer)
 		{
 			setSidechainDihedralAngles(_indexInChain, currentRot);
