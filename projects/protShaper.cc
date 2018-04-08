@@ -483,11 +483,11 @@ int main (int argc, char* argv[])
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* start = static_cast<protein*>(pMol);
-	for (int phiR = -180; phiR < 0; phiR++)
+    for (int phiR = -180; phiR < 180; phiR++)
 	{
 		for (int psiR = -180; psiR < 180; psiR++)
 		{
-			for (int phiL = 0; phiL < 180; phiL++)
+            for (int phiL = -180; phiL < 180; phiL++)
 			{
 				for (int psiL = -180; psiL < 180; psiL++)
 				{
@@ -499,18 +499,18 @@ int main (int argc, char* argv[])
 					frame->setDihedral(0,2,psiR,1,0);
 					frame->setDihedral(0,3,phiL,0,0);
 					double Energy = frame->protEnergy();
-					if (Energy < 100)
+                    if (Energy < 0)
 					{
 						cout << Energy << " " << phiR << " " << psiR << " " << phiL << " " << psiL << endl;
 					}
 					delete frame;
-					psiL=psiL+4;
+                    //psiL=psiL+4;
 				}
-				phiL=phiL+4;
+                //phiL=phiL+4;
 			}
-			psiR=psiR+4;
+            //psiR=psiR+4;
 		}
-		phiR=phiR+4;
+        //phiR=phiR+4;
 	}
 	return 0;
 }
