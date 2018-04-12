@@ -499,18 +499,18 @@ int main (int argc, char* argv[])
 					frame->setDihedral(0,2,psiR,1,0);
 					frame->setDihedral(0,3,phiL,0,0);
 					double Energy = frame->protEnergy();
-                    if (Energy < 0)
+                    if (Energy < 10)
 					{
 						cout << Energy << " " << phiR << " " << psiR << " " << phiL << " " << psiL << endl;
 					}
 					delete frame;
-                    //psiL=psiL+4;
+                    psiL=psiL+4;
 				}
-                //phiL=phiL+4;
+                phiL=phiL+4;
 			}
-            //psiR=psiR+4;
+            psiR=psiR+4;
 		}
-        //phiR=phiR+4;
+        phiR=phiR+4;
 	}
 	return 0;
 }
