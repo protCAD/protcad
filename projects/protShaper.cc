@@ -478,7 +478,7 @@ int main (int argc, char* argv[])
 	frame->setDihedral(0,res,hetPsis[3]+Buffer2,0,0);
 
 	pdbWriter(frame, "test.pdb");
-	*/
+
 	PDBInterface* thePDB = new PDBInterface(inFile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
@@ -511,7 +511,33 @@ int main (int argc, char* argv[])
             psiR=psiR+4;
 		}
         phiR=phiR+4;
-	}
+    }*/
+    PDBInterface* thePDB = new PDBInterface(inFile);
+    ensemble* theEnsemble = thePDB->getEnsemblePointer();
+    molecule* pMol = theEnsemble->getMoleculePointer(0);
+    protein* bundle = static_cast<protein*>(pMol);
+
+    double phi = -80, psi = -20;
+    double phi2 = -75, psi2 = -75;
+    double shift = 5;
+    bool even = true;
+    for (UInt i = 0; i < bundle->getNumResidues(0); i++)
+    {
+        if (even)
+        {
+            bundle->setPhi(0,i,phi+shift);
+            bundle->setPsi(0,i,psi+shift);
+            even = false;
+        }
+        else
+        {
+             bundle->setPhi(0,i,(phi*-1)+shift);
+             bundle->setPsi(0,i,(psi*-1)+shift);
+             even = true;
+        }
+    }
+    outFile = "gly+5.pdb";
+    pdbWriter(bundle, outFile);
 	return 0;
 }
 void buildHelixOligamer (protein* _prot, UInt numChains, bool antiParallel, double _radius, double _phase1, double _phase2, double _coil, double _offset)
