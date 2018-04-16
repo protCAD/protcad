@@ -515,29 +515,35 @@ int main (int argc, char* argv[])
     PDBInterface* thePDB = new PDBInterface(inFile);
     ensemble* theEnsemble = thePDB->getEnsemblePointer();
     molecule* pMol = theEnsemble->getMoleculePointer(0);
-    protein* bundle = static_cast<protein*>(pMol);
-
+    protein* start = static_cast<protein*>(pMol);
     double phi = -80, psi = -20;
-    double phi2 = -75, psi2 = -75;
-    double shift = 5;
-    bool even = true;
-    for (UInt i = 0; i < bundle->getNumResidues(0); i++)
+    for (UInt h = 0; h < 10; h++)
     {
-        if (even)
+        protein* bundle = new protein(*start);
+        bool even = true;
+        for (UInt i = 0; i < bundle->getNumResidues(0); i++)
         {
-            bundle->setPhi(0,i,phi+shift);
-            bundle->setPsi(0,i,psi+shift);
-            even = false;
+            if (even)
+            {
+                bundle->setDihedral(0,i,phi+h,0,0);
+                bundle->setDihedral(0,i,psi+h,1,0);
+                even = false;
+            }
+            else
+            {
+                 bundle->setDihedral(0,i,(phi*-1)+h,0,0);
+                 bundle->setDihedral(0,i,(psi*-1)+h,1,0);
+                 even = true;
+            }
         }
-        else
-        {
-             bundle->setPhi(0,i,(phi*-1)+shift);
-             bundle->setPsi(0,i,(psi*-1)+shift);
-             even = true;
-        }
+        cout << bundle->protEnergy() << endl;
+        stringstream convert;
+        string countstr;
+        convert << h, countstr = convert.str();
+        outFile = countstr + ".SF4trip.pdb";
+        pdbWriter(bundle, outFile);
+        delete bundle;
     }
-    outFile = "gly+5.pdb";
-    pdbWriter(bundle, outFile);
 	return 0;
 }
 void buildHelixOligamer (protein* _prot, UInt numChains, bool antiParallel, double _radius, double _phase1, double _phase2, double _coil, double _offset)

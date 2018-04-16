@@ -20,14 +20,16 @@ int main (int argc, char* argv[])
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* bundle = static_cast<protein*>(pMol);
-    residue::setCutoffDistance(18.0);
+    residue::setCutoffDistance(8.0);
 	residue::setTemperature(300);
     residue::setElectroSolvationScaleFactor(0.0);
     residue::setHydroSolvationScaleFactor(0.0);
     amberElec::setScaleFactor(0.0);
     amberVDW::setScaleFactor(1.0);
 
-    cout << bundle->protEnergy()*4184/6.022140857e23 << endl;
+    cout << bundle->protEnergy() << endl;
+    string outFile = "test.pdb";
+    pdbWriter(bundle, outFile);
     /*double solventEnergy=0.0;
     UInt chainNum = bundle->getNumChains();
     for (UInt i = 0; i < chainNum; i ++)

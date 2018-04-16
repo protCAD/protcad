@@ -117,7 +117,7 @@ int main (int argc, char* argv[])
     vector<vector<UInt> > resIDs;
     vector <UInt> v;
 
-	UInt resID1[] = {G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G,G};// -design1a
+    UInt resID1[] = {A,dCf,A,dA,Cf,dA,A,dCf,A,dA,Cf,dA,A,dCf,A,dA,Cf,dA,A,dCf,A,dA,Cf,dA,A,dCf,A,dA,Cf,dA,A,dCf,A,dA,Cf,dA};// -design1a
     v.insert (v.begin(), resID1, resID1 + sizeof(resID1)/sizeof(resID1[0]));
     resIDs.push_back(v);
     v.clear();/*
