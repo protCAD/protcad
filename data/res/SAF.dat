@@ -3,7 +3,49 @@ N1	N2	N3	N4
 !sidechain branch points
 C13
 !connectivity
-C13	N2
+N1
+N2
+N3
+N4
+C1
+C2
+C3
+C4
+C5
+C6
+C7
+C8
+C9
+C10
+C11
+C12
+C13
+C14
+C15
+C16
+C17
+C18
+C19
+C21
+H1
+H2
+H3
+H4
+H5
+H6
+H7
+H8
+H9
+H10
+H11
+H12
+H13
+H14
+H15
+H16
+H17
+H18
+H19
 !defined dihedral angles
 !atom types
 # column 1: atom name
@@ -14,8 +56,8 @@ C13	N2
 # column 6: six-atom solvation type
 N1		NA		-		-		-		-
 N2		NB		-		-		-		-
-N3		N*		-		-		-		-
-N4		N*		-		-		-		-
+N3		NC		-		-		-		-
+N4		NC		-		-		-		-
 C1		CA		-		-		-		-
 C2		CA		-		-		-		-
 C3		CA		-		-		-		-
@@ -54,4 +96,4 @@ H15		HC		-		-		-		-
 H16		HC		-		-		-		-
 H17		HC		-		-		-		-
 H18		HC		-		-		-		-
-H19		HC		-		-		-		-
+H19		HA		-		-		-		-
