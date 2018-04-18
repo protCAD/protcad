@@ -29,8 +29,8 @@ int main (int argc, char* argv[])
 		cout << "amberAnalyzer" << endl;
 		exit(1);
 	}
-	enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,Csf,Hca,Oec};
-	string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hn","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dQ","dE","dEh","dHd","dHe","dHn","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dAT","dW","dY","dV","Hce","Pch","Csf","dCf"};
+    enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,Csf,Sf4,Hca,Eoc,Oec};
+    string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dCf","dQ","dE","dEh","dHd","dHe","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV","Csf","Sf4","Hca","Eoc","Oec"};
 	residue::setCutoffDistance(8.0);
 	rotamer::setScaleFactor(0.0);
 	amberVDW::setScaleFactor(0.0);
@@ -47,7 +47,7 @@ int main (int argc, char* argv[])
 	while ((pent=readdir(pdir)))
 	{
 		inFrame = pent->d_name;
-		if (inFrame.find(".ent") != std::string::npos)
+        if (inFrame.find(".trim") != std::string::npos)
 		{
 			PDBInterface* theFramePDB = new PDBInterface(inFrame);
 			ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
@@ -55,13 +55,16 @@ int main (int argc, char* argv[])
 			protein* frame = static_cast<protein*>(frameMol);
 			for (UInt i = 0; i < frame->getNumChains(); i++)
 			{
-				for (UInt j = 0; j < frame->getNumResidues(i); j++)
+                for (UInt j = 1; j < frame->getNumResidues(i)-4; j++)
 				{
-					if (j != 0 && j != frame->getNumResidues(i)-1)
-					{	phi = frame->getPhi(i,j), psi = frame->getPsi(i,j);
-						cout << inFrame << " " << j << " " << phi << " " << psi << " " << phi-psi << endl; }
-				}
-				break;
+                    if (frame->getNumResidues(i) > 4)
+                    {
+                        if (frame->getTypeFromResNum(i,j) == C && frame->getTypeFromResNum(i,j+3)== C)
+                        {
+                            cout << inFrame << " " << i << " " << aminoAcidString[frame->getTypeFromResNum(i,j+1)] << " " << aminoAcidString[frame->getTypeFromResNum(i,j+2)] << " " << frame->getPhi(i,j) << " " << frame->getPsi(i,j) << " " << frame->getPhi(i,j+1) << " " << frame->getPsi(i,j+1) << " " << frame->getPhi(i,j+2) << " " << frame->getPsi(i,j+2) << " " << frame->getPhi(i,j+3) << " " << frame->getPsi(i,j+3) << endl;
+                        }
+                    }
+                }
 			}
 			delete theFramePDB;
 		}

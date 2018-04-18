@@ -3012,6 +3012,7 @@ double residue::intraSoluteEnergy()
     bool threeBonds;
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
+        //cout << itsAtoms[i]->getName() << " ";
 		if (!itsAtoms[i]->getSilentStatus())
 		{
 			// ** get solvationEnergy
@@ -3034,6 +3035,10 @@ double residue::intraSoluteEnergy()
 							int index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][0];
 							int index2 = dataBase[itsType].itsAtomEnergyTypeDefinitions[j][0];
 							double tempvdwEnergy = residueTemplate::getVDWEnergySQ(index1,index2,distanceSquared);
+                            //if (tempvdwEnergy > 2)
+                            //{
+                            //    cout << itsAtoms[j]->getName() << " ";
+                            //}
 							intraEnergy += tempvdwEnergy;
 						}
 
@@ -3055,7 +3060,9 @@ double residue::intraSoluteEnergy()
 				}
 			}
 		}
+        //cout << endl;
 	}
+
 	return intraEnergy;
 }
 

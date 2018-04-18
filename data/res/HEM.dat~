@@ -1,0 +1,159 @@
+!main chain atoms
+NA	NB	NC	ND
+!sidechain branch points
+FE
+!connectivity
+FE  
+NA  
+C1A 
+C2A 
+CAA 
+HP71
+HP72
+CBA 
+HP73
+HP74
+CGA 
+O1A 
+O2A 
+C3A 
+CMA 
+HM81
+HM82
+HM83
+C4A 
+CHB 
+HDM 
+C1B 
+NB  
+C2B 
+CMB 
+HM11
+HM12
+HM13
+C3B 
+CAB 
+HV2 
+CBB 
+HVC2
+HVT2
+C4B 
+CHC 
+HAM 
+C1C 
+NC  
+C2C 
+CMC 
+HM31
+HM32
+HM33
+C3C 
+CAC 
+HV4 
+CBC 
+HVC4
+HVT4
+C4C 
+CHD 
+HBM 
+C1D 
+ND  
+C2D 
+CMD 
+HM51
+HM52
+HM53
+C3D 
+C4D 
+CHA 
+HGM 
+CAD 
+HP61
+HP62
+CBD 
+HP63
+HP64
+CGD 
+O1D 
+O2D 
+!defined dihedral angles
+!atom types
+# column 1: atom name
+# column 2: AMBER all atom atomtype
+# column 3:	AMBER united atom atomtype
+# column 4: SUMMA atom type
+# column 5: SUMMA environment type
+# column 6: six-atom solvation type
+FE		FE		-		-		-		-
+NA		NP
+C1A		CC
+C2A   CB
+CAA   CT
+HP71  HC
+HP72  HC
+CBA   CT
+HP73  HC
+HP74  HC
+CGA   C 
+O1A   O2
+O2A   O2
+C3A   CB
+CMA   CT
+HM81  HC
+HM82  HC
+HM83  HC
+C4A   CC
+CHB   CD
+HDM   HC
+C1B   CC
+NB    NO
+C2B   CB
+CMB   CT
+HM11  HC
+HM12  HC
+HM13  HC
+C3B   CB
+CAB   CY
+HV2   HC
+CBB   CX
+HVC2  HC
+HVT2  HC
+C4B   CC
+CHC   CD
+HAM   HC
+C1C   CC
+NC    NP
+C2C   CB
+CMC   CT
+HM31  HC
+HM32  HC
+HM33  HC
+C3C   CB
+CAC   CY
+HV4   HC
+CBC   CX
+HVC4  HC
+HVT4  HC
+C4C   CC
+CHD   CD
+HBM   HC
+C1D   CC
+ND    NO
+C2D   CB
+CMD   CT
+HM51  HC
+HM52  HC
+HM53  HC
+C3D   CB
+C4D   CC
+CHA   CD
+HGM   HC
+CAD   CT
+HP61  HC
+HP62  HC
+CBD   CT
+HP63  HC
+HP64  HC
+CGD   C 
+O1D   O2
+O2D   O2
