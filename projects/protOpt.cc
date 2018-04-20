@@ -26,7 +26,7 @@ int main (int argc, char* argv[])
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* _prot = static_cast<protein*>(pMol);
 
-    UInt _frozenResidues[] = {1,4,7,10};
+    UInt _frozenResidues[] = {7,10,15,43,19,54};
 	UInt _activeChains[] = {0};
 	UInt activeChainsSize = sizeof(_activeChains)/sizeof(_activeChains[0]), frozenResiduesSize = sizeof(_frozenResidues)/sizeof(_frozenResidues[0]);
 	UIntVec activeChains, frozenResidues;

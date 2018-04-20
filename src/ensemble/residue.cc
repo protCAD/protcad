@@ -3832,6 +3832,28 @@ bool residue::isSeparatedByFewBonds(residue* _pRes1, UInt _index1, residue*
 		}
 	}
 
+    // Check for HIS-Heme bond
+    if ((_pRes1->getType() == "HID" || _pRes1->getType() == "HDD") && _index1 > 5 )
+    {	if (_pRes2->getType() == "HEM")
+        { 	atom* pAtom1=_pRes1->getAtom(_index1);
+            atom* pAtom2=_pRes2->getAtom(_index2);
+            if (pAtom1->distance(pAtom2) < 3.0)
+            {
+                return true;
+            }
+        }
+    }
+    if ((_pRes2->getType() == "HID" || _pRes2->getType() == "HDD") && _index2 > 5)
+    {	if (_pRes1->getType() == "HEM")
+        { 	atom* pAtom1=_pRes2->getAtom(_index2);
+            atom* pAtom2=_pRes1->getAtom(_index1);
+            if (pAtom1->distance(pAtom2) < 3.0)
+            {
+                return true;
+            }
+        }
+    }
+
 	// Check for peptide bond
 	if ((_index1 == 0 && _index2 == 2) || (_index2 == 0 && _index1 == 2))
 	{

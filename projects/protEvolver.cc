@@ -27,8 +27,8 @@ void createPossibleMutantsDatabase(protein* bundle, UIntVec &_activeChains, UInt
 bool isFrozen(UIntVec _frozenResidues, UInt resIndex);
 vector < vector < UInt > > buildSequencePool();
 vector < vector < UInt > > buildPossibleMutants();
-enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,Csf,Sf4,Hca,Eoc,Oec};
-string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dCf","dQ","dE","dEh","dHd","dHe","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV","Csf","Sf4","Hca","Eoc","Oec"};
+enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,Csf,Sf4,Hca,Eoc,Oec,Hem};
+string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dCf","dQ","dE","dEh","dHd","dHe","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV","Csf","Sf4","Hca","Eoc","Oec","Hem"};
 
 //--Program setup----------------------------------------------------------------------------------------
 int main (int argc, char* argv[])
@@ -41,11 +41,11 @@ int main (int argc, char* argv[])
 	}
 
 	UInt _activeChains[] = {0};                                                         // chains active for mutation
-	UInt _allowedLResidues[] = {A,L,F,V,I,W,Y,Q,E,S,T,G,D,N,He,Hd,Hp,M};                   // amino acids allowed with phi < 0
+    UInt _allowedLResidues[] = {A,R,N,D,Q,E,I,L,K,F,P,S,T,W,Y,V,G};                   // amino acids allowed with phi < 0
 	UInt _allowedDResidues[] = {G};  // amino acids allowed with phi > 0
-	UInt _activeResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,13,14,15,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,47,48,49,50,51,52,53,54,55,56,57,58,59,61,62,63,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98};                  // positions active for mutation
-	UInt _randomResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,13,14,15,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,47,48,49,50,51,52,53,54,55,56,57,58,59,61,62,63,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98};                  // positions active for a random start sequence initially
-	UInt _frozenResidues[] = {12,16,46,60,64,99}; //13,17,61,65                                              // positions that cannot move at all
+    UInt _activeResidues[] = {6,8,13,14};                  // positions active for mutation
+    UInt _randomResidues[] = {6,8,13,14};                  // positions active for a random start sequence initially
+    UInt _frozenResidues[] = {7,10,15,43,19,54,59,60}; //13,17,61,65                                              // positions that cannot move at all
 	bool homoSymmetric = false;                                                          // if true all chains are structurally symmetrical to the one listed active chain above
 	bool backboneRelaxation = false;                                             // if true allow backrub relaxation in structural optimization
 
@@ -224,7 +224,7 @@ int main (int argc, char* argv[])
 		}
 		bindingEnergy.clear();
 		bindingEnergy = model->chainBindingEnergy();
-		if (Energy < startEnergy)
+        if (Energy < startEnergy)
 		{
 			name = rand() % 100;
 			sec = time(NULL);
@@ -416,6 +416,8 @@ void createPossibleMutantsDatabase(protein* _bundle, UIntVec &_activeChains, UIn
 	{
 		startE = _bundle->protEnergy();
 	}
+    startE=startE+20; //buffer energy filter of amino acids per position to restrict only by very hard clashes
+
 	for (UInt i = 0; i < _activeChains.size(); i++)
 	{
 		for (UInt j = 0; j <_activeResidues.size(); j++)
