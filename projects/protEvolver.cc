@@ -43,8 +43,8 @@ int main (int argc, char* argv[])
 	UInt _activeChains[] = {0};                                                         // chains active for mutation
     UInt _allowedLResidues[] = {A,R,N,D,Q,E,I,L,K,F,P,S,T,W,Y,V,G};                   // amino acids allowed with phi < 0
 	UInt _allowedDResidues[] = {G};  // amino acids allowed with phi > 0
-    UInt _activeResidues[] = {6,8,13,14};                  // positions active for mutation
-    UInt _randomResidues[] = {6,8,13,14};                  // positions active for a random start sequence initially
+    UInt _activeResidues[] = {3,6,8,9,11,12,13,14};                  // positions active for mutation
+    UInt _randomResidues[] = {3,6,8,9,11,12,13,14};                  // positions active for a random start sequence initially
     UInt _frozenResidues[] = {7,10,15,43,19,54,59,60}; //13,17,61,65                                              // positions that cannot move at all
 	bool homoSymmetric = false;                                                          // if true all chains are structurally symmetrical to the one listed active chain above
 	bool backboneRelaxation = false;                                             // if true allow backrub relaxation in structural optimization
@@ -87,25 +87,30 @@ int main (int argc, char* argv[])
 	PDBInterface* thePDB = new PDBInterface(infile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
-	protein* start_bundle = static_cast<protein*>(pMol);
+    protein* start = static_cast<protein*>(pMol);
 	if (homoSymmetric)
 	{
-		startEnergy = start_bundle->intraSoluteEnergy(true, _activeChains[0]);
+        startEnergy = start->intraSoluteEnergy(true, _activeChains[0]);
 	}
 	else
 	{
-		startEnergy = start_bundle->intraSoluteEnergy(true);
+        startEnergy = start->intraSoluteEnergy(true);
 	}
 	possibleMutants = buildPossibleMutants();
 	if(possibleMutants.size() < activeResidues.size())
 	{
-		createPossibleMutantsDatabase(start_bundle, activeChains, activeResidues, allowedLResidues, allowedDResidues, homoSymmetric);
+        createPossibleMutantsDatabase(start, activeChains, activeResidues, allowedLResidues, allowedDResidues, homoSymmetric);
 		possibleMutants = buildPossibleMutants();
 	}
+    delete thePDB;
 
 	//--Run multiple independent evolution cycles-----------------------------------------------------
 	for (UInt a = 1; a < 10000; a++)
-	{
+    {
+        PDBInterface* thePDB = new PDBInterface(infile);
+        ensemble* theEnsemble = thePDB->getEnsemblePointer();
+        molecule* pMol = theEnsemble->getMoleculePointer(0);
+        protein* start_bundle = static_cast<protein*>(pMol);
 		sequencePool = buildSequencePool();
 		if (homoSymmetric)
 		{
@@ -208,6 +213,7 @@ int main (int argc, char* argv[])
 			sequencePosition.clear();
 			delete tempBundle;
 		}while (nobetter < plateau);
+        delete thePDB;
 
 		//--Print final energy and write a pdb file----------------------------------------------------
 		PDBInterface* theModelPDB = new PDBInterface(tempModel);
@@ -226,13 +232,16 @@ int main (int argc, char* argv[])
 		bindingEnergy = model->chainBindingEnergy();
         if (Energy < startEnergy)
 		{
-			name = rand() % 100;
+            name = rand() % 1000;
 			sec = time(NULL);
-			timeid = name + sec;
+            timeid = sec;
 			stringstream convert;
 			string countstr;
 			convert << timeid, countstr = convert.str();
-			outFile = countstr + ".evo.pdb";
+            stringstream convert2;
+            string countstr2;
+            convert << name, countstr2 = convert2.str();
+            outFile = countstr + "." + countstr2 + ".evo.pdb";
 			pdbWriter(model, outFile);
 			finalSequence.clear(), chainSequence.clear();
 			for (UInt i = 0; i < activeChains.size(); i++)
@@ -334,7 +343,7 @@ UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector 
 		chance = (rand() % 100) + 1;
 		entropy = (rand() % 100) + 1;
 		mutant = _possibleMutants[position][rand() % positionPossibles];
-		pooling = 5;//-0.3166*count+195; //At 300 sequences start pooling, at 600+ 95%
+        pooling = -0.3166*count+195; //At 300 sequences start pooling, at 600+ 95%
 		if (pooling < 5){
 			pooling = 5;
 		}
