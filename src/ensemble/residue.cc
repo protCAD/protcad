@@ -3035,11 +3035,12 @@ double residue::intraSoluteEnergy()
 							int index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][0];
 							int index2 = dataBase[itsType].itsAtomEnergyTypeDefinitions[j][0];
 							double tempvdwEnergy = residueTemplate::getVDWEnergySQ(index1,index2,distanceSquared);
+                            intraEnergy += tempvdwEnergy;
                             //if (tempvdwEnergy > 2)
                             //{
                             //    cout << itsAtoms[j]->getName() << " ";
                             //}
-							intraEnergy += tempvdwEnergy;
+
 						}
 
 						// ** intra Electrostatics

@@ -41,13 +41,13 @@ int main (int argc, char* argv[])
 	}
 
 	UInt _activeChains[] = {0};                                                         // chains active for mutation
-    UInt _allowedLResidues[] = {A,R,N,D,Q,E,I,L,K,F,P,S,T,W,Y,V,G};                   // amino acids allowed with phi < 0
-	UInt _allowedDResidues[] = {G};  // amino acids allowed with phi > 0
-    UInt _activeResidues[] = {3,6,8,9,11,12,13,14};                  // positions active for mutation
-    UInt _randomResidues[] = {3,6,8,9,11,12,13,14};                  // positions active for a random start sequence initially
-    UInt _frozenResidues[] = {7,10,15,43,19,54,59,60}; //13,17,61,65                                              // positions that cannot move at all
-	bool homoSymmetric = false;                                                          // if true all chains are structurally symmetrical to the one listed active chain above
-	bool backboneRelaxation = false;                                             // if true allow backrub relaxation in structural optimization
+    UInt _allowedLResidues[] = {A,R,N,D,Q,E,I,L,K,F,P,S,T,W,Y,V,G};                     // amino acids allowed with phi < 0
+    UInt _allowedDResidues[] = {G};                                                     // amino acids allowed with phi > 0
+    UInt _activeResidues[] = {3,6,8,9,11,12,13,14};                                     // positions active for mutation
+    UInt _randomResidues[] = {3,6,8,9,11,12,13,14};                                     // positions active for a random start sequence initially
+    UInt _frozenResidues[] = {7,10,15,43,19,54,59,60};                                  // positions that cannot move at all
+    bool homoSymmetric = false;                                                         // if true all chains are structurally and sequentially symmetric to desired listed active chain above
+    bool backboneRelaxation = false;                                                    // if true allow backrub relaxation in structural optimization
 
 	//--running parameters
 	residue::setCutoffDistance(8.0);
@@ -232,16 +232,12 @@ int main (int argc, char* argv[])
 		bindingEnergy = model->chainBindingEnergy();
         if (Energy < startEnergy)
 		{
-            name = rand() % 1000;
 			sec = time(NULL);
             timeid = sec;
 			stringstream convert;
 			string countstr;
 			convert << timeid, countstr = convert.str();
-            stringstream convert2;
-            string countstr2;
-            convert << name, countstr2 = convert2.str();
-            outFile = countstr + "." + countstr2 + ".evo.pdb";
+            outFile = countstr + "." + startstr + ".evo.pdb";
 			pdbWriter(model, outFile);
 			finalSequence.clear(), chainSequence.clear();
 			for (UInt i = 0; i < activeChains.size(); i++)
