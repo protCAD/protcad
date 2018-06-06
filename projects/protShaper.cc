@@ -477,47 +477,39 @@ int main (int argc, char* argv[])
 	frame->mutateWBC(0,res, G);
 	frame->setDihedral(0,res,hetPsis[3]+Buffer2,0,0);
 
-	pdbWriter(frame, "test.pdb");
+    pdbWriter(frame, "test.pdb");
 
 	PDBInterface* thePDB = new PDBInterface(inFile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* start = static_cast<protein*>(pMol);
-    for (int phiR = -180; phiR < 180; phiR++)
+    for (int phi = -180; phi < 180; phi++)
 	{
-		for (int psiR = -180; psiR < 180; psiR++)
+        for (int psi = -180; psi < 180; psi++)
 		{
-            for (int phiL = -180; phiL < 180; phiL++)
-			{
-				for (int psiL = -180; psiL < 180; psiL++)
-				{
-					protein* frame = new protein(*start);
-					frame->setDihedral(0,0,psiR,1,0);
-					frame->setDihedral(0,1,phiL,0,0);
-					frame->setDihedral(0,1,psiL,1,0);
-					frame->setDihedral(0,2,phiR,0,0);
-					frame->setDihedral(0,2,psiR,1,0);
-					frame->setDihedral(0,3,phiL,0,0);
-					double Energy = frame->protEnergy();
-                    if (Energy < 10)
-					{
-						cout << Energy << " " << phiR << " " << psiR << " " << phiL << " " << psiL << endl;
-					}
-					delete frame;
-                    psiL=psiL+4;
-				}
-                phiL=phiL+4;
-			}
-            psiR=psiR+4;
-		}
-        phiR=phiR+4;
+            protein* frame = new protein(*start);
+            frame->setDihedral(0,0,psi,1,0);
+            frame->setDihedral(0,1,phi*-1,0,0);
+            frame->setDihedral(0,1,psi*-1,1,0);
+            frame->setDihedral(0,2,phi,0,0);
+            frame->setDihedral(0,2,psi,1,0);
+            frame->setDihedral(0,3,phi*-1,0,0);
+            double Energy = frame->protEnergy();
+            if (Energy < 10)
+            {
+                cout << Energy << "," << phi << "," << psi << "," << phi*-1 << "," << psi*-1 << endl;
+            }
+            delete frame;
+            psi=psi+4;
+        }
+        phi=phi+4;
     }*/
     PDBInterface* thePDB = new PDBInterface(inFile);
     ensemble* theEnsemble = thePDB->getEnsemblePointer();
     molecule* pMol = theEnsemble->getMoleculePointer(0);
     protein* start = static_cast<protein*>(pMol);
-    double phi = -80, psi = -20;
-    for (UInt h = 0; h < 10; h++)
+    double phi = -80, psi = -140;
+    for (UInt h = 0; h < 1; h++)
     {
         protein* bundle = new protein(*start);
         bool even = true;
@@ -525,14 +517,14 @@ int main (int argc, char* argv[])
         {
             if (even)
             {
-                bundle->setDihedral(0,i,phi+h,0,0);
-                bundle->setDihedral(0,i,psi+h,1,0);
+                bundle->setDihedral(0,i,phi,0,0);
+                bundle->setDihedral(0,i,psi,1,0);
                 even = false;
             }
             else
             {
-                 bundle->setDihedral(0,i,(phi*-1)+h,0,0);
-                 bundle->setDihedral(0,i,(psi*-1)+h,1,0);
+                 bundle->setDihedral(0,i,(phi)*-1,0,0);
+                 bundle->setDihedral(0,i,(psi)*-1,1,0);
                  even = true;
             }
         }
@@ -540,11 +532,11 @@ int main (int argc, char* argv[])
         stringstream convert;
         string countstr;
         convert << h, countstr = convert.str();
-        outFile = countstr + ".SF4trip.pdb";
+        outFile = countstr + ".80140paper.pdb";
         pdbWriter(bundle, outFile);
         delete bundle;
     }
-	return 0;
+    return 0;
 }
 void buildHelixOligamer (protein* _prot, UInt numChains, bool antiParallel, double _radius, double _phase1, double _phase2, double _coil, double _offset)
 {

@@ -126,7 +126,6 @@ data/rotamerLib/TYD.rot
 data/rotamerLib/TYR.rot
 data/rotamerLib/VAD.rot
 data/rotamerLib/VAL.rot
-projects/CxxCscanner.cc
 projects/README
 projects/protBindingEnergy.cc
 projects/protDB.cc

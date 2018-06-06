@@ -23,8 +23,8 @@ vector < vector < UInt > > buildSequencePool();
 //--Program setup----------------------------------------------------------------------------------------
 int main (int argc, char* argv[])
 {
-	enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,Csf,Hca,Oec};
-	string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hn","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dQ","dE","dEh","dHd","dHe","dHn","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dAT","dW","dY","dV","Hce","Pch","Csf","dCf"};
+    enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,Csf,Sf4,Hca,Eoc,Oec,Hem};
+    string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dCf","dQ","dE","dEh","dHd","dHe","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV","Csf","Sf4","Hca","Eoc","Oec","Hem"};
     if (argc !=1)
 	{
                 cout << "protSorter" << endl;
@@ -42,14 +42,14 @@ int main (int argc, char* argv[])
         cout << endl;
     }*/
 
-	residue::setCutoffDistance(8.0);
+    residue::setCutoffDistance(8.0);
 	residue::setTemperature(300);
-	residue::setElectroSolvationScaleFactor(0.0);
-	residue::setHydroSolvationScaleFactor(0.0);
-	amberElec::setScaleFactor(0.0);
+    residue::setElectroSolvationScaleFactor(1.0);
+    residue::setHydroSolvationScaleFactor(1.0);
+    amberElec::setScaleFactor(1.0);
 	amberVDW::setScaleFactor(1.0);
 
-    //create evo data file
+    /*/create evo data file
     string inFrame;
     DIR *pdir;
     struct dirent *pent;
@@ -96,10 +96,10 @@ int main (int argc, char* argv[])
 			delete theModelPDB;
 		}
 	}
-	closedir(pdir);
+    closedir(pdir);*/
 
     //create evo final file
-    /*string inFrame;
+    string inFrame;
     DIR *pdir;
     struct dirent *pent;
     pdir=opendir(".");
@@ -116,22 +116,20 @@ int main (int argc, char* argv[])
             ensemble* theModelEnsemble = theModelPDB->getEnsemblePointer();
             molecule* modelMol = theModelEnsemble->getMoleculePointer(0);
             protein* model = static_cast<protein*>(modelMol);
-            model->silenceMessages();
-            vector < double> Energy = model->chainBindingEnergy();
+            //vector < double> Energy = model->chainBindingEnergy();
             fstream fs;
-            fs.open ("final_test.out", fstream::in | fstream::out | fstream::app);
-            fs << inFrame << " " << Energy[0] << " " << Energy[1];
-            for (UInt i = 0; i < model->getNumResidues(1); i++)
+            fs.open ("seqpool.out", fstream::in | fstream::out | fstream::app);
+            for (UInt i = 0; i < model->getNumResidues(0); i++)
             {
-                 fs << " " << aminoAcidString[model->getTypeFromResNum(1,i)];
+                 fs << model->getTypeFromResNum(0,i) << ",";
             }
             fs << endl;
-            Energy.clear();
+            //Energy.clear();
             fs.close();
             delete theModelPDB;
         }
     }
-    closedir(pdir);*/
+    closedir(pdir);
 
     return 0;
 }
