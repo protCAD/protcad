@@ -339,7 +339,7 @@ UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector 
 		chance = (rand() % 100) + 1;
 		entropy = (rand() % 100) + 1;
 		mutant = _possibleMutants[position][rand() % positionPossibles];
-        pooling = -0.3166*count+115; //At 50 sequences start pooling, at 350+ 95%
+        pooling = 100/(count/(10*_activeResidues.size()+300)); //consensus starts (>0%) at sequence size proportional to active residue size and is on 50% of time at 2x that and 95% at 4x+
 		if (pooling < 5){
 			pooling = 5;
 		}
