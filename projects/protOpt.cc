@@ -42,7 +42,7 @@ int main (int argc, char* argv[])
     }
     if (homosymmetric)
     {
-        _prot->symmetryLinkChainAtoB(1, activeChains[0]);
+        _prot->symmetryLinkChainAtoB(activeChains[0],1);
     }
 
 	double startEnergy = _prot->protEnergy();
