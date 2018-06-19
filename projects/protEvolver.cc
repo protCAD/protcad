@@ -41,16 +41,16 @@ int main (int argc, char* argv[])
 	}
 
 	UInt _activeChains[] = {0};                                                         // chains active for mutation
-    UInt _allowedLResidues[] = {A,R,N,D,Q,E,I,L,K,F,P,S,T,W,Y,V,G};                     // amino acids allowed with phi < 0
+    UInt _allowedLResidues[] = {A,R,N,D,Q,E,I,L,K,M,F,P,S,T,W,Y,V,G};                     // amino acids allowed with phi < 0
     UInt _allowedDResidues[] = {G};                                                     // amino acids allowed with phi > 0
-    UInt _activeResidues[] = {0,1,2,3,4,5,6,8,9,11,12,13,14,16,17,18,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,44,45,46,47,48,49,50,51,52,53,55,56,57,58};                                     // positions active for mutation
-    UInt _randomResidues[] = {0,1,2,3,4,5,6,8,9,11,12,13,14,16,17,18,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,44,45,46,47,48,49,50,51,52,53,55,56,57,58};                                     // positions active for a random start sequence initially
-    UInt _frozenResidues[] = {7,10,15,54,43,19,59,60};                                  // positions that cannot move at all
-    bool homoSymmetric = false;                                                         // if true all chains are structurally and sequentially symmetric to desired listed active chain above
+    UInt _activeResidues[] = {9,10,12,34,35,36,37,38,39,40,42,68,69,72,100,105,122,139,140,142,143,145,149,165,185,198,203,205};                                     // positions active for mutation
+    UInt _randomResidues[] = {9,10,12,34,35,36,37,38,39,40,42,68,69,72,100,105,122,139,140,142,143,145,149,165,185,198,203,205};                                     // positions active for a random start sequence initially
+    UInt _frozenResidues[] = {160,161,162,163,216};                                  // positions that cannot move at all
+    bool homoSymmetric = true;                                                          // if true all chains are structurally and sequentially symmetric to desired listed active chain above
     bool backboneRelaxation = false;                                                    // if true allow backrub relaxation in structural optimization
 
 	//--running parameters
-	residue::setCutoffDistance(8.0);
+    residue::setCutoffDistance(6.0);
 	residue::setTemperature(300);
 	residue::setElectroSolvationScaleFactor(1.0);
 	residue::setHydroSolvationScaleFactor(1.0);
