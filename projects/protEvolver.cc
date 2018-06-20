@@ -43,9 +43,9 @@ int main (int argc, char* argv[])
 	UInt _activeChains[] = {0};                                                         // chains active for mutation
     UInt _allowedLResidues[] = {A,R,N,D,Q,E,I,L,K,M,F,P,S,T,W,Y,V,G};                     // amino acids allowed with phi < 0
     UInt _allowedDResidues[] = {G};                                                     // amino acids allowed with phi > 0
-    UInt _activeResidues[] = {9,10,12,34,35,36,37,38,39,40,42,68,69,72,100,105,122,139,140,142,143,145,149,165,185,198,203,205};                                     // positions active for mutation
-    UInt _randomResidues[] = {9,10,12,34,35,36,37,38,39,40,42,68,69,72,100,105,122,139,140,142,143,145,149,165,185,198,203,205};                                     // positions active for a random start sequence initially
-    UInt _frozenResidues[] = {160,161,162,163,216};                                  // positions that cannot move at all
+    UInt _activeResidues[] = {9,10,12,34,35,36,37,38,40,42,69,72,100,139,140,142,143,145,149,165,185,198,203,205};                                     // positions active for mutation
+    UInt _randomResidues[] = {9,10,12,34,35,36,37,38,40,42,69,72,100,139,140,142,143,145,149,165,185,198,203,205};                                     // positions active for a random start sequence initially
+    UInt _frozenResidues[] = {39,68,105,106,111,115,119,122,160,161,162,163,197,201,216};                                  // positions that cannot move at all
     bool homoSymmetric = true;                                                          // if true all chains are structurally and sequentially symmetric to desired listed active chain above
     bool backboneRelaxation = false;                                                    // if true allow backrub relaxation in structural optimization
 
