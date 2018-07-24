@@ -2918,7 +2918,6 @@ double protein::getResPairEnergy(const UInt _chain1, const UInt _res1, const UIn
 	//if (messagesActive) cout << "pair energy " << _chain1 << " " << _res1 << " " << _chain2 << " " << _res2 << ":  " ;
 	if (_chain1 >= 0 && _chain1 < itsChains.size() && _chain2 >= 0 && _chain2 < itsChains.size())
 	{
-
 		double energy = itsChains[_chain1]->getInterEnergy(_res1, itsChains[_chain2], _res2);
 		//cout << _chain1 << " " << _res1 << " " << _chain2 << " " << _res2 << " " <<energy << endl;
 		return energy;

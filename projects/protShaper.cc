@@ -508,7 +508,7 @@ int main (int argc, char* argv[])
     ensemble* theEnsemble = thePDB->getEnsemblePointer();
     molecule* pMol = theEnsemble->getMoleculePointer(0);
     protein* start = static_cast<protein*>(pMol);
-    double phi = -80, psi = -140;
+    double phi = -90, psi = 60;
     for (UInt h = 0; h < 1; h++)
     {
         protein* bundle = new protein(*start);
@@ -519,7 +519,7 @@ int main (int argc, char* argv[])
             {
                 bundle->setDihedral(0,i,phi,0,0);
                 bundle->setDihedral(0,i,psi,1,0);
-                even = false;
+                even = true;
             }
             else
             {
@@ -532,7 +532,7 @@ int main (int argc, char* argv[])
         stringstream convert;
         string countstr;
         convert << h, countstr = convert.str();
-        outFile = countstr + ".80140paper.pdb";
+        outFile = "_9060.pdb";
         pdbWriter(bundle, outFile);
         delete bundle;
     }
