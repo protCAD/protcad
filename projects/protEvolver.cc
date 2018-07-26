@@ -23,7 +23,7 @@
 vector <UInt> getChainSequence(protein* _prot, UInt _chainIndex);
 vector <UInt> getMutationPosition(protein* _prot, UIntVec &_activeChains, UIntVec &_activeResidues);
 UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition, UIntVec &_activeResidues);
-void createPossibleMutantsDatabase(protein* bundle, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedLResidues, UIntVec &_allowedDResidues, bool _homosymmetric);
+void createPossibleMutantsDatabase(protein* _prot, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedLResidues, UIntVec &_allowedDResidues, bool _homosymmetric);
 bool isFrozen(UIntVec _frozenResidues, UInt resIndex);
 vector < vector < UInt > > buildSequencePool();
 vector < vector < UInt > > buildPossibleMutants();
@@ -50,7 +50,7 @@ int main (int argc, char* argv[])
     bool backboneRelaxation = false;                                                    // if true allow backrub relaxation in structural optimization
 
 	//--running parameters
-    residue::setCutoffDistance(6.0);
+    residue::setCutoffDistance(5.0);
 	residue::setTemperature(300);
 	residue::setElectroSolvationScaleFactor(1.0);
 	residue::setHydroSolvationScaleFactor(1.0);
@@ -87,21 +87,15 @@ int main (int argc, char* argv[])
 	PDBInterface* thePDB = new PDBInterface(infile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
-    protein* start = static_cast<protein*>(pMol);
-	if (homoSymmetric)
-	{
-        startEnergy = start->intraSoluteEnergy(true, _activeChains[0]);
-	}
-	else
-	{
-        startEnergy = start->intraSoluteEnergy(true);
-	}
+    protein* startProt = static_cast<protein*>(pMol);
+
+    startEnergy = startProt->protEnergy();
 	possibleMutants = buildPossibleMutants();
 	if(possibleMutants.size() < activeResidues.size())
 	{
-        createPossibleMutantsDatabase(start, activeChains, activeResidues, allowedLResidues, allowedDResidues, homoSymmetric);
+        createPossibleMutantsDatabase(startProt, activeChains, activeResidues, allowedLResidues, allowedDResidues, homoSymmetric);
 		possibleMutants = buildPossibleMutants();
-	}
+    }
     delete thePDB;
 
 	//--Run multiple independent evolution cycles-----------------------------------------------------
@@ -110,48 +104,42 @@ int main (int argc, char* argv[])
         PDBInterface* thePDB = new PDBInterface(infile);
         ensemble* theEnsemble = thePDB->getEnsemblePointer();
         molecule* pMol = theEnsemble->getMoleculePointer(0);
-        protein* start_bundle = static_cast<protein*>(pMol);
+        protein* prot = static_cast<protein*>(pMol);
 		sequencePool = buildSequencePool();
 		if (homoSymmetric)
 		{
-			for (UInt i = 1; i < start_bundle->getNumChains(); i++)
+            for (UInt i = 1; i < prot->getNumChains(); i++)
 			{
-				start_bundle->symmetryLinkChainAtoB(i, activeChains[0]);
+                prot->symmetryLinkChainAtoB(i, activeChains[0]);
 			}
 		}
 
 		//--load in initial pdb and mutate in random starting sequence on active chains and random residues
 		nobetter = 0;
 		for (UInt i = 0; i < activeChains.size(); i++)
-		{
+        {
 			for (UInt j = 0; j < randomResidues.size(); j++)
 			{
-				start_bundle->activateForRepacking(activeChains[i], randomResidues[j]);
+                prot->activateForRepacking(activeChains[i], randomResidues[j]);
 				randomPosition.push_back(activeChains[i]);
 				randomPosition.push_back(randomResidues[j]);
 				mutant = getProbabilisticMutation(sequencePool, possibleMutants, randomPosition, randomResidues);
-				start_bundle->mutateWBC(activeChains[i], randomResidues[j], mutant);
+                prot->mutateWBC(activeChains[i], randomResidues[j], mutant);
 				randomPosition.clear();
 			}
-			chainSequence = getChainSequence(start_bundle, activeChains[i]);
+            chainSequence = getChainSequence(prot, activeChains[i]);
 			proteinSequence.push_back(chainSequence);
 		}
 
-		start_bundle->protOpt(backboneRelaxation, frozenResidues, activeChains);
+        prot->protOpt(backboneRelaxation, frozenResidues, activeChains);
 
 		//--set Energy startpoint
-		if (homoSymmetric)
-		{
-			Energy = start_bundle->intraSoluteEnergy(true, activeChains[0]);
-		}
-		else
-		{
-			Energy = start_bundle->protEnergy();
-		}
+        Energy = prot->protEnergy();
+
 		//--Determine next mutation position
 		mutantPosition.clear();
-		mutantPosition = getMutationPosition(start_bundle, activeChains, activeResidues);
-		pdbWriter(start_bundle, tempModel);
+        mutantPosition = getMutationPosition(prot, activeChains, activeResidues);
+        pdbWriter(prot, tempModel);
 		pastEnergy = Energy;
 		bestEnergy = Energy;
 
@@ -162,47 +150,40 @@ int main (int argc, char* argv[])
 			nobetter++;
 			for (UInt i = 0; i < activeChains.size(); i++)
 			{
-				numResidues = start_bundle->getNumResidues(activeChains[i]);
+                numResidues = prot->getNumResidues(activeChains[i]);
 				for (UInt j = 0; j < numResidues; j++)
 				{
-					start_bundle->activateForRepacking(activeChains[i],j);
+                    prot->activateForRepacking(activeChains[i],j);
 					if (activeChains[i] == mutantPosition[0] && j == mutantPosition[1])
 					{
 						//--new mutant
 						sequencePosition.push_back(i);
 						sequencePosition.push_back(j);
 						mutant = getProbabilisticMutation(sequencePool, possibleMutants, mutantPosition, activeResidues);
-						start_bundle->mutateWBC(mutantPosition[0],mutantPosition[1], mutant);
+                        prot->mutateWBC(mutantPosition[0],mutantPosition[1], mutant);
 					}
 					bool frozen = isFrozen(frozenResidues,j);
 					if (!frozen)
 					{
-						start_bundle->mutateWBC(activeChains[i],j, proteinSequence[i][j]);
+                        prot->mutateWBC(activeChains[i],j, proteinSequence[i][j]);
 					}
 				}
 			}
-			start_bundle->protOpt(backboneRelaxation, frozenResidues, activeChains);
-			protein* tempBundle = new protein(*start_bundle);
+            prot->protOpt(backboneRelaxation, frozenResidues, activeChains);
+            protein* tempProt = new protein(*prot);
 
 			//--Determine next mutation position
 			mutantPosition.clear();
-			mutantPosition = getMutationPosition(start_bundle, activeChains, activeResidues);
+            mutantPosition = getMutationPosition(prot, activeChains, activeResidues);
 
 			//--Energy test
-			if (homoSymmetric)
-			{
-				Energy = start_bundle->intraSoluteEnergy(true, activeChains[0]);
-			}
-			else
-			{
-				Energy = start_bundle->protEnergy();
-			}
+            Energy = prot->protEnergy();
 			if (Energy < pastEnergy)
 			{
 				if (Energy < bestEnergy)
 				{
 					bestEnergy = Energy;
-					pdbWriter(tempBundle, tempModel);
+                    pdbWriter(tempProt, tempModel);
 				}
 				proteinSequence[sequencePosition[0]][sequencePosition[1]] = mutant, pastEnergy = Energy;
 				if (nobetter > 0) { nobetter--;
@@ -211,7 +192,7 @@ int main (int argc, char* argv[])
 				}
 			}
 			sequencePosition.clear();
-			delete tempBundle;
+            delete tempProt;
 		}while (nobetter < plateau);
         delete thePDB;
 
@@ -220,14 +201,8 @@ int main (int argc, char* argv[])
 		ensemble* theModelEnsemble = theModelPDB->getEnsemblePointer();
 		molecule* modelMol = theModelEnsemble->getMoleculePointer(0);
 		protein* model = static_cast<protein*>(modelMol);
-		if (homoSymmetric)
-		{
-			Energy = model->intraSoluteEnergy(true, activeChains[0]);
-		}
-		else
-		{
-			Energy = model->protEnergy();
-		}
+
+        Energy = model->protEnergy();
 		bindingEnergy.clear();
 		bindingEnergy = model->chainBindingEnergy();
         if (Energy < startEnergy)
@@ -402,56 +377,45 @@ vector < vector < UInt > > buildPossibleMutants()
 	return _possibleMutants;
 }
 
-void createPossibleMutantsDatabase(protein* _bundle, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedLResidues, UIntVec &_allowedDResidues, bool _homoSymmetric)
+void createPossibleMutantsDatabase(protein* _prot, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedLResidues, UIntVec &_allowedDResidues, bool _homoSymmetric)
 {
-	double Energy, phi, startE, totEnergy, refEnergy;
+    double Energy, phi, startE;
 	UInt restype;
 	bool added;
 	fstream pm;
 	pm.open ("possiblemutants.out", fstream::in | fstream::out | fstream::app);
 	if (_homoSymmetric)
 	{
-		for (UInt i = 1; i < _bundle->getNumChains(); i++)
+        for (UInt i = 1; i < _prot->getNumChains(); i++)
 		{
-			_bundle->symmetryLinkChainAtoB(i, _activeChains[0]);
+            _prot->symmetryLinkChainAtoB(i, _activeChains[0]);
 		}
-		startE = _bundle->intraSoluteEnergy(true, _activeChains[0]);
 	}
-	else
-	{
-		startE = _bundle->protEnergy();
-	}
+
+    startE = _prot->protEnergy();
     startE=startE+20; //buffer energy filter of amino acids per position to restrict only by very hard clashes
 
 	for (UInt i = 0; i < _activeChains.size(); i++)
 	{
 		for (UInt j = 0; j <_activeResidues.size(); j++)
 		{
-			phi = _bundle->getPhi(_activeChains[i], _activeResidues[j]);
-			restype = _bundle->getTypeFromResNum(_activeChains[i], _activeResidues[j]);
+            phi = _prot->getPhi(_activeChains[i], _activeResidues[j]);
+            restype = _prot->getTypeFromResNum(_activeChains[i], _activeResidues[j]);
 			if ((phi < 0 && phi > -180) || _activeResidues[j] == 0)
 			{
 				for (UInt k = 0; k <_allowedLResidues.size(); k++)
 				{
 					added = false;
-					_bundle->activateForRepacking(_activeChains[i], _activeResidues[j]);
-					_bundle->mutateWBC(_activeChains[i], _activeResidues[j], _allowedLResidues[k]);
-					UIntVec allowedRots = _bundle->getAllowedRotamers(_activeChains[i], _activeResidues[j], _allowedLResidues[k], 0);
+                    _prot->activateForRepacking(_activeChains[i], _activeResidues[j]);
+                    _prot->mutateWBC(_activeChains[i], _activeResidues[j], _allowedLResidues[k]);
+                    UIntVec allowedRots = _prot->getAllowedRotamers(_activeChains[i], _activeResidues[j], _allowedLResidues[k], 0);
 					if (allowedRots.size() > 0)
 					{
 						for (UInt l = 0; l < allowedRots.size(); l++)
 						{
-							_bundle->setRotamerWBC(_activeChains[i], _activeResidues[j], 0, allowedRots[l]);
-							if (_homoSymmetric)
-							{
-								totEnergy = _bundle->intraSoluteEnergy(true, _activeChains[0]);
-								refEnergy = _bundle->getFreeAminoAcidEnergy(_activeChains[i],_activeResidues[j]);
-								Energy = totEnergy-refEnergy;
-							}
-							else
-							{
-								Energy = _bundle->protEnergy();
-							}
+                            _prot->setRotamerWBC(_activeChains[i], _activeResidues[j], 0, allowedRots[l]);
+
+                            Energy = _prot->protEnergy();
 							if (Energy <= startE)
 							{
 								if (_allowedLResidues[k] != restype && !added)
@@ -462,22 +426,13 @@ void createPossibleMutantsDatabase(protein* _bundle, UIntVec &_activeChains, UIn
 							}
 							else
 							{
-								_bundle->setRotamerNotAllowed(_activeChains[i], _activeResidues[j], _allowedLResidues[k], 0, allowedRots[l]);
+                                _prot->setRotamerNotAllowed(_activeChains[i], _activeResidues[j], _allowedLResidues[k], 0, allowedRots[l]);
 							}
 						}
 					}
 					else
 					{
-						if (_homoSymmetric)
-						{
-							totEnergy = _bundle->intraSoluteEnergy(true, _activeChains[0]);
-							refEnergy = _bundle->getFreeAminoAcidEnergy(_activeChains[i],_activeResidues[j]);
-							Energy = totEnergy-refEnergy;
-						}
-						else
-						{
-							Energy = _bundle->protEnergy();
-						}
+                        Energy = _prot->protEnergy();
 						if (Energy <= startE)
 						{
 							if (_allowedLResidues[k] != restype && !added)
@@ -494,24 +449,15 @@ void createPossibleMutantsDatabase(protein* _bundle, UIntVec &_activeChains, UIn
 				for (UInt k = 0; k <_allowedDResidues.size(); k++)
 				{
 					added = false;
-					_bundle->activateForRepacking(_activeChains[i], _activeResidues[j]);
-					_bundle->mutateWBC(_activeChains[i], _activeResidues[j], _allowedDResidues[k]);
-					UIntVec allowedRots = _bundle->getAllowedRotamers(_activeChains[i], _activeResidues[j], _allowedDResidues[k], 0);
+                    _prot->activateForRepacking(_activeChains[i], _activeResidues[j]);
+                    _prot->mutateWBC(_activeChains[i], _activeResidues[j], _allowedDResidues[k]);
+                    UIntVec allowedRots = _prot->getAllowedRotamers(_activeChains[i], _activeResidues[j], _allowedDResidues[k], 0);
 					if (allowedRots.size() > 0)
 					{
 						for (UInt l = 0; l < allowedRots.size(); l++)
 						{
-							_bundle->setRotamerWBC(_activeChains[i], _activeResidues[j], 0, allowedRots[l]);
-							if (_homoSymmetric)
-							{
-								totEnergy = _bundle->intraSoluteEnergy(true, _activeChains[0]);
-								refEnergy = _bundle->getFreeAminoAcidEnergy(_activeChains[i],_activeResidues[j]);
-								Energy = totEnergy-refEnergy;
-							}
-							else
-							{
-								Energy = _bundle->protEnergy();
-							}
+                            _prot->setRotamerWBC(_activeChains[i], _activeResidues[j], 0, allowedRots[l]);
+                            Energy = _prot->protEnergy();
 							if (Energy <= startE)
 							{
 								if (_allowedDResidues[k] != restype && !added)
@@ -522,22 +468,13 @@ void createPossibleMutantsDatabase(protein* _bundle, UIntVec &_activeChains, UIn
 							}
 							else
 							{
-								_bundle->setRotamerNotAllowed(_activeChains[i], _activeResidues[j], _allowedDResidues[k], 0, allowedRots[l]);
+                                _prot->setRotamerNotAllowed(_activeChains[i], _activeResidues[j], _allowedDResidues[k], 0, allowedRots[l]);
 							}
 						}
 					}
 					else
 					{
-						if (_homoSymmetric)
-						{
-							totEnergy = _bundle->intraSoluteEnergy(true, _activeChains[0]);
-							refEnergy = _bundle->getFreeAminoAcidEnergy(_activeChains[i],_activeResidues[j]);
-							Energy = totEnergy-refEnergy;
-						}
-						else
-						{
-							Energy = _bundle->protEnergy();
-						}
+                        Energy = _prot->protEnergy();
 						if (Energy <= startE)
 						{
 							if (_allowedDResidues[k] != restype && !added)
@@ -549,7 +486,7 @@ void createPossibleMutantsDatabase(protein* _bundle, UIntVec &_activeChains, UIn
 					}
 				}
 			}
-			_bundle->mutateWBC(_activeChains[i], _activeResidues[j], restype);
+            _prot->mutateWBC(_activeChains[i], _activeResidues[j], restype);
 			pm << restype << ",";
 			pm << endl;
 		}
