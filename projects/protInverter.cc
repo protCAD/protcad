@@ -27,35 +27,34 @@ int main (int argc, char* argv[])
     ensemble* theEnsemble = thePDB->getEnsemblePointer();
     molecule* pMol = theEnsemble->getMoleculePointer(0);
     protein* bundle = static_cast<protein*>(pMol);
-    //UIntVec rots = bundle->getAllowedRotamers(0,0,L,0);
-    //UInt count = 0;
-    //for (UInt h = 0; h < rots.size(); h++)
-    //{
-        UInt chainNum = bundle->getNumChains();
-        for (UInt i = 0; i < chainNum; i ++)
+    UInt chainNum = bundle->getNumChains();
+    for (UInt i = 0; i < chainNum; i ++)
+    {
+        UInt resNum = bundle->getNumResidues(i);
+        for (UInt j = 0; j < resNum; j ++)
         {
-            UInt resNum = bundle->getNumResidues(i);
-            for (UInt j = 0; j < resNum; j ++)
+            if (j == 0){
+               double psi = bundle->getAngle(i,j,1);
+               bundle->setDihedral(i,j,psi*-1,1,0);
+            }
+            else if (j == resNum-1){
+                double phi = bundle->getAngle(i,j,0);
+                bundle->setDihedral(i,j,phi*-1,0,0);
+            }
+            else{
+                double phi = bundle->getAngle(i,j,0);
+                double psi = bundle->getAngle(i,j,1);
+                bundle->setDihedral(i,j,phi*-1,0,0);
+                bundle->setDihedral(i,j,psi*-1,1,0);
+            }
+            UInt restype = bundle->getTypeFromResNum(i,j);
+            if (restype != G)
             {
                 UInt restype = bundle->getTypeFromResNum(i,j);
-                if (restype == L)
-                {
-                    bundle->mutateWBC(i,j,A);
-                }
-                if (restype == dL)
-                {
-                    bundle->mutateWBC(i,j,dA);
-                }
+                bundle->mutateWBC(i,j,restype+27);
             }
         }
-       /* count++;
-        stringstream convert;
-        string countstr;
-        convert << count, countstr = convert.str();
-        string outFile = countstr + ".rot.pdb";
-        pdbWriter(bundle, outFile);
-    }*/
-    //bundle->protOpt(false);
+    }
     pdbWriter(bundle, outFile);
     return 0;
 }

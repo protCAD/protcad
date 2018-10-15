@@ -35,15 +35,14 @@ int main (int argc, char* argv[])
 	for (UInt i = 0; i < chainNum; i ++)
 	{
 		UInt resNum = bundle->getNumResidues(i);
-		if (resNum > 1)
-		{
-			for (UInt j = 1; j < resNum-1; j ++)
-			{
-				double phi = bundle->getPhi(i,j);
-				double psi = bundle->getPsi(i,j);
-				cout << phi << " " << psi << endl;
-			}
-		}
+        cout << "NA " << bundle->getPsi(i,0) << endl;
+        for (UInt j = 1; j < resNum-1; j ++)
+        {
+            double phi = bundle->getPhi(i,j);
+            double psi = bundle->getPsi(i,j);
+            cout << phi << " " << psi << endl;
+        }
+        cout << bundle->getPhi(i,resNum-1) << " NA" << endl;
 	}
 	return 0;
 }

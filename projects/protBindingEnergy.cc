@@ -26,22 +26,13 @@ int main (int argc, char* argv[])
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* bundle = static_cast<protein*>(pMol);
-	bundle->silenceMessages();
-    residue::setCutoffDistance(9.0);
-	rotamer::setScaleFactor(0.0);
-    amberVDW::setScaleFactor(1.0);
-	amberVDW::setRadiusScaleFactor(1.0);
-	amberVDW::setLinearRepulsionDampeningOff();
+    residue::setCutoffDistance(8.0);
+    residue::setTemperature(300);
+    residue::setElectroSolvationScaleFactor(1.0);
+    residue::setHydroSolvationScaleFactor(1.0);
     amberElec::setScaleFactor(1.0);
-
-    //vector <double> Energy;
-    //for (UInt i = 0; i < 100; i++)
-    //{
-        //residue::setTemperature(i);
-        vector <double> Energy = bundle->chainBindingEnergy();
-        double deltah = bundle->deltaH();
-        cout << " " << Energy[0] << " " << Energy[1] << " " << deltah;
-        //Energy.clear();
-    //}
+    amberVDW::setScaleFactor(1.0);
+    vector <double> Energies = bundle->protLigandBindingEnergy(0,102);
+    cout <<  infile << " " << Energies[0] << " " << Energies[1] << endl;
 	return 0;
 }

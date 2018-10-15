@@ -1,4 +1,4 @@
-//******************************************************************************************************* 
+//*******************************************************************************************************
 //*******************************************************************************************************
 //******************************	___  ____ ____ ___ ____ _ _  _  _  _   ******************************
 //******************************	|__] |__/ |  |  |  |___ | |\ |  |__|   ******************************
@@ -69,6 +69,8 @@ public:
 	UInt getNumHardClashes(const UInt _chainIndex) {return itsChains[_chainIndex]->getNumHardClashes(); }
     double getRadius(UInt chainIndex, UInt resIndex, UInt atomIndex) {return itsChains[chainIndex]->getRadius(resIndex, atomIndex);}
 	char getChainID(UInt chainIndex) {return itsChains[chainIndex]->getChainID();}
+    void listConnectivity(UInt _chainIndex, UInt _resIndex) {return itsChains[_chainIndex]->listConnectivity(_resIndex);}
+
 	
 	//--Organization functions
     void updateTotalNumResidues();
@@ -130,7 +132,7 @@ public:
     //--Optimization functions
     void protOpt(bool _backbone); // --Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics-- dpike
 	void protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeChains);
-	void optimizeSmallRotations(UInt _steps, double _stepSize);
+    void optimizeSmallRotations(UInt _steps, double _stepSize);
 	void optimizeSmallRotations(vector <UIntVec> _positions, UInt _steps, double _stepSize);
 	void optimizeSmallRotations(UIntVec _position, UInt _steps, double _stepSize);
 	vector <vector < double > > getRotationEnergySurface(vector < UIntVec > _active, UInt _steps, double _stepSize, UInt _activePos, vector <vector< double > > _bestChiArray, double &_lowestEnergy);
@@ -193,8 +195,10 @@ public:
 	double getPositionSoluteEnergy(UInt _chainIndex, UInt _residueIndex, bool _updateDielectrics);
 	double getSelfEnergy(UInt _chainIndex, UInt _residueIndex);
 	double BBEnergy();
+    vector <double> protLigandBindingEnergy(UInt ligChainIndex, UInt ligResIndex);
 
 	//--Transformation functions
+    void protSampling(UInt _plateau);
 	double getBetaChi(UInt _chainIndex, UInt _residueIndex) {return itsChains[_chainIndex]->getBetaChi(_residueIndex); }
 	void setBetaChi(UInt _chainIndex, UInt _residueIndex, double _chi) {return itsChains[_chainIndex]->setBetaChi(_residueIndex, _chi); }
 	int setPhi(const UInt _chain, const UInt _res, double _angle);

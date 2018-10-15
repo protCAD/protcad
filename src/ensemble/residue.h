@@ -230,7 +230,7 @@ public:
 	void recursiveTransformR(dblMat& _dblMat);
 	void recursiveTransform(dblMat& _dblMat);
 	void recursiveTransformLocal(dblVec& atomCoords, double _deltaTheta, UInt _direction);
-
+    void listConnectivity();
 	void coilcoil(const double _pitch);
 	residue* superimposeGLY();
 	dblVec getBackBoneCentroid();

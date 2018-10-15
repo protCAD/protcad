@@ -504,38 +504,152 @@ int main (int argc, char* argv[])
         }
         phi=phi+4;
     }*/
+    /*UInt counter = 0;
+    //for (int h = -180; h < 180; h++)
+    //{
+        //for (int i = -180; i < 180; i++)
+        //{
+            counter++;
+            PDBInterface* thePDB = new PDBInterface(inFile);
+            ensemble* theEnsemble = thePDB->getEnsemblePointer();
+            molecule* pMol = theEnsemble->getMoleculePointer(0);
+            protein* bundle = static_cast<protein*>(pMol);
+            bool right = true;
+            bundle->makeResidueSilent(0,0);
+            bundle->makeResidueSilent(0,13);
+            UInt interval = 0;
+            bundle->setDihedral(0,0,45,1,0);
+            for (UInt j = 1; j < bundle->getNumResidues(0); j++)
+            {
+                if (right)
+                {
+                    bundle->setDihedral(0,j,-70,0,0);
+                    if (interval == 0)
+                    {
+                        bundle->setDihedral(0,j,170,1,0);
+                        bundle->mutateWBC(0,j, Cf);
+                    }
+                    if (interval == 1)
+                    {
+                        bundle->setDihedral(0,j,0,1,0);
+                    }
+                    if (interval == 2)
+                    {
+                        bundle->setDihedral(0,j,-45,1,0);
+                    }
+                    interval++;
+                    if (interval > 2){interval=0, right = false;}
+                }
+                else
+                {
+                    bundle->setDihedral(0,j,70,0,0);
+                    if (interval == 0)
+                    {
+                        bundle->setDihedral(0,j,-170,1,0);
+                        bundle->mutateWBC(0,j, dCf);
+                        bundle->setRotamerWBC(0,j,0,2);
+                        double chi = bundle->getChi(0,j,0,0);
+                        bundle->setChi(0,j,0,0,chi+20);
+                    }
+                    if (interval == 1)
+                    {
+                        bundle->setDihedral(0,j,0,1,0);
+                        bundle->mutateWBC(0,j, dA);
+                    }
+                    if (interval == 2)
+                    {
+                        bundle->setDihedral(0,j,45,1,0);
+                        bundle->mutateWBC(0,j, dA);
+                    }
+                    interval++;
+                    if (interval > 2){interval=0, right = true;}
+                }
+            }
+            dblVec Ncoords = bundle->getCoords(0, 1, "N");
+            dblVec Ccoords = bundle->getCoords(0, 12, "C");
+            double dist = CMath::distance(Ncoords, Ccoords);
+            stringstream convert;
+            string countstr;
+            cout << counter << " " << bundle->protEnergy()  << " " << dist << endl;
+            //convert << h, countstr = convert.str();
+            outFile = "3motif.pdb";
+            pdbWriter(bundle, outFile);
+            delete bundle;*/
+        //}
+    //}
+    /*PDBInterface* thePDB = new PDBInterface(inFile);
+    ensemble* theEnsemble = thePDB->getEnsemblePointer();
+    molecule* pMol = theEnsemble->getMoleculePointer(0);
+    protein* bundle = static_cast<protein*>(pMol);
+
+            double phi = bundle->getAngle(0,1,0);
+            double psi = bundle->getAngle(0,1,1);
+            bundle->setDihedral(0,1,phi*-1,0,0);
+            bundle->setDihedral(0,1,psi*-1,1,0);
+            bundle->activateForRepacking(0, 1);
+            bundle->mutateWBC(0,1,dCf);
+            bundle->setRotamerWBC(0,1,0,1);
+
+            phi = bundle->getAngle(0,2,0);
+            psi = bundle->getAngle(0,2,1);
+            bundle->setDihedral(0,2,phi*-1,0,0);
+            bundle->setDihedral(0,2,psi*-1,1,0);
+
+            phi = bundle->getAngle(0,3,0);
+            psi = bundle->getAngle(0,3,1);
+            bundle->setDihedral(0,3,phi*-1,0,0);
+            bundle->setDihedral(0,3,psi*-1,1,0);
+            bundle->mutateWBC(0,3,dV);
+            bundle->setRotamerWBC(0,3,0,1);
+           // if (bundle->getTypeFromResNum(0,i) == C)
+           // {
+
+                /*if (i != 3)
+                {
+
+                }
+                else
+                {
+                    bundle->setRotamerWBC(0,i,0,2);
+                }
+
+            }
+            if (bundle->getTypeFromResNum(0,i) == V)
+            {
+                bundle->mutateWBC(0,i,dV);
+                bundle->setRotamerWBC(0,i,0,1);
+            }*/
+
+    //}
+    //outFile = "invmotif.pdb";
+    //pdbWriter(bundle, outFile);
+    //delete bundle;
+
     PDBInterface* thePDB = new PDBInterface(inFile);
     ensemble* theEnsemble = thePDB->getEnsemblePointer();
     molecule* pMol = theEnsemble->getMoleculePointer(0);
-    protein* start = static_cast<protein*>(pMol);
-    double phi = -90, psi = 60;
-    for (UInt h = 0; h < 1; h++)
+    protein* bundle = static_cast<protein*>(pMol);
+    for (UInt i = 0; i < bundle->getNumResidues(0); i++)
     {
-        protein* bundle = new protein(*start);
-        bool even = true;
-        for (UInt i = 0; i < bundle->getNumResidues(0); i++)
+        if (i != 0)
         {
-            if (even)
+            double phi = bundle->getPhi(0,i);
+            UInt restype = bundle->getTypeFromResNum(0,i);
+            if (phi > 0 && restype != dCf)
             {
-                bundle->setDihedral(0,i,phi,0,0);
-                bundle->setDihedral(0,i,psi,1,0);
-                even = true;
+                bundle->activateForRepacking(0, i);
+                bundle->mutateWBC(0,i,dR);
             }
-            else
+            if (phi < 0 && restype != Cf)
             {
-                 bundle->setDihedral(0,i,(phi)*-1,0,0);
-                 bundle->setDihedral(0,i,(psi)*-1,1,0);
-                 even = true;
+                bundle->activateForRepacking(0, i);
+                bundle->mutateWBC(0,i,R);
             }
         }
-        cout << bundle->protEnergy() << endl;
-        stringstream convert;
-        string countstr;
-        convert << h, countstr = convert.str();
-        outFile = "_9060.pdb";
-        pdbWriter(bundle, outFile);
-        delete bundle;
     }
+    outFile = "paaR.pdb";
+    pdbWriter(bundle, outFile);
+    delete bundle;
     return 0;
 }
 void buildHelixOligamer (protein* _prot, UInt numChains, bool antiParallel, double _radius, double _phase1, double _phase2, double _coil, double _offset)

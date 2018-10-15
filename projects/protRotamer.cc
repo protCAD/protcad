@@ -17,7 +17,7 @@
 #include "ensemble.h"
 #include "PDBInterface.h"
 
-double getAverageDielectric(protein* _bundle, UInt _resIndex);
+//double getAverageDielectric(protein* _bundle, UInt _resIndex);
 int main (int argc, char* argv[])
 {
 	//--Running parameters
@@ -40,7 +40,7 @@ int main (int argc, char* argv[])
     amberVDW::setScaleFactor(1.0);
     srand (time(NULL));
 	
-	UInt _chainIndex = 0;
+	/*UInt _chainIndex = 0;
 	UInt randres = 7;
     UInt bestrot;
 	UInt count = 0;
@@ -54,9 +54,9 @@ int main (int argc, char* argv[])
 	//bundle->setChi(_chainIndex,randres,0,0,chi+20);
 	//bundle->setChi(_chainIndex,randres,0,2,chi2+10);
 	//bundle->mutateWBC(_chainIndex,randres,dDh);
-	UInt randrestype = bundle->getTypeFromResNum(_chainIndex,randres);
+	//UInt randrestype = bundle->getTypeFromResNum(_chainIndex,randres);
 	//bundle->mutateWBC(2,randres,dD);
-	vector <UIntVec> allowedRots = bundle->getAllowedRotamers(_chainIndex, randres, randrestype);
+	/*vector <UIntVec> allowedRots = bundle->getAllowedRotamers(_chainIndex, randres, randrestype);
     UInt b = 0;
     for (UInt j = 0; j < allowedRots[b].size(); j++)
     {
@@ -76,28 +76,51 @@ int main (int argc, char* argv[])
             bestrot = j;
             pastEnergy = Energy;
         }
-	}
-	/*double betachi = bundle->getBetaChi(_chainIndex, randres);
-	for (int j = -10; j < 0; j++)
-	{
-		count++;
-		bundle->setBetaChi(_chainIndex, randres, betachi+j);
-		Energy = bundle->protEnergy();
-		stringstream convert;
-		string countstr;
-		convert << count, countstr = convert.str();
-		string outFile = countstr + ".rot.pdb";
-		pdbWriter(bundle, outFile);
-		cout << count << " " << Energy << endl;
-		if (Energy < pastEnergy)
-		{
-			bestrot = j;
-			pastEnergy = Energy;
-		}
 	}*/
+	UInt count = 0;
+	double Ybetachi, Hbetachi, betachiY, betachiH;
+	double betachiYS = bundle->getBetaChi(0, 90);
+	double betachiHS = bundle->getBetaChi(0, 14);
+	 dblVec Ocoords = bundle->getCoords(0, 90, "OH");
+     dblVec Ncoords = bundle->getCoords(0, 14, "NE2");
+	 dblVec Hcoords = bundle->getCoords(0,90,"HO");
+	 dblVec CYcoords = bundle->getCoords(0,90,"CZ");
+	 dblVec CHcoords = bundle->getCoords(0,14,"CE1");
+    double dist = CMath::distance(Ocoords, Ncoords);
+	double Yangle = CMath::angle(CYcoords, Ocoords, Ncoords);
+	double Hangle = CMath::angle(CHcoords, Ncoords, Ocoords);
+	
+	//cout << betachiY << " Y " << betachiH << " H " << dist << " dist " << Yangle << " Yangle " << Hangle << " Hangle " << endl;
+	for (int j = -6; j < 6; j++)
+	{
+		for (int k = -6; k < 6; k++)
+		{
+			count++;
+			Ybetachi = betachiYS+j;
+			bundle->setBetaChi(0, 90, Ybetachi);
+			Hbetachi = betachiHS+k;
+			bundle->setBetaChi(0, 14, Hbetachi);
+			betachiY = bundle->getBetaChi(0, 90);
+			betachiH = bundle->getBetaChi(0, 14);
+			Ocoords = bundle->getCoords(0, 90, "OH");
+			Ncoords = bundle->getCoords(0, 14, "NE2");
+			Hcoords = bundle->getCoords(0,90,"HO");
+			CYcoords = bundle->getCoords(0,90,"CZ");
+			CHcoords = bundle->getCoords(0,14,"CE1");
+			dist = CMath::distance(Ocoords, Ncoords);
+			Yangle = CMath::angle(CYcoords, Ocoords, Ncoords);
+			Hangle = CMath::angle(CHcoords, Ncoords, Ocoords);
+			cout << count << " " << betachiY << " Y " << betachiH << " H " << dist << " dist " << Yangle << " Yangle " << Hangle << " Hangle " << endl;
+			stringstream convert;
+			string countstr;
+			convert << count, countstr = convert.str();
+			string outFile = countstr + ".BC.pdb";
+			pdbWriter(bundle, outFile);
+		}
+	}
     //cout << infile << " " << pastEnergy << endl;
 	//bundle->setRotamerWBC(_chainIndex, randres, 0, allowedRots[bestrot]);
-	//pdbWriter(bundle, infile);
+	//pdbWriter(bundle, infile);*/
     return 0;
 }
 

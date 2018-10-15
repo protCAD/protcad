@@ -154,6 +154,7 @@ public:
 	double calculateHCA_O_hBondEnergy(chain* _other);
 	UInt getNumHardClashes();
 	UInt getNumHardClashes(chain* _other);
+    void listConnectivity(UInt _resIndex) {return itsResidues[_resIndex]->listConnectivity();}
 private:
 	int chooseTargetResidue(ran& _ran);
 	int chooseTargetIdentity(const UInt _indexInChain, ran& _ran);

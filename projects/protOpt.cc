@@ -25,10 +25,10 @@ int main (int argc, char* argv[])
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* _prot = static_cast<protein*>(pMol);
-    bool homosymmetric = false;
+    /*bool homosymmetric = false;
     bool backbone = false;
 
-    UInt _frozenResidues[] = {21,24,27,68};
+    UInt _frozenResidues[] = {0,3,6,9};
 	UInt _activeChains[] = {0};
 	UInt activeChainsSize = sizeof(_activeChains)/sizeof(_activeChains[0]), frozenResiduesSize = sizeof(_frozenResidues)/sizeof(_frozenResidues[0]);
 	UIntVec activeChains, frozenResidues;
@@ -43,15 +43,11 @@ int main (int argc, char* argv[])
     if (homosymmetric)
     {
         _prot->symmetryLinkChainAtoB(activeChains[0],1);
-    }
-    double startEnergy = _prot->protEnergy();
-    time_t start,end;
-    time (&start);
-   //_prot->protOpt(backbone);
-    _prot->protOpt(backbone,frozenResidues,activeChains);
-    //time (&end);
-	double endEnergy = _prot->protEnergy();
-    cout << _prot->protEnergy() << " " << (endEnergy-startEnergy)/difftime(end,start) << " ";
+    }*/
+    cout << "start: " << _prot->protEnergy() << " kcal/mol" << endl;
+    _prot->protOpt(true);
+    //_prot->protOpt(backbone,frozenResidues,activeChains);
+    cout << "end: " << _prot->protEnergy() << " kcal/mol" << endl;
 	pdbWriter(_prot, outFile);
 
 	return 0;

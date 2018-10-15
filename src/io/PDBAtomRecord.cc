@@ -95,7 +95,22 @@ void PDBAtomRecord::convert(string& _pdbAtomLine)
 
 	ASSERT(firstAlpha+((lastAlpha - firstAlpha) + 1) <=4);
 	atomName = atomNameString.substr(firstAlpha,(lastAlpha-firstAlpha)+1);
-
+    if (atomName == "FE1")
+    {
+        atomName = "F1";
+    }
+    if (atomName == "FE2")
+    {
+        atomName = "F2";
+    }
+    if (atomName == "FE3")
+    {
+        atomName = "F3";
+    }
+    if (atomName == "FE4")
+    {
+        atomName = "F4";
+    }
 
 	//cout << "atomName= " <<atomName << endl;
 

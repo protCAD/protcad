@@ -2365,6 +2365,7 @@ void residue::rotateDihedralLocal(atom* _pAtom1, atom* _pAtom2, double _deltaThe
 
 void residue::rotateDihedral(atom* _pAtom1, atom* _pAtom2, double _deltaTheta, UInt _direction)
 {
+    setMoved(1);
 	#ifdef __RES_DEBUG
 	_pAtom2->queryChildrensCoords();
 	#endif
@@ -2684,6 +2685,7 @@ void residue::translate(const dblVec& _dblVec)
 
 void residue::recursiveTranslateLocal(dblVec& _dblVec, int direction)
 {	
+    setMoved(1);
 	translate(_dblVec);
 	if (direction == 0)
 	{
@@ -2701,6 +2703,7 @@ void residue::recursiveTranslateLocal(dblVec& _dblVec, int direction)
 
 void residue::recursiveTranslateWithDirection(dblVec& _dblVec, UInt _direction)
 {	
+    setMoved(1);
 	translate(_dblVec);
 	if (_direction == 0)
 	{
@@ -2717,7 +2720,8 @@ void residue::recursiveTranslateWithDirection(dblVec& _dblVec, UInt _direction)
 }
 
 void residue::recursiveTranslate(dblVec& _dblVec)
-{	
+{
+    setMoved(1);
 	translate(_dblVec);
 	if (pItsNextRes)
 	{	pItsNextRes->recursiveTranslate(_dblVec);
@@ -2726,6 +2730,7 @@ void residue::recursiveTranslate(dblVec& _dblVec)
 
 void residue::recursiveTransform(dblMat& _dblMat)
 {
+    setMoved(1);
 	transform(_dblMat);
 	if (pItsNextRes)
 	{	pItsNextRes->recursiveTransform(_dblMat);
@@ -2734,6 +2739,7 @@ void residue::recursiveTransform(dblMat& _dblMat)
 
 void residue::recursiveTransformR(dblMat& _dblMat)
 {
+    setMoved(1);
 	transform(_dblMat);
 	if (pItsPrevRes)
 	{	pItsPrevRes->recursiveTransformR(_dblMat);
@@ -2741,7 +2747,8 @@ void residue::recursiveTransformR(dblMat& _dblMat)
 }
 
 void residue::recursiveTransformLocal(dblVec& atomCoords, double _deltaTheta, UInt _direction)
-{	
+{
+    setMoved(1);
 	dblMat R(3,3,0.0);
 	R = CMath::rotationMatrix(atomCoords, _deltaTheta);
 	transform(R);
@@ -3012,7 +3019,6 @@ double residue::intraSoluteEnergy()
     bool threeBonds;
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
-        //cout << itsAtoms[i]->getName() << " ";
 		if (!itsAtoms[i]->getSilentStatus())
 		{
 			// ** get solvationEnergy
@@ -3030,17 +3036,12 @@ double residue::intraSoluteEnergy()
 						double distanceSquared = itsAtoms[i]->distanceSquared(itsAtoms[j]);
 
 						// ** intra AMBER vdW
-						if (residueTemplate::itsAmberVDW.getScaleFactor() != 0.0 )
+                        if (residueTemplate::itsAmberVDW.getScaleFactor() != 0.0)
 						{
 							int index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][0];
 							int index2 = dataBase[itsType].itsAtomEnergyTypeDefinitions[j][0];
 							double tempvdwEnergy = residueTemplate::getVDWEnergySQ(index1,index2,distanceSquared);
                             intraEnergy += tempvdwEnergy;
-                            //if (tempvdwEnergy > 2)
-                            //{
-                            //    cout << itsAtoms[j]->getName() << " ";
-                            //}
-
 						}
 
 						// ** intra Electrostatics
@@ -3061,7 +3062,6 @@ double residue::intraSoluteEnergy()
 				}
 			}
 		}
-        //cout << endl;
 	}
 
 	return intraEnergy;
@@ -3145,13 +3145,16 @@ vector <double> residue::calculateDielectric(residue* _other, UInt _atomIndex)
 	bool inCube;
 	for(UInt i=0; i<_other->itsAtoms.size(); i++)
 	{
-		inCube = itsAtoms[_atomIndex]->inCube(_other->itsAtoms[i], cutoffDistance);
-		if (inCube)
-		{
-			int vdwIndex = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[i][0];
-			polarizability += residueTemplate::getPolarizability(vdwIndex);
-			volume += residueTemplate::getVolume(vdwIndex);
-		}
+        if (!_other->itsAtoms[i]->getSilentStatus())
+        {
+            inCube = itsAtoms[_atomIndex]->inCube(_other->itsAtoms[i], cutoffDistance);
+            if (inCube)
+            {
+                int vdwIndex = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[i][0];
+                polarizability += residueTemplate::getPolarizability(vdwIndex);
+                volume += residueTemplate::getVolume(vdwIndex);
+            }
+        }
 	}
 	polarizabilities[0] = volume;
 	polarizabilities[1] = polarizability;
@@ -3168,13 +3171,16 @@ vector <double> residue::calculateDielectric(residue* _other, atom* _atom)
 	bool inCube;
 	for(UInt i=0; i<_other->itsAtoms.size(); i++)
 	{
-		inCube = _atom->inCube(_other->itsAtoms[i], cutoffDistance);
-		if (inCube)
-		{
-			int vdwIndex = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[i][0];
-			polarizability += residueTemplate::getPolarizability(vdwIndex);
-			volume += residueTemplate::getVolume(vdwIndex);
-		}
+        if (!_other->itsAtoms[i]->getSilentStatus())
+        {
+            inCube = _atom->inCube(_other->itsAtoms[i], cutoffDistance);
+            if (inCube)
+            {
+                int vdwIndex = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[i][0];
+                polarizability += residueTemplate::getPolarizability(vdwIndex);
+                volume += residueTemplate::getVolume(vdwIndex);
+            }
+        }
 	}
 	polarizabilities[0] = volume;
 	polarizabilities[1] = polarizability;
@@ -3191,17 +3197,38 @@ vector <double> residue::calculateDielectric(atom* _atom)
 	bool inCube;
 	for(UInt i=0; i < itsAtoms.size(); i++)
 	{
-		inCube = _atom->inCube(itsAtoms[i], cutoffDistance);
-		if (inCube)
-		{
-			int vdwIndex = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][0];
-			polarizability += residueTemplate::getPolarizability(vdwIndex);
-			volume += residueTemplate::getVolume(vdwIndex);
-		}
+        if (!itsAtoms[i]->getSilentStatus())
+        {
+            inCube = _atom->inCube(itsAtoms[i], cutoffDistance);
+            if (inCube)
+            {
+                int vdwIndex = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][0];
+                polarizability += residueTemplate::getPolarizability(vdwIndex);
+                volume += residueTemplate::getVolume(vdwIndex);
+            }
+        }
 	}
 	polarizabilities[0] = volume;
 	polarizabilities[1] = polarizability;
 	return polarizabilities;
+}
+
+void residue::listConnectivity()
+{
+    for(UInt i=0; i<itsAtoms.size(); i++)
+    {
+        cout << itsAtoms[i]->getName();
+        for(UInt j=i+1; j<itsAtoms.size(); j++)
+        {
+            // ** get distance
+            double distanceSquared = itsAtoms[i]->distanceSquared(itsAtoms[j]);
+            if (distanceSquared < 6)
+            {
+                cout << " " << itsAtoms[j]->getName();
+            }
+        }
+        cout << endl;
+    }
 }
 
 
