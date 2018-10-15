@@ -3022,7 +3022,7 @@ void protein::protSampling(UInt _plateau)
 {
     //--Initialize variables for loop, calculate starting energy and build energy vectors---------------
     UInt randchain, randres, chainNum = getNumChains(), keep, foldD, numres, phiorpsi, type, GisL, nobetter = 0;
-    double Energy, resE, medResE, sPhi, sPsi, pastEnergy = protEnergy(), energyBuffer = 5;
+	double Energy, sPhi, sPsi, pastEnergy = protEnergy(), energyBuffer = 5;
     int dihedralD;
     srand (time(NULL));
 
@@ -3037,9 +3037,6 @@ void protein::protSampling(UInt _plateau)
         //--Backrub optimization-----------------------------------------------------------------------
         if (randres != 0 && randres != numres-1)
         {
-            //resE = resEnergy(randchain, randres), medResE = getMedianResEnergy();
-            //if (resE > medResE)
-            //{
             // Get angles and types from res
             sPhi = getPhi(randchain,randres);
             sPsi = getPsi(randchain,randres);

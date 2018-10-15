@@ -17,7 +17,7 @@ TARGETS = protDielectric protEvolver protMerge protDihedrals protShaper protEner
 
 LIB_TARGETS = lib
 
-LIB_CC_OBJECTS = ran1.o ran.o point.o treeNode.o atom.o atomIterator.o residue.o chain.o residueTemplate.o allowedResidue.o secondaryStructure.o chainPosition.o residueIterator.o chainModBuffer.o molecule.o protein.o ensemble.o CMath.o generalio.o pdbData.o pdbReader.o pdbWriter.o amberVDW.o aaBaseline.o amberElec.o rotamer.o rotamerLib.o annealer.o PDBAtomRecord.o PDBInterface.o ruler.o line.o lineSegment.o unitSphere.o helixPropensity.o parse.o ramachandranMap.o
+LIB_CC_OBJECTS = ran1.o ran.o point.o treeNode.o atom.o atomIterator.o residue.o chain.o residueTemplate.o allowedResidue.o secondaryStructure.o chainPosition.o residueIterator.o chainModBuffer.o molecule.o protein.o ensemble.o CMath.o generalio.o pdbData.o pdbReader.o pdbWriter.o amberVDW.o aaBaseline.o amberElec.o rotamer.o rotamerLib.o PDBAtomRecord.o PDBInterface.o ruler.o line.o lineSegment.o unitSphere.o helixPropensity.o parse.o ramachandranMap.o
 
 DEFS = -DHAVE_OPENGL=1 -D__STL_USE_EXCEPTIONS
 
@@ -26,16 +26,15 @@ FLAG_OPTMAX = -Wall -oFast -ffast-math -ftree-vectorize -march=native -mtune=nat
 CFLAGS = $(FLAG_OPTMAX) $(DEFS)
 
 INC_BASE = -I$(SRCDIR)/ensemble -I$(SRCDIR)/io \
--I$(SRCDIR)/math -I$(SRCDIR)/database -I$(SRCDIR)/algorithm \
--I$(TNTINCLUDE)
+-I$(SRCDIR)/math -I$(SRCDIR)/database -I$(TNTINCLUDE)
 
 LIB_BASE = -L$(OBJDIR) -lprotcad  -lc -lm -lstdc++
 
-vpath %.h $(SRCDIR)/algorithm:$(SRCDIR)/ensemble:$(SRCDIR)/database:\
+vpath %.h $(SRCDIR)/ensemble:$(SRCDIR)/database:\
 	$(SRCDIR)/ensemble:$(SRCDIR)/io:\
 	$(SRCDIR)/math
 
-vpath %.cc $(SRCDIR)/algorithm:$(SRCDIR)/ensemble:$(SRCDIR)/database:\
+vpath %.cc $(SRCDIR)/ensemble:$(SRCDIR)/database:\
 	$(SRCDIR)/ensemble:$(SRCDIR)/io:\
 	$(SRCDIR)/math:$(PROJDIR):
 	

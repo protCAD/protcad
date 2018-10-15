@@ -66,8 +66,8 @@ molecule* pdbReader(const string& _pdbFile)
 						 	exit(1);
 						}
 					else
-						pTheChain->fixBrokenResidue(pTheChain->getNumResidues()-1);	
-						tempRes = 0;
+					pTheChain->fixBrokenResidue(pTheChain->getNumResidues()-1);
+					tempRes = 0;
 				}
 				else if (numatomsInRes > tempRes->getNumAtoms())
 				{

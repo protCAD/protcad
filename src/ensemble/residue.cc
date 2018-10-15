@@ -1071,7 +1071,8 @@ void residue::buildRotamerLib()
 			while(inFile.get(ch))
 			{
 				if(ch == '!')
-				{	for(; inFile.get(ch) && ch != '\n'; );
+				{
+					for(; inFile.get(ch) && ch != '\n'; );
 					temp = new rotamerLib(dataBase[i].branchPoints.size());
 					// since it is a pointer, the changes below done to
 					// temp is the same as the ones done to rotamerlib
