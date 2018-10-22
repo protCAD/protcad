@@ -51,7 +51,7 @@ int main (int argc, char* argv[])
 
 	//--Run multiple independent evolutions
     cout << "frame time distance" << endl;
-    for (UInt a = 1; a < 12264; a++)
+	for (UInt a = 1; a < 19981; a++)
 	{ 
 		name = a;
 		stringstream convert; 
@@ -64,7 +64,7 @@ int main (int argc, char* argv[])
         protein* frame = static_cast<protein*>(frameMol);
 
 
-        dblVec Ocoords = frame->getCoords(0, 90, "OH");
+		dblVec Ocoords = frame->getCoords(0, 90, "HH");
         dblVec Ncoords = frame->getCoords(0, 14, "NE2");
         dist = CMath::distance(Ocoords, Ncoords);
         cout << a << " " << (a*.02) << " " << dist << endl;

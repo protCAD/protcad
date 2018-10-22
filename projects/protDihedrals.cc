@@ -38,7 +38,7 @@ int main (int argc, char* argv[])
         cout << "NA " << bundle->getPsi(i,0) << endl;
         for (UInt j = 1; j < resNum-1; j ++)
         {
-            double phi = bundle->getPhi(i,j);
+			double phi = bundle->getPhi(i,j);
             double psi = bundle->getPsi(i,j);
             cout << phi << " " << psi << endl;
         }
