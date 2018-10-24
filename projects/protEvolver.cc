@@ -23,7 +23,7 @@ UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector 
 void createPossibleMutantsDatabase(protein* _prot, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedLResidues, UIntVec &_allowedDResidues, bool _homosymmetric);
 bool isFrozen(UIntVec _frozenResidues, UInt resIndex);
 double calculatePopulationMA();
-int getSizeofPopulation();
+UInt getSizeofPopulation();
 vector < vector < UInt > > buildSequencePool();
 vector < vector < UInt > > buildPossibleMutants();
 
@@ -296,9 +296,10 @@ UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector 
 	vector <UInt> resFreqs(58,1);
 	UInt position, threshold, entropy, mutant, variance, resFreqAccept;
 	UInt count = getSizeofPopulation();
+	UInt poolSize = _sequencePool.size();
 
 	//--get sequence evolution results for position
-	for (UInt i = 0; i < _sequencePool.size(); i++)
+	for (UInt i = 0; i < poolSize; i++)
 	{
 		UInt restype = _sequencePool[i][_mutantPosition[1]];
 		resFreqs[restype] = resFreqs[restype] + 1;
@@ -320,7 +321,7 @@ UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector 
 		threshold = (rand() % 100) + 1;
 		variance = (rand() % 100) + 1;
 		mutant = _possibleMutants[position][rand() % positionPossibles];
-		if (count >= 600){
+		if (count >= 500){
 			entropy = 33;  // probablistically allow 10% random genetic drift once sequence pool is sufficiently large
 		}
 		else{
@@ -329,7 +330,7 @@ UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector 
 		if (variance > entropy) //control sequence entropy with probabilty
 		{
 			resFreqAccept = resFreqs[mutant];
-			acceptance = (resFreqAccept/(count-1))*100; //chance of accepting given amino acid at position is proportional to population
+			acceptance = (resFreqAccept/(poolSize-1))*100; //chance of accepting given amino acid at position is proportional to population
 		}
 		else
 		{
@@ -360,8 +361,8 @@ vector < vector < UInt > > buildSequencePool()
 		sequence.clear();
 	}
 	file.close();
-	if (sequencePool.size() > 100){
-		sequencePool.erase(sequencePool.begin(),sequencePool.end()-100);
+	if (sequencePool.size() > 500){
+		sequencePool.erase(sequencePool.begin(),sequencePool.end()-500);
 	}
 	return sequencePool;
 }
@@ -559,11 +560,11 @@ double calculatePopulationMA()
 	return cutoff;
 }
 
-int getSizeofPopulation()
+UInt getSizeofPopulation()
 {
 	ifstream file("results.out");
 	string line;
-	int counter = 0;
+	UInt counter = 0;
 	while(getline(file,line))
 	{
 		counter++;
