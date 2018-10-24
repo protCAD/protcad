@@ -22,7 +22,7 @@ vector <UInt> getMutationPosition(protein* _prot, UIntVec &_activeChains, UIntVe
 UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition, UIntVec &_activeResidues);
 void createPossibleMutantsDatabase(protein* _prot, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedLResidues, UIntVec &_allowedDResidues, bool _homosymmetric);
 bool isFrozen(UIntVec _frozenResidues, UInt resIndex);
-double calculatePopulationMA(double _startEnergy);
+double calculatePopulationMA();
 int getSizeofPopulation();
 vector < vector < UInt > > buildSequencePool();
 vector < vector < UInt > > buildPossibleMutants();
@@ -40,17 +40,17 @@ int main (int argc, char* argv[])
 		exit(1);
 	}
 
-    UInt _activeChains[] = {0};                                                         // chains active for mutation
-    UInt _allowedLResidues[] = {A,R,N,D,Q,E,I,L,K,M,F,P,S,T,V,G};                     // amino acids allowed with phi < 0
-    UInt _allowedDResidues[] = {A,R,N,D,Q,E,I,L,K,M,F,P,S,T,V,G};                                                     // amino acids allowed with phi > 0
-    UInt _activeResidues[] = {0,1,2,3,4,5,7,8,9,10,12,15,16,17,19,21,22,23,24,26,28,29,30,31,33,34,35,36,37,38,39,40,41,42,44,46,47,48,49,51,53,54,55,56,58,60,61,62,63,65,67,68,69,70,71,72,73,74,76,77,78,79,80,81,83,84,85,86,88,91,92,93,95,97,98,99,100,102,103,104,105,106,107,109,110,111,112,113,114,115,116,117,118,120,122,123,124,125,127,129,130,131,132,134,136,137,138,139,141,143,144,145,146,147};                                     // positions active for mutation
-    UInt _randomResidues[] = {0,1,2,3,4,5,7,8,9,10,12,15,16,17,19,21,22,23,24,26,28,29,30,31,33,34,35,36,37,38,39,40,41,42,44,46,47,48,49,51,53,54,55,56,58,60,61,62,63,65,67,68,69,70,71,72,73,74,76,77,78,79,80,81,83,84,85,86,88,91,92,93,95,97,98,99,100,102,103,104,105,106,107,109,110,111,112,113,114,115,116,117,118,120,122,123,124,125,127,129,130,131,132,134,136,137,138,139,141,143,144,145,146,147};                                     // positions active for a random start sequence initially
-    UInt _frozenResidues[] = {6,11,13,14,18,20,25,27,32,43,45,50,52,57,59,64,66,75,82,87,89,90,94,96,101,108,119,121,126,128,133,135,140,142};                                  // positions that cannot move at all
-    bool homoSymmetric = false;                                                          // if true all chains are structurally and sequentially symmetric to desired listed active chain above
-    bool backboneRelaxation = false;                                                    // if true allow backrub relaxation in structural optimization
+	UInt _activeChains[] = {0};                                                         // chains active for mutation
+	UInt _allowedLResidues[] = {A,R,N,D,Q,E,I,L,K,F,P,S,T,W,Y,V,G};                     // amino acids allowed with phi < 0
+	UInt _allowedDResidues[] = {A,R,N,D,Q,E,I,L,K,F,P,S,T,W,Y,V,G};                     // amino acids allowed with phi > 0
+	UInt _activeResidues[] = {0,1,2,3,4,5,6,8,9,11,12,13,14,16,17,18,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,44,45,46,47,48,49,50,51,52,53,55,56,57,58};                                     // positions active for mutation
+	UInt _randomResidues[] = {0,1,2,3,4,5,6,8,9,11,12,13,14,16,17,18,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,44,45,46,47,48,49,50,51,52,53,55,56,57,58};                                     // positions active for a random start sequence initially
+	UInt _frozenResidues[] = {7,10,15,54,43,19,59,60};                                  // positions that cannot move at all
+	bool homoSymmetric = false;                                                         // if true all chains are structurally and sequentially symmetric to desired listed active chain above
+	bool backboneRelaxation = false;                                                                 // if true allow backrub relaxation in structural optimization
 
 	//--running parameters
-    residue::setCutoffDistance(6.0);
+	residue::setCutoffDistance(6.0);
 	residue::setTemperature(300);
 	residue::setElectroSolvationScaleFactor(1.0);
 	residue::setHydroSolvationScaleFactor(1.0);
@@ -70,8 +70,8 @@ int main (int argc, char* argv[])
 
 	//--set initial variables
 	srand (getpid());
-	double bestEnergy, pastEnergy, Energy, startEnergy;
-    UInt timeid, sec, mutant = 0, numResidues, plateau = 10, nobetter = 0;
+	double bestEnergy, pastEnergy, Energy;
+	UInt timeid, sec, mutant = 0, numResidues, plateau = 10, nobetter = 0;
 	vector < UInt > mutantPosition, chainSequence, sequencePosition, randomPosition;
 	vector < vector < UInt > > sequencePool, proteinSequence, finalSequence, possibleMutants;
 	vector < double > bindingEnergy;
@@ -87,69 +87,66 @@ int main (int argc, char* argv[])
 	PDBInterface* thePDB = new PDBInterface(infile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
-    protein* startProt = static_cast<protein*>(pMol);
+	protein* startProt = static_cast<protein*>(pMol);
 
-    //--mutate all positions starting with a random resdiue to glycine
-    for (UInt i = 0; i < activeChains.size(); i++)
-    {
-        for (UInt j = 0; j < randomResidues.size(); j++)
-        {
-            startProt->activateForRepacking(activeChains[i], randomResidues[j]);
-            startProt->mutateWBC(activeChains[i], randomResidues[j], G);
-        }
-    }
-
-    startEnergy = startProt->intraSoluteEnergy(true);
+	//--mutate all positions starting with a random resdiue to glycine
+	for (UInt i = 0; i < activeChains.size(); i++)
+	{
+		for (UInt j = 0; j < randomResidues.size(); j++)
+		{
+			startProt->activateForRepacking(activeChains[i], randomResidues[j]);
+			startProt->mutateWBC(activeChains[i], randomResidues[j], G);
+		}
+	}
 	possibleMutants = buildPossibleMutants();
 	if(possibleMutants.size() < activeResidues.size())
 	{
-        createPossibleMutantsDatabase(startProt, activeChains, activeResidues, allowedLResidues, allowedDResidues, homoSymmetric);
+		createPossibleMutantsDatabase(startProt, activeChains, activeResidues, allowedLResidues, allowedDResidues, homoSymmetric);
 		possibleMutants = buildPossibleMutants();
-    }
-    delete thePDB;
+	}
+	delete thePDB;
 
 	//--Run multiple independent evolution cycles-----------------------------------------------------
 	for (UInt a = 1; a < 10000; a++)
-    {
-        PDBInterface* thePDB = new PDBInterface(infile);
-        ensemble* theEnsemble = thePDB->getEnsemblePointer();
-        molecule* pMol = theEnsemble->getMoleculePointer(0);
-        protein* prot = static_cast<protein*>(pMol);
+	{
+		PDBInterface* thePDB = new PDBInterface(infile);
+		ensemble* theEnsemble = thePDB->getEnsemblePointer();
+		molecule* pMol = theEnsemble->getMoleculePointer(0);
+		protein* prot = static_cast<protein*>(pMol);
 		sequencePool = buildSequencePool();
 		if (homoSymmetric)
 		{
-            for (UInt i = 1; i < prot->getNumChains(); i++)
+			for (UInt i = 1; i < prot->getNumChains(); i++)
 			{
-                prot->symmetryLinkChainAtoB(i, activeChains[0]);
+				prot->symmetryLinkChainAtoB(i, activeChains[0]);
 			}
 		}
 
 		//--load in initial pdb and mutate in random starting sequence on active chains and random residues
 		nobetter = 0;
 		for (UInt i = 0; i < activeChains.size(); i++)
-        {
+		{
 			for (UInt j = 0; j < randomResidues.size(); j++)
 			{
-                prot->activateForRepacking(activeChains[i], randomResidues[j]);
+				prot->activateForRepacking(activeChains[i], randomResidues[j]);
 				randomPosition.push_back(activeChains[i]);
 				randomPosition.push_back(randomResidues[j]);
 				mutant = getProbabilisticMutation(sequencePool, possibleMutants, randomPosition, randomResidues);
-                prot->mutateWBC(activeChains[i], randomResidues[j], mutant);
+				prot->mutateWBC(activeChains[i], randomResidues[j], mutant);
 				randomPosition.clear();
 			}
-            chainSequence = getChainSequence(prot, activeChains[i]);
+			chainSequence = getChainSequence(prot, activeChains[i]);
 			proteinSequence.push_back(chainSequence);
 		}
-
-        prot->protOpt(backboneRelaxation, frozenResidues, activeChains);
+		prot->protOpt(backboneRelaxation, frozenResidues, activeChains);
 
 		//--set Energy startpoint
-        Energy = prot->protEnergy();
+		Energy = prot->protEnergy();
 
 		//--Determine next mutation position
 		mutantPosition.clear();
-        mutantPosition = getMutationPosition(prot, activeChains, activeResidues);
-        pdbWriter(prot, tempModel);
+		mutantPosition = getMutationPosition(prot, activeChains, activeResidues);
+		pdbWriter(prot, tempModel);
 		pastEnergy = Energy;
 		bestEnergy = Energy;
 
@@ -160,51 +157,49 @@ int main (int argc, char* argv[])
 			nobetter++;
 			for (UInt i = 0; i < activeChains.size(); i++)
 			{
-                numResidues = prot->getNumResidues(activeChains[i]);
+				numResidues = prot->getNumResidues(activeChains[i]);
 				for (UInt j = 0; j < numResidues; j++)
 				{
-                    prot->activateForRepacking(activeChains[i],j);
+					prot->activateForRepacking(activeChains[i],j);
 					if (activeChains[i] == mutantPosition[0] && j == mutantPosition[1])
 					{
 						//--new mutant
 						sequencePosition.push_back(i);
 						sequencePosition.push_back(j);
 						mutant = getProbabilisticMutation(sequencePool, possibleMutants, mutantPosition, activeResidues);
-                        prot->mutateWBC(mutantPosition[0],mutantPosition[1], mutant);
+						prot->mutateWBC(mutantPosition[0],mutantPosition[1], mutant);
 					}
 					bool frozen = isFrozen(frozenResidues,j);
 					if (!frozen)
 					{
-                        prot->mutateWBC(activeChains[i],j, proteinSequence[i][j]);
+						prot->mutateWBC(activeChains[i],j, proteinSequence[i][j]);
 					}
 				}
 			}
-            prot->protOpt(backboneRelaxation, frozenResidues, activeChains);
-            protein* tempProt = new protein(*prot);
+			prot->protOpt(backboneRelaxation, frozenResidues, activeChains);
+			protein* tempProt = new protein(*prot);
 
 			//--Determine next mutation position
 			mutantPosition.clear();
-            mutantPosition = getMutationPosition(prot, activeChains, activeResidues);
+			mutantPosition = getMutationPosition(prot, activeChains, activeResidues);
 
 			//--Energy test
-            Energy = prot->protEnergy();
+			Energy = prot->protEnergy();
 			if (Energy < pastEnergy)
 			{
 				if (Energy < bestEnergy)
 				{
 					bestEnergy = Energy;
-                    pdbWriter(tempProt, tempModel);
+					pdbWriter(tempProt, tempModel);
 				}
 				proteinSequence[sequencePosition[0]][sequencePosition[1]] = mutant, pastEnergy = Energy;
-				if (nobetter > 0) { nobetter--;
-				}
-				else{ nobetter = 0;
-				}
+				if (nobetter > 0) { nobetter--;}
+				else{ nobetter = 0; }
 			}
 			sequencePosition.clear();
-            delete tempProt;
+			delete tempProt;
 		}while (nobetter < plateau);
-        delete thePDB;
+		delete thePDB;
 
 		//--Print final energy and write a pdb file----------------------------------------------------
 		PDBInterface* theModelPDB = new PDBInterface(tempModel);
@@ -212,47 +207,44 @@ int main (int argc, char* argv[])
 		molecule* modelMol = theModelEnsemble->getMoleculePointer(0);
 		protein* model = static_cast<protein*>(modelMol);
 
-        Energy = model->protEnergy();
+		Energy = model->protEnergy();
 		bindingEnergy.clear();
 		bindingEnergy = model->chainBindingEnergy();
-        //if (Energy < startEnergy)
-        //{
-			sec = time(NULL);
-            timeid = sec;
-			stringstream convert;
-			string countstr;
-			convert << timeid, countstr = convert.str();
-            outFile = countstr + "." + startstr + ".evo.pdb";
-			pdbWriter(model, outFile);
-			finalSequence.clear(), chainSequence.clear();
-			for (UInt i = 0; i < activeChains.size(); i++)
-			{
-				chainSequence = getChainSequence(model, activeChains[i]);
-				finalSequence.push_back(chainSequence);
-			}
-			fstream finalline;
-			finalline.open ("results.out", fstream::in | fstream::out | fstream::app);
-			finalline << timeid << " " << bindingEnergy[0] << " " << bindingEnergy[1] << " ";
+		sec = time(NULL);
+		timeid = sec;
+		stringstream convert;
+		string countstr;
+		convert << timeid, countstr = convert.str();
+		outFile = countstr + "." + startstr + ".evo.pdb";
+		pdbWriter(model, outFile);
+		finalSequence.clear(), chainSequence.clear();
+		for (UInt i = 0; i < activeChains.size(); i++)
+		{
+			chainSequence = getChainSequence(model, activeChains[i]);
+			finalSequence.push_back(chainSequence);
+		}
+		fstream finalline;
+		finalline.open ("results.out", fstream::in | fstream::out | fstream::app);
+		finalline << timeid << " " << bindingEnergy[0] << " " << bindingEnergy[1] << " ";
 
-            double populationMA = calculatePopulationMA(startEnergy);
-            fstream fs;
-            fs.open ("sequencepool.out", fstream::in | fstream::out | fstream::app);
-            for (UInt i = 0; i < activeChains.size(); i++)
-            {
-                for (UInt j = 0; j < finalSequence[i].size(); j++)
-                {
-                    finalline << aminoAcidString[finalSequence[i][j]] << " ";
-                    if (Energy < populationMA)
-                    {
-                        fs << finalSequence[i][j] << ",";
-                    }
-                }
-            }
-            if (Energy < populationMA){fs << endl;}
-            fs.close();
-            finalline << endl;
-            finalline.close();
-        //}
+		double populationMA = calculatePopulationMA();
+		fstream fs;
+		fs.open ("sequencepool.out", fstream::in | fstream::out | fstream::app);
+		for (UInt i = 0; i < activeChains.size(); i++)
+		{
+			for (UInt j = 0; j < finalSequence[i].size(); j++)
+			{
+				finalline << aminoAcidString[finalSequence[i][j]] << " ";
+				if (Energy < populationMA)
+				{
+					fs << finalSequence[i][j] << ",";
+				}
+			}
+		}
+		if (Energy < populationMA){fs << endl;}
+		fs.close();
+		finalline << endl;
+		finalline.close();
 		delete theModelPDB;
 		bindingEnergy.clear(),sequencePool.clear(),proteinSequence.clear(), chainSequence.clear(), mutantPosition.clear(), chainSequence.clear(), sequencePosition.clear(), randomPosition.clear();
 		bindingEnergy.resize(0),sequencePool.resize(0),proteinSequence.resize(0), chainSequence.resize(0), mutantPosition.resize(0), chainSequence.resize(0), sequencePosition.resize(0), randomPosition.resize(0);
@@ -300,10 +292,10 @@ vector <UInt> getMutationPosition(protein* _prot, UIntVec &_activeChains, UIntVe
 
 UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition, UIntVec &_activeResidues)
 {
-    float mutant, threshold, entropy, acceptance, variance, resFreqAccept;
+	float acceptance;
 	vector <UInt> resFreqs(58,1);
-	UInt position;
-    float count = getSizeofPopulation();
+	UInt position, threshold, entropy, mutant, variance, resFreqAccept;
+	UInt count = getSizeofPopulation();
 
 	//--get sequence evolution results for position
 	for (UInt i = 0; i < _sequencePool.size(); i++)
@@ -322,19 +314,19 @@ UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector 
 	}
 	UInt positionPossibles = _possibleMutants[position].size();
 
-    //--determine population based chance of mutation acceptance or a random mutation
+	//--determine population based chance of mutation acceptance or a random mutation
 	do
 	{
-        threshold = (rand() % 100) + 1;
-        variance = (rand() % 100) + 1;
-        mutant = _possibleMutants[position][rand() % positionPossibles];
-        if (count >= 200){
-            entropy = 50;  // probablistically allow 10% random genetic drift once sequence pool is sufficiently large
-        }
-        else{
-            entropy = 100;  // 100% random sequences until sequence pool is built
-        }
-        if (variance > entropy) //control sequence entropy with probabilty
+		threshold = (rand() % 100) + 1;
+		variance = (rand() % 100) + 1;
+		mutant = _possibleMutants[position][rand() % positionPossibles];
+		if (count >= 600){
+			entropy = 33;  // probablistically allow 10% random genetic drift once sequence pool is sufficiently large
+		}
+		else{
+			entropy = 100;  // 100% random sequences until sequence pool is built
+		}
+		if (variance > entropy) //control sequence entropy with probabilty
 		{
 			resFreqAccept = resFreqs[mutant];
 			acceptance = (resFreqAccept/(count-1))*100; //chance of accepting given amino acid at position is proportional to population
@@ -343,7 +335,7 @@ UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector 
 		{
 			acceptance = 100;  //random mutation
 		}
-    }while (threshold > acceptance);
+	}while (threshold > acceptance);
 	return mutant;
 }
 
@@ -367,11 +359,11 @@ vector < vector < UInt > > buildSequencePool()
 		sequencePool.push_back(sequence);
 		sequence.clear();
 	}
-    file.close();
-    if (sequencePool.size() > 200){
-        sequencePool.erase(sequencePool.begin(),sequencePool.end()-200);
-    }
-    return sequencePool;
+	file.close();
+	if (sequencePool.size() > 100){
+		sequencePool.erase(sequencePool.begin(),sequencePool.end()-100);
+	}
+	return sequencePool;
 }
 
 vector < vector < UInt > > buildPossibleMutants()
@@ -399,43 +391,42 @@ vector < vector < UInt > > buildPossibleMutants()
 
 void createPossibleMutantsDatabase(protein* _prot, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedLResidues, UIntVec &_allowedDResidues, bool _homoSymmetric)
 {
-    double Energy, phi, startE;
-    UInt restype;
+	double Energy, phi, startE;
+	UInt restype;
 	bool added;
 	fstream pm;
 	pm.open ("possiblemutants.out", fstream::in | fstream::out | fstream::app);
 	if (_homoSymmetric)
 	{
-        for (UInt i = 1; i < _prot->getNumChains(); i++)
+		for (UInt i = 1; i < _prot->getNumChains(); i++)
 		{
-            _prot->symmetryLinkChainAtoB(i, _activeChains[0]);
+			_prot->symmetryLinkChainAtoB(i, _activeChains[0]);
 		}
 	}
 
-    startE = _prot->protEnergy();
-    startE=startE+20; //buffer energy filter of amino acids per position to restrict only by very hard clashes
+	startE = _prot->protEnergy();
+	startE=startE+20; //buffer energy filter of amino acids per position to restrict only by very hard clashes
 
 	for (UInt i = 0; i < _activeChains.size(); i++)
 	{
 		for (UInt j = 0; j <_activeResidues.size(); j++)
 		{
-            phi = _prot->getPhi(_activeChains[i], _activeResidues[j]);
-            restype = _prot->getTypeFromResNum(_activeChains[i], _activeResidues[j]);
+			phi = _prot->getPhi(_activeChains[i], _activeResidues[j]);
+			restype = _prot->getTypeFromResNum(_activeChains[i], _activeResidues[j]);
 			if ((phi < 0 && phi > -180) || _activeResidues[j] == 0)
 			{
 				for (UInt k = 0; k <_allowedLResidues.size(); k++)
 				{
 					added = false;
-                    _prot->activateForRepacking(_activeChains[i], _activeResidues[j]);
-                    _prot->mutateWBC(_activeChains[i], _activeResidues[j], _allowedLResidues[k]);
-                    UIntVec allowedRots = _prot->getAllowedRotamers(_activeChains[i], _activeResidues[j], _allowedLResidues[k], 0);
+					_prot->activateForRepacking(_activeChains[i], _activeResidues[j]);
+					_prot->mutateWBC(_activeChains[i], _activeResidues[j], _allowedLResidues[k]);
+					UIntVec allowedRots = _prot->getAllowedRotamers(_activeChains[i], _activeResidues[j], _allowedLResidues[k], 0);
 					if (allowedRots.size() > 0)
 					{
 						for (UInt l = 0; l < allowedRots.size(); l++)
 						{
-                            _prot->setRotamerWBC(_activeChains[i], _activeResidues[j], 0, allowedRots[l]);
-
-                            Energy = _prot->protEnergy();
+							_prot->setRotamerWBC(_activeChains[i], _activeResidues[j], 0, allowedRots[l]);
+							Energy = _prot->protEnergy();
 							if (Energy <= startE)
 							{
 								if (_allowedLResidues[k] != restype && !added)
@@ -446,13 +437,13 @@ void createPossibleMutantsDatabase(protein* _prot, UIntVec &_activeChains, UIntV
 							}
 							else
 							{
-                                _prot->setRotamerNotAllowed(_activeChains[i], _activeResidues[j], _allowedLResidues[k], 0, allowedRots[l]);
+								_prot->setRotamerNotAllowed(_activeChains[i], _activeResidues[j], _allowedLResidues[k], 0, allowedRots[l]);
 							}
 						}
 					}
 					else
 					{
-                        Energy = _prot->protEnergy();
+						Energy = _prot->protEnergy();
 						if (Energy <= startE)
 						{
 							if (_allowedLResidues[k] != restype && !added)
@@ -469,15 +460,15 @@ void createPossibleMutantsDatabase(protein* _prot, UIntVec &_activeChains, UIntV
 				for (UInt k = 0; k <_allowedDResidues.size(); k++)
 				{
 					added = false;
-                    _prot->activateForRepacking(_activeChains[i], _activeResidues[j]);
-                    _prot->mutateWBC(_activeChains[i], _activeResidues[j], _allowedDResidues[k]);
-                    UIntVec allowedRots = _prot->getAllowedRotamers(_activeChains[i], _activeResidues[j], _allowedDResidues[k], 0);
+					_prot->activateForRepacking(_activeChains[i], _activeResidues[j]);
+					_prot->mutateWBC(_activeChains[i], _activeResidues[j], _allowedDResidues[k]);
+					UIntVec allowedRots = _prot->getAllowedRotamers(_activeChains[i], _activeResidues[j], _allowedDResidues[k], 0);
 					if (allowedRots.size() > 0)
 					{
 						for (UInt l = 0; l < allowedRots.size(); l++)
 						{
-                            _prot->setRotamerWBC(_activeChains[i], _activeResidues[j], 0, allowedRots[l]);
-                            Energy = _prot->protEnergy();
+							_prot->setRotamerWBC(_activeChains[i], _activeResidues[j], 0, allowedRots[l]);
+							Energy = _prot->protEnergy();
 							if (Energy <= startE)
 							{
 								if (_allowedDResidues[k] != restype && !added)
@@ -488,13 +479,13 @@ void createPossibleMutantsDatabase(protein* _prot, UIntVec &_activeChains, UIntV
 							}
 							else
 							{
-                                _prot->setRotamerNotAllowed(_activeChains[i], _activeResidues[j], _allowedDResidues[k], 0, allowedRots[l]);
+								_prot->setRotamerNotAllowed(_activeChains[i], _activeResidues[j], _allowedDResidues[k], 0, allowedRots[l]);
 							}
 						}
 					}
 					else
 					{
-                        Energy = _prot->protEnergy();
+						Energy = _prot->protEnergy();
 						if (Energy <= startE)
 						{
 							if (_allowedDResidues[k] != restype && !added)
@@ -506,7 +497,7 @@ void createPossibleMutantsDatabase(protein* _prot, UIntVec &_activeChains, UIntV
 					}
 				}
 			}
-            _prot->mutateWBC(_activeChains[i], _activeResidues[j], restype);
+			_prot->mutateWBC(_activeChains[i], _activeResidues[j], restype);
 			pm << restype << ",";
 			pm << endl;
 		}
@@ -526,58 +517,58 @@ bool isFrozen(UIntVec _frozenResidues, UInt resIndex)
 	return frozen;
 }
 
-double calculatePopulationMA(double _startEnergy)
+double calculatePopulationMA()
 {
-    ifstream file("results.out");
-    string item, line;
-    bool secondSpace;
-    vector < double > _energy;
-    while(getline(file,line))
-    {
-        secondSpace = false;
-        stringstream stream(line);
-        while(getline(stream,item,' '))
-        {
-            if (secondSpace)
-            {
-                stringstream energyString(item);
-                double energy;
-                energyString >> energy;
-                _energy.push_back(energy);
-                break;
-            }
-            else
-            {
-                secondSpace = true;
-            }
-        }
-    }
-    file.close();
-    double cutoff = 0.0;
-    if (_energy.size() >= 200){
-        double sum = 0.0;
-        for (UInt i = _energy.size()-200; i < _energy.size(); i++)
-        {
-            sum += _energy[i];
-        }
-        cutoff=sum/200;
-    }
-    else{
-        cutoff = _startEnergy;
-    }
-    return cutoff;
+	ifstream file("results.out");
+	string item, line;
+	bool secondSpace;
+	vector < double > _energy;
+	while(getline(file,line))
+	{
+		secondSpace = false;
+		stringstream stream(line);
+		while(getline(stream,item,' '))
+		{
+			if (secondSpace)
+			{
+				stringstream energyString(item);
+				double energy;
+				energyString >> energy;
+				_energy.push_back(energy);
+				break;
+			}
+			else
+			{
+				secondSpace = true;
+			}
+		}
+	}
+	file.close();
+	double cutoff = 0.0;
+	if (_energy.size() >= 100){
+		double sum = 0.0;
+		for (UInt i = _energy.size()-100; i < _energy.size(); i++)
+		{
+			sum += _energy[i];
+		}
+		cutoff=sum/100;
+	}
+	else{
+		cutoff = 1E10;
+	}
+	return cutoff;
 }
 
 int getSizeofPopulation()
 {
-    ifstream file("results.out");
-    string line;
-    int counter = 0;
-    while(getline(file,line))
-    {
-        counter++;
-    }
-    file.close();
-    return counter;
+	ifstream file("results.out");
+	string line;
+	int counter = 0;
+	while(getline(file,line))
+	{
+		counter++;
+	}
+	file.close();
+	return counter;
 }
 
