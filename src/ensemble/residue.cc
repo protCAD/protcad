@@ -3471,50 +3471,21 @@ UInt residue::getNumHardClashes(residue* _other)
 
 bool residue::isClash(UInt _index1, UInt _index2)
 {
-	if (isSeparatedByOneOrTwoBonds(_index1, _index2)) return false;
-
-	atom* atom1 = this->getAtom(_index1);
-	atom* atom2 = this->getAtom(_index2);
-	int index1 = -1;
-	int index2 = -1;
-
-	double distance = atom1->distance(atom2);
-	if (hydrogensOn)
-	{
-		//UInt tempsizevar = dataBase[itsType].itsAtomEnergyTypeDefinitions.size();
-		index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[_index1][0];
-		index2 = dataBase[itsType].itsAtomEnergyTypeDefinitions[_index2][0];
-	}
-	else
-	{
-		index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[_index1][1];
-		index2 = dataBase[itsType].itsAtomEnergyTypeDefinitions[_index2][1];
-	}
+	if (isSeparatedByFewBonds(_index1, _index2)) return false;
+	double distance = itsAtoms[_index1]->distance(itsAtoms[_index2]);
+	int index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[_index1][0];
+	int index2 = dataBase[itsType].itsAtomEnergyTypeDefinitions[_index2][0];
 	bool clash = residueTemplate::isClash(index1, index2, distance);
-	return clash; 
+	return clash;
 }
 
 bool residue::isClash(UInt _index1, residue* _other, UInt _index2)
 {
-	int index1 = -1;
-	int index2 = -1;
-	if (isSeparatedByOneOrTwoBonds(_index1, _other, _index2)) return false;
-
-	atom* atom1 = this->getAtom(_index1);
-	atom* atom2 = _other->getAtom(_index2);
-
-	double distance = atom1->distance(atom2);
-	if (hydrogensOn)
-	{
-		index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[_index1][0];
-		index2 = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[_index2][0];
-	}
-	else
-	{
-		index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[_index1][1];
-		index2 = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[_index2][1];
-	}
-
+	if (isSeparatedByFewBonds(this, _index1, _other, _index2)) {return false;}
+	if (!itsAtoms[_index1]->inCube(_other->itsAtoms[_index2], 5)) {return false;}
+	double distance = itsAtoms[_index1]->distance(_other->itsAtoms[_index2]);
+	int index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[_index1][0];
+	int index2 = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[_index2][0];
 	return residueTemplate::isClash(index1, index2, distance); 
 }
 

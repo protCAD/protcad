@@ -207,44 +207,45 @@ int main (int argc, char* argv[])
 		molecule* modelMol = theModelEnsemble->getMoleculePointer(0);
 		protein* model = static_cast<protein*>(modelMol);
 
-		Energy = model->protEnergy();
-		bindingEnergy.clear();
-		bindingEnergy = model->chainBindingEnergy();
-		sec = time(NULL);
-		timeid = sec;
-		stringstream convert;
-		string countstr;
-		convert << timeid, countstr = convert.str();
-		outFile = countstr + "." + startstr + ".evo.pdb";
-		pdbWriter(model, outFile);
-		finalSequence.clear(), chainSequence.clear();
-		for (UInt i = 0; i < activeChains.size(); i++)
+		if (model->getNumHardClashes() == 0)
 		{
-			chainSequence = getChainSequence(model, activeChains[i]);
-			finalSequence.push_back(chainSequence);
-		}
-		fstream finalline;
-		finalline.open ("results.out", fstream::in | fstream::out | fstream::app);
-		finalline << timeid << " " << bindingEnergy[0] << " " << bindingEnergy[1] << " ";
-
-		double populationMA = calculatePopulationMA();
-		fstream fs;
-		fs.open ("sequencepool.out", fstream::in | fstream::out | fstream::app);
-		for (UInt i = 0; i < activeChains.size(); i++)
-		{
-			for (UInt j = 0; j < finalSequence[i].size(); j++)
+			Energy = model->protEnergy();
+			sec = time(NULL);
+			timeid = sec;
+			stringstream convert;
+			string countstr;
+			convert << timeid, countstr = convert.str();
+			outFile = countstr + "." + startstr + ".evo.pdb";
+			pdbWriter(model, outFile);
+			finalSequence.clear(), chainSequence.clear();
+			for (UInt i = 0; i < activeChains.size(); i++)
 			{
-				finalline << aminoAcidString[finalSequence[i][j]] << " ";
-				if (Energy < populationMA)
+				chainSequence = getChainSequence(model, activeChains[i]);
+				finalSequence.push_back(chainSequence);
+			}
+			fstream finalline;
+			finalline.open ("results.out", fstream::in | fstream::out | fstream::app);
+			finalline << timeid << " " << Energy << " ";
+	
+			double populationMA = calculatePopulationMA();
+			fstream fs;
+			fs.open ("sequencepool.out", fstream::in | fstream::out | fstream::app);
+			for (UInt i = 0; i < activeChains.size(); i++)
+			{
+				for (UInt j = 0; j < finalSequence[i].size(); j++)
 				{
-					fs << finalSequence[i][j] << ",";
+					finalline << aminoAcidString[finalSequence[i][j]] << " ";
+					if (Energy < populationMA)
+					{
+						fs << finalSequence[i][j] << ",";
+					}
 				}
 			}
+			if (Energy < populationMA){fs << endl;}
+			fs.close();
+			finalline << endl;
+			finalline.close();
 		}
-		if (Energy < populationMA){fs << endl;}
-		fs.close();
-		finalline << endl;
-		finalline.close();
 		delete theModelPDB;
 		bindingEnergy.clear(),sequencePool.clear(),proteinSequence.clear(), chainSequence.clear(), mutantPosition.clear(), chainSequence.clear(), sequencePosition.clear(), randomPosition.clear();
 		bindingEnergy.resize(0),sequencePool.resize(0),proteinSequence.resize(0), chainSequence.resize(0), mutantPosition.resize(0), chainSequence.resize(0), sequencePosition.resize(0), randomPosition.resize(0);

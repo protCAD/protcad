@@ -71,7 +71,7 @@ amberVDW::~amberVDW()
 bool amberVDW::isClash(const UInt _type1, const UInt _type2, const double _distance)
 {
 	double R_ref_pair = itsRadiusScaleFactor * (R_ref[_type1] + R_ref[_type2]);
-	if (_distance < R_ref_pair) return true;
+	if (_distance < R_ref_pair/2) return true;
 	return false;
 }
 

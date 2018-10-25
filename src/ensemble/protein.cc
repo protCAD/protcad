@@ -2948,7 +2948,7 @@ void protein::protOpt(bool _backbone)
 	//_plateau: the number of consecutive optimization cycles without an energy decrease (default: 150 for general purpose optimization)
 
 	//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
-	UInt randchain, randres, randrestype, randrot, chainNum = getNumChains(), keep, nobetter = 0, _plateau = 300;
+	UInt randchain, randres, randrestype, randrot, chainNum = getNumChains(), keep, nobetter = 0, _plateau = 400;
     double Energy, resE, medResE, pastEnergy = protEnergy(), sPhi, sPsi, energyBuffer = 0.05;
 	vector < vector <double> > currentRot; vector <UIntVec> allowedRots; srand (time(NULL));
     int dihedralD;
@@ -2990,6 +2990,88 @@ void protein::protOpt(bool _backbone)
 
 		//--Rotamer optimization-----------------------------------------------------------------------
 		resE = resEnergy(randchain, randres), medResE = getMedianResEnergy();
+		if (resE > medResE)
+		{
+			currentRot = getSidechainDihedrals(randchain, randres);
+			allowedRots = getAllowedRotamers(randchain, randres, randrestype);
+
+			//--Try a max of one rotamer per branchpoint and keep if an improvement, else revert
+			for (UInt b = 0; b < residue::getNumBpt(randrestype); b++)
+			{
+				if (allowedRots[b].size() > 0)
+				{
+					randrot = rand() % allowedRots[b].size();
+					setRotamerWBC(randchain, randres, b, allowedRots[b][randrot]);
+					Energy = protEnergy();
+					if (Energy < (pastEnergy-energyBuffer))
+					{
+						nobetter = 0, pastEnergy = Energy; break;
+					}
+					else
+					{
+						setSidechainDihedralAngles(randchain, randres, currentRot);
+					}
+				}
+			}
+		}
+	} while (nobetter < _plateau * 1.2);
+	return;
+}
+
+void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeChains) //_activeChain only optimized and energy calculated for it
+{   // Sidechain and backrub optimization with a local dielectric scaling of electrostatics and corresponding Born/Gill implicit solvation energy
+	//_plateau: the number of consecutive optimization cycles without an energy decrease (default: 150 for general purpose optimization)
+
+	//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
+	UInt randchain, randres, randrestype, randrot, chainNum = _activeChains.size(), keep, nobetter = 0, _plateau = 400;
+	double deltaTheta = 0, Energy, resE, medResE, pastEnergy = protEnergy(), currentBetaChi, energyBuffer = 0.05;
+	vector < vector <double> > currentRot; vector <UIntVec> allowedRots; srand (time(NULL));
+	bool skip;
+
+	//--Run optimizaiton loop to relative minima, determined by _plateau----------------------------
+	do
+	{   //--choose random residue not frozen of active chains
+		randchain = _activeChains[rand() % chainNum];
+		do
+		{	skip = false;
+			randres = rand() % getNumResidues(randchain);
+			for (UInt i = 0; i < _frozenResidues.size(); i++)
+			{
+				if (randres == _frozenResidues[i]) {skip = true;}
+			}
+		} while (skip);
+		randrestype = getTypeFromResNum(randchain, randres);
+		nobetter++;
+
+		//--Backrub optimization-----------------------------------------------------------------------
+		if (nobetter > _plateau && _backbone)
+		{
+			resE = resEnergy(randchain, randres), medResE = getMedianResEnergy(_activeChains);
+			if (resE > medResE)
+			{
+				//--randomly choose degree change (-1 or +1) of backrub dihedral (Ca-Cb angle)
+				do
+				{ deltaTheta = ((rand() % 3) -1);
+				} while (deltaTheta == 0);
+
+				//--transform angle while energy improves, until energy degrades, then revert one step
+				do
+				{
+					keep = 0;
+					currentBetaChi = getBetaChi(randchain, randres);
+					setBetaChi(randchain, randres, deltaTheta+currentBetaChi);
+					Energy = protEnergy();
+					if (Energy < (pastEnergy-energyBuffer))
+					{
+						nobetter = 0, keep = 1, pastEnergy = Energy;
+					}
+				} while (keep == 1);
+				setBetaChi(randchain, randres, currentBetaChi);
+			}
+		}
+
+		//--Rotamer optimization-----------------------------------------------------------------------
+		resE = resEnergy(randchain, randres), medResE = getMedianResEnergy(_activeChains);
 		if (resE > medResE)
 		{
 			currentRot = getSidechainDihedrals(randchain, randres);
@@ -3130,88 +3212,6 @@ void protein::protSampling(UInt _plateau)
         }
     } while (nobetter < _plateau);
     return;
-}
-
-void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeChains) //_activeChain only optimized and energy calculated for it
-{   // Sidechain and backrub optimization with a local dielectric scaling of electrostatics and corresponding Born/Gill implicit solvation energy
-	//_plateau: the number of consecutive optimization cycles without an energy decrease (default: 150 for general purpose optimization)
-
-	//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
-	UInt randchain, randres, randrestype, randrot, chainNum = _activeChains.size(), keep, nobetter = 0, _plateau = 300;
-	double deltaTheta = 0, Energy, resE, medResE, pastEnergy = protEnergy(), currentBetaChi, energyBuffer = 0.05;
-	vector < vector <double> > currentRot; vector <UIntVec> allowedRots; srand (time(NULL));
-	bool skip;
-
-	//--Run optimizaiton loop to relative minima, determined by _plateau----------------------------
-	do
-	{   //--choose random residue not frozen of active chains
-		randchain = _activeChains[rand() % chainNum];
-		do
-		{	skip = false;
-			randres = rand() % getNumResidues(randchain);
-			for (UInt i = 0; i < _frozenResidues.size(); i++)
-			{
-				if (randres == _frozenResidues[i]) {skip = true;}
-			}
-		} while (skip);
-		randrestype = getTypeFromResNum(randchain, randres);
-		nobetter++;
-
-		//--Backrub optimization-----------------------------------------------------------------------
-		if (nobetter > _plateau && _backbone)
-		{
-			resE = resEnergy(randchain, randres), medResE = getMedianResEnergy(_activeChains);
-			if (resE > medResE)
-			{
-				//--randomly choose degree change (-1 or +1) of backrub dihedral (Ca-Cb angle)
-				do
-				{ deltaTheta = ((rand() % 3) -1);
-				} while (deltaTheta == 0);
-
-				//--transform angle while energy improves, until energy degrades, then revert one step
-				do
-				{
-					keep = 0;
-					currentBetaChi = getBetaChi(randchain, randres);
-					setBetaChi(randchain, randres, deltaTheta+currentBetaChi);
-					Energy = protEnergy();
-					if (Energy < (pastEnergy-energyBuffer))
-					{
-						nobetter = 0, keep = 1, pastEnergy = Energy;
-					}
-				} while (keep == 1);
-				setBetaChi(randchain, randres, currentBetaChi);
-			}
-		}
-
-		//--Rotamer optimization-----------------------------------------------------------------------
-		resE = resEnergy(randchain, randres), medResE = getMedianResEnergy(_activeChains);
-		if (resE > medResE)
-		{
-			currentRot = getSidechainDihedrals(randchain, randres);
-			allowedRots = getAllowedRotamers(randchain, randres, randrestype);
-
-			//--Try a max of one rotamer per branchpoint and keep if an improvement, else revert
-			for (UInt b = 0; b < residue::getNumBpt(randrestype); b++)
-			{
-				if (allowedRots[b].size() > 0)
-				{
-					randrot = rand() % allowedRots[b].size();
-					setRotamerWBC(randchain, randres, b, allowedRots[b][randrot]);
-					Energy = protEnergy();
-					if (Energy < (pastEnergy-energyBuffer))
-					{
-						nobetter = 0, pastEnergy = Energy; break;
-					}
-					else
-					{
-						setSidechainDihedralAngles(randchain, randres, currentRot);
-					}
-				}
-			}
-		}
-	} while (nobetter < _plateau * 1.2);
-	return;
 }
 
 void protein::optimizeRotamers()

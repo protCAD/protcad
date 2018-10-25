@@ -393,10 +393,10 @@ double residueTemplate::getVDWEnergy(const int _type1, const int _type2, const d
 bool residueTemplate::isClash(const int _type1, const int _type2, const double _distance)
 {
 	if( _type1 >= 0 && _type2 >= 0)
-                {       //cout << _type1 << " " << _type2 << endl;
-                        return itsAmberVDW.isClash(UInt(_type1),UInt(_type2), _distance);
-                }
-        return false;
+	{
+		return itsAmberVDW.isClash(UInt(_type1),UInt(_type2), _distance);
+	}
+	return false;
 }
 
 

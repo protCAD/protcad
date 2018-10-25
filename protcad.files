@@ -131,6 +131,7 @@ data/rotamerLib/VAL.rot
 projects/README
 projects/alphaCarbonDihedrals.cc
 projects/protBindingEnergy.cc
+projects/protClashes.cc
 projects/protDB.cc
 projects/protDielectric.cc
 projects/protDihedrals.cc
