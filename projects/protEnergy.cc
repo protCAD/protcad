@@ -27,8 +27,8 @@ int main (int argc, char* argv[])
     amberElec::setScaleFactor(1.0);
     amberVDW::setScaleFactor(1.0);
     //bundle->listConnectivity(0,0);
-    //string outfile = "test.pdb";
+    string outfile = "test.pdb";
     cout << bundle->protEnergy() << endl;
-    //pdbWriter(bundle, infile);
+    pdbWriter(bundle, outfile);
 	return 0;
 }
