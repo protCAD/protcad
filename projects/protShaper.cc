@@ -504,188 +504,26 @@ int main (int argc, char* argv[])
         }
         phi=phi+4;
     }*/
-    /*UInt counter = 0;
-    //for (int h = -180; h < 180; h++)
-    //{
-        //for (int i = -180; i < 180; i++)
-        //{
-            counter++;
+    int count=0;
+    for (int r = 7; r < 10; r++)
+    {
+        for (int p = 60; p < 120; p++)
+        {
+            count++;
             PDBInterface* thePDB = new PDBInterface(inFile);
             ensemble* theEnsemble = thePDB->getEnsemblePointer();
             molecule* pMol = theEnsemble->getMoleculePointer(0);
             protein* bundle = static_cast<protein*>(pMol);
-            bool right = true;
-            bundle->makeResidueSilent(0,0);
-            bundle->makeResidueSilent(0,13);
-            UInt interval = 0;
-            bundle->setDihedral(0,0,45,1,0);
-            for (UInt j = 1; j < bundle->getNumResidues(0); j++)
-            {
-                if (right)
-                {
-                    bundle->setDihedral(0,j,-70,0,0);
-                    if (interval == 0)
-                    {
-                        bundle->setDihedral(0,j,170,1,0);
-                        bundle->mutateWBC(0,j, Cf);
-                    }
-                    if (interval == 1)
-                    {
-                        bundle->setDihedral(0,j,0,1,0);
-                    }
-                    if (interval == 2)
-                    {
-                        bundle->setDihedral(0,j,-45,1,0);
-                    }
-                    interval++;
-                    if (interval > 2){interval=0, right = false;}
-                }
-                else
-                {
-                    bundle->setDihedral(0,j,70,0,0);
-                    if (interval == 0)
-                    {
-                        bundle->setDihedral(0,j,-170,1,0);
-                        bundle->mutateWBC(0,j, dCf);
-                        bundle->setRotamerWBC(0,j,0,2);
-                        double chi = bundle->getChi(0,j,0,0);
-                        bundle->setChi(0,j,0,0,chi+20);
-                    }
-                    if (interval == 1)
-                    {
-                        bundle->setDihedral(0,j,0,1,0);
-                        bundle->mutateWBC(0,j, dA);
-                    }
-                    if (interval == 2)
-                    {
-                        bundle->setDihedral(0,j,45,1,0);
-                        bundle->mutateWBC(0,j, dA);
-                    }
-                    interval++;
-                    if (interval > 2){interval=0, right = true;}
-                }
-            }
-            dblVec Ncoords = bundle->getCoords(0, 1, "N");
-            dblVec Ccoords = bundle->getCoords(0, 12, "C");
-            double dist = CMath::distance(Ncoords, Ccoords);
+            buildHelixOligamer (bundle, 4, true, r, 0, p, 180, 0);
+            cout << count << " " << r << " " << p << " " << bundle->protEnergy() << endl;
             stringstream convert;
             string countstr;
-            cout << counter << " " << bundle->protEnergy()  << " " << dist << endl;
-            //convert << h, countstr = convert.str();
-            outFile = "3motif.pdb";
+            convert << count, countstr = convert.str();
+            outFile = countstr + ".pdb";
             pdbWriter(bundle, outFile);
-            delete bundle;*/
-        //}
-    //}
-    /*PDBInterface* thePDB = new PDBInterface(inFile);
-    ensemble* theEnsemble = thePDB->getEnsemblePointer();
-    molecule* pMol = theEnsemble->getMoleculePointer(0);
-    protein* bundle = static_cast<protein*>(pMol);
-
-            double phi = bundle->getAngle(0,1,0);
-            double psi = bundle->getAngle(0,1,1);
-            bundle->setDihedral(0,1,phi*-1,0,0);
-            bundle->setDihedral(0,1,psi*-1,1,0);
-            bundle->activateForRepacking(0, 1);
-            bundle->mutateWBC(0,1,dCf);
-            bundle->setRotamerWBC(0,1,0,1);
-
-            phi = bundle->getAngle(0,2,0);
-            psi = bundle->getAngle(0,2,1);
-            bundle->setDihedral(0,2,phi*-1,0,0);
-            bundle->setDihedral(0,2,psi*-1,1,0);
-
-            phi = bundle->getAngle(0,3,0);
-            psi = bundle->getAngle(0,3,1);
-            bundle->setDihedral(0,3,phi*-1,0,0);
-            bundle->setDihedral(0,3,psi*-1,1,0);
-            bundle->mutateWBC(0,3,dV);
-            bundle->setRotamerWBC(0,3,0,1);
-           // if (bundle->getTypeFromResNum(0,i) == C)
-           // {
-
-                if (i != 3)
-                {
-
-                }
-                else
-                {
-                    bundle->setRotamerWBC(0,i,0,2);
-                }
-
-            }
-            if (bundle->getTypeFromResNum(0,i) == V)
-            {
-                bundle->mutateWBC(0,i,dV);
-                bundle->setRotamerWBC(0,i,0,1);
-            }*/
-
-    //}
-    //outFile = "invmotif.pdb";
-    //pdbWriter(bundle, outFile);
-    //delete bundle;
-    
-    PDBInterface* thePDB = new PDBInterface(inFile);
-    ensemble* theEnsemble = thePDB->getEnsemblePointer();
-    molecule* pMol = theEnsemble->getMoleculePointer(0);
-    protein* _prot = static_cast<protein*>(pMol);
-    
-    UInt alphaBias, randchain = 0, randres = 5, foldD = 0;
-    double sPhi, sPsi;
-    // Get angles and types from res
-	sPhi = _prot->getPhi(randchain,randres);
-	sPsi = _prot->getPsi(randchain,randres);
-
-	//--flip secondary structure channels
-	alphaBias = rand() % 2;
-	if (sPhi < 0) // right handed
-	{
-		if (sPsi < 60 && alphaBias < 1){  // flip alpha to beta or polyproline
-			_prot->setDihedral(randchain,randres,sPhi+80,0,foldD);
-			_prot->setDihedral(randchain,randres,sPsi-80,1,foldD);
-			//_prot->setDihedral(randchain,randres+1,sPhi-20,0,foldD);
-			//_prot->setDihedral(randchain,randres+1,sPsi+20,1,foldD);
-		}
-		if (sPsi >= 60){
-			if (alphaBias < 1){
-				if (sPhi < -90) {  // flip beta to polyproline
-					_prot->setDihedral(randchain,randres,sPhi+90,0,foldD);
-				}
-				else{ // flip polyproline to beta
-					_prot->setDihedral(randchain,randres,sPhi-90,0,foldD);
-				}
-			}
-			else{_prot->setDihedral(randchain,randres,sPsi-180,1,foldD);} // flip beta or polyproline to alpha
-		}
-	}
-	outFile = "test.pdb";
-    pdbWriter(_prot, outFile);
-
-   /* PDBInterface* thePDB = new PDBInterface(inFile);
-    ensemble* theEnsemble = thePDB->getEnsemblePointer();
-    molecule* pMol = theEnsemble->getMoleculePointer(0);
-    protein* bundle = static_cast<protein*>(pMol);
-    for (UInt i = 0; i < bundle->getNumResidues(0); i++)
-    {
-        if (i != 0)
-        {
-            double phi = bundle->getPhi(0,i);
-            UInt restype = bundle->getTypeFromResNum(0,i);
-            if (phi > 0 && restype != dCf)
-            {
-                bundle->activateForRepacking(0, i);
-                bundle->mutateWBC(0,i,dR);
-            }
-            if (phi < 0 && restype != Cf)
-            {
-                bundle->activateForRepacking(0, i);
-                bundle->mutateWBC(0,i,R);
-            }
+            delete bundle;
         }
     }
-    outFile = "paaR.pdb";
-    pdbWriter(bundle, outFile);
-    delete bundle;*/
     return 0;
 }
 void buildHelixOligamer (protein* _prot, UInt numChains, bool antiParallel, double _radius, double _phase1, double _phase2, double _coil, double _offset)
@@ -730,7 +568,7 @@ void buildHelixOligamer (protein* _prot, UInt numChains, bool antiParallel, doub
         }
         rotation += rotationInterval;
     }
-    //_prot->coilcoil(_coil);
+    _prot->coilcoil(_coil);
     return;
 }
 

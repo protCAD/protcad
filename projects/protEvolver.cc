@@ -40,17 +40,18 @@ int main (int argc, char* argv[])
 		exit(1);
 	}
 
-	UInt _activeChains[] = {0};                                                         // chains active for mutation
-	UInt _allowedLResidues[] = {A,R,N,D,Q,E,I,L,K,F,P,S,T,W,Y,V,G};                     // amino acids allowed with phi < 0
-	UInt _allowedDResidues[] = {A,R,N,D,Q,E,I,L,K,F,P,S,T,W,Y,V,G};                     // amino acids allowed with phi > 0
-	UInt _activeResidues[] = {0,1,2,3,4,5,6,8,9,11,12,13,14,16,17,18,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,44,45,46,47,48,49,50,51,52,53,55,56,57,58};                                     // positions active for mutation
-	UInt _randomResidues[] = {0,1,2,3,4,5,6,8,9,11,12,13,14,16,17,18,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,44,45,46,47,48,49,50,51,52,53,55,56,57,58};                                     // positions active for a random start sequence initially
-	UInt _frozenResidues[] = {7,10,15,54,43,19,59,60};                                  // positions that cannot move at all
-	bool homoSymmetric = false;                                                         // if true all chains are structurally and sequentially symmetric to desired listed active chain above
-	bool backboneRelaxation = false;                                                                 // if true allow backrub relaxation in structural optimization
+  	UInt _activeChains[] = {0};                                                         // chains active for mutation
+	UInt _allowedLResidues[] = {A,N,Q,I,L,M,F,S,T,W,Y,V,G};                     // amino acids allowed with phi < 0
+	UInt _allowedDResidues[] = {A,N,Q,I,L,M,F,S,T,W,Y,V,G};                                                     // amino acids allowed with phi > 0
+	UInt _activeResidues[] = {3,4,6,9,10,13,16,19,20,23,27,30,31,33,35,36,39,40,41,42,44,45,55,56,58,60,61,62,68,69,73,78,79,82,83,85,88,89,90,93,94,96,97,100};                                     // positions active for mutation
+	UInt _randomResidues[] = {3,4,6,9,10,13,16,19,20,23,27,30,31,33,35,36,39,40,41,42,44,45,55,56,58,60,61,62,68,69,73,78,79,82,83,85,88,89,90,93,94,96,97,100};                                     // positions active for a random start sequence initially
+	UInt _frozenResidues[] = {8,43,63,91,102};                                  // positions that cannot move at all
+	bool homoSymmetric = false;                                                          // if true all chains are structurally and sequentially symmetric to desired listed active chain above
+	bool backboneRelaxation = false;                                                    // if true allow backrub relaxation in structural optimization
+
 
 	//--running parameters
-	residue::setCutoffDistance(6.0);
+    residue::setCutoffDistance(8.0);
 	residue::setTemperature(300);
 	residue::setElectroSolvationScaleFactor(1.0);
 	residue::setHydroSolvationScaleFactor(1.0);
@@ -71,7 +72,7 @@ int main (int argc, char* argv[])
 	//--set initial variables
 	srand (getpid());
 	double bestEnergy, pastEnergy, Energy;
-	UInt timeid, sec, mutant = 0, numResidues, plateau = 10, nobetter = 0;
+    UInt timeid, sec, mutant = 0, numResidues, startingClashes, plateau = 10, nobetter = 0;
 	vector < UInt > mutantPosition, chainSequence, sequencePosition, randomPosition;
 	vector < vector < UInt > > sequencePool, proteinSequence, finalSequence, possibleMutants;
 	vector < double > bindingEnergy;
@@ -104,6 +105,7 @@ int main (int argc, char* argv[])
 		createPossibleMutantsDatabase(startProt, activeChains, activeResidues, allowedLResidues, allowedDResidues, homoSymmetric);
 		possibleMutants = buildPossibleMutants();
 	}
+    startingClashes = startProt->getNumHardClashes();
 	delete thePDB;
 
 	//--Run multiple independent evolution cycles-----------------------------------------------------
@@ -207,7 +209,7 @@ int main (int argc, char* argv[])
 		molecule* modelMol = theModelEnsemble->getMoleculePointer(0);
 		protein* model = static_cast<protein*>(modelMol);
 
-		if (model->getNumHardClashes() == 0)
+        if (model->getNumHardClashes() <= startingClashes)
 		{
 			Energy = model->protEnergy();
 			sec = time(NULL);
