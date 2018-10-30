@@ -322,12 +322,12 @@ UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector 
 		threshold = (rand() % 100) + 1;
 		variance = (rand() % 100) + 1;
 		mutant = _possibleMutants[position][rand() % positionPossibles];
-		if (count >= 500){
-			entropy = 33;  // probablistically allow 10% random genetic drift once sequence pool is sufficiently large
-		}
-		else{
-			entropy = 100;  // 100% random sequences until sequence pool is built
-		}
+		//if (count >= 500){
+			entropy = 5;  // probablistically allow 10% random genetic drift once sequence pool is sufficiently large
+		//}
+		//else{
+			//entropy = 100;  // 100% random sequences until sequence pool is built
+		//}
 		if (variance > entropy) //control sequence entropy with probabilty
 		{
 			resFreqAccept = resFreqs[mutant];
