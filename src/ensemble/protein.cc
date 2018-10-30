@@ -2948,7 +2948,7 @@ void protein::protOpt(bool _backbone)
 	//_plateau: the number of consecutive optimization cycles without an energy decrease (default: 150 for general purpose optimization)
 
 	//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
-	UInt randchain, randres, randrestype, randrot, chainNum = getNumChains(), keep, nobetter = 0, _plateau = 400;
+	UInt randchain, randres, randrestype, randrot, chainNum = getNumChains(), keep, nobetter = 0, _plateau = 350;
 	double Energy, resE, medResE, pastEnergy = protEnergy(), sPhi, sPsi, energyBuffer = 0.05;
 	vector < vector <double> > currentRot; vector <UIntVec> allowedRots; srand (time(NULL));
 	int dihedralD;
@@ -3172,103 +3172,6 @@ void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 			}
 		}
 	} while (nobetter < _plateau * 1.2);
-	return;
-}
-
-void protein::protSampling()
-{
-	//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
-	UInt randchain, randres, totalres = 0, chainNum = getNumChains(), foldD, numres, type, GisL, alphaBias, startNumClashes = getNumHardClashes(), numClashes, sampled = 0;
-	double sPhi, sPsi;
-	
-	for (UInt i = 0; i < chainNum; i++)
-	{
-		totalres+= getNumResidues(i);
-	}
-	
-	//--Run optimizaiton loop to relative minima, determined by _plateau----------------------------
-	do
-	{   //--choose random residue
-		randchain = rand() % chainNum;
-		numres = getNumResidues(randchain);
-		randres = rand() % numres;
-	
-		//--Backbone sampling-----------------------------------------------------------------------
-		if (randres != 0 && randres != numres-1)
-		{
-			// Get angles and types from res
-			sPhi = getPhi(randchain,randres);
-			sPsi = getPsi(randchain,randres);
-			type = getTypeFromResNum(randchain,randres);
-			foldD = 0;
-	
-			// Correct D-amino acid handedness if needed
-			if (type > 26 && type < 53 && sPhi < 0){
-				setDihedral(randchain,randres,sPhi*-1,0,foldD);
-				setDihedral(randchain,randres,sPsi*-1,1,foldD);
-			}
-	
-			// Randomly flip glycine handedness
-			GisL = rand() % 2;
-			if (type == 26 && sPhi < 0 && GisL == 1){
-				setDihedral(randchain,randres,sPhi*-1,0,foldD);
-				setDihedral(randchain,randres,sPsi*-1,1,foldD);
-			}
-			if (type == 26 && sPhi > 0 && GisL == 0){
-				setDihedral(randchain,randres,sPhi*-1,0,foldD);
-				setDihedral(randchain,randres,sPsi*-1,1,foldD);
-			}
-	
-			//--flip secondary structure channels
-			
-			alphaBias = rand() % 4;
-			if (sPhi < 0) // right handed
-			{
-				if (sPsi < 60 && alphaBias < 1){  // flip alpha to beta or polyproline
-					setDihedral(randchain,randres,sPsi+180,1,foldD);
-				}
-				if (sPsi >= 60){
-					if (alphaBias < 1){
-						if (sPhi < -90) {  // flip beta to polyproline
-							setDihedral(randchain,randres,sPhi+90,0,foldD);
-						}
-						else{ // flip polyproline to beta
-							setDihedral(randchain,randres,sPhi-90,0,foldD);
-						}
-					}
-					else{setDihedral(randchain,randres,sPsi-180,1,foldD);} // flip beta or polyproline to alpha
-				}
-			}
-			else{  // left handed
-				if (sPsi > -60 && alphaBias < 1){  // flip alpha to beta or polyproline
-					setDihedral(randchain,randres,sPsi-180,1,foldD);
-				}
-				if (sPsi <= -60){
-					if (alphaBias < 1){
-						if (sPhi > 90) {  // flip beta to polyproline
-							setDihedral(randchain,randres,sPhi-90,0,foldD);
-						}
-						else{ // flip polyproline to beta
-							setDihedral(randchain,randres,sPhi+90,0,foldD);
-						}
-					}
-					else{setDihedral(randchain,randres,sPsi+180,1,foldD);} // flip beta or polyproline to alpha
-				}
-			}
-			
-			//--test for acceptable confirmation and if so optimize further
-			numClashes = getNumHardClashes();
-			if (numClashes <= startNumClashes)
-			{
-				sampled++;
-				protOpt(true);
-			}
-			else{
-				setDihedral(randchain,randres,sPhi,0,foldD);
-				setDihedral(randchain,randres,sPsi,1,foldD);
-			}
-		}
-	} while (sampled < totalres);
 	return;
 }
 

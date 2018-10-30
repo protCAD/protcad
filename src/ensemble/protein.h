@@ -199,7 +199,6 @@ public:
 	vector <double> protLigandBindingEnergy(UInt ligChainIndex, UInt ligResIndex);
 
 	//--Transformation functions
-	void protSampling();
 	double getBetaChi(UInt _chainIndex, UInt _residueIndex) {return itsChains[_chainIndex]->getBetaChi(_residueIndex); }
 	void setBetaChi(UInt _chainIndex, UInt _residueIndex, double _chi) {return itsChains[_chainIndex]->setBetaChi(_residueIndex, _chi); }
 	int setPhi(const UInt _chain, const UInt _res, double _angle);

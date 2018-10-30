@@ -604,7 +604,7 @@ int main (int argc, char* argv[])
            // if (bundle->getTypeFromResNum(0,i) == C)
            // {
 
-                /*if (i != 3)
+                if (i != 3)
                 {
 
                 }
@@ -624,8 +624,44 @@ int main (int argc, char* argv[])
     //outFile = "invmotif.pdb";
     //pdbWriter(bundle, outFile);
     //delete bundle;
-
+    
     PDBInterface* thePDB = new PDBInterface(inFile);
+    ensemble* theEnsemble = thePDB->getEnsemblePointer();
+    molecule* pMol = theEnsemble->getMoleculePointer(0);
+    protein* _prot = static_cast<protein*>(pMol);
+    
+    UInt alphaBias, randchain = 0, randres = 5, foldD = 0;
+    double sPhi, sPsi;
+    // Get angles and types from res
+	sPhi = _prot->getPhi(randchain,randres);
+	sPsi = _prot->getPsi(randchain,randres);
+
+	//--flip secondary structure channels
+	alphaBias = rand() % 2;
+	if (sPhi < 0) // right handed
+	{
+		if (sPsi < 60 && alphaBias < 1){  // flip alpha to beta or polyproline
+			_prot->setDihedral(randchain,randres,sPhi+80,0,foldD);
+			_prot->setDihedral(randchain,randres,sPsi-80,1,foldD);
+			//_prot->setDihedral(randchain,randres+1,sPhi-20,0,foldD);
+			//_prot->setDihedral(randchain,randres+1,sPsi+20,1,foldD);
+		}
+		if (sPsi >= 60){
+			if (alphaBias < 1){
+				if (sPhi < -90) {  // flip beta to polyproline
+					_prot->setDihedral(randchain,randres,sPhi+90,0,foldD);
+				}
+				else{ // flip polyproline to beta
+					_prot->setDihedral(randchain,randres,sPhi-90,0,foldD);
+				}
+			}
+			else{_prot->setDihedral(randchain,randres,sPsi-180,1,foldD);} // flip beta or polyproline to alpha
+		}
+	}
+	outFile = "test.pdb";
+    pdbWriter(_prot, outFile);
+
+   /* PDBInterface* thePDB = new PDBInterface(inFile);
     ensemble* theEnsemble = thePDB->getEnsemblePointer();
     molecule* pMol = theEnsemble->getMoleculePointer(0);
     protein* bundle = static_cast<protein*>(pMol);
@@ -649,7 +685,7 @@ int main (int argc, char* argv[])
     }
     outFile = "paaR.pdb";
     pdbWriter(bundle, outFile);
-    delete bundle;
+    delete bundle;*/
     return 0;
 }
 void buildHelixOligamer (protein* _prot, UInt numChains, bool antiParallel, double _radius, double _phase1, double _phase2, double _coil, double _offset)

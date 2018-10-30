@@ -293,9 +293,9 @@ vector <UInt> getMutationPosition(protein* _prot, UIntVec &_activeChains, UIntVe
 
 UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition, UIntVec &_activeResidues)
 {
-	float acceptance;
+	float acceptance, threshold;
 	vector <UInt> resFreqs(58,1);
-	UInt position, threshold, entropy, mutant, variance, resFreqAccept;
+	UInt position, entropy, mutant, variance, resFreqAccept;
 	UInt count = getSizeofPopulation();
 	UInt poolSize = _sequencePool.size();
 
@@ -322,12 +322,12 @@ UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector 
 		threshold = (rand() % 100) + 1;
 		variance = (rand() % 100) + 1;
 		mutant = _possibleMutants[position][rand() % positionPossibles];
-		//if (count >= 500){
+		if (count >= 500){
 			entropy = 5;  // probablistically allow 10% random genetic drift once sequence pool is sufficiently large
-		//}
-		//else{
-			//entropy = 100;  // 100% random sequences until sequence pool is built
-		//}
+		}
+		else{
+			entropy = 100;  // 100% random sequences until sequence pool is built
+		}
 		if (variance > entropy) //control sequence entropy with probabilty
 		{
 			resFreqAccept = resFreqs[mutant];
