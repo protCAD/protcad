@@ -3,9 +3,9 @@ N1	F1	D1	D2
 !sidechain branch points
 F1
 !connectivity
-N1	F1
-F1
-D1
+N1	F1	D1	D2
+F1	D1	D2
+D1	D2
 D2
 !defined dihedral angles
 !atom types
@@ -15,7 +15,7 @@ D2
 # column 4: SUMMA atom type
 # column 5: SUMMA environment type
 # column 6: six-atom solvation type
-N1		F1		FE		-		-		-
-F1		N1		Ni		-		-		-
-D1		D1		FE		-		-		-
-D2		D2		Ni		-		-		-
+N1		N1		N1		-		-		-
+F1		F1		FE		-		-		-
+D1		D1		D1		-		-		-
+D2		D1		D1		-		-		-
