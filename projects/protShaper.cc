@@ -19,8 +19,7 @@
 #include "ensemble.h"
 #include "PDBInterface.h"
 
-void buildAntiParallelBetaBarrel (protein* _prot, double _pitch);
-void buildHelixOligamer (protein* _prot, UInt numChains, bool antiParallel, double _radius, double _phase1, double _phase2, double _coil, double _offset);
+void buildSymmetricOligamer (protein* _prot, bool antiParallel, double _radius, double _coil, double _offset);
 double getBackboneHBondEnergy (protein* _prot);
 
 int main (int argc, char* argv[])
@@ -526,18 +525,19 @@ int main (int argc, char* argv[])
     }
     return 0;
 }
-void buildHelixOligamer (protein* _prot, UInt numChains, bool antiParallel, double _radius, double _phase1, double _phase2, double _coil, double _offset)
+void buildSymmetricOligamer (protein* _prot, bool antiParallel, double _radius, double _coil, double _offset)
 {
+	UInt numChains = _prot->getNumChains();
     double rotationInterval = 360/numChains;
     double rotation = 0.0;
     bool odd = false;
-    _prot->rotate(0,Z_axis,_phase1);
-    _prot->rotate(2,Z_axis,_phase1);
-    _prot->rotate(1,Z_axis,_phase2);
-    _prot->rotate(3,Z_axis,_phase2);
+	for (UInt i = 0; i < numChains; i++)
+	{
+		_prot->rotate(i,Z_axis,rotation);
+		rotation += rotationInterval;
+	}
 
-
-    if (antiParallel)
+	if (antiParallel)
     {
         for (UInt i = 0; i < numChains; i++)
         {
@@ -554,6 +554,7 @@ void buildHelixOligamer (protein* _prot, UInt numChains, bool antiParallel, doub
         odd = false;
     }
     _prot->translate(0.0, _radius, 0.0);
+	rotation = 0.0;
     for (UInt i = 0; i < numChains; i++)
     {
         _prot->rotate(i, Z_axis, rotation);
@@ -569,47 +570,6 @@ void buildHelixOligamer (protein* _prot, UInt numChains, bool antiParallel, doub
         rotation += rotationInterval;
     }
     _prot->coilcoil(_coil);
-    return;
-}
-
-void buildAntiParallelBetaBarrel (protein* _prot, double _pitch)
-{
-    UInt chainNum = _prot->getNumChains();
-    UInt resNum;
-    //double angle = 0.0, rot1 = 0.0, rot2 = 0.0;
-    double dist = 0.0;
-    //_prot->coilcoil(_pitch);
-    for (UInt i = 0; i < chainNum; i++)
-    {
-        //--mod structure
-        resNum = _prot->getNumResidues(i);
-        for (UInt j = 0; j < resNum; j++)
-        {
-            _prot->setDihedral(i, j, -135, 0, 0);
-            _prot->setDihedral(i, j, 135, 1, 0);
-        }
-
-        _prot->translateChain(i, 5, 2, dist);
-        //_prot->rotateChain(i, Z_axis, 60);
-        //_prot->rotateChain(i, Y_axis, 30);
-        //_prot->rotateChain(i, X_axis, 20);
-        //_prot->translateChain(i, cos(angle)*12, sin(angle)*12, dist);
-
-        /*--set params for next chain
-        if (rot1 == 0.0)
-        {
-            rot1 = 0.0;
-            rot2 = 0.0;
-        }
-        else
-        {
-            rot1 = 0.0;
-            rot2 = 0.0;
-        }
-        angle = angle+29.5;*/
-
-    }
-
     return;
 }
 
