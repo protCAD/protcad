@@ -1,12 +1,11 @@
 !main chain atoms
-N1	F1	D1	D2
+FN	NI	HX
 !sidechain branch points
-F1
+NI
 !connectivity
-N1	F1	D1	D2
-F1	D1	D2
-D1	D2
-D2
+FN	NI	HX
+NI	HX
+HX
 !defined dihedral angles
 !atom types
 # column 1: atom name
@@ -15,7 +14,6 @@ D2
 # column 4: SUMMA atom type
 # column 5: SUMMA environment type
 # column 6: six-atom solvation type
-N1		N1		N1		-		-		-
-F1		F1		FE		-		-		-
-D1		D1		D1		-		-		-
-D2		D1		D1		-		-		-
+FN		FN		FN		-		-		-
+NI		NI		NI		-		-		-
+HX		HX		HX		-		-		-

@@ -19,7 +19,7 @@
 #include "ensemble.h"
 #include "PDBInterface.h"
 
-void buildSymmetricOligamer (protein* _prot, bool antiParallel, double _radius, double _coil, double _offset);
+void buildSymmetricOligamer (protein* _prot, bool antiParallel, double _radius, double _coil, double _phaseoffset, double _offset);
 double getBackboneHBondEnergy (protein* _prot);
 
 int main (int argc, char* argv[])
@@ -38,7 +38,7 @@ int main (int argc, char* argv[])
 	residue::setTemperature(300);
 	residue::setElectroSolvationScaleFactor(0.0);
 	residue::setHydroSolvationScaleFactor(0.0);
-	amberElec::setScaleFactor(0.0);
+	amberElec::setScaleFactor(1.0);
 	amberVDW::setScaleFactor(1.0);
 	srand (time(NULL));
 
@@ -504,73 +504,89 @@ int main (int argc, char* argv[])
         phi=phi+4;
     }*/
     int count=0;
-    for (int r = 7; r < 10; r++)
-    {
-        for (int p = 60; p < 120; p++)
-        {
+    //for (int r = 4; r < 10; r++)
+    //{
+        //for (int p = 0; p < 360; p++)
+        //{
             count++;
+            double r = 4.5;
             PDBInterface* thePDB = new PDBInterface(inFile);
             ensemble* theEnsemble = thePDB->getEnsemblePointer();
             molecule* pMol = theEnsemble->getMoleculePointer(0);
             protein* bundle = static_cast<protein*>(pMol);
-            buildHelixOligamer (bundle, 4, true, r, 0, p, 180, 0);
-            cout << count << " " << r << " " << p << " " << bundle->protEnergy() << endl;
-            stringstream convert;
-            string countstr;
-            convert << count, countstr = convert.str();
-            outFile = countstr + ".pdb";
+            //buildSymmetricOligamer (bundle, true, r, 0, p, 0);
+            
+            for (UInt i = 0; i <bundle->getNumChains(); i++)
+			{
+				for (UInt j = 0; j <bundle->getNumResidues(i); j++)
+				{
+					bundle->setDihedral(i,j,-180,0,0);
+					bundle->setDihedral(i,j,180,1,0);
+				}
+			}
+            //cout << count << " " << r << " " << p << " " << bundle->protEnergy() << endl;
+            //stringstream convert;
+            //string countstr;
+            //convert << count, countstr = convert.str();
+            //outFile = countstr + "barrel.pdb";
+            outFile = "idealala6x6.pdb";
             pdbWriter(bundle, outFile);
             delete bundle;
-        }
-    }
+            //p = p+9;
+        //}
+    //}
     return 0;
 }
-void buildSymmetricOligamer (protein* _prot, bool antiParallel, double _radius, double _coil, double _offset)
+void buildSymmetricOligamer (protein* _prot, bool antiParallel, double _radius, double _coil, double _phaseoffset, double _offset)
 {
 	UInt numChains = _prot->getNumChains();
-    double rotationInterval = 360/numChains;
-    double rotation = 0.0;
-    bool odd = false;
+	double radial = 0.0;
+	double radialInterval = 360/numChains;
+	
+	//--sample phase offset starting point and fix as parallel or antiparallel
+	bool odd = false;
 	for (UInt i = 0; i < numChains; i++)
 	{
-		_prot->rotate(i,Z_axis,rotation);
-		rotation += rotationInterval;
+		_prot->rotate(i,Z_axis,_phaseoffset);
+		if (antiParallel)
+		{
+			if (odd)
+			{
+				_prot->rotate(i, Y_axis, 180);
+				_prot->rotate(i,Z_axis, 180);
+				odd = false;
+			}
+			else
+			{
+				odd = true;
+			}
+		}
 	}
-
-	if (antiParallel)
-    {
-        for (UInt i = 0; i < numChains; i++)
-        {
-            if (odd)
-            {
-                _prot->rotate(i, Y_axis, 180);
-                odd = false;
-            }
-            else
-            {
-                odd = true;
-            }
-        }
-        odd = false;
-    }
-    _prot->translate(0.0, _radius, 0.0);
-	rotation = 0.0;
-    for (UInt i = 0; i < numChains; i++)
-    {
-        _prot->rotate(i, Z_axis, rotation);
-        if (odd)
-        {
-            _prot->translate(i, 0.0, 0.0, _offset);
-            odd = false;
-        }
-        else
-        {
-            odd = true;
-        }
-        rotation += rotationInterval;
-    }
-    _prot->coilcoil(_coil);
-    return;
+	
+	//--translate off z and rotate each chain into position
+	odd = false;
+	_prot->translate(0.0, _radius, 0.0);
+	for (UInt i = 0; i < numChains; i++)
+	{
+		_prot->rotate(i, Z_axis, radial);
+		if (_offset != 0.0)
+		{
+			if (odd)
+			{
+				_prot->translate(i, 0.0, 0.0, _offset);
+				odd = false;
+			}
+			else
+			{
+				odd = true;
+			}
+		}
+		radial += radialInterval;
+	}
+	
+	//--supercoil oligamer
+	if (_coil != 0.0){_prot->coilcoil(_coil);}
+	return;
 }
 
 double getBackboneHBondEnergy (protein* _prot)
