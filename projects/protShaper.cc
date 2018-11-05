@@ -19,7 +19,7 @@
 #include "ensemble.h"
 #include "PDBInterface.h"
 
-void buildSymmetricOligamer (protein* _prot, bool antiParallel, double _radius, double _coil, double _phaseoffset, double _offset);
+void buildSymmetricOligamer (protein* _prot, bool antiParallel, double _radius, double _coil, double _phaseoffset1, double _phaseoffset2, double _offset);
 double getBackboneHBondEnergy (protein* _prot);
 
 int main (int argc, char* argv[])
@@ -503,41 +503,57 @@ int main (int argc, char* argv[])
         }
         phi=phi+4;
     }*/
+
+    /*PDBInterface* thePDB = new PDBInterface(inFile);
+    ensemble* theEnsemble = thePDB->getEnsemblePointer();
+    molecule* pMol = theEnsemble->getMoleculePointer(0);
+    protein* prot = static_cast<protein*>(pMol);
+
+    for (UInt i = 0; i < prot->getNumChains(); i++)
+    {
+        for (UInt j = 0; j < prot->getNumResidues(i); j++)
+        {
+            //prot->setDihedral(i,j,140,0,0);
+            //prot->setDihedral(i,j,-140,1,0);
+            //prot->mutateWBC(i,j,dV);
+            if (prot->getTypeFromResNum(i,j) == dV){
+               prot->mutateWBC(i,j,dA);
+            }
+            if (prot->getTypeFromResNum(i,j) == V){
+               prot->mutateWBC(i,j,A);
+            }
+
+        }
+    }
+    outFile = "idealdlala6x6_2.pdb";
+    pdbWriter(prot, outFile);*/
+    double radius;
     int count=0;
-    //for (int r = 4; r < 10; r++)
-    //{
-        //for (int p = 0; p < 360; p++)
-        //{
+    for (int d = 30; d < 90; d++)
+    {
+        radius = 4.5;//4.5+d*0.1;
+        for (int p = 290; p < 350; p++)
+        {
             count++;
-            double r = 4.5;
             PDBInterface* thePDB = new PDBInterface(inFile);
             ensemble* theEnsemble = thePDB->getEnsemblePointer();
             molecule* pMol = theEnsemble->getMoleculePointer(0);
             protein* bundle = static_cast<protein*>(pMol);
-            //buildSymmetricOligamer (bundle, true, r, 0, p, 0);
-            
-            for (UInt i = 0; i <bundle->getNumChains(); i++)
-			{
-				for (UInt j = 0; j <bundle->getNumResidues(i); j++)
-				{
-					bundle->setDihedral(i,j,-180,0,0);
-					bundle->setDihedral(i,j,180,1,0);
-				}
-			}
-            //cout << count << " " << r << " " << p << " " << bundle->protEnergy() << endl;
-            //stringstream convert;
-            //string countstr;
-            //convert << count, countstr = convert.str();
-            //outFile = countstr + "barrel.pdb";
-            outFile = "idealala6x6.pdb";
+            buildSymmetricOligamer (bundle, true, radius, 0, p, d, 0);
+            cout << count << " " << radius << " " << d << " " << p << " " << bundle->protEnergy() << endl;
+            stringstream convert;
+            string countstr;
+            convert << count, countstr = convert.str();
+            outFile = countstr + "barrel.pdb";
             pdbWriter(bundle, outFile);
             delete bundle;
-            //p = p+9;
-        //}
-    //}
+            //p=p+9;
+        }
+        //d=d+9;
+    }
     return 0;
 }
-void buildSymmetricOligamer (protein* _prot, bool antiParallel, double _radius, double _coil, double _phaseoffset, double _offset)
+void buildSymmetricOligamer (protein* _prot, bool antiParallel, double _radius, double _coil, double _phaseoffset1, double _phaseoffset2, double _offset)
 {
 	UInt numChains = _prot->getNumChains();
 	double radial = 0.0;
@@ -547,13 +563,12 @@ void buildSymmetricOligamer (protein* _prot, bool antiParallel, double _radius, 
 	bool odd = false;
 	for (UInt i = 0; i < numChains; i++)
 	{
-		_prot->rotate(i,Z_axis,_phaseoffset);
 		if (antiParallel)
 		{
 			if (odd)
 			{
 				_prot->rotate(i, Y_axis, 180);
-				_prot->rotate(i,Z_axis, 180);
+                _prot->rotate(i,Z_axis, _phaseoffset2);
 				odd = false;
 			}
 			else
@@ -561,6 +576,7 @@ void buildSymmetricOligamer (protein* _prot, bool antiParallel, double _radius, 
 				odd = true;
 			}
 		}
+        _prot->rotate(i,Z_axis, _phaseoffset1);
 	}
 	
 	//--translate off z and rotate each chain into position
