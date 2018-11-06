@@ -513,9 +513,28 @@ int main (int argc, char* argv[])
     {
         for (UInt j = 0; j < prot->getNumResidues(i); j++)
         {
-            //prot->setDihedral(i,j,140,0,0);
-            //prot->setDihedral(i,j,-140,1,0);
-            //prot->mutateWBC(i,j,dV);
+			vector<vector<double>> rot = prot->getSidechainDihedrals(1,6);
+			prot->setDihedral(0,5,47,1,0);
+            prot->setDihedral(0,6,57,0,0);
+            prot->mutateWBC(0,6,dN);
+            prot->setSidechainDihedralAngles(0,6,rot);
+            prot->setDihedral(2,5,47,1,0);
+            prot->setDihedral(2,6,57,0,0);
+            prot->mutateWBC(2,6,dN);
+            prot->setSidechainDihedralAngles(2,6,rot);
+            prot->setDihedral(4,5,47,1,0);
+            prot->setDihedral(4,6,57,0,0);
+            prot->mutateWBC(4,6,dN);
+            prot->setSidechainDihedralAngles(4,6,rot);
+            prot->mutateWBC(0,1,dK);
+            prot->mutateWBC(0,3,dK);
+            prot->mutateWBC(0,5,dK);
+            prot->mutateWBC(2,1,dK);
+            prot->mutateWBC(2,3,dK);
+            prot->mutateWBC(2,5,dK);
+            prot->mutateWBC(4,1,dK);
+            prot->mutateWBC(4,3,dK);
+            prot->mutateWBC(4,5,dK);
             if (prot->getTypeFromResNum(i,j) == dV){
                prot->mutateWBC(i,j,dA);
             }
@@ -525,14 +544,14 @@ int main (int argc, char* argv[])
 
         }
     }
-    outFile = "idealdlala6x6_2.pdb";
+    outFile = "346barrel_NloopsK.pdb";
     pdbWriter(prot, outFile);*/
     double radius;
     int count=0;
-    for (int d = 30; d < 90; d++)
+    for (int d = 220; d < 260; d++)
     {
-        radius = 4.5;//4.5+d*0.1;
-        for (int p = 290; p < 350; p++)
+        radius = 6;//4.5+d*0.1;
+        for (int p = 190; p < 230; p++)
         {
             count++;
             PDBInterface* thePDB = new PDBInterface(inFile);
@@ -544,12 +563,12 @@ int main (int argc, char* argv[])
             stringstream convert;
             string countstr;
             convert << count, countstr = convert.str();
-            outFile = countstr + "barrel.pdb";
+            outFile = countstr + "8barrel.pdb";
             pdbWriter(bundle, outFile);
             delete bundle;
             //p=p+9;
         }
-        //d=d+9;
+       //d=d+9;
     }
     return 0;
 }
