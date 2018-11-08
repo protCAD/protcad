@@ -1618,7 +1618,7 @@ UInt chain::getNumHardClashes()
 	UInt numClashes = 0;
 	for (UInt i = 0; i < itsResidues.size(); i ++)
 	{
-		numClashes += itsResidues[i]->getNumHardClashes();
+		//numClashes += itsResidues[i]->getNumHardClashes();
 		for (UInt j = i + 1; j < itsResidues.size(); j ++)
 		{
 			numClashes += itsResidues[i]->getNumHardClashes(itsResidues[j]);
