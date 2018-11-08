@@ -3088,7 +3088,7 @@ void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 		//--Backslide optimization-----------------------------------------------------------------------
 		if (nobetter > _plateau && _backbone)
 		{
-			resE = resEnergy(randchain, randres), medResE = getMedianResEnergy();
+			resE = resEnergy(randchain, randres), medResE = getMedianResEnergy(_activeChains);
 			if (resE > medResE)
 			{
 				//--transform angle while energy improves, until energy degrades, then revert one step

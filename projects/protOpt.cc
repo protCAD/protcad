@@ -26,7 +26,7 @@ int main (int argc, char* argv[])
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* _prot = static_cast<protein*>(pMol);
     bool homosymmetric = false;
-    bool backbone = false;
+    bool backbone = true;
 
     UInt _frozenResidues[] = {};
     UInt _activeChains[] = {0};
@@ -46,7 +46,8 @@ int main (int argc, char* argv[])
         {_prot->symmetryLinkChainAtoB(activeChains[0],i);}
     }
     cout << "start: " << _prot->protEnergy() << " kcal/mol" << endl;
-    _prot->protOpt(backbone,frozenResidues,activeChains);
+    //_prot->protOpt(backbone,frozenResidues,activeChains);
+    _prot->protOpt(backbone);
     cout << "end: " << _prot->protEnergy() << " kcal/mol" << endl;
 	pdbWriter(_prot, outFile);
 
