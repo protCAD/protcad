@@ -191,8 +191,6 @@ public:
 	double getAmide(const UInt _indexInChain);
 	int setPhi(const UInt _indexInChain, double _phi);
 	int setPsi(const UInt _indexInChain, double _psi);
-	int setAngleLocal(const UInt _index, double _angle, double deltaTheta, UInt angleType, int distance, int direction);
-	int setDihedralLocal(const UInt _resIndex, double _deltaTheta, UInt _angleType);
 	int setDihedral(const UInt _resIndex, double _dihedral, UInt _angleType, UInt _direction);
 	double getDielectric(UInt _resIndex, UInt _atomIndex) {return itsResidues[_resIndex]->itsAtoms[_atomIndex]->getDielectric();}
 	double intraEnergy();
@@ -203,9 +201,6 @@ public:
 	double interSoluteEnergy(chain* _other);
 	double getInterEnergy(const UInt _res1, chain* _other, const UInt _res2);
 	double getInterEnergy(const UInt _residue1, const UInt _atom1, chain* _other, const UInt _residue2, const UInt _atom2);
-
-	double BBEnergy();
-
 	double getSelfEnergy(UInt _residueIndex);
 
 	double getPositionIntraEnergy(vector<int> _position);

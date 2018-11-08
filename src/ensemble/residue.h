@@ -136,8 +136,6 @@ public:
 	void setOmega(double _omega);
 	int setPhi(double _phi);
 	int setPsi(double _psi);
-	int setAngleLocal(double _angle, double deltaAngle, UInt angleType, int distance, int direction);
-	int setDihedralLocal(double _deltaTheta, UInt _angleType);
 	int setDihedral(double _dihedral, UInt _angleType, UInt _direction);
 	void setRotamer(const UInt _lib, const UInt _bpt, const UInt _rotamer);
 	void setRotamer(const UInt _bpt, const DouVec _chis);
@@ -211,9 +209,7 @@ public:
 	void rotate(const point& _point, const dblMat& _RMatrix);
 	void rotate(UInt _first, UInt _second,const double _theta);
 	void rotate(atom* _pAtom1, atom* _pAtom2, const double _theta, bool backboneRotation);
-	void rotateLocal(atom* _pAtom1, atom* _pAtom2, const double _theta, double deltaTheta, int distance, int direction);
-	void rotateDihedralLocal(atom* _pAtom1, atom* _pAtom2, double _deltaTheta, UInt _direction);
-	void rotateDihedral(atom* _pAtom1, atom* _pAtom2, double _deltaTheta, UInt _direction);
+	void rotateDihedral(atom* _pAtom1, atom* _pAtom2, double _deltaTheta,  UInt _angleType, UInt _direction);
 	void rotate(atom* _pAtom1, const dblVec& _R_axis, const double _theta);
 	void rotate(const point& _point, const dblVec& _R_axis, const double _theta);
 	void rotate_new(atom* _pivotAtom, const dblMat& _RMatrix);

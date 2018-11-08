@@ -82,7 +82,7 @@ UInt protSampling(protein* _prot)
 			sPhi = _prot->getPhi(randchain,randres);
 			sPsi = _prot->getPsi(randchain,randres);
 			type = _prot->getTypeFromResNum(randchain,randres);
-			foldD = 0;
+			foldD = rand() % 2;
 	
 			// Correct D-amino acid handedness if needed
 			if (type > 26 && type < 53 && sPhi < 0){

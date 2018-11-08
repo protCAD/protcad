@@ -1573,32 +1573,6 @@ int chain::setPhi(const UInt _index, double _phi)
 	}
 }
 
-int chain::setAngleLocal(const UInt _index, double _angle, double deltaTheta, UInt angleType, int distance, int direction)
-{
-	if (_index < itsResidues.size())
-	{
-		return itsResidues[_index]->setAngleLocal(_angle, deltaTheta, angleType, distance, direction);
-	}
-	else
-	{
-		cout << "Residue index out of range: " << _index << endl;
-		return -1;
-	}
-}
-
-int chain::setDihedralLocal(const UInt _resIndex, double _deltaTheta, UInt _angleType)
-{
-	if (_resIndex < itsResidues.size())
-	{
-		return itsResidues[_resIndex]->setDihedralLocal(_deltaTheta, _angleType);
-	}
-	else
-	{
-		cout << "Residue index out of range: " << _resIndex << endl;
-		return -1;
-	}
-}
-
 int chain::setDihedral(const UInt _resIndex, double _dihedral, UInt _angleType, UInt _direction)
 {
 	if (_resIndex < itsResidues.size())
@@ -1816,17 +1790,6 @@ double chain::getPositionIntraSoluteEnergy(UInt _residueIndex)
 		}
 	}
 	return intraEnergy;
-}
-
-double chain::BBEnergy()
-{
-	double energy = 0.0;
-	for (UInt i = 0; i < itsResidues.size()-1; i ++)
-	{
-		energy += itsResidues[i]->BBEnergy();
-		energy += itsResidues[i]->BBEnergy(itsResidues[i+1]);
-	}
-	return energy;
 }
 
 double chain::interEnergy(chain* _other)

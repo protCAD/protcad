@@ -195,7 +195,6 @@ public:
 	double getPositionEnergy(UInt _chainIndex, UInt _residueIndex);
 	double getPositionSoluteEnergy(UInt _chainIndex, UInt _residueIndex, bool _updateDielectrics);
 	double getSelfEnergy(UInt _chainIndex, UInt _residueIndex);
-	double BBEnergy();
 	vector <double> protLigandBindingEnergy(UInt ligChainIndex, UInt ligResIndex);
 
 	//--Transformation functions
@@ -203,8 +202,6 @@ public:
 	void setBetaChi(UInt _chainIndex, UInt _residueIndex, double _chi) {return itsChains[_chainIndex]->setBetaChi(_residueIndex, _chi); }
 	int setPhi(const UInt _chain, const UInt _res, double _angle);
 	int setPsi(const UInt _chain, const UInt _res, double _angle);
-	int setAngleLocal(const UInt _chain, const UInt _res, double _angle, double deltaTheta, UInt angleType, int distance, int direction);
-	int setDihedralLocal(const UInt _chainIndex, const UInt _resIndex, double _deltaTheta, UInt _angleType);
 	int setDihedral(const UInt _chainIndex, const UInt _resIndex, double _dihedral, UInt _angleType, UInt _direction);
 	double getPhi(UInt _chain, UInt _res) {return itsChains[_chain]->getPhi(_res);}
 	double getPsi(UInt _chain, UInt _res) {return itsChains[_chain]->getPsi(_res);}

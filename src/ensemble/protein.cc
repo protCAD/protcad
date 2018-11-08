@@ -1077,32 +1077,6 @@ int protein::setPsi(const UInt _chain, const UInt _res, double _psi)
 	}
 }
 
-int protein::setAngleLocal(const UInt _chain, const UInt _res, double _angle, double deltaTheta, UInt angleType, int distance, int direction)
-{
-	if (_chain < itsChains.size())
-	{
-		return itsChains[_chain]->setAngleLocal(_res, _angle, deltaTheta, angleType, distance, direction);
-	}
-	else
-	{
-		cout << "chain index out of range" << endl;
-		return -1;
-	}
-}
-
-int protein::setDihedralLocal(const UInt _chainIndex, const UInt _resIndex, double _deltaTheta, UInt _angleType)
-{
-	if (_chainIndex < itsChains.size())
-	{
-		return itsChains[_chainIndex]->setDihedralLocal(_resIndex, _deltaTheta, _angleType);
-	}
-	else
-	{
-		cout << "chain index out of range" << endl;
-		return -1;
-	}
-}
-
 int protein::setDihedral(const UInt _chainIndex, const UInt _resIndex, double _dihedral, UInt _angleType, UInt _direction)
 {
 	if (_chainIndex < itsChains.size())
@@ -1750,16 +1724,6 @@ vector <double> protein::protLigandBindingEnergy(UInt ligChainIndex, UInt ligRes
 }
 
 //-/////////////////////////////////////////////////////////////////////////////
-
-double protein::BBEnergy()
-{
-	double energy = 0.0;
-	for (UInt i = 0; i < itsChains.size(); i ++)
-	{
-		energy += itsChains[i]->BBEnergy();
-	}
-	return energy;
-}
 
 vector <double> protein::chainBindingEnergy()
 {
@@ -2948,7 +2912,7 @@ void protein::protOpt(bool _backbone)
 	//_plateau: the number of consecutive optimization cycles without an energy decrease (default: 150 for general purpose optimization)
 
 	//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
-	UInt randchain, randres, randrestype, randrot, chainNum = getNumChains(), keep, nobetter = 0, _plateau = 350;
+	UInt randchain, randres, randrestype, randrot, chainNum = getNumChains(), keep, foldD, nobetter = 0, _plateau = 350;
 	double Energy, resE, medResE, pastEnergy = protEnergy(), sPhi, sPsi, energyBuffer = 0.05;
 	vector < vector <double> > currentRot; vector <UIntVec> allowedRots; srand (time(NULL));
 	int dihedralD;
@@ -2961,7 +2925,7 @@ void protein::protOpt(bool _backbone)
 		randrestype = getTypeFromResNum(randchain, randres);
 		nobetter++;
 
-		//--Backrub optimization-----------------------------------------------------------------------
+		//--Backslide optimization-----------------------------------------------------------------------
 		if (nobetter > _plateau && _backbone)
 		{
 			resE = resEnergy(randchain, randres), medResE = getMedianResEnergy();
@@ -2969,13 +2933,14 @@ void protein::protOpt(bool _backbone)
 			{
 				//--transform angle while energy improves, until energy degrades, then revert one step
 				do{dihedralD = (rand() % 3)-1;}while(dihedralD == 0);
+				foldD = rand() % 2;
 				do
 				{
 					keep = 0;
 					sPhi = getPhi(randchain,randres);
 					sPsi = getPsi(randchain,randres);
-					setDihedral(randchain,randres,sPhi+dihedralD,0,0);
-					setDihedral(randchain,randres,sPsi-dihedralD,1,0);
+					setDihedral(randchain,randres,sPhi+dihedralD,0,foldD);
+					setDihedral(randchain,randres,sPsi-dihedralD,1,foldD);
 					Energy = protEnergy();
 					if (Energy < pastEnergy-energyBuffer)
 					{
@@ -2983,8 +2948,8 @@ void protein::protOpt(bool _backbone)
 						nobetter = 0, keep = 1;
 					}
 				} while (keep == 1);
-				setDihedral(randchain,randres,sPhi,0,0);
-				setDihedral(randchain,randres,sPsi,1,0);
+				setDihedral(randchain,randres,sPhi,0,foldD);
+				setDihedral(randchain,randres,sPsi,1,foldD);
 			}
 		}
 
@@ -3023,8 +2988,8 @@ void protein::protOpt(bool _backbone)
 	//_plateau: the number of consecutive optimization cycles without an energy decrease (default: 150 for general purpose optimization)
 
 	//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
-	UInt randchain, randres, randrestype, randrot, chainNum = getNumChains(), keep, nobetter = 0, _plateau = 400;
-	double Energy, resE, medResE, startClahses = getNumHardClashes(), sPhi, sPsi, energyBuffer = 0.05;
+	UInt randchain, randres, randrestype, randrot, chainNum = getNumChains(), keep, foldD, nobetter = 0, _plateau = 350;
+	double Energy, resE, medResE, pastEnergy = protEnergy(), sPhi, sPsi, energyBuffer = 0.05;
 	vector < vector <double> > currentRot; vector <UIntVec> allowedRots; srand (time(NULL));
 	int dihedralD;
 
@@ -3036,7 +3001,7 @@ void protein::protOpt(bool _backbone)
 		randrestype = getTypeFromResNum(randchain, randres);
 		nobetter++;
 
-		//--Backrub optimization-----------------------------------------------------------------------
+		//--Backslide optimization-----------------------------------------------------------------------
 		if (nobetter > _plateau && _backbone)
 		{
 			resE = resEnergy(randchain, randres), medResE = getMedianResEnergy();
@@ -3044,13 +3009,14 @@ void protein::protOpt(bool _backbone)
 			{
 				//--transform angle while energy improves, until energy degrades, then revert one step
 				do{dihedralD = (rand() % 3)-1;}while(dihedralD == 0);
+				foldD = rand() % 2;
 				do
 				{
 					keep = 0;
 					sPhi = getPhi(randchain,randres);
 					sPsi = getPsi(randchain,randres);
-					setDihedral(randchain,randres,sPhi+dihedralD,0,0);
-					setDihedral(randchain,randres,sPsi-dihedralD,1,0);
+					setDihedral(randchain,randres,sPhi+dihedralD,0,foldD);
+					setDihedral(randchain,randres,sPsi-dihedralD,1,foldD);
 					Energy = protEnergy();
 					if (Energy < pastEnergy-energyBuffer)
 					{
@@ -3058,8 +3024,8 @@ void protein::protOpt(bool _backbone)
 						nobetter = 0, keep = 1;
 					}
 				} while (keep == 1);
-				setDihedral(randchain,randres,sPhi,0,0);
-				setDihedral(randchain,randres,sPsi,1,0);
+				setDihedral(randchain,randres,sPhi,0,foldD);
+				setDihedral(randchain,randres,sPsi,1,foldD);
 			}
 		}
 
@@ -3098,10 +3064,11 @@ void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 	//_plateau: the number of consecutive optimization cycles without an energy decrease (default: 150 for general purpose optimization)
 
 	//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
-	UInt randchain, randres, randrestype, randrot, chainNum = _activeChains.size(), keep, nobetter = 0, _plateau = 400;
-	double deltaTheta = 0, Energy, resE, medResE, pastEnergy = protEnergy(), currentBetaChi, energyBuffer = 0.05;
+	UInt randchain, randres, randrestype, randrot, chainNum = _activeChains.size(), keep, foldD, nobetter = 0, _plateau = 400;
+	double Energy, resE, medResE, pastEnergy = protEnergy(), sPhi, sPsi, energyBuffer = 0.05;
 	vector < vector <double> > currentRot; vector <UIntVec> allowedRots; srand (time(NULL));
 	bool skip;
+	int dihedralD;
 
 	//--Run optimizaiton loop to relative minima, determined by _plateau----------------------------
 	do
@@ -3118,30 +3085,31 @@ void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 		randrestype = getTypeFromResNum(randchain, randres);
 		nobetter++;
 
-		//--Backrub optimization-----------------------------------------------------------------------
+		//--Backslide optimization-----------------------------------------------------------------------
 		if (nobetter > _plateau && _backbone)
 		{
-			resE = resEnergy(randchain, randres), medResE = getMedianResEnergy(_activeChains);
+			resE = resEnergy(randchain, randres), medResE = getMedianResEnergy();
 			if (resE > medResE)
 			{
-				//--randomly choose degree change (-1 or +1) of backrub dihedral (Ca-Cb angle)
-				do
-				{ deltaTheta = ((rand() % 3) -1);
-				} while (deltaTheta == 0);
-
 				//--transform angle while energy improves, until energy degrades, then revert one step
+				do{dihedralD = (rand() % 3)-1;}while(dihedralD == 0);
+				foldD = rand() % 2;
 				do
 				{
 					keep = 0;
-					currentBetaChi = getBetaChi(randchain, randres);
-					setBetaChi(randchain, randres, deltaTheta+currentBetaChi);
+					sPhi = getPhi(randchain,randres);
+					sPsi = getPsi(randchain,randres);
+					setDihedral(randchain,randres,sPhi+dihedralD,0,foldD);
+					setDihedral(randchain,randres,sPsi-dihedralD,1,foldD);
 					Energy = protEnergy();
-					if (Energy < (pastEnergy-energyBuffer))
+					if (Energy < pastEnergy-energyBuffer)
 					{
-						nobetter = 0, keep = 1, pastEnergy = Energy;
+						pastEnergy = Energy;
+						nobetter = 0, keep = 1;
 					}
 				} while (keep == 1);
-				setBetaChi(randchain, randres, currentBetaChi);
+				setDihedral(randchain,randres,sPhi,0,foldD);
+				setDihedral(randchain,randres,sPsi,1,foldD);
 			}
 		}
 

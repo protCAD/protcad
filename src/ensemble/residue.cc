@@ -1902,99 +1902,6 @@ int residue::setPsi(double _psi)
 	return 0;
 }
 
-int residue::setAngleLocal(double _angle, double deltaTheta, UInt angleType, int distance, int direction)
-{
-	if (direction == 0)//NtoC
-	{
-		if (angleType == 0) //phi
-		{
-			if (pItsPrevRes != 0)
-			{
-				rotateLocal(getMainChain(0), getMainChain(1), deltaTheta, _angle, distance, direction);
-			}
-			else
-			{
-				//cout << "Cannot set PHI for the first amino acid in a chain." << endl;
-				return -1;
-			}
-		}
-		if (angleType == 1) //psi
-		{
-			if (pItsNextRes != 0)
-			{
-				UInt i = dataBase[itsType].mainChain.size()-1;
-				rotateLocal(getMainChain(i-2), getMainChain(i-1), deltaTheta, _angle, distance, direction);
-			}
-			else
-			{
-				//cout << "Cannot set PSI for the last amino acid in a chain." << endl;
-				return -1;
-			}
-		}
-	}
-	if (direction == 1)//CtoN
-	{
-		if (angleType == 0) //phi
-		{
-			if (pItsPrevRes != 0)
-			{
-				rotateLocal(getMainChain(1), getMainChain(0), deltaTheta, _angle, distance, direction);
-			}
-			else
-			{
-				//cout << "Cannot set PHI for the first amino acid in a chain." << endl;
-				return -1;
-			}
-		}
-		if (angleType == 1) //psi
-		{
-			if (pItsNextRes != 0)
-			{
-				UInt i = dataBase[itsType].mainChain.size()-1;
-				rotateLocal(getMainChain(i-1), getMainChain(i-2), deltaTheta, _angle, distance, direction);
-			}
-			else
-			{
-				//cout << "Cannot set PSI for the last amino acid in a chain." << endl;
-				return -1;
-			}
-		}
-	}
-	return 0;
-}
-
-int residue::setDihedralLocal(double _deltaTheta, UInt _angleType)
-{
-	if (_angleType == 0) //phi
-	{
-		if (pItsPrevRes != 0)
-		{
-			rotateDihedralLocal(getMainChain(0), getMainChain(1), _deltaTheta, 0); //NtoC
-			rotateDihedralLocal(getMainChain(1), getMainChain(0), _deltaTheta, 1); //CtoN
-		}
-		else
-		{
-			//cout << "Cannot set PHI for the first amino acid in a chain." << endl;
-			return -1;
-		}
-	}
-	if (_angleType == 1) //psi
-	{
-		if (pItsNextRes != 0)
-		{
-			UInt i = dataBase[itsType].mainChain.size()-1;
-			rotateDihedralLocal(getMainChain(i-2), getMainChain(i-1), _deltaTheta, 0); //NtoC
-			rotateDihedralLocal(getMainChain(i-1), getMainChain(i-2), _deltaTheta, 1); //CtoN
-		}
-		else
-		{
-			//cout << "Cannot set PSI for the last amino acid in a chain." << endl;
-			return -1;
-		}
-	}
-	return 0;
-}
-
 int residue::setDihedral(double _dihedral, UInt _angleType, UInt _direction)
 {
 	if (_angleType == 0) //phi
@@ -2006,11 +1913,11 @@ int residue::setDihedral(double _dihedral, UInt _angleType, UInt _direction)
 			double deltaTheta = _dihedral - currentPhi;
 			if (_direction == 0)
 			{
-				rotateDihedral(getMainChain(0), getMainChain(1), deltaTheta, 0); //NtoC
+				rotateDihedral(getMainChain(0), getMainChain(1), deltaTheta, _angleType, _direction); //NtoC
 			}
 			if (_direction == 1)
 			{
-				rotateDihedral(getMainChain(1), getMainChain(0), deltaTheta, 1); //CtoN
+				rotateDihedral(getMainChain(1), getMainChain(0), deltaTheta, _angleType, _direction); //CtoN
 			}
 		}
 		else
@@ -2029,11 +1936,11 @@ int residue::setDihedral(double _dihedral, UInt _angleType, UInt _direction)
 			UInt i = dataBase[itsType].mainChain.size()-1;
 			if (_direction == 0)
 			{
-				rotateDihedral(getMainChain(i-2), getMainChain(i-1), deltaTheta, 0); //NtoC
+				rotateDihedral(getMainChain(i-2), getMainChain(i-1), deltaTheta, _angleType, _direction); //NtoC
 			}
 			if (_direction == 1)				
 			{
-				rotateDihedral(getMainChain(i-1), getMainChain(i-2), deltaTheta, 1); //CtoN
+				rotateDihedral(getMainChain(i-1), getMainChain(i-2), deltaTheta, _angleType, _direction); //CtoN
 			}
 		}
 		else
@@ -2195,251 +2102,65 @@ void residue::rotate(UInt _first, UInt _second, double _theta)
 
 }
 
-
-//--Perform rotation with local transform
-void residue::rotateLocal(atom* _pAtom1, atom* _pAtom2, double deltaTheta, double _theta, int distance, int direction)
+void residue::rotateDihedral(atom* _pAtom1, atom* _pAtom2, double _deltaTheta,  UInt _angleType, UInt _direction)
 {
-	#ifdef __RES_DEBUG
-	_pAtom2->queryChildrensCoords();
-	#endif
+	setMoved(1);
 	dblVec toOrigin = _pAtom1->getCoords() * (-1.0);
 	dblVec backHome = _pAtom1->getCoords();
-
-	_pAtom1->translate(toOrigin);
-	_pAtom2->translate(toOrigin);
-	_pAtom2->translateChildren(toOrigin);
-
-	if (direction == 0)
-	{	
-		if (pItsNextRes)
-		{	pItsNextRes->recursiveTranslateLocal(toOrigin, direction);
-		}
-	}
-	if (direction == 1)
-	{
-		if (pItsPrevRes)
-		{	pItsPrevRes->recursiveTranslateLocal(toOrigin, direction);
-		}
-	}
-	#ifdef __RES_DEBUG
-	_pAtom2->queryChildrensCoords();
-	#endif
-	dblVec atomCoords = _pAtom2->getCoords();
-	dblMat R(3,3,0.0);
-	R = CMath::rotationMatrix(atomCoords, deltaTheta);
-	if (direction == 0)
-	{
-		_pAtom2->transformChildren(R);
-	}
-	if (distance == 0)
-	{
-		if (direction == 0)
-		{
-		
-			if (pItsNextRes)
-			{	
-				pItsNextRes->recursiveTransformLocal(atomCoords, deltaTheta, direction);
-			}
-		}
-		if (direction == 1)
-		{
-			if (pItsPrevRes)
-			{	
-				pItsPrevRes->recursiveTransformLocal(atomCoords, deltaTheta, direction);
-			}
-		}
-	}
-	if (distance == 1)
-	{
-		if (direction == 0)
-		{
-			if (pItsNextRes)
-			{	
-				pItsNextRes->recursiveTransform(R);
-			}
-		}
-		if (direction == 1)
-		{
-			if (pItsPrevRes)
-			{	
-				pItsPrevRes->recursiveTransformR(R);
-			}
-		}
-	}
-	#ifdef __RES_DEBUG
-	_pAtom2->queryChildrensCoords();
-	#endif
-	_pAtom1->translate(backHome);
-	_pAtom2->translate(backHome);
-	_pAtom2->translateChildren(backHome);
-
-	if (direction == 0)
-	{	
-		if (pItsNextRes)
-		{	pItsNextRes->recursiveTranslateLocal(backHome, direction);
-		}
-	}
-	if (direction == 1)
-	{
-		if (pItsPrevRes)
-		{	pItsPrevRes->recursiveTranslateLocal(backHome, direction);
-		}
-	}
-	#ifdef __RES_DEBUG
-	_pAtom2->queryChildrensCoords();
-	#endif
-
-}
-
-void residue::rotateDihedralLocal(atom* _pAtom1, atom* _pAtom2, double _deltaTheta, UInt _direction)
-{
-	#ifdef __RES_DEBUG
-	_pAtom2->queryChildrensCoords();
-	#endif
-	dblVec toOrigin = _pAtom1->getCoords() * (-1.0);
-	dblVec backHome = _pAtom1->getCoords();
-
-	_pAtom1->translate(toOrigin);
-	_pAtom2->translate(toOrigin);
-	_pAtom2->translateChildren(toOrigin);
 
 	if (_direction == 0)
 	{	
+		_pAtom1->translate(toOrigin);
+		_pAtom2->translate(toOrigin);
+		_pAtom2->translateChildren(toOrigin);
 		if (pItsNextRes)
 		{	pItsNextRes->recursiveTranslateWithDirection(toOrigin, _direction);
 		}
 	}
 	if (_direction == 1)
 	{
-		if (pItsPrevRes)
-		{	pItsPrevRes->recursiveTranslateWithDirection(toOrigin, _direction);
-		}
+		recursiveTranslateWithDirection(toOrigin, _direction);
 	}
-	#ifdef __RES_DEBUG
-	_pAtom2->queryChildrensCoords();
-	#endif
+	
 	dblVec atomCoords = _pAtom2->getCoords();
 	dblMat R(3,3,0.0);
 	R = CMath::rotationMatrix(atomCoords, _deltaTheta);
+	
 	if (_direction == 0)
-	{
-		_pAtom2->transformChildren(R);
-	}
-	if (_direction == 0)
-	{
-		if (pItsNextRes)
-		{	
-			pItsNextRes->recursiveTransformLocal(atomCoords, _deltaTheta, _direction);
-		}
-	}
-	if (_direction == 1)
-	{
-		if (pItsPrevRes)
-		{	
-			pItsPrevRes->recursiveTransformLocal(atomCoords, _deltaTheta, _direction);
-		}
-	}
-	#ifdef __RES_DEBUG
-	_pAtom2->queryChildrensCoords();
-	#endif
-	_pAtom1->translate(backHome);
-	_pAtom2->translate(backHome);
-	_pAtom2->translateChildren(backHome);
-
-	if (_direction == 0)
-	{	
-		if (pItsNextRes)
-		{	pItsNextRes->recursiveTranslateWithDirection(backHome, _direction);
-		}
-	}
-	if (_direction == 1)
-	{
-		if (pItsPrevRes)
-		{	pItsPrevRes->recursiveTranslateWithDirection(backHome, _direction);
-		}
-	}
-	#ifdef __RES_DEBUG
-	_pAtom2->queryChildrensCoords();
-	#endif
-
-}
-
-void residue::rotateDihedral(atom* _pAtom1, atom* _pAtom2, double _deltaTheta, UInt _direction)
-{
-    setMoved(1);
-	#ifdef __RES_DEBUG
-	_pAtom2->queryChildrensCoords();
-	#endif
-	dblVec toOrigin = _pAtom1->getCoords() * (-1.0);
-	dblVec backHome = _pAtom1->getCoords();
-
-	_pAtom1->translate(toOrigin);
-	_pAtom2->translate(toOrigin);
-	_pAtom2->translateChildren(toOrigin);
-
-	if (_direction == 0)
-	{	
-		if (pItsNextRes)
-		{	pItsNextRes->recursiveTranslateWithDirection(toOrigin, _direction);
-		}
-	}
-	if (_direction == 1)
-	{
-		if (pItsPrevRes)
-		{	pItsPrevRes->recursiveTranslateWithDirection(toOrigin, _direction);
-		}
-	}
-	#ifdef __RES_DEBUG
-	_pAtom2->queryChildrensCoords();
-	#endif
-	dblVec atomCoords = _pAtom2->getCoords();
-	dblMat R(3,3,0.0);
-	R = CMath::rotationMatrix(atomCoords, _deltaTheta);
-	if (_direction == 0)
-	{
-		_pAtom2->transformChildren(R);
-	}
-
-	if (_direction == 0)
-	{
+	{	_pAtom2->transformChildren(R);
 		if (pItsNextRes)
 		{	
 			pItsNextRes->recursiveTransform(R);
 		}
 	}
-
 	if (_direction == 1)
 	{
-		if (pItsPrevRes)
-		{	
-			pItsPrevRes->recursiveTransformR(R);
+		if (_angleType == 0){
+			if (pItsPrevRes)
+			{	
+				pItsPrevRes->recursiveTransformR(R);
+			}
+		}
+		else{
+			recursiveTransformR(R);
+			R = CMath::rotationMatrix(atomCoords, _deltaTheta*-1);
+			_pAtom1->transformChildren(R);
 		}
 	}
 
-	#ifdef __RES_DEBUG
-	_pAtom2->queryChildrensCoords();
-	#endif
-	_pAtom1->translate(backHome);
-	_pAtom2->translate(backHome);
-	_pAtom2->translateChildren(backHome);
-
 	if (_direction == 0)
 	{	
+		_pAtom1->translate(backHome);
+		_pAtom2->translate(backHome);
+		_pAtom2->translateChildren(backHome);
 		if (pItsNextRes)
 		{	pItsNextRes->recursiveTranslateWithDirection(backHome, _direction);
 		}
 	}
 	if (_direction == 1)
 	{
-		if (pItsPrevRes)
-		{	pItsPrevRes->recursiveTranslateWithDirection(backHome, _direction);
-		}
+		recursiveTranslateWithDirection(backHome, _direction);
 	}
-
-	#ifdef __RES_DEBUG
-	_pAtom2->queryChildrensCoords();
-	#endif
-
 }
 
 void residue::rotate(atom* _pAtom1, atom* _pAtom2, double _theta,
@@ -2684,23 +2405,6 @@ void residue::translate(const dblVec& _dblVec)
 
 }
 
-void residue::recursiveTranslateLocal(dblVec& _dblVec, int direction)
-{	
-    setMoved(1);
-	translate(_dblVec);
-	if (direction == 0)
-	{
-		if (pItsNextRes)
-		{	pItsNextRes->recursiveTranslateLocal(_dblVec, direction);
-		}
-	}
-	if (direction == 1)
-	{
-		if (pItsPrevRes)
-		{	pItsPrevRes->recursiveTranslateLocal(_dblVec, direction);
-		}
-	}
-}
 
 void residue::recursiveTranslateWithDirection(dblVec& _dblVec, UInt _direction)
 {	
@@ -2744,28 +2448,6 @@ void residue::recursiveTransformR(dblMat& _dblMat)
 	transform(_dblMat);
 	if (pItsPrevRes)
 	{	pItsPrevRes->recursiveTransformR(_dblMat);
-	}
-}
-
-void residue::recursiveTransformLocal(dblVec& atomCoords, double _deltaTheta, UInt _direction)
-{
-    setMoved(1);
-	dblMat R(3,3,0.0);
-	R = CMath::rotationMatrix(atomCoords, _deltaTheta);
-	transform(R);
-	if (_direction == 0)
-	{
-		if (pItsNextRes)
-		{	
-			pItsNextRes->recursiveTransformLocal(atomCoords, _deltaTheta, _direction);
-		}
-	}
-	if (_direction == 1)
-	{
-		if (pItsPrevRes)
-		{	
-			pItsPrevRes->recursiveTransformLocal(atomCoords, _deltaTheta, _direction);
-		}
 	}
 }
 
@@ -2876,70 +2558,6 @@ double residue::getIntraEnergy(const UInt _atom1, residue* _other, const UInt _a
 		cout << "atom index or indices out of range." << endl;
 		exit(1);
 	}
-}
-
-double residue::BBEnergy()
-{	//double distance;
-	double distanceSquared;
-	int index1;
-	int index2;
-	double intraEnergy = 0.0;
-	double tempvdwEnergy;
-	double tempAmberElecEnergy;
-	UInt resType1;
-	UInt resType2;
-	double vdwEnergy = 0.0;
-	double amberElecEnergy = 0.0;
-	bool twoBonds, threeBonds;
-
-	for(UInt i=0; i<itsAtoms.size()-1; i++)
-	{
-		if (!itsAtoms[i]->getSilentStatus())
-		{
-			for(UInt j=i+1; j<itsAtoms.size(); j++)
-			{
-				if (!itsAtoms[j]->getSilentStatus())
-				{
-					//distance = itsAtoms[i]->distance(itsAtoms[j]);
-					distanceSquared = itsAtoms[i]->distanceSquared(itsAtoms[j]);
-					threeBonds = isSeparatedByFewBonds(i,j);
-					twoBonds = isSeparatedByOneOrTwoBonds(i,j);
-					// ** intra AMBER vdW
-					if (residueTemplate::itsAmberVDW.getScaleFactor() != 0.0)
-					{
-						if (hydrogensOn)
-						{
-								index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][0];
-								index2 = dataBase[itsType].itsAtomEnergyTypeDefinitions[j][0];
-						}
-						else
-						{
-								index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][1];
-								index2 = dataBase[itsType].itsAtomEnergyTypeDefinitions[j][1];
-						}
-						if (threeBonds && !twoBonds && itsType > 19)
-						{
-							tempvdwEnergy = residueTemplate::getVDWEnergySQ(index1,index2,distanceSquared);
-							vdwEnergy += tempvdwEnergy;
-						}
-					}
-
-					// ** intra AMBER Electrostatics
-					if (threeBonds && !twoBonds && residueTemplate::itsAmberElec.getScaleFactor() != 0.0 && itsType > 19)
-					{
-						resType1 = itsType;
-						UInt atomType1 = i;
-						resType2 = itsType;
-						UInt atomType2 = j;
-						tempAmberElecEnergy = residueTemplate::getAmberElecEnergySQ(resType1, atomType1, resType2, atomType2, distanceSquared);
-						amberElecEnergy += tempAmberElecEnergy;
-					}
-				}
-			}
-		}
-	}
-	intraEnergy = vdwEnergy + amberElecEnergy;
-	return intraEnergy;
 }
 
 double residue::intraEnergy()

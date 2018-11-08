@@ -419,64 +419,27 @@ int main (int argc, char* argv[])
 				delete thePDB;
 			}
 		}
-	}
+	}*/
 	PDBInterface* thePDB = new PDBInterface(inFile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* frame = static_cast<protein*>(pMol);
-	double Buffer2 = 0;
-	double Buffer1 = 0;
-	UInt res;
+	double delta = 20;
 
-	res=0;
-	frame->mutateWBC(0,res, G);
-	frame->setDihedral(0,res,psisL[3]+Buffer2,1,0);
+	double phi = frame->getAngle(0,5,0);
+	double psi = frame->getAngle(0,5,1);
+	
+	frame->setDihedral(0,5,phi+delta,0,1);
+	frame->setDihedral(0,5,psi-delta,1,1);
+	
+	phi = frame->getAngle(0,7,0);
+	psi = frame->getAngle(0,7,1);
+	
+	frame->setDihedral(0,7,phi+(delta),0,1);
+	frame->setDihedral(0,7,psi-(delta),1,1);
+	
 
-	res=1;
-	frame->mutateWBC(0,res, G);
-	frame->setDihedral(0,res,hetPsis[3]+Buffer1,0,0);
-	frame->setDihedral(0,res,psisD[3]-Buffer1,1,0);
-
-	res=2;
-	frame->mutateWBC(0,res, G);
-	frame->setDihedral(0,res,hetPsis[6]-Buffer1,0,0);
-	frame->setDihedral(0,res,psisL[3]+Buffer1,1,0);
-
-	res=3;
-	frame->mutateWBC(0,res, G);
-	frame->setDihedral(0,res,hetPsis[3]+Buffer2,0,0);
-	frame->setDihedral(0,res,psisD[3]-Buffer2,1,0);
-
-	res=4;
-	frame->mutateWBC(0,res, G);
-	frame->setDihedral(0,res,hetPsis[6]-Buffer1,0,0);
-	frame->setDihedral(0,res,psisL[3]+Buffer1,1,0);
-
-	res=5;
-	frame->mutateWBC(0,res, G);
-	frame->setDihedral(0,res,hetPsis[3]+Buffer1,0,0);
-	frame->setDihedral(0,res,psisD[3]-Buffer1,1,0);
-
-	res=6;
-	frame->mutateWBC(0,res, G);
-	frame->setDihedral(0,res,hetPsis[6]-Buffer2,0,0);
-	frame->setDihedral(0,res,psisL[3]+Buffer2,1,0);
-
-	res=7;
-	frame->mutateWBC(0,res, G);
-	frame->setDihedral(0,res,hetPsis[3]+Buffer1,0,0);
-	frame->setDihedral(0,res,psisD[3]-Buffer1,1,0);
-
-	res=8;
-	frame->mutateWBC(0,res, G);
-	frame->setDihedral(0,res,hetPsis[6]-Buffer1,0,0);
-	frame->setDihedral(0,res,psisL[3]+Buffer1,1,0);
-
-	res=9;
-	frame->mutateWBC(0,res, G);
-	frame->setDihedral(0,res,hetPsis[3]+Buffer2,0,0);
-
-    pdbWriter(frame, "test.pdb");
+    pdbWriter(frame, "testn.pdb");/*
 
 	PDBInterface* thePDB = new PDBInterface(inFile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
@@ -513,10 +476,10 @@ int main (int argc, char* argv[])
     {
         for (UInt j = 0; j < prot->getNumResidues(i); j++)
         {
-			vector<vector<double>> rot = prot->getSidechainDihedrals(1,6);
-			prot->setDihedral(0,5,47,1,0);
-            prot->setDihedral(0,6,57,0,0);
-            prot->mutateWBC(0,6,dN);
+			//vector<vector<double>> rot = prot->getSidechainDihedrals(1,6);
+			prot->setDihedral(i,j,hetPhis[0]*-1,0,0);
+            prot->setDihedral(i,j,hetPsis[0]*-1,1,0);
+            prot->mutateWBC(i,j,dA);
             prot->setSidechainDihedralAngles(0,6,rot);
             prot->setDihedral(2,5,47,1,0);
             prot->setDihedral(2,6,57,0,0);
@@ -544,14 +507,14 @@ int main (int argc, char* argv[])
 
         }
     }
-    outFile = "346barrel_NloopsK.pdb";
+    outFile = "dala14.pdb";
     pdbWriter(prot, outFile);*/
-    double radius;
+    /*double radius;
     int count=0;
-    for (int d = 220; d < 260; d++)
+    for (int d = 240; d < 260; d++)
     {
-        radius = 6;//4.5+d*0.1;
-        for (int p = 190; p < 230; p++)
+        radius = 5.7;//4.5+d*0.1;
+        for (int p = 280; p < 300; p++)
         {
             count++;
             PDBInterface* thePDB = new PDBInterface(inFile);
@@ -563,13 +526,13 @@ int main (int argc, char* argv[])
             stringstream convert;
             string countstr;
             convert << count, countstr = convert.str();
-            outFile = countstr + "8barrel.pdb";
+            outFile = countstr + "hethelix.pdb";
             pdbWriter(bundle, outFile);
             delete bundle;
             //p=p+9;
         }
-       //d=d+9;
-    }
+        //d=d+9;
+    }*/
     return 0;
 }
 void buildSymmetricOligamer (protein* _prot, bool antiParallel, double _radius, double _coil, double _phaseoffset1, double _phaseoffset2, double _offset)
@@ -586,7 +549,7 @@ void buildSymmetricOligamer (protein* _prot, bool antiParallel, double _radius, 
 		{
 			if (odd)
 			{
-				_prot->rotate(i, Y_axis, 180);
+				//_prot->rotate(i, Y_axis, 180);
                 _prot->rotate(i,Z_axis, _phaseoffset2);
 				odd = false;
 			}
