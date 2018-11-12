@@ -1618,11 +1618,21 @@ UInt chain::getNumHardClashes()
 	UInt numClashes = 0;
 	for (UInt i = 0; i < itsResidues.size(); i ++)
 	{
-		//numClashes += itsResidues[i]->getNumHardClashes();
+		numClashes += itsResidues[i]->getNumHardClashes();
 		for (UInt j = i + 1; j < itsResidues.size(); j ++)
 		{
 			numClashes += itsResidues[i]->getNumHardClashes(itsResidues[j]);
 		}
+	}
+	return numClashes;
+}
+
+UInt chain::getNumHardClashes(UInt _resIndex)
+{
+	UInt numClashes = 0;
+	for (UInt i = 0; i < itsResidues.size(); i++)
+	{
+		numClashes += itsResidues[_resIndex]->getNumHardClashes(itsResidues[i]);
 	}
 	return numClashes;
 }
@@ -1632,10 +1642,20 @@ UInt chain::getNumHardClashes(chain* _other)
 	UInt numClashes = 0;
 	for (UInt i = 0; i < itsResidues.size(); i ++)
 	{
-        for (UInt j = 0; j < _other->getNumResidues(); j ++)
+		for (UInt j = 0; j < _other->getNumResidues(); j ++)
 		{
 			numClashes += itsResidues[i]->getNumHardClashes(_other->getResidue(j));
 		}
+	}
+	return numClashes;
+}
+
+UInt chain::getNumHardClashes(chain* _other, UInt _resIndex)
+{
+	UInt numClashes = 0;
+	for (UInt i = 0; i < _other->getNumResidues(); i++)
+	{
+		numClashes += itsResidues[_resIndex]->getNumHardClashes(_other->getResidue(i));
 	}
 	return numClashes;
 }

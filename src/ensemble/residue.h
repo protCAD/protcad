@@ -179,6 +179,7 @@ private:
 	
 	bool isSeparatedByOneOrTwoBonds(UInt _index1, UInt _index2);
 	bool isSeparatedByOneOrTwoBonds(UInt _index1, residue* _pRes2, UInt _index2);
+	bool isSeparatedByOneOrTwoBackboneBonds(UInt _index1, residue* _pRes2, UInt _index2);
 	bool isClash(UInt _index1, UInt _index2);
 	bool isClash(UInt _index1, residue* _other, UInt _index2);
 	UInt getNumHardClashes(residue* _other);

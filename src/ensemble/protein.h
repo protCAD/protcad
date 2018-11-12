@@ -65,6 +65,7 @@ public:
 	void listSecondaryStructure();
 	void listDihedrals();
 	UInt getNumChis(const UInt _chainIndex, const UInt _resIndex, const UInt _bpt) {return itsChains[_chainIndex]->getNumChis(_resIndex,0); }
+	UInt getNumHardClashes(UInt _chainIndex, UInt _resIndex);
 	UInt getNumHardClashes();
 	UInt getNumHardClashes(const UInt _chainIndex) {return itsChains[_chainIndex]->getNumHardClashes(); }
     double getRadius(UInt chainIndex, UInt resIndex, UInt atomIndex) {return itsChains[chainIndex]->getRadius(resIndex, atomIndex);}

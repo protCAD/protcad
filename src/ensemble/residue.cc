@@ -2635,7 +2635,7 @@ double residue::intraEnergy()
 double residue::intraSoluteEnergy()
 {	
 	double intraEnergy = 0.0;
-    bool threeBonds;
+	bool twoBonds;
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
 		if (!itsAtoms[i]->getSilentStatus())
@@ -2648,19 +2648,19 @@ double residue::intraSoluteEnergy()
 			{
 				if (!itsAtoms[j]->getSilentStatus())
 				{
-					threeBonds = isSeparatedByFewBonds(i,j);
-					if (!threeBonds)
+					twoBonds = isSeparatedByOneOrTwoBonds(i,j);
+					if (!twoBonds)
 					{
 						// ** get distance
 						double distanceSquared = itsAtoms[i]->distanceSquared(itsAtoms[j]);
 
 						// ** intra AMBER vdW
-                        if (residueTemplate::itsAmberVDW.getScaleFactor() != 0.0)
+						if (residueTemplate::itsAmberVDW.getScaleFactor() != 0.0)
 						{
 							int index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][0];
 							int index2 = dataBase[itsType].itsAtomEnergyTypeDefinitions[j][0];
 							double tempvdwEnergy = residueTemplate::getVDWEnergySQ(index1,index2,distanceSquared);
-                            intraEnergy += tempvdwEnergy;
+							intraEnergy += tempvdwEnergy;
 						}
 
 						// ** intra Electrostatics
@@ -2682,7 +2682,6 @@ double residue::intraSoluteEnergy()
 			}
 		}
 	}
-
 	return intraEnergy;
 }
 
@@ -2928,7 +2927,7 @@ double residue::interEnergy(residue* _other)
 double residue::interSoluteEnergy(residue* _other)
 {
 	double interEnergy = 0.0;
-	bool threeBonds;
+	bool twoBonds;
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
 		if (!itsAtoms[i]->getSilentStatus())
@@ -2937,11 +2936,11 @@ double residue::interSoluteEnergy(residue* _other)
 			{
 				if (!_other->itsAtoms[j]->getSilentStatus())
 				{
-					threeBonds = isSeparatedByFewBonds(this,i,_other,j);
-					if (!threeBonds)
+					twoBonds = isSeparatedByOneOrTwoBackboneBonds(i,_other,j);
+					if (!twoBonds)
 					{
 						double distanceSquared = itsAtoms[i]->inCubeWithDistSQ(_other->itsAtoms[j], cutoffDistance);
-						if (distanceSquared != 0.0 && distanceSquared <= cutoffDistanceSquared)
+						if (distanceSquared <= cutoffDistanceSquared)
 						{
 							//cout << itsResNum << " " << _other->itsResNum << endl;
 							// ** inter AMBER Electrostatics
@@ -3089,23 +3088,31 @@ UInt residue::getNumHardClashes(residue* _other)
 
 bool residue::isClash(UInt _index1, UInt _index2)
 {
-	if (isSeparatedByFewBonds(_index1, _index2)) return false;
-	double distance = itsAtoms[_index1]->distance(itsAtoms[_index2]);
-	int index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[_index1][0];
-	int index2 = dataBase[itsType].itsAtomEnergyTypeDefinitions[_index2][0];
-	bool clash = residueTemplate::isClash(index1, index2, distance);
-	return clash;
+	if (isSeparatedByOneOrTwoBonds(_index1, _index2)) {return false;}
+	double radius1 = getRadius(_index1), radius2 = getRadius(_index2);
+	if (radius1 > radius2){
+		if (itsAtoms[_index1]->inCube(itsAtoms[_index2], radius2)) {return true;}
+	}
+	else{
+		if (itsAtoms[_index1]->inCube(itsAtoms[_index2], radius1)) {return true;}
+	}
+	return false;
 }
 
 bool residue::isClash(UInt _index1, residue* _other, UInt _index2)
 {
-	if (isSeparatedByFewBonds(this, _index1, _other, _index2)) {return false;}
-	if (!itsAtoms[_index1]->inCube(_other->itsAtoms[_index2], 5)) {return false;}
-	double distance = itsAtoms[_index1]->distance(_other->itsAtoms[_index2]);
-	int index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[_index1][0];
-	int index2 = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[_index2][0];
-	return residueTemplate::isClash(index1, index2, distance); 
+	if (isSeparatedByOneOrTwoBackboneBonds(_index1, _other, _index2)) {return false;}
+	double radius1 = getRadius(_index1), radius2 = _other->getRadius(_index2);
+	if (radius1 > radius2){
+		if (itsAtoms[_index1]->inCube(_other->itsAtoms[_index2], radius2)) {return true;}
+	}
+	else{
+		if (itsAtoms[_index1]->inCube(_other->itsAtoms[_index2], radius1)) {return true;}
+	}
+	return false;
 }
+	
+	
 
 bool residue::inCube(const residue* _other, double _cutoff)
 {
@@ -3126,7 +3133,6 @@ bool residue::isSeparatedByOneOrTwoBonds(UInt _index1, UInt _index2)
 	UInt sizeOfList2;
 
 	bondedList1 = dataBase[itsType].getBondingPattern(_index1);
-
 	if ( (sizeOfList1 = bondedList1.size()) )
 	{
 		for (UInt i=0; i < sizeOfList1; i++)
@@ -3239,9 +3245,8 @@ UInt residue::getBondSeparation(UInt _index1, UInt _index2)
     return 99;
 }
 
-bool residue::isSeparatedByOneOrTwoBonds(UInt _index1, residue* _pRes2, UInt _index2)
+bool residue::isSeparatedByOneOrTwoBackboneBonds(UInt _index1, residue* _pRes2, UInt _index2)
 {
-
 	// first, check if they are sequential residues
 	int theOrder = 0;
 	// is _pRes1 the residue N-terminal to _pRes2?
@@ -3250,13 +3255,53 @@ bool residue::isSeparatedByOneOrTwoBonds(UInt _index1, residue* _pRes2, UInt _in
 	// if _pRes1 the residue C-terminal to _pRes2?
 	if ( this == _pRes2->getNextRes())
 		theOrder = -1;
-
-
 	if (theOrder == 0)
 	{
 		return false;
 	}
+	string name1, name2;
+	UInt atom1, atom2;
+	if (theOrder == -1){
+		name1 = itsAtoms[_index1]->getName();
+		name2 = _pRes2->itsAtoms[_index2]->getName();
+		atom1 = _index1;
+		atom2 = _index2;
+	}
+	else{
+		name2 = itsAtoms[_index1]->getName();
+		name1 = _pRes2->itsAtoms[_index2]->getName();
+		atom2 = _index1;
+		atom1 = _index2;
+	}
+	
+	if (atom1 == 0 || atom1 == 1 || name1 == "H")
+	{
+		if (atom2 > 0 && atom2 < 4){
+			if ((name1 == "H" || atom1 == 1) && atom2 == 2){return true;}
+			if (atom1 == 0) {return true;}
+			return false;
+		}
+		else{return false;}
+	}
+	else{return false;}
+}
 
+
+bool residue::isSeparatedByOneOrTwoBonds(UInt _index1, residue* _pRes2, UInt _index2)
+{
+	// first, check if they are sequential residues
+	int theOrder = 0;
+	// is _pRes1 the residue N-terminal to _pRes2?
+	if ( this == _pRes2->getPrevRes())
+		theOrder = 1;
+	// if _pRes1 the residue C-terminal to _pRes2?
+	if ( this == _pRes2->getNextRes())
+		theOrder = -1;
+	if (theOrder == 0)
+	{
+		return false;
+	}
+	
 	// ok, now we know we've got two sequential amino acids.
 	// find out how far the atom in question in the N-term
 	// amino acid is from the carboxyl carbon (the end).
@@ -3308,13 +3353,15 @@ bool residue::isSeparatedByOneOrTwoBonds(UInt _index1, residue* _pRes2, UInt _in
 			if (bondedList1[i] == Cindex)
 			{	firstIterationLevel = 1;
 			}
-			bondedList2 = dataBase[typeOfRes1].getBondingPattern(bondedList1[i]);
-			if ( (sizeOfList2 = bondedList2.size()) )
-			{
-				for (UInt j=0; j< sizeOfList2; j++)
+			else{
+				bondedList2 = dataBase[typeOfRes1].getBondingPattern(bondedList1[i]);
+				if ( (sizeOfList2 = bondedList2.size()) )
 				{
-					if (bondedList2[j] == Cindex)
-					{	firstIterationLevel = 2;
+					for (UInt j=0; j< sizeOfList2; j++)
+					{
+						if (bondedList2[j] == Cindex)
+						{	firstIterationLevel = 2;
+						}
 					}
 				}
 			}
@@ -3334,13 +3381,15 @@ bool residue::isSeparatedByOneOrTwoBonds(UInt _index1, residue* _pRes2, UInt _in
 			if (bondedList1[i] == atomIndex2)
 			{	secondIterationLevel = 1;
 			}
-			bondedList2 = dataBase[typeOfRes2].getBondingPattern(bondedList1[i]);
-			if ( (sizeOfList2 = bondedList2.size()) )
-			{
-				for (UInt j=0; j< sizeOfList2; j++)
+			else{
+				bondedList2 = dataBase[typeOfRes2].getBondingPattern(bondedList1[i]);
+				if ( (sizeOfList2 = bondedList2.size()) )
 				{
-					if (bondedList2[j] == atomIndex2)
-					{	secondIterationLevel = 2;
+					for (UInt j=0; j< sizeOfList2; j++)
+					{
+						if (bondedList2[j] == atomIndex2)
+						{	secondIterationLevel = 2;
+						}
 					}
 				}
 			}
@@ -3351,7 +3400,6 @@ bool residue::isSeparatedByOneOrTwoBonds(UInt _index1, residue* _pRes2, UInt _in
 	{
 		return true;
 	}
-
 	return false;
 }
 

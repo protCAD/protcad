@@ -134,7 +134,6 @@ int main (int argc, char* argv[])
 	ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
 	molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
 	protein* frame = static_cast<protein*>(frameMol);
-	frame->silenceMessages();
 	chainNum = frame->getNumChains();
 	for (UInt i = 0; i < chainNum; i++)
 	{

@@ -45,10 +45,10 @@ int main (int argc, char* argv[])
         for (UInt i = 0; i < _prot->getNumChains(); i++)
         {_prot->symmetryLinkChainAtoB(activeChains[0],i);}
     }
-    cout << "start: " << _prot->protEnergy() << " kcal/mol" << endl;
+    cout << "start: " << _prot->protEnergy() << " kcal/mol  clashes: " << _prot->getNumHardClashes() << endl;
     //_prot->protOpt(backbone,frozenResidues,activeChains);
-    _prot->protOpt(backbone);
-    cout << "end: " << _prot->protEnergy() << " kcal/mol" << endl;
+    _prot->protRelax(backbone);
+    cout << "end: " << _prot->protEnergy() << " kcal/mol  clashes: " << _prot->getNumHardClashes() << endl;
 	pdbWriter(_prot, outFile);
 
 	return 0;
