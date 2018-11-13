@@ -1615,14 +1615,21 @@ double chain::getVolume(UInt _method)
 
 UInt chain::getNumHardClashes()
 {
-	UInt numClashes = 0;
+	UInt resClashes, currentClashes, numClashes = 0;
 	for (UInt i = 0; i < itsResidues.size(); i ++)
 	{
-		numClashes += itsResidues[i]->getNumHardClashes();
-		for (UInt j = i + 1; j < itsResidues.size(); j ++)
-		{
-			numClashes += itsResidues[i]->getNumHardClashes(itsResidues[j]);
+		resClashes = 0;
+		if (itsResidues[i]->getMoved()){
+			resClashes += itsResidues[i]->getNumHardClashes();
+			for (UInt j = i + 1; j < itsResidues.size(); j ++)
+			{
+				resClashes += itsResidues[i]->getNumHardClashes(itsResidues[j]);
+			}
+			currentClashes = itsResidues[i]->getClashes();
+			itsResidues[i]->setClashes(currentClashes+resClashes);
+			numClashes += resClashes;
 		}
+		else{ numClashes += itsResidues[i]->getClashes();}
 	}
 	return numClashes;
 }
@@ -1639,13 +1646,20 @@ UInt chain::getNumHardClashes(UInt _resIndex)
 
 UInt chain::getNumHardClashes(chain* _other)
 {
-	UInt numClashes = 0;
+	UInt resClashes, currentClashes, numClashes = 0;
 	for (UInt i = 0; i < itsResidues.size(); i ++)
 	{
-		for (UInt j = 0; j < _other->getNumResidues(); j ++)
-		{
-			numClashes += itsResidues[i]->getNumHardClashes(_other->getResidue(j));
+		resClashes = 0;
+		if (itsResidues[i]->getMoved()){
+			for (UInt j = 0; j < _other->getNumResidues(); j ++)
+			{
+				resClashes += itsResidues[i]->getNumHardClashes(_other->getResidue(j));
+			}
+			currentClashes = itsResidues[i]->getClashes();
+			itsResidues[i]->setClashes(currentClashes+resClashes);
+			numClashes += resClashes;
 		}
+		else{ numClashes += itsResidues[i]->getClashes();}
 	}
 	return numClashes;
 }
@@ -1714,19 +1728,23 @@ double chain::intraEnergy()
 
 double chain::intraSoluteEnergy()
 {	
-	double intraEnergy = 0.0;
+	double resEnergy, currentEnergy, Energy = 0.0;
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{	
-		double tempE = itsResidues[i]->intraSoluteEnergy();
-		intraEnergy += tempE;
-		double interE = 0.0;
-		for(UInt j=i+1; j<itsResidues.size(); j++)
-		{	
-            interE += itsResidues[i]->interSoluteEnergy(itsResidues[j]);
+		resEnergy = 0.0;
+		if (itsResidues[i]->getMoved()){
+			resEnergy += itsResidues[i]->intraSoluteEnergy();
+			for(UInt j=i+1; j<itsResidues.size(); j++)
+			{	
+				resEnergy += itsResidues[i]->interSoluteEnergy(itsResidues[j]);
+			}
+			currentEnergy = itsResidues[i]->getEnergy();
+			itsResidues[i]->setEnergy(currentEnergy+resEnergy);
+			Energy += resEnergy;
 		}
-		intraEnergy += interE;
+		else{ Energy += itsResidues[i]->getEnergy();}
 	}
-	return intraEnergy;
+	return Energy;
 }
 
 vector <double> chain::calculateDielectric(chain* _other, UInt _residueIndex, UInt _atomIndex)
@@ -1828,16 +1846,22 @@ double chain::interEnergy(chain* _other)
 
 double chain::interSoluteEnergy(chain* _other)
 {
-	double interEnergy = 0.0;
-//#pragma omp parallel for reduction(+:interEnergy)
+	double resEnergy, currentEnergy, Energy = 0.0;
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{
-		for(UInt j=0; j<_other->itsResidues.size(); j++)
-        {
-            interEnergy += itsResidues[i]->interSoluteEnergy(_other->itsResidues[j]);
+		resEnergy = 0.0;
+		if (itsResidues[i]->getMoved()){
+			for(UInt j=0; j<_other->itsResidues.size(); j++)
+			{
+				resEnergy += itsResidues[i]->interSoluteEnergy(_other->itsResidues[j]);
+			}
+			currentEnergy = itsResidues[i]->getEnergy();
+			itsResidues[i]->setEnergy(currentEnergy+resEnergy);
+			Energy += resEnergy;
 		}
+		else{ Energy += itsResidues[i]->getEnergy();}
 	}
-	return interEnergy;
+	return Energy;
 }
 
 double chain::getPositionInterEnergy(vector <int> _position, chain* _other)

@@ -1456,8 +1456,8 @@ residue* residue::mutate(const UInt _newTypeIndex)
             }
         }
 	}
-	setMoved(1);
-	newAA->setMoved(1);
+	setMoved(true);
+	newAA->setMoved(true);
 	return newAA;
 }
 
@@ -1649,7 +1649,7 @@ void residue::setBetaChi(const double _angle)
 		ASSERT(currentBetaChi < 1e5 && currentBetaChi > -1e5);
 		double diff = _angle - currentBetaChi;
 		rotate(0,1, diff);
-		setMoved(1);
+		setMoved(true);
 	}
 }
 
@@ -1659,7 +1659,7 @@ void residue::setChi(const UInt _bpt, const UInt _index, const double _angle)
 	ASSERT(currentChi < 1e5 && currentChi > -1e5);
 	double diff = _angle - currentChi;
 	setChiByDelta(_bpt, _index, diff);
-	setMoved(1);
+	setMoved(true);
 }
 
 void residue::setChiByDelta(const UInt _bpt, const UInt _index, const double _angleDelta)
@@ -2104,7 +2104,7 @@ void residue::rotate(UInt _first, UInt _second, double _theta)
 
 void residue::rotateDihedral(atom* _pAtom1, atom* _pAtom2, double _deltaTheta,  UInt _angleType, UInt _direction)
 {
-	setMoved(1);
+	setMoved(true);
 	dblVec toOrigin = _pAtom1->getCoords() * (-1.0);
 	dblVec backHome = _pAtom1->getCoords();
 
@@ -2408,7 +2408,7 @@ void residue::translate(const dblVec& _dblVec)
 
 void residue::recursiveTranslateWithDirection(dblVec& _dblVec, UInt _direction)
 {	
-    setMoved(1);
+    setMoved(true);
 	translate(_dblVec);
 	if (_direction == 0)
 	{
@@ -2426,7 +2426,7 @@ void residue::recursiveTranslateWithDirection(dblVec& _dblVec, UInt _direction)
 
 void residue::recursiveTranslate(dblVec& _dblVec)
 {
-    setMoved(1);
+    setMoved(true);
 	translate(_dblVec);
 	if (pItsNextRes)
 	{	pItsNextRes->recursiveTranslate(_dblVec);
@@ -2435,7 +2435,7 @@ void residue::recursiveTranslate(dblVec& _dblVec)
 
 void residue::recursiveTransform(dblMat& _dblMat)
 {
-    setMoved(1);
+    setMoved(true);
 	transform(_dblMat);
 	if (pItsNextRes)
 	{	pItsNextRes->recursiveTransform(_dblMat);
@@ -2444,7 +2444,7 @@ void residue::recursiveTransform(dblMat& _dblMat)
 
 void residue::recursiveTransformR(dblMat& _dblMat)
 {
-    setMoved(1);
+    setMoved(true);
 	transform(_dblMat);
 	if (pItsPrevRes)
 	{	pItsPrevRes->recursiveTransformR(_dblMat);
@@ -2455,7 +2455,7 @@ void residue::transform(const dblMat& _dblMat)
 {	for (UInt i=0; i < itsAtoms.size(); i++)
 	{	itsAtoms[i]->transform(_dblMat);
 	}
-    setMoved(1);
+    setMoved(true);
 }
 
 
@@ -2955,7 +2955,6 @@ double residue::interSoluteEnergy(residue* _other)
 								double tempAmberElecEnergy = residueTemplate::getAmberElecSoluteEnergySQ(resType1, index1, resType2, index2, distanceSquared, dielectric);
 								interEnergy += tempAmberElecEnergy;
 							}
-
 							// ** inter AMBER vdW
 							if (residueTemplate::itsAmberVDW.getScaleFactor() != 0.0)
 							{
@@ -2973,7 +2972,6 @@ double residue::interSoluteEnergy(residue* _other)
 	}
 	return interEnergy;
 }
-
 
 double residue::BBEnergy(residue* _other)
 {
@@ -3091,10 +3089,10 @@ bool residue::isClash(UInt _index1, UInt _index2)
 	if (isSeparatedByOneOrTwoBonds(_index1, _index2)) {return false;}
 	double radius1 = getRadius(_index1), radius2 = getRadius(_index2);
 	if (radius1 > radius2){
-		if (itsAtoms[_index1]->inCube(itsAtoms[_index2], radius2)) {return true;}
+		if (itsAtoms[_index1]->inCube(itsAtoms[_index2], radius1)) {return true;}
 	}
 	else{
-		if (itsAtoms[_index1]->inCube(itsAtoms[_index2], radius1)) {return true;}
+		if (itsAtoms[_index1]->inCube(itsAtoms[_index2], radius2)) {return true;}
 	}
 	return false;
 }
@@ -3104,10 +3102,10 @@ bool residue::isClash(UInt _index1, residue* _other, UInt _index2)
 	if (isSeparatedByOneOrTwoBackboneBonds(_index1, _other, _index2)) {return false;}
 	double radius1 = getRadius(_index1), radius2 = _other->getRadius(_index2);
 	if (radius1 > radius2){
-		if (itsAtoms[_index1]->inCube(_other->itsAtoms[_index2], radius2)) {return true;}
+		if (itsAtoms[_index1]->inCube(_other->itsAtoms[_index2], radius1)) {return true;}
 	}
 	else{
-		if (itsAtoms[_index1]->inCube(_other->itsAtoms[_index2], radius1)) {return true;}
+		if (itsAtoms[_index1]->inCube(_other->itsAtoms[_index2], radius2)) {return true;}
 	}
 	return false;
 }
@@ -4013,9 +4011,19 @@ double residue::getSelfEnergy(residue* _other)
     return selfEnergy;
 }
 
-void residue::setMoved(UInt _moved)
+void residue::setMoved(bool _moved)
 {
-    moved = _moved;
+	moved = _moved;
+}
+
+void residue::setClashes(UInt _clashes)
+{
+	clashes = _clashes;
+}
+
+void residue::setEnergy(double _Energy)
+{
+	Energy = _Energy;
 }
 
 double residue::getVolume(UInt _method)

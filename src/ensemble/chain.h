@@ -115,7 +115,7 @@ public:
 	UInt getNumChis(const UInt _resIndex, const UInt _bpt);
     double netCharge();
 
-    void setMoved (UInt resIndex, UInt _moved) {itsResidues[resIndex]->setMoved(_moved);}
+    void setMoved (UInt resIndex, bool _moved) {itsResidues[resIndex]->setMoved(_moved);}
     double getSolvationEnergy(const UInt _resIndex) {return itsResidues[_resIndex]->getSolvationEnergy();}
 	double getDielectric(const UInt _resIndex) {return itsResidues[_resIndex]->getDielectric();}
 	double getBetaChi(const UInt _resIndex) {return itsResidues[_resIndex]->getBetaChi();}

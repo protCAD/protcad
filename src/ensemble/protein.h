@@ -142,12 +142,11 @@ public:
 	vector <UIntVec> rotamerDEE();
 	vector <UIntVec> rotamerDEE(vector <UIntVec> _activePositions);
 	void optimizeRotamers();
-	void optimizeRotamersPN();
 	void optimizeRotamers(vector <UIntVec> _positions);
 	void optimizeRotamers(vector <UIntVec> _positions, vector <UIntVec> _rotamerArray);
 	
 	//--Energy functions
-	void setMoved (UInt chainIndex, UInt resIndex, UInt _moved) {itsChains[chainIndex]->setMoved(resIndex, _moved);}
+	void setMoved (UInt chainIndex, UInt resIndex, bool _moved) {itsChains[chainIndex]->setMoved(resIndex, _moved);}
 	void updateEnergyDatabase(vector<vector<vector<double> > > &_energies);
 	double protEnergy();
 	void updateProtEnergy(vector<vector<vector<double> > > &_energies);
@@ -172,7 +171,7 @@ public:
 	double getDielectric(UInt _chainIndex, UInt _residueIndex) {return itsChains[_chainIndex]->getDielectric(_residueIndex); }
 	double getDielectric(UInt _chainIndex, UInt _resIndex, UInt _atomIndex) {return itsChains[_chainIndex]->itsResidues[_resIndex]->itsAtoms[_atomIndex]->getDielectric();}
 	double intraEnergy();
-	double intraSoluteEnergy(bool _updateDielectrics);
+	double intraSoluteEnergy();
 	double intraSoluteEnergy(bool _updateDielectrics, UInt _activeChain);
 	double interSoluteEnergy(bool _updateDielectrics, UInt _chain1, UInt _chain2);
 	vector <double> chainFoldingBindingEnergy(bool _unfold);

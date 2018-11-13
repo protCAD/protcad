@@ -41,7 +41,7 @@ int main (int argc, char* argv[])
 	amberElec::setScaleFactor(1.0);
 	string outFile;
 
-    _prot->intraSoluteEnergy(true);
+    _prot->intraSoluteEnergy();
     cout << "chain" << " position" << " residue" << " dielectric" << " solvationEnergy" << endl;
     for (UInt i = 0; i < _prot->getNumChains(); i++)
     {

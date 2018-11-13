@@ -58,107 +58,107 @@ libprotcad.a : $(LIB_CC_OBJECTS)
 
 protMutator : libprotcad.a protMutator.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && mv $@ $(BINDIR)
+	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 
 protRotamer : libprotcad.a protRotamer.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && mv $@ $(BINDIR)
+	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 
 protPointMutator : libprotcad.a protPointMutator.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && mv $@ $(BINDIR)
+	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 
 protInverter : libprotcad.a protInverter.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && mv $@ $(BINDIR)
+	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 
 protSorter : libprotcad.a protSorter.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && mv $@ $(BINDIR)
+	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 
 protSequence : libprotcad.a protSequence.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && mv $@ $(BINDIR)
+	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 
 protDB : libprotcad.a protDB.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && mv $@ $(BINDIR)
+	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 
 protBindingEnergy : libprotcad.a protBindingEnergy.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && mv $@ $(BINDIR)
+	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 
 protSlipPlane : libprotcad.a protSlipPlane.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && mv $@ $(BINDIR)
+	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 	
 protDielectric : libprotcad.a protDielectric.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && mv $@ $(BINDIR)
+	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 
 triadFinder : libprotcad.a triadFinder.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && mv $@ $(BINDIR)
+	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 	
 protEnergy : libprotcad.a protEnergy.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && mv $@ $(BINDIR)
+	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 	
 protOpt : libprotcad.a protOpt.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && mv $@ $(BINDIR)
+	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 	
 protFolder : libprotcad.a protFolder.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && mv $@ $(BINDIR)
+	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 
 protShaper : libprotcad.a protShaper.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && mv $@ $(BINDIR)
+	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 
 protMover : libprotcad.a protMover.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && mv $@ $(BINDIR)
+	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 
 protDock : libprotcad.a protDock.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && mv $@ $(BINDIR)
+	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 
 protClashes : libprotcad.a protClashes.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && mv $@ $(BINDIR)
+	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 
 protEvolver : libprotcad.a protEvolver.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && mv $@ $(BINDIR)
+	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 
 protEvolverH : libprotcad.a protEvolverH.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && mv $@ $(BINDIR)
+	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 
 protDihedrals : libprotcad.a protDihedrals.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && mv $@ $(BINDIR)	
+	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 
 protMerge : libprotcad.a protMerge.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && mv $@ $(BINDIR)
+	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 
 protRandomizer : libprotcad.a protRandomizer.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && mv $@ $(BINDIR)
+	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 
 alphaCarbonDihedrals : libprotcad.a alphaCarbonDihedrals.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && mv $@ $(BINDIR)
+	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 
 y_aligner : libprotcad.a y_aligner.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && mv $@ $(BINDIR)
+	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 
 z_aligner : libprotcad.a z_aligner.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && mv $@ $(BINDIR)
+	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 
 $(LIB_CC_OBJECTS): %.o: %.cc %.h
 	$(CXX) -c $(CFLAGS) $(INC_BASE) $< -o $@

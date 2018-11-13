@@ -329,8 +329,12 @@ public:
 	bool getPolarHydorgensOn() const {return polarHydrogensOn;}
 	void setPolarHydrogensOn(const bool _polarHydrogensOn);
 	bool getHasPolarHRotamers() const {return dataBase[itsType].getHasPolarHRotamers(); }
-    void setMoved (UInt _moved);
-    UInt getMoved() const {return moved;}
+    void setMoved (bool _moved);
+    bool getMoved() const {return moved;}
+    void setClashes (UInt _clashes);
+    UInt getClashes() const {return clashes;}
+    void setEnergy (double _energy);
+    double getEnergy() const {return Energy;}
         
 // ***********************************************************************
 // ***********************************************************************
@@ -368,7 +372,10 @@ private:
 	bool hydrogensOn;
     bool polarHydrogensOn;
 	bool isArtificiallyBuilt;
-    UInt moved;
+    bool moved = false;
+    UInt clashes = 0;
+    double Energy = 0.0;
+    
 
 	//variables relating to the rotameric state
 	//or lack thereof....
