@@ -11,17 +11,10 @@ void chain::initialize()
 	itsChainPositions.resize(0);
 	itsSecondaryStructures.resize(0);
 	itsRepackActivePositionMap.resize(0);
-    itsIndependentPositions.resize(0);
-    itsResidueLinkageMap.resize(0);
-
-#ifdef USE_SVMT
-	itsSpaceLink.resize(3);
-	itsSpinLink.resize(3);
-#else
+	itsIndependentPositions.resize(0);
+	itsResidueLinkageMap.resize(0);
 	itsSpaceLink.newsize(3);
 	itsSpinLink.newsize(3);
-#endif
-
 	itsLastTargetResidue = -1;
 	for (UInt i = 0; i < 3; i++)
 	{
@@ -106,6 +99,17 @@ chain::~chain()
     howMany--;
 }
 
+void chain::removeResidue(UInt _resNum)
+{
+    itsResidues[_resNum]->removeResidue();
+    delete itsResidues[_resNum];
+    itsResidues.resize(itsResidues.size()-1);
+    delete itsChainPositions[_resNum];
+    itsChainPositions.resize(itsChainPositions.size()-1);
+    delete itsSecondaryStructures[_resNum];
+    itsSecondaryStructures.resize(itsSecondaryStructures.size()-1);
+}
+
 //***************testing junk*********************
 void chain::accessResZero()
 {
@@ -139,23 +143,23 @@ void chain::activateChainPosition(UInt _indexInChain)
 		itsChainPositions[_indexInChain] = newCP;
 		//now let's make sure that only alpha amino acids are allowed for an alpha
 		//only beta for a beta, etc.
-		UInt resTypeIndex = itsResidues[_indexInChain]->getTypeIndex();
-		UInt numBpt = residue::getNumBpt(resTypeIndex);
+        //UInt resTypeIndex = itsResidues[_indexInChain]->getTypeIndex();
+        //UInt numBpt = residue::getNumBpt(resTypeIndex);
 		//cout << "Num branchpoints in actual residue ==" << numBpt << endl;
-		UInt initialNumAllowedRes = newCP->getNumAllowedRes();
+        //UInt initialNumAllowedRes = newCP->getNumAllowedRes();
 		vector<UInt> notAllowedSet;
 		notAllowedSet.resize(0);
-		for (UInt i=0; i< initialNumAllowedRes; i++)
-		{
-			UInt identity = newCP->itsAllowedResidues[i].getIdentity();
-			UInt numBptInPossibleRes = residue::getNumBpt(identity);
+        //for (UInt i=0; i< initialNumAllowedRes; i++) // this prevents using branchpoints as dihedral pivot points for complex residues, so commented out.  doug p. 2015
+        //{
+            //UInt identity = newCP->itsAllowedResidues[i].getIdentity();
+            //UInt numBptInPossibleRes = residue::getNumBpt(identity);
 			//cout << "numBptInPossibleRes = " << numBptInPossibleRes << endl;
-			if ( numBptInPossibleRes != numBpt )
-			{
-				notAllowedSet.push_back(identity);
-			}
+            //if ( numBptInPossibleRes != numBpt )
+            //{
+            //	notAllowedSet.push_back(identity);
+            //}
 
-		}
+        //}
 		/*for (UInt i=0; i<notAllowedSet.size(); i++)
 		{
 			cout << "noAllowedSet[" << i << "] = " << notAllowedSet[i] << endl;
@@ -179,6 +183,17 @@ void chain::makeAtomSilent(const UInt _resIndex, const UInt _atomIndex)
 	if (_resIndex >=0 && _resIndex < itsResidues.size())
 	{
 		itsResidues[_resIndex]->makeAtomSilent(_atomIndex);
+	}
+	else
+		cout << "ERROR in chain::makeAtomSilent ...\n\t" << _resIndex << " is not a valid residue number." << endl;
+	return;
+}
+
+void chain::makeResidueSilent(const UInt _resIndex)
+{
+	if (_resIndex >=0 && _resIndex < itsResidues.size())
+	{
+		itsResidues[_resIndex]->makeResidueSilent();
 	}
 	else
 		cout << "ERROR in chain::makeAtomSilent ...\n\t" << _resIndex << " is not a valid residue number." << endl;
@@ -304,7 +319,8 @@ void chain::mutate(const UInt _indexInChain, const UInt _aaType)
     {   // Now check if this position is allowed to be mutated
         // to this residue type
         if (itsChainPositions[_indexInChain]->residueIsAllowed(_aaType))
-        {   residue* pOldRes = itsResidues[_indexInChain];
+        {
+            residue* pOldRes = itsResidues[_indexInChain];
             //buffer everything
             bufferResidueIntoUndoBuffer(_indexInChain);
             // mutate to new residue and place new pointer in chain
@@ -397,8 +413,31 @@ void chain::fixBrokenResidue(const UInt _indexInChain)
 {	if (_indexInChain < itsResidues.size())
 	{	// Now check if this position is allowed to be mutated
 		// to this residue type
+
 		residue* pOldRes = itsResidues[_indexInChain];
+        vector < vector <double> > currentRot = getSidechainDihedralAngles(_indexInChain);
 		itsResidues[_indexInChain] = pOldRes->mutate( itsResidues[_indexInChain]->getTypeIndex() );
+        setSidechainDihedralAngles(_indexInChain, currentRot);
+		itsResidues[_indexInChain]->isArtificiallyBuilt = true;
+		delete pOldRes;
+	}
+}
+
+void chain::fixBrokenResidue(const UInt _indexInChain, bool withRotamer)
+{	if (_indexInChain < itsResidues.size())
+	{	// Now check if this position is allowed to be mutated
+		// to this residue type
+		vector < vector <double> > currentRot;
+		residue* pOldRes = itsResidues[_indexInChain];
+		if (withRotamer)
+		{
+			currentRot = getSidechainDihedralAngles(_indexInChain);
+		}
+		itsResidues[_indexInChain] = pOldRes->mutate( itsResidues[_indexInChain]->getTypeIndex() );
+		if (withRotamer)
+		{
+			setSidechainDihedralAngles(_indexInChain, currentRot);
+		}
 		itsResidues[_indexInChain]->isArtificiallyBuilt = true;
 		delete pOldRes;
 	}
@@ -648,7 +687,7 @@ void chain::setRotamerWithoutBuffering(const UInt _indexInChain, const UInt _bpt
 {	if (_indexInChain >=0 && _indexInChain < itsChainPositions.size())
 	{	if (itsChainPositions[_indexInChain])
 		{	UInt lib = itsChainPositions[_indexInChain]->getRotamerLibIndex();
-			itsResidues[_indexInChain]->setRotamerWithCheck(lib,_bpt, _rotamerIndex);
+			itsResidues[_indexInChain]->setRotamer(lib,_bpt, _rotamerIndex);
 			itsChainPositions[_indexInChain]->setCurrentRotamerIndex(_rotamerIndex);
 		}
 	}
@@ -708,6 +747,16 @@ void chain::setAllPolarHydrogensOn(const bool _polarHydrogensOn)
 	{
 		itsResidues[i]->setPolarHydrogensOn(_polarHydrogensOn);
 	}
+}
+
+double chain::netCharge()
+{
+    double nCharge = 0.0;
+    for(UInt i=0;i<itsResidues.size();i++)
+    {
+        nCharge += itsResidues[i]->netCharge();
+    }
+    return nCharge;
 }
 
 vector<chainModBuffer> chain::performRandomRotamerChange(ran& _ran)
@@ -1177,6 +1226,23 @@ UIntVec chain::getAllowedRotamers(const UInt _indexInChain, const UInt _aaType, 
 	return allowedRotamers;
 }
 
+vector <UIntVec> chain::getAllowedRotamers(const UInt _indexInChain, const UInt _aaType)
+{
+    vector <UIntVec> allowedRotamers;
+    allowedRotamers.resize(0);
+    if ( _indexInChain >=0 && _indexInChain < itsChainPositions.size() )
+    {
+        allowedRotamers = itsChainPositions[_indexInChain]->getAllowedRotamers(_aaType);
+    }
+    else
+    {
+        cout << "Error in chain::getAllowedRotamers." << endl;
+        cout << " position " << _indexInChain << " is out of range on chain." << endl;
+    }
+
+    return allowedRotamers;
+}
+
 UIntVec chain::getResAllowed(const UInt _indexInChain)
 {
 	UIntVec allowedResidues;
@@ -1507,32 +1573,6 @@ int chain::setPhi(const UInt _index, double _phi)
 	}
 }
 
-int chain::setAngleLocal(const UInt _index, double _angle, double deltaTheta, UInt angleType, int distance, int direction)
-{
-	if (_index < itsResidues.size())
-	{
-		return itsResidues[_index]->setAngleLocal(_angle, deltaTheta, angleType, distance, direction);
-	}
-	else
-	{
-		cout << "Residue index out of range: " << _index << endl;
-		return -1;
-	}
-}
-
-int chain::setDihedralLocal(const UInt _resIndex, double _deltaTheta, UInt _angleType)
-{
-	if (_resIndex < itsResidues.size())
-	{
-		return itsResidues[_resIndex]->setDihedralLocal(_deltaTheta, _angleType);
-	}
-	else
-	{
-		cout << "Residue index out of range: " << _resIndex << endl;
-		return -1;
-	}
-}
-
 int chain::setDihedral(const UInt _resIndex, double _dihedral, UInt _angleType, UInt _direction)
 {
 	if (_resIndex < itsResidues.size())
@@ -1575,27 +1615,61 @@ double chain::getVolume(UInt _method)
 
 UInt chain::getNumHardClashes()
 {
-	UInt numClashes = 0;
+	UInt resClashes, currentClashes, numClashes = 0;
 	for (UInt i = 0; i < itsResidues.size(); i ++)
 	{
-		numClashes += itsResidues[i]->getNumHardClashes();
-		for (UInt j = i + 1; j < itsResidues.size(); j ++)
-		{
-			numClashes += itsResidues[i]->getNumHardClashes(itsResidues[j]);
+		resClashes = 0;
+		if (itsResidues[i]->getMoved()){
+			resClashes += itsResidues[i]->getNumHardClashes();
+			for (UInt j = i + 1; j < itsResidues.size(); j ++)
+			{
+				resClashes += itsResidues[i]->getNumHardClashes(itsResidues[j]);
+			}
+			currentClashes = itsResidues[i]->getClashes();
+			itsResidues[i]->setClashes(currentClashes+resClashes);
+			numClashes += resClashes;
 		}
+		else{ numClashes += itsResidues[i]->getClashes();}
+	}
+	return numClashes;
+}
+
+UInt chain::getNumHardClashes(UInt _resIndex)
+{
+	UInt numClashes = 0;
+	for (UInt i = 0; i < itsResidues.size(); i++)
+	{
+		numClashes += itsResidues[_resIndex]->getNumHardClashes(itsResidues[i]);
 	}
 	return numClashes;
 }
 
 UInt chain::getNumHardClashes(chain* _other)
 {
-	UInt numClashes = 0;
+	UInt resClashes, currentClashes, numClashes = 0;
 	for (UInt i = 0; i < itsResidues.size(); i ++)
 	{
-		for (UInt j = 0; j < _other->getNumResidues(); j ++)
-		{
-			numClashes += itsResidues[i]->getNumHardClashes(_other->getResidue(j));
+		resClashes = 0;
+		if (itsResidues[i]->getMoved()){
+			for (UInt j = 0; j < _other->getNumResidues(); j ++)
+			{
+				resClashes += itsResidues[i]->getNumHardClashes(_other->getResidue(j));
+			}
+			currentClashes = itsResidues[i]->getClashes();
+			itsResidues[i]->setClashes(currentClashes+resClashes);
+			numClashes += resClashes;
 		}
+		else{ numClashes += itsResidues[i]->getClashes();}
+	}
+	return numClashes;
+}
+
+UInt chain::getNumHardClashes(chain* _other, UInt _resIndex)
+{
+	UInt numClashes = 0;
+	for (UInt i = 0; i < _other->getNumResidues(); i++)
+	{
+		numClashes += itsResidues[_resIndex]->getNumHardClashes(_other->getResidue(i));
 	}
 	return numClashes;
 }
@@ -1628,20 +1702,6 @@ double chain::getInterEnergy(const UInt _residue1, chain* _other, const UInt _re
 	}
 }
 
-double chain::getInterEnergy(ligand* _other)
-{
-    double interEnergy=0.0;
-    
-    for(UInt i=0; i<itsResidues.size(); i++)
-    {
-    
-        double tempE=itsResidues[i]->interEnergy(_other);
-        interEnergy+=tempE;
-    }
-    
-    return interEnergy;
-}
-
 double chain::intraEnergy()
 {	double intraEnergy = 0.0;
 	//cout << "chain::intraEnergy";
@@ -1668,69 +1728,53 @@ double chain::intraEnergy()
 
 double chain::intraSoluteEnergy()
 {	
-	bool withinCube;
-	double intraEnergy = 0.0;
+	double resEnergy, currentEnergy, Energy = 0.0;
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{	
-		double tempE = itsResidues[i]->intraSoluteEnergy();
-		intraEnergy += tempE;
-
-		double interE = 0.0;
-		for(UInt j=i+1; j<itsResidues.size(); j++)
-		{	
-			withinCube = itsResidues[i]->inCube(itsResidues[j], 16);
-			if (withinCube)
-			{
-				interE += itsResidues[i]->interSoluteEnergy(itsResidues[j]);
+		resEnergy = 0.0;
+		if (itsResidues[i]->getMoved()){
+			resEnergy += itsResidues[i]->intraSoluteEnergy();
+			for(UInt j=i+1; j<itsResidues.size(); j++)
+			{	
+				resEnergy += itsResidues[i]->interSoluteEnergy(itsResidues[j]);
 			}
+			currentEnergy = itsResidues[i]->getEnergy();
+			itsResidues[i]->setEnergy(currentEnergy+resEnergy);
+			Energy += resEnergy;
 		}
-		intraEnergy += interE;
+		else{ Energy += itsResidues[i]->getEnergy();}
 	}
-	return intraEnergy;
+	return Energy;
 }
 
 vector <double> chain::calculateDielectric(chain* _other, UInt _residueIndex, UInt _atomIndex)
 {	
-	vector <double> chargeDensity(3);
-	vector <double> _chargeDensity(3);
-	chargeDensity[0] = 0.0;
-	chargeDensity[1] = 0.0;
-	chargeDensity[2] = 0.0;
-	bool withinCube;
+    vector <double> polarization(2);
+    vector <double> _polarization(2);
+    polarization[0] = 0.0;
+    polarization[1] = 0.0;
 	for(UInt i=0; i<_other->itsResidues.size(); i++)
 	{
-		withinCube = itsResidues[_residueIndex]->inCube(_other->itsResidues[i], 16);
-		if (withinCube)
-		{
-			_chargeDensity = itsResidues[_residueIndex]->calculateDielectric(_other->itsResidues[i], _atomIndex);
-			chargeDensity[0] += _chargeDensity[0];
-			chargeDensity[1] += _chargeDensity[1];
-			chargeDensity[2] += _chargeDensity[2];
-		}
+        _polarization = itsResidues[_residueIndex]->calculateDielectric(_other->itsResidues[i], _atomIndex);
+        polarization[0] += _polarization[0];
+        polarization[1] += _polarization[1];
 	}
-	return chargeDensity;
+    return polarization;
 }
 
 vector <double> chain::calculateDielectric(chain* _other, residue* _residue, atom* _atom)
 {	
-	vector <double> chargeDensity(3);
-	vector <double> _chargeDensity(3);
-	chargeDensity[0] = 0.0;
-	chargeDensity[1] = 0.0;
-	chargeDensity[2] = 0.0;
-	bool withinCube;
+    vector <double> polarization(2);
+    vector <double> _polarization(2);
+    polarization[0] = 0.0;
+    polarization[1] = 0.0;
 	for(UInt i=0; i<_other->itsResidues.size(); i++)
 	{
-		withinCube = _residue->inCube(_other->itsResidues[i], 16);
-		if (withinCube)
-		{
-			_chargeDensity = _residue->calculateDielectric(_other->itsResidues[i], _atom);
-			chargeDensity[0] += _chargeDensity[0];
-			chargeDensity[1] += _chargeDensity[1];
-			chargeDensity[2] += _chargeDensity[2];
-		}
+        _polarization = _residue->calculateDielectric(_other->itsResidues[i], _atom);
+        polarization[0] += _polarization[0];
+        polarization[1] += _polarization[1];
 	}
-	return chargeDensity;
+    return polarization;
 }
 
 
@@ -1786,17 +1830,6 @@ double chain::getPositionIntraSoluteEnergy(UInt _residueIndex)
 	return intraEnergy;
 }
 
-double chain::BBEnergy()
-{
-	double energy = 0.0;
-	for (UInt i = 0; i < itsResidues.size()-1; i ++)
-	{
-		energy += itsResidues[i]->BBEnergy();
-		energy += itsResidues[i]->BBEnergy(itsResidues[i+1]);
-	}
-	return energy;
-}
-
 double chain::interEnergy(chain* _other)
 {	double interEnergy = 0.0;
 	//cout << "chain::interEnergy";
@@ -1813,20 +1846,22 @@ double chain::interEnergy(chain* _other)
 
 double chain::interSoluteEnergy(chain* _other)
 {
-	bool withinCube;	
-	double interEnergy = 0.0;
+	double resEnergy, currentEnergy, Energy = 0.0;
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{
-		for(UInt j=0; j<_other->itsResidues.size(); j++)
-		{	
-			withinCube = itsResidues[i]->inCube(_other->itsResidues[j], 16);
-			if (withinCube)
+		resEnergy = 0.0;
+		if (itsResidues[i]->getMoved()){
+			for(UInt j=0; j<_other->itsResidues.size(); j++)
 			{
-				interEnergy += itsResidues[i]->interSoluteEnergy(_other->itsResidues[j]);
+				resEnergy += itsResidues[i]->interSoluteEnergy(_other->itsResidues[j]);
 			}
+			currentEnergy = itsResidues[i]->getEnergy();
+			itsResidues[i]->setEnergy(currentEnergy+resEnergy);
+			Energy += resEnergy;
 		}
+		else{ Energy += itsResidues[i]->getEnergy();}
 	}
-	return interEnergy;
+	return Energy;
 }
 
 double chain::getPositionInterEnergy(vector <int> _position, chain* _other)
@@ -2169,32 +2204,6 @@ double chain::tabulateSurfaceArea(UInt _residueIndex, UInt _atomIndex)
 		cout << "ERROR in chain::tabulateSurfaceArea ... residue index out of range." << endl;
 	}
 	return surfaceArea;
-}
-
-double chain::tabulateSolvationEnergy(UInt _param)
-{
-	double solvationEnergy = 0.0;
-	for (UInt i = 0; i < itsResidues.size(); i++)
-	{
-		solvationEnergy += itsResidues[i]->tabulateSolvationEnergy(_param);
-	}
-
-	return solvationEnergy;
-}
-
-double chain::tabulateSolvationEnergy(UInt _residue, UInt _param)
-{
-	double solvationEnergy = 0.0;
-	if (_residue >= 0 && _residue < itsResidues.size() )
-	{
-		solvationEnergy = itsResidues[_residue]->tabulateSolvationEnergy(_param);
-	}
-	else
-	{
-		cout << "ERROR in chain::tabulateSolvationEnergy ... residue index out of range." << endl;
-	}
-
-	return solvationEnergy;
 }
 	
 void chain::removeIntraChainSpherePoints()

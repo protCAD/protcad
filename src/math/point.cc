@@ -11,11 +11,7 @@ UInt point::howMany = 0;
 
 point::point()
 {	
-#ifdef USE_SVMT
-	itsCoords.resize(3);
-#else
 	itsCoords.newsize(3);
-#endif
 	itsCoords[0] = 0.00;
 	itsCoords[1] = 0.00;
 	itsCoords[2] = 0.00;
@@ -30,11 +26,7 @@ point::point()
 
 point::point(const dblVec&  _dblVec)
 {     	
-#ifdef USE_SVMT
-	itsCoords.resize(3); 
-#else
 	itsCoords.newsize(3);
-#endif
 #ifdef __POINT_DEBUG
 	cout << "Point constructor called: " << endl
 	     << "point::point(const dblVec&) "
@@ -46,11 +38,7 @@ point::point(const dblVec&  _dblVec)
 
 point::point(const double _x, const double _y, const double _z)
 {      
-#ifdef USE_SVMT
-	itsCoords.resize(3); 
-#else
 	itsCoords.newsize(3);
-#endif
 #ifdef __POINT_DEBUG
 	cout << "Point constructor called: "
 	     << "point::point(const double, const double, const double) "
@@ -64,11 +52,7 @@ point::point(const double _x, const double _y, const double _z)
 
 point::point(const point& rhs)
 {	
-#ifdef USE_SVMT
-	itsCoords.resize(3);	
-#else
 	itsCoords.newsize(3);
-#endif
 #ifdef __POINT_DEBUG
 	cout << "Point copy constructor called " << endl;
 #endif
@@ -105,11 +89,7 @@ dblVec point::operator- (const point& rhs)
 
 void point::setCoords(const dblVec& _dblVec)
 {	
-#ifdef USE_SVMT
-	double theSize = _dblVec.extent();
-#else
 	double theSize = _dblVec.dim();
-#endif
 	if (theSize!=3)
 	{	cout << "Error: setCoords with a vector of extent "
 		     << theSize << " !" << endl;
@@ -118,18 +98,18 @@ void point::setCoords(const dblVec& _dblVec)
 		     << endl;
 		return;
 	};
-	ASSERT(_dblVec[0] < 1e7 && _dblVec[0] > -1e7);
-	ASSERT(_dblVec[1] < 1e7 && _dblVec[1] > -1e7);
-	ASSERT(_dblVec[2] < 1e7 && _dblVec[2] > -1e7);
+        ASSERT(_dblVec[0] < 1e7 && _dblVec[0] > -1e7);
+        ASSERT(_dblVec[1] < 1e7 && _dblVec[1] > -1e7);
+        ASSERT(_dblVec[2] < 1e7 && _dblVec[2] > -1e7);
 	itsCoords = _dblVec;
 }
 
 void point::setCoords(const double _x, const double _y, const double _z)
 {	
 	
-	ASSERT(_x < 1e7 && _x > -1e7);
-	ASSERT(_y < 1e7 && _y > -1e7);
-	ASSERT(_z < 1e7 && _z > -1e7);
+        ASSERT(_x < 1e7 && _x > -1e7);
+        ASSERT(_y < 1e7 && _y > -1e7);
+        ASSERT(_z < 1e7 && _z > -1e7);
 	itsCoords[0] = _x;
 	itsCoords[1] = _y;
 	itsCoords[2] = _z;

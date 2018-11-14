@@ -1,5 +1,0 @@
-step size 0.2A
-minimum distance = 1.4A (1.4-1.6)
-maximum distance = 6.0A (5.8-6.0)
-
-Therefore, first field of Upperlimitdistance = 2.0A,2.2A,2.4A, etc.....

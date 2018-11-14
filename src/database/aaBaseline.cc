@@ -6,7 +6,7 @@ double aaBaseline::itsScaleFactor = 1.0;
 aaBaseline::aaBaseline()
 {	// default constructor
 	// read the file until the end.....
-	itsFileName = "aaBaseline.frc";
+	itsFileName = "resBaseline.frc";
 	baselineData.resize(0);
 	residueNameStrings.resize(0);
 	buildDataBase();
@@ -22,7 +22,7 @@ aaBaseline::aaBaseline()
 aaBaseline::aaBaseline(int _dummy)
 {	// default constructor
 	// read the file until the end.....
-	itsFileName = "aaBaseline.frc";
+	itsFileName = "resBaseline.frc";
 	baselineData.resize(0);
 	residueNameStrings.resize(0);
 	buildDataBase();
@@ -59,6 +59,11 @@ double aaBaseline::getEnergy(const string& _name) const
 		return energy;
 	}
 	return energy;
+}
+
+vector <string> aaBaseline::list() const
+{
+    return residueNameStrings;
 }
 
 void aaBaseline::buildDataBase()

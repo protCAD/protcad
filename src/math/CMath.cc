@@ -6,13 +6,8 @@
 
 double CMath::dotProduct(const dblVec& _vec1, const dblVec& _vec2)
 {
-#ifdef USE_SVMT
-	int N = _vec1.extent();
-	ASSERT (N == _vec2.extent() );
-#else
 	int N = _vec1.dim();
 	ASSERT (N == _vec2.dim() );
-#endif
 	double sum = 0.0;
 	for (int i=0; i<N; i++)
 	{
@@ -23,13 +18,8 @@ double CMath::dotProduct(const dblVec& _vec1, const dblVec& _vec2)
 
 dblVec CMath::dotProduct(const dblMat& _mat1, const dblVec& _vec1)
 {
-#ifdef USE_SVMT
-	int N = _vec1.extent();
-	ASSERT (N == _mat1.extent1() );
-#else
 	int N = _vec1.dim();
 	ASSERT (N == _mat1.num_cols() );
-#endif
 	dblVec result(N);
 	for (int i=0; i<N; i++)
 	{
@@ -63,41 +53,25 @@ dblVec CMath::translate(const dblVec& _dv1,const dblVec& _dv2)
 
 dblVec CMath::transform(const dblVec* _pdv,const dblMat* _pdm)
 {	
-#ifdef USE_SVMT
-	dblVec dv2 = _pdv->dot(*_pdm);
-#else
 	dblVec dv2 = dotProduct( (*_pdm) , (*_pdv) );
-#endif
 	return dv2;
 }
 
 dblVec CMath::transform(const dblVec* _pdv,const dblMat& _dm)
 {	
-#ifdef USE_SVMT
-	dblVec dv2 = _pdv->dot(_dm);
-#else
 	dblVec dv2 = dotProduct( _dm, (*_pdv) );
-#endif
 	return dv2;
 }
 
 dblVec CMath::transform(const dblVec& _dv,const dblMat* _pdm)
 {	
-#ifdef USE_SVMT
-	dblVec dv2 = _dv.dot(*_pdm);
-#else
 	dblVec dv2 = dotProduct( (*_pdm) , _dv );
-#endif
 	return dv2;
 }
 
 dblVec CMath::transform(const dblVec& _dv,const dblMat& _dm)
 {	
-#ifdef USE_SVMT
-	dblVec dv2 = _dv.dot(_dm);
-#else
 	dblVec dv2 = dotProduct(_dm, _dv);
-#endif
 	return dv2;
 }
 
@@ -182,24 +156,15 @@ double CMath::dihedral(const dblVec& _V_a, const dblVec& _V_b,
 	V_abXbc = CMath::cross( V_ab, V_bc );
 	V_bcXcd = CMath::cross( V_bc, V_cd );
 
-#ifdef USE_SVMT
-	double normV_abXbc = V_abXbc.dot( V_abXbc );
-	double normV_bcXcd = V_bcXcd.dot( V_bcXcd );
-#else
 	double normV_abXbc = dotProduct( V_abXbc, V_abXbc );
 	double normV_bcXcd = dotProduct( V_bcXcd, V_bcXcd );
-#endif
 	
 	double angle;
 	double radToDeg = 57.29577951308;
 	double angleCos;
 	if ( normV_abXbc > 0.0 && fabs(normV_bcXcd) > 0.0)
 	{
-#ifdef USE_SVMT
-		angleCos = V_abXbc.dot( V_bcXcd )/sqrt( normV_abXbc * normV_bcXcd );
-#else
 		angleCos = dotProduct( V_abXbc, V_bcXcd )/sqrt( normV_abXbc * normV_bcXcd );
-#endif
 	}
 	else
 	{
@@ -222,12 +187,7 @@ double CMath::dihedral(const dblVec& _V_a, const dblVec& _V_b,
 	angleAbs  = radToDeg * acos(angleCos);
 
 	double signTest;
-
-#ifdef USE_SVMT
-	signTest = V_bcXcd.dot( CMath::cross( V_bc, V_abXbc ) );
-#else
 	signTest = dotProduct( V_bcXcd, CMath::cross( V_bc, V_abXbc ) );
-#endif
 
 	if (signTest > 0.0)
 	{	angle = angleAbs;
@@ -246,55 +206,49 @@ double CMath::angle(const dblVec& _one, const dblVec& _two,
 	dblVec second = _three - _two;
 
 	double dotProd;
-        double norm1=0.0;
+	double norm1=0.0;
 	double norm2=0.0;
 
-#ifdef USE_SVMT
-        dotProd = first.dot(second);
-        norm1 = sqrt(first.dot(first));
-	norm2 = sqrt(second.dot(second));
-#else
-        dotProd = dotProduct(first,second);
-        norm1 = sqrt(dotProduct(first,first));
+	dotProd = dotProduct(first,second);
+	norm1 = sqrt(dotProduct(first,first));
 	norm2 = sqrt(dotProduct(second,second));
-#endif
 
-        double angle;
-        double radToDeg = 57.29577951308;
-        double angleCos;
+	double angle;
+	double radToDeg = 57.29577951308;
+	double angleCos;
 
 
-        if ( fabs(norm1) >= 0.01 && fabs(norm2) >= 0.01 )
-        {
-                angleCos = dotProd / (norm1 * norm2);
-        }
-        else
-        {
-                angle = 1000.00;
-                cout << "Angle undefined" << endl;
-                return angle;
-        }
+	if ( fabs(norm1) >= 0.01 && fabs(norm2) >= 0.01 )
+	{
+		angleCos = dotProd / (norm1 * norm2);
+	}
+	else
+	{
+		angle = 1000.00;
+		cout << "Angle undefined" << endl;
+		return angle;
+	}
 
-        if (fabs(angleCos) >= 1.0) angleCos = 1.0 * (angleCos/fabs(angleCos));
+	if (fabs(angleCos) >= 1.0) angleCos = 1.0 * (angleCos/fabs(angleCos));
 
-        double angleAbs;
-        angleAbs  = radToDeg * acos(angleCos);
+	double angleAbs;
+	angleAbs  = radToDeg * acos(angleCos);
 
-        double signTest;
+	double signTest;
 	signTest = 1.0;
 
-        angle = 0.0;
+	angle = 0.0;
 
-        if (signTest == 0.0)
-        {
-                angle = angleAbs;
-        }
-        else
-        {
-                angle = angleAbs * (signTest/fabs(signTest));
-        }
+	if (signTest == 0.0)
+	{
+		angle = angleAbs;
+	}
+	else
+	{
+		angle = angleAbs * (signTest/fabs(signTest));
+	}
 
-        return angle;
+	return angle;
 }
 
 dblMat CMath::rotationMatrix(const dblVec& _dv,const double& _theta)
@@ -307,12 +261,7 @@ dblMat CMath::rotationMatrix(const dblVec& _dv,const double& _theta)
 	double theta = degToRad * _theta;
 	double sinTheta = sin(theta);
 	double cosTheta = cos(theta);
-
-#ifdef USE_SVMT
-	double norm = sqrt(_dv.dot(_dv));
-#else
 	double norm = sqrt(dotProduct(_dv,_dv));
-#endif
 	double n1 = _dv[0]/norm;
 	double n2 = _dv[1]/norm;
 	double n3 = _dv[2]/norm;
@@ -340,46 +289,40 @@ dblMat CMath::rotationMatrix(const dblVec& _dv,const double& _theta)
 
 dblVec CMath::centroid(const vector<dblVec>* thePoints, const vector<double>* theWeights)
 {
-#ifdef USE_SVMT
-        unsigned int vsize = ((*thePoints)[0]).extent();
-        dblVec rv(vsize,0.0);
-#else
 	unsigned int vsize = ((*thePoints)[0]).dim();
 	dblVec rv(vsize,0.0);
-#endif
 
-        if (vsize != 3)
-        {
-                cout << "You've passed function centroid some ";
-                cout << "nonstandard vector... extent " << vsize << endl;
-                return rv;
-        }
+	if (vsize != 3)
+	{
+			cout << "You've passed function centroid some ";
+			cout << "nonstandard vector... extent " << vsize << endl;
+			return rv;
+	}
 
-        unsigned int np = thePoints->size();
-        if (np != theWeights->size())
-        {
-                cout << "Error in correspondence between Points (";
-                cout << np << ") and Weights (" << theWeights->size();
-                cout << ") in function centroid." << endl;
-                return rv;
-        }
+	unsigned int np = thePoints->size();
+	if (np != theWeights->size())
+	{
+			cout << "Error in correspondence between Points (";
+			cout << np << ") and Weights (" << theWeights->size();
+			cout << ") in function centroid." << endl;
+			return rv;
+	}
 
-        double totalWeight = 0.0;
-        for (unsigned int i=0; i < np; i++)
-        {
-                totalWeight += (*theWeights)[i];
-                for (unsigned int j=0; j<vsize; j++)
-                {
-                        rv[j] += ((*thePoints)[i])[j] * (*theWeights)[i] ;
-                }
-        }
+	double totalWeight = 0.0;
+	for (unsigned int i=0; i < np; i++)
+	{
+			totalWeight += (*theWeights)[i];
+			for (unsigned int j=0; j<vsize; j++)
+			{
+					rv[j] += ((*thePoints)[i])[j] * (*theWeights)[i] ;
+			}
+	}
 
-        for (unsigned int j=0; j<vsize; j++)
-        {
-                rv[j] /= totalWeight;
-        }
-
-        return rv;
+	for (unsigned int j=0; j<vsize; j++)
+	{
+			rv[j] /= totalWeight;
+	}
+	return rv;
 
 }
 

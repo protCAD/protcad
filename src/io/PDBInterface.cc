@@ -4,13 +4,15 @@
 #include <vector>
 #include <stdio.h>
 
+aaBaseline PDBInterface::itsAABaseline(0);
+
 PDBInterface::PDBInterface()
 {
 }
 
 PDBInterface::PDBInterface(const string& _filename)
 {
-
+	resNames = itsAABaseline.list();
 	ifstream inFile(_filename.c_str());
 	if(!inFile)
 	{	cout << "ERROR: cannot open file: " << _filename << endl;
@@ -39,7 +41,7 @@ PDBInterface::PDBInterface(const string& _filename, bool _hetflag, bool _atomfla
 	categorizeLines();
 
 	setHetatmFlag(_hetflag);
-        setAtomFlag(_atomflag);
+	setAtomFlag(_atomflag);
 	
 	if(itsAtomFlag){parseAtomLine();}
 	if(itsHetatmFlag){parseHetatmLine();}
@@ -91,9 +93,28 @@ PDBInterface::~PDBInterface()
 void PDBInterface::readData(ifstream& _infile)
 {
 	string linebuffer;
+	bool inLibrary;
 	while (getline(_infile,linebuffer,'\n'))
 	{
-		theLines.push_back(linebuffer);
+		if (linebuffer.length() > 16)
+		{
+			inLibrary = false;
+			for (UInt i = 0; i < resNames.size(); i++)
+			{
+				if (linebuffer.compare(17,3,resNames[i]) == 0)
+				{
+					inLibrary = true;
+					break;
+				}
+			}
+			if (inLibrary)
+			{
+				if (linebuffer.compare(13,1,"H") != 0 || linebuffer.compare(12,1,"H") != 0 || linebuffer.compare(16,1," ") != 0)// do not include hydrogens as we will use internal nomenclature and inclusion criteria
+				{
+					theLines.push_back(linebuffer);
+				}
+			}
+		}
 	}
 }
 
@@ -103,186 +124,11 @@ void PDBInterface::categorizeLines()
 	for (UInt i=0; i<theLines.size(); i++)
 	{
 		header = theLines[i].substr(0,6);
-		if (header == "ATOM  ")
+		if (header == "ATOM  " || header == "HETATM")
 		{	atomLines.push_back(i);
 			continue;
 		}
-		if (header == "HEADER")
-		{	headerLines.push_back(i);
-			continue;
-		}
-		if (header == "HETATM")
-		{	hetatmLines.push_back(i);
-			continue;
-		}
-		if (header == "TITLE ")
-		{	titleLines.push_back(i);
-			continue;
-		}
-		if (header == "COMPND")
-		{	compndLines.push_back(i);
-			continue;
-		}
-		if (header == "SOURCE")
-		{	sourceLines.push_back(i);
-			continue;
-		}
-		if (header == "KEYWDS")
-		{	keywdsLines.push_back(i);
-			continue;
-		}
-		if (header == "EXPDTA")
-		{	expdtaLines.push_back(i);
-			continue;
-		}
-		if (header == "AUTHOR")
-		{	authorLines.push_back(i);
-			continue;
-		}
-		if (header == "REVDAT")
-		{	revdatLines.push_back(i);
-			continue;
-		}
-		if (header == "JRNL  ")
-		{	jrnlLines.push_back(i);
-			continue;
-		}
-		if (header == "REMARK")
-		{	remarkLines.push_back(i);
-			continue;
-		}
-		if (header == "DBREF ")
-		{	dbrefLines.push_back(i);
-			continue;
-		}
-		if (header == "SEQRES")
-		{	seqresLines.push_back(i);
-			continue;
-		}
-		if (header == "FORMUL")
-		{	formulLines.push_back(i);
-			continue;
-		}
-		if (header == "HELIX ")
-		{	helixLines.push_back(i);
-			continue;
-		}
-		if (header == "SHEET ")
-		{	sheetLines.push_back(i);
-			continue;
-		}
-		if (header == "SITE  ")
-		{	siteLines.push_back(i);
-			continue;
-		}
-		if (header.substr(0,5) == "CRYST")
-		{	crystLines.push_back(i);
-			continue;
-		}
-		if (header.substr(0,5) == "ORIGX")
-		{	origxLines.push_back(i);
-			continue;
-		}
-		if (header.substr(0,5) == "SCALE")
-		{	scaleLines.push_back(i);
-			continue;
-		}
-		if (header == "MTRIX ")
-		{	mtrixLines.push_back(i);
-			continue;
-		}
-		if (header == "TER   ")
-		{	terLines.push_back(i);
-			continue;
-		}
-		if (header == "MASTER")
-		{	masterLines.push_back(i);
-			continue;
-		}
-		if (header == "CONECT")
-		{	conectLines.push_back(i);
-			continue;
-		}
-		if (header == "END   ")
-		{	endLines.push_back(i);
-			continue;
-		}
-		if (header == "FTNOTE")
-		{	ftnoteLines.push_back(i);
-			continue;
-		}
-		if (header == "SEQADV")
-		{	seqadvLines.push_back(i);
-			continue;
-		}
-		if (header == "TURN  ")
-		{	turnLines.push_back(i);
-			continue;
-		}
-		if (header == "HET   ")
-		{	hetLines.push_back(i);
-			continue;
-		}
-		if (header == "HETNAM")
-		{	hetnamLines.push_back(i);
-			continue;
-		}
-		if (header == "SSBOND")
-		{	ssbondLines.push_back(i);
-			continue;
-		}
-		if (header == "LINK  ")
-		{	linkLines.push_back(i);
-			continue;
-		}
-		if (header == "MODRES")
-		{	modresLines.push_back(i);
-			continue;
-		}
-		if (header == "SLTBRG")
-		{	sltbrgLines.push_back(i);
-			continue;
-		}
-		if (header == "SPRSDE")
-		{	sprsdeLines.push_back(i);
-			continue;
-		}
-		if (header == "MODEL ")
-		{	modelLines.push_back(i);
-			continue;
-		}
-		if (header == "ANISOU")
-		{	anisouLines.push_back(i);
-			continue;
-		}
-		if (header == "USER  ")
-		{	userLines.push_back(i);
-			continue;
-		}
-		if (header == "ENERGY")
-		{	energyLines.push_back(i);
-			continue;
-		}
-		if (header == "END")
-		{
-			continue;
-		}
-		if (header == "TER")
-		{
-			continue;
-		}
-		cout << "PDBInterface didn't recognize the header " << header << endl;
 	}
-        
-	/* 
-	//USEFUL STRING COMPARISON CODE
-	int where;
-	where = string1.find(string2);
-	// const npos in the string class is a non-valid position
-	if  (where == string::npos)
-	// means i didn't find it!
-	*/
-
 }
 
 void PDBInterface::parseHetatmLine()
@@ -293,36 +139,6 @@ void PDBInterface::parseHetatmLine()
         
 	if (!pItsEnsemble){pItsEnsemble = new ensemble();}
         //cout << "Done making a new ensemble"<<endl;
-    
-        ligand* pTheLigand= new ligand();
-	for(UInt i=0; i<hetatmLines.size(); i++)
-	{
-                tempstring=theLines[hetatmLines[i]];
-		PDBAtomRecord tempRecord(tempstring);
-                atom* ligAtom= new atom(tempRecord,itsHetatmFlag);
-                
-                if((ligAtom->getLigChainID()) != chainIDtemp)
-                {
-                    chainIDtemp=ligAtom->getLigChainID();
-                    if(ligandSet.size()!=0){pTheLigand= new ligand();}
-                    ligandSet.push_back(pTheLigand);
-                    //cout << "Number of ligands so far= " << ligandSet.size() << endl;
-                }
-                //cout << "Calling add(atom)" << endl;
-                pTheLigand->add(ligAtom);
-        }
-
-        UInt numLigands=ligandSet.size();
-        UInt ligCounter=0;
-        
-        while(ligCounter<numLigands)
-        {
-            ligandSet[ligCounter]->MatchToTemplate();
-            pItsEnsemble->add((ligandSet[ligCounter]));
-            
-            //ligandSet[ligCounter]->printAmberTypes();
-            ligCounter++;
-        }
 }
 
 void PDBInterface::parseAtomLine()
@@ -382,7 +198,7 @@ void PDBInterface::parseAtomLine()
 	counter = 1;
 	string lastResName;
 	string currentResName;
-	int lastResSeq;
+    int lastResSeq = 0;
 	int currentResSeq;
 	string lastICode;
 	string currentICode;
@@ -402,7 +218,7 @@ void PDBInterface::parseAtomLine()
 	// residue class definition, such as the residue database, etc.
 
 	residue::setupDataBase();
-	bool hydrogensFound = false;
+    bool hydrogensFound = true;
 	bool altLocFound = false;
 	vector<bool> Hflags;
 	vector<bool> altLocFlags;
@@ -441,7 +257,7 @@ void PDBInterface::parseAtomLine()
 			//cout << "start of new res at " << i << endl;
 			Hflags.push_back(hydrogensFound);
 			altLocFlags.push_back(altLocFound);
-			hydrogensFound = false;
+            hydrogensFound = true;
 			altLocFound = false;
 			resend.push_back(i-1);
 			resbegin.push_back(i);
@@ -459,7 +275,7 @@ void PDBInterface::parseAtomLine()
 			//cout << "start of new res at " << i << endl;
 			Hflags.push_back(hydrogensFound);
 			altLocFlags.push_back(altLocFound);
-			hydrogensFound = false;
+            hydrogensFound = true;
 			altLocFound = false;
 			resend.push_back(i-1);
 			resname.push_back(currentResName);
@@ -470,11 +286,11 @@ void PDBInterface::parseAtomLine()
 		}
 		// Now, check for the presence of hydrogens in each of the residues,
 		// if they exist, set the value of Hflag to true
-		if (currentRecord.getElement() == "H")
-		{
-			//cout << "Found a hydrogen at " << i << endl;
+        if (currentRecord.getElement() == "H")
+        {
+            //cout << "Found a hydrogen at " << i << endl;
 			hydrogensFound = true;
-		}
+        }
 		counter++;
 		if (currentRecord.getElement() == "" ||
 		    currentRecord.getElement() == " " ||
@@ -507,12 +323,13 @@ void PDBInterface::parseAtomLine()
 			if (theAtomTypeIndex >= 0)
 			{
 				//cout << "atomTypeIndex = " << theAtomTypeIndex << endl;
-				string atomTypeString = (residue::dataBase[theType].atomList[theAtomTypeIndex]).getType();
+                //string atomTypeString = (residue::dataBase[theType].atomList[theAtomTypeIndex]).getType();
 				//cout << "atomTypeString = " << atomTypeString << endl;
-				if (atomTypeString == "H")
-				{
+                //if (atomTypeString == "H")
+                //{
+                    //cout << "Found a hydrogen at " << i << endl;
 					hydrogensFound = true;
-				}
+                //}
 			}
 			else
 			{
@@ -527,7 +344,7 @@ void PDBInterface::parseAtomLine()
 
 	}
 	resend.push_back(atomLines.size()-1);
-	Hflags.push_back(hydrogensFound);
+    Hflags.push_back(hydrogensFound);
 	altLocFlags.push_back(altLocFound);
 /*	
 	for (UInt i=0; i<resend.size(); i++)
@@ -567,7 +384,7 @@ void PDBInterface::parseAtomLine()
 			//continue;
 		}
 		//cout << residue::getDataBaseItem(theType) << "  "<< "Hflags[" << i << "] = " << Hflags[i] << endl;
-		residue* pTheResidue = new residue(theType,Hflags[i]);	
+        residue* pTheResidue = new residue(theType,Hflags[i]);
 		pTheResidue->setResNum(resnums[i]);
 		chain* pCurrentChain = 0;
 		char theChainID;
@@ -641,14 +458,10 @@ void PDBInterface::parseAtomLine()
 		// At this point all the atoms should be initialized in our
 		// new residue, and the residue should be in the chain, which
 		// is in the protein.
-		if (numAtomsInRes < pTheResidue->getNumAtoms())
-		{
-			//cout << "Too few atoms in residue ";
-			//cout << pTheResidue->getResNum() ;
-			//cout << " - expected: " << pTheResidue->getNumAtoms();
-			//cout << " found: " <<  numAtomsInRes << endl;
-			pCurrentChain->fixBrokenResidue(pCurrentChain->getNumResidues()-1);
-		}
+		// Now mutate in, library version of amino acid, while preserving
+		// sidechain dihedrals, which includes hydrogen positions and internal nomenclature
+		bool withRotamer = true;
+		pCurrentChain->fixBrokenResidue(pCurrentChain->getNumResidues()-1, withRotamer);
 
 	} // end loop over residues
 
@@ -719,7 +532,7 @@ void PDBInterface::parseAtomLine(const bool _Hflag)
 	counter = 1;
 	string lastResName;
 	string currentResName;
-	int lastResSeq;
+    int lastResSeq = 0;
 	int currentResSeq;
 	string lastICode;
 	string currentICode;
@@ -805,14 +618,14 @@ void PDBInterface::parseAtomLine(const bool _Hflag)
 			lastResSeq = currentResSeq;
 			lastICode = currentICode;
 		}
-		counter++;
+        counter++;
 		// Now, check for the presence of hydrogens in each of the residues,
 		// if they exist, set the value of Hflag to true
 		if (currentRecord.getElement() == "H")
-		{
-			//cout << "Found a hydrogen at " << i << endl;
-			hydrogensFound = true;
-		}
+        {
+            //cout << "Found a hydrogen at " << i << endl;
+            hydrogensFound = true;
+        }
 		if (currentRecord.getElement() == "" ||
 		    currentRecord.getElement() == " " ||
                     currentRecord.getElement() == "  " )
@@ -906,12 +719,11 @@ void PDBInterface::parseAtomLine(const bool _Hflag)
 		residue* pTheResidue = new residue(theType,Hflags[i]);
 		pTheResidue->setResNum(resnums[i]);
 		chain* pCurrentChain = 0;
-		char theChainID;
 		// OK, now which chain do we add this to?
 		for (UInt j=0; j<vecChainPointers.size(); j++)
 		{
 			const char* pTheChainID  = resChainID[i].c_str();
-			theChainID = *pTheChainID;
+            char theChainID = *pTheChainID;
 			if ( theChainID == (vecChainPointers[j])->getChainID())
 			{	pCurrentChain = vecChainPointers[j];
 				break;
@@ -925,8 +737,8 @@ void PDBInterface::parseAtomLine(const bool _Hflag)
 		}
 		else
 		{
-			cout << "Wasn't able to find chain named: ";
-			cout << theChainID << endl;
+            cout << "Wasn't able to find chain";
+            //cout << theChainID << endl;
 			cout << "Please fix your pdb file!" << endl;
 			cout << "Further behavior unpredictable  - Stopping" << endl;
 			terminate();	
@@ -1063,7 +875,7 @@ void PDBInterface::parseAtomLine(const bool _Hflag, const bool _HPflag)
 	counter = 1;
 	string lastResName;
 	string currentResName;
-	int lastResSeq;
+    int lastResSeq = 0;
 	int currentResSeq;
 	string lastICode;
 	string currentICode;
@@ -1250,12 +1062,11 @@ void PDBInterface::parseAtomLine(const bool _Hflag, const bool _HPflag)
 		residue* pTheResidue = new residue(theType,Hflags[i]);
 		pTheResidue->setResNum(resnums[i]);
 		chain* pCurrentChain = 0;
-		char theChainID;
 		// OK, now which chain do we add this to?
 		for (UInt j=0; j<vecChainPointers.size(); j++)
 		{
 			const char* pTheChainID  = resChainID[i].c_str();
-			theChainID = *pTheChainID;
+            char theChainID = *pTheChainID;
 			if ( theChainID == (vecChainPointers[j])->getChainID())
 			{	pCurrentChain = vecChainPointers[j];
 				break;
@@ -1269,8 +1080,8 @@ void PDBInterface::parseAtomLine(const bool _Hflag, const bool _HPflag)
 		}
 		else
 		{
-			cout << "Wasn't able to find chain named: ";
-			cout << theChainID << endl;
+            cout << "Wasn't able to find chain";
+            //cout << theChainID << endl;
 			cout << "Please fix your pdb file!" << endl;
 			cout << "Further behavior unpredictable  - Stopping" << endl;
 			terminate();	

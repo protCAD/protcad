@@ -49,7 +49,6 @@ protected:
 	friend class residue;
 	friend class atomIterator;
 	friend class unitSphere;
-        friend class ligand;
 
 // ***********************************************************************
 // ***********************************************************************
@@ -89,7 +88,7 @@ public:
 	double distanceSquared(atom* pOtherAtom) const;
 	bool inCutoff (const atom* pOtherAtom, double _cutoffDistance);
 	double inCubeWithDist (const atom* pOtherAtom, double _cutoff);
-	double inCubeWithDistSQ (const atom* pOtherAtom, double _cutoffSquared);
+    double inCubeWithDistSQ (const atom* pOtherAtom, double _cutoff);
 	bool inCube (const atom* pOtherAtom, double _cutoffDistance);
 	bool inCutoffSQ (const atom* pOtherAtom, double _cutoff, double _cutoffSquared);
 	bool inCutoff (const atom& OtherAtom, double _cutoffDistance);
@@ -109,14 +108,18 @@ public:
 	// Radius Related Operations
 	double getRadius() const {return itsRadius; }
 	double getEpsilon() const {return itsEpsilon; }
+    double getPolarizability() const {return itsPolarizability; }
+    double getVolume() const {return itsVolume; }
 	void setRadius(const double _radius);
 	void setAtomicRadius(double _radius);
 	double getSolvationEnergy() {return itsSolvationEnergy;}
 	double getDielectric() {return itsDielectric;}
+    double getNumberofWaters() {return itsWaters;}
 	double getMaxDielectric() {return itsMaxDielectric;}
 	double getMinDielectric() {return itsMinDielectric;}
 	void setSolvationEnergy(double _solvationEnergy);
 	void setDielectric(double _dielectric);
+    void setNumberofWaters(double _waters);
 	void setMaxDielectric(double _maxDielectric);
 	void setMinDielectric(double _minDielectric);
 
@@ -133,19 +136,6 @@ public:
         void  setLigChainID(string _ID){itsLigChainID= _ID;}
 	string getResType() const;
 	bool getSilentStatus() { return isSilent; }
-        
-        //Forcefield Accessors. Currently only ligand is using these.
-        // ... Residue accesses these properties from a database instead
-        int getAmberAllType(){return itsAmberAllType;}
-        int getAmberUnitedType(){return itsAmberUnitedType;}
-        double getAmberAllCharge(){return itsAmberAllCharge;}
-        double getAmberUnitedCharge(){return itsAmberUnitedCharge;}
-        
-        void setAmberAllType(int _type){itsAmberAllType=_type;}
-        void setAmberUnitedType(int _type){itsAmberUnitedType=_type;}
-        void setAmberAllCharge(double _charge){itsAmberAllCharge=_charge;}
-        void setAmberUnitedCharge(double _charge){itsAmberUnitedCharge=_charge;}
-        
 
 protected:
 	void  setOccupancy(const double _o);
@@ -213,9 +203,12 @@ protected:
 	double itsRadius;
 	double itsSolvationEnergy;
 	double itsDielectric;
+    double itsWaters;
 	double itsMaxDielectric;
 	double itsMinDielectric;
 	double itsEpsilon;
+    double itsPolarizability;
+    double itsVolume;
 	bool isSilent;
 	UInt itsType; // e.q. N, C, P ..
 	int itsName; // e. q. NH1, CA, CB ...
@@ -284,7 +277,7 @@ class atom::typeInfo
 {
 public:
 	typeInfo()
-	{	vdwRadius.resize(2);
+    {	vdwRadius.resize(2);
 	}
 
 	string typeName;

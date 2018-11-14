@@ -1,5 +1,4 @@
 #include "ramachandranMap.h"
-//#include "svmt.h"
 
 ramachandranMap::ramachandranMap()
 {	initialize();

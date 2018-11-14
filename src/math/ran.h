@@ -18,7 +18,7 @@ public:
 
 	// Accessors
 	void setSeed(unsigned int _seed);
-	static UInt getHowMany() {return ran::getHowMany();}
+    //static UInt getHowMany() {return ran::getHowMany();}
 	double getNext();
 	double getNext(double _lowerBound, double _upperBound);
 	int getNext(int _lowerBound, int _upperBound);

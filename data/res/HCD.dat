@@ -1,0 +1,120 @@
+!main chain atoms
+N CA C O
+!sidechain branch points
+CA	NE2
+!connectivity
+N	CA	H
+CA	C  	CB	HA
+C	O
+O
+CB	CG	HB2	HB3
+CG	ND1	CD2
+ND1	CE1	
+CD2	NE2	HD2
+CE1	NE2	HE1
+NE2	MG
+MG	CAA	CAB	CAC	CAD	NA	CBA	CBB	CBC	CBD	NB	OBD	CGA	CGD	ND	CED	CHA	CHB	CHC	CHD	CMA	CMB	CMC	CMD	C1A	C1B	C1C	C1D	O1A	O1D	C2A	C2B	C2C	C2D	O2A	O2D	C3A	C3B	C3C	C3D	C4A	C4B	C4C	C4D	NC	H	HA	HB2	HB3	HD2	HE1	HAA1	HAA2	HAB	HAC1	HAC2	HBA1	HBA2	HBB1	HBB2	HBC1	HBC2	HBC3	HBD	HED1	HED2	HED3	HHB	HHC	HHD	HMA1	HMA2	HMA3	HMB1	HMB2	HMB3	HMC1	HMC2	HMC3	HMD1	HMD2	HMD3	H2A	H3A
+!defined dihedral angles
+1	N	CA	CB	CG	ND1
+2	CE1	NE2	MG	ND
+!atom types
+# column 1: atom name
+# column 2: AMBER all atom atomtype
+# column 3: AMBER united atom atomtype
+# column 4: SUMMA atom type
+# column 5: SUMMA environment type
+# column 6: six-atom solvation type
+N		N		N		N		N		N
+CA		CT		CH		CA		C		C
+C		C		C		C		C		C
+O		O		O		O		O		O
+CB		CT		C2		C2'		C		C
+CG		CC		CC		CC		C		C
+ND1		NB		NB		N4		N		N
+CD2		CC		CG		CX2		C		C
+CE1		CC		CG		CX2		C		C
+NE2		NB		NB		N4		N		N
+CAA             C2              C2		C2		C               C
+CAB             CT		CH		CA		C		C
+CAC             C2              C2		C2		C               C
+CAD             C		C		C		C		C
+NA              NB		NB		N4		N		N
+CBA             C2              C2		C2		C               C
+CBB             C2              C2		C2		C               C
+CBC             C3              C3		C3		C               C
+CBD             CT		CH		CA		C		C
+NB              NB		NB		N4		N		N
+OBD             O               O               O 		O               O
+CGA             C		C		C		C		C
+CGD             C		C		C		C		C
+ND              NB		NB		N4		N		N
+CED             C3              C3              C3              C               C
+CHA             C		C		C		C		C
+CHB             CT		C2		C2'		C		C
+CHC             CT		C2		C2'		C		C
+CHD             CT		C2		C2'		C		C
+CMA             C3              C3              C3              C               C
+CMB             C3              C3              C3              C               C
+CMC             C3              C3              C3              C               C
+CMD             C3              C3              C3              C               C
+C1A             C		C		C		C		C
+C1B             C		C		C		C		C
+C1C             C		C		C		C		C
+C1D             C		C		C		C		C
+O1A             O               O               O               O               O
+O1D             O               O               O               O               O
+C2A             CT		C2		C2'		C		C
+C2B             C		C		C		C		C
+C2C             C		C		C		C		C
+C2D             C		C		C		C		C
+O2A             O               O               O               O               O
+O2D             O               O               O               O               O
+C3A             CT		C2		C2'		C		C
+C3B             C		C		C		C		C
+C3C             C		C		C		C		C
+C3D             C		C		C		C		C
+C4A             C		C		C		C		C
+C4B             C		C		C		C		C
+C4C             C		C		C		C		C
+C4D             C		C		C		C		C
+NC              NB		NB		N4		N		N
+MG              MG              MG              MG              C               C
+H	 	H		-		-		-		H
+HA 		HC		-		-		-		H
+HB2		HC		-		-		-		H
+HB3		HC		-		-		-		H
+HD2		HC		-		-		-		H
+HE1		HC		-		-		-		H
+HAA1            HC		-		-		-		H
+HAA2            HC		-		-		-		H
+HAB             HC		-		-		-		H
+HAC1            HC		-		-		-		H
+HAC2            HC		-		-		-		H
+HBA1            HC		-		-		-		H
+HBA2            HC		-		-		-		H
+HBB1            HC		-		-		-		H
+HBB2            HC		-		-		-		H
+HBC1            HC		-		-		-		H
+HBC2            HC		-		-		-		H
+HBC3            HC		-		-		-		H
+HBD             HC		-		-		-		H
+HED1            HC		-		-		-		H
+HED2            HC		-		-		-		H
+HED3            HC		-		-		-		H
+HHB             HC		-		-		-		H
+HHC             HC		-		-		-		H
+HHD             HC		-		-		-		H
+HMA1            HC		-		-		-		H
+HMA2            HC		-		-		-		H
+HMA3            HC		-		-		-		H
+HMB1            HC		-		-		-		H
+HMB2            HC		-		-		-		H
+HMB3            HC		-		-		-		H
+HMC1            HC		-		-		-		H
+HMC2            HC		-		-		-		H
+HMC3            HC		-		-		-		H
+HMD1            HC		-		-		-		H
+HMD2            HC		-		-		-		H
+HMD3            HC		-		-		-		H
+H2A             HC		-		-		-		H
+H3A             HC		-		-		-		H

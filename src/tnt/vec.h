@@ -265,7 +265,7 @@ class Vector
     { 
 #ifdef TNT_BOUNDS_CHECK
         ASSERT(0<=i);
-        //ASSERT(i < n_) ;
+        ASSERT(i < n_) ;
 #endif
         return v_[i]; 
     }

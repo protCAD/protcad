@@ -22,7 +22,7 @@ public:
 	~aaBaseline();
 	
 	double getEnergy(const string& _name) const;
-
+    vector <string> list() const;
 	static double itsScaleFactor;
 	static void setScaleFactor(const double _scale)
 		{ itsScaleFactor = _scale;}

@@ -28,6 +28,7 @@ public:
 	void setRotamerNotAllowed(UInt _aaType, UInt _bpt, UInt _rotamer);
 	void setRotamerNotAllowed(UInt _aaType, UInt _rotamer);
 	UIntVec getAllowedRotamers(UInt _resType, UInt _bpt);
+    vector <UIntVec> getAllowedRotamers(UInt _resType);
 	bool residueIsAllowed(UInt _aaType);
 	UInt getResNum() {return itsResNum;}
 	UInt getNumAllowedRes() {return itsAllowedResidues.size();}

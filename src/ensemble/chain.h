@@ -15,10 +15,6 @@
 class atomIterator;
 #endif
 
-#ifndef LIGAND_H
-#include "ligand.h"
-#endif
-
 #ifndef CHAIN_H
 #define CHAIN_H
 //#warning "chain.h read in"
@@ -55,7 +51,7 @@ public:
 	{ return itsResidues[_resIndex]->setCoords(_atomIndex, _coords);}
     UInt getNumAtoms(const UInt _resIndex)
         {return itsResidues[_resIndex]->getNumAtoms();}
-	UInt getNumResidues() {return itsResidues.size();}
+    UInt getNumResidues() {return itsResidues.size();}
 	int mapResNumToChainPosition(const int _resNum);
 private:
 	void activateChainPosition(const UInt _index);
@@ -70,18 +66,21 @@ public:
 	char getChainID() {return itsChainID;}
 	residue* getResidue(UInt _resIndex) { return itsResidues[_resIndex]; }
 	UInt getTypeFromResNum(UInt _resNum) { return itsResidues[_resNum]->getTypeIndex(); }
+    double getRadius(UInt resIndex, UInt atomIndex) {return itsResidues[resIndex]->getRadius(atomIndex);}
 	string getTypeStringFromAtomNum(UInt _resNum, UInt _atomNum) { return itsResidues[_resNum]->getTypeStringFromAtomNum( _atomNum); }
 	string getTypeStringFromResNum(UInt _resNum) {return itsResidues[_resNum]->getType();}
 	double getAtomCharge(UInt _resNum, UInt _atomNum) { return itsResidues[_resNum]->getAtomCharge(_atomNum); }
 	void mutate(const UInt _indexInChain, const UInt _aaType);
 	void mutateWithoutBuffering(const UInt _indexInChain, const UInt _aaType);
-	void fixBrokenResidue(const UInt _indexInChain);
+    void fixBrokenResidue(const UInt _indexInChain);
+    void fixBrokenResidue(const UInt _indexInChain, bool withRotamer);
 	void redoModification(chainModBuffer _redoBuffer);
 	void makeAtomSilent(const UInt _resIndex, const UInt _atomIndex);
-
+	void makeResidueSilent(const UInt _resIndex);
 	int getLastModificationPosition() { return itsLastTargetResidue; }
 	void randomizeSystem(ran& _ran);
 	void makeAllAlanine();
+    void removeResidue(UInt _resNum);
 
 	// single modification buffers
 	vector<chainModBuffer> performRandomMutation(ran& _ran);
@@ -114,10 +113,17 @@ public:
 	void listAllowedRotamers(UInt _indexInChain) const;
 	void listChiDefinitions() const;
 	UInt getNumChis(const UInt _resIndex, const UInt _bpt);
+    double netCharge();
 
+    void setMoved (UInt resIndex, bool _moved) {itsResidues[resIndex]->setMoved(_moved);}
+    double getSolvationEnergy(const UInt _resIndex) {return itsResidues[_resIndex]->getSolvationEnergy();}
+	double getDielectric(const UInt _resIndex) {return itsResidues[_resIndex]->getDielectric();}
+	double getBetaChi(const UInt _resIndex) {return itsResidues[_resIndex]->getBetaChi();}
+	void setBetaChi(const UInt _resIndex, double _chi) {return itsResidues[_resIndex]->setBetaChi(_chi);}
 	UIntVec getActiveResidues() { return itsRepackActivePositionMap;}
 	void setRotamerNotAllowed (const UInt _indexInChain, const UInt aaType, const UInt _bpt, const UInt _rotamer);
 	UIntVec getAllowedRotamers ( const UInt _indexInChain, const UInt  _aaType, const UInt _bpt);
+    vector <UIntVec> getAllowedRotamers ( const UInt _indexInChain, const UInt  _aaType);
 	void setResNotAllowed(const UInt _indexInChain, const UInt _aaType);
 	void setResAllowed(const UInt _indexInChain, const UInt _aaType);
 	UIntVec getResAllowed (const UInt _indexInChain);
@@ -148,6 +154,9 @@ public:
 	double calculateHCA_O_hBondEnergy(chain* _other);
 	UInt getNumHardClashes();
 	UInt getNumHardClashes(chain* _other);
+	UInt getNumHardClashes(UInt _resIndex);
+	UInt getNumHardClashes(chain* _other, UInt _resIndex);
+    void listConnectivity(UInt _resIndex) {return itsResidues[_resIndex]->listConnectivity();}
 private:
 	int chooseTargetResidue(ran& _ran);
 	int chooseTargetIdentity(const UInt _indexInChain, ran& _ran);
@@ -184,8 +193,6 @@ public:
 	double getAmide(const UInt _indexInChain);
 	int setPhi(const UInt _indexInChain, double _phi);
 	int setPsi(const UInt _indexInChain, double _psi);
-	int setAngleLocal(const UInt _index, double _angle, double deltaTheta, UInt angleType, int distance, int direction);
-	int setDihedralLocal(const UInt _resIndex, double _deltaTheta, UInt _angleType);
 	int setDihedral(const UInt _resIndex, double _dihedral, UInt _angleType, UInt _direction);
 	double getDielectric(UInt _resIndex, UInt _atomIndex) {return itsResidues[_resIndex]->itsAtoms[_atomIndex]->getDielectric();}
 	double intraEnergy();
@@ -196,10 +203,6 @@ public:
 	double interSoluteEnergy(chain* _other);
 	double getInterEnergy(const UInt _res1, chain* _other, const UInt _res2);
 	double getInterEnergy(const UInt _residue1, const UInt _atom1, chain* _other, const UInt _residue2, const UInt _atom2);
-        
-     double getInterEnergy(ligand* _other);
-	double BBEnergy();
-
 	double getSelfEnergy(UInt _residueIndex);
 
 	double getPositionIntraEnergy(vector<int> _position);
