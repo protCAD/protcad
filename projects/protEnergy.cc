@@ -23,18 +23,26 @@ int main (int argc, char* argv[])
 	clock_t start, end;
 	double cpu_time_used;
 	
+	residue::setElectroSolvationScaleFactor(1.0);
+	residue::setHydroSolvationScaleFactor(1.0);
+	amberElec::setScaleFactor(1.0);
+	amberVDW::setScaleFactor(1.0);
 	
 	start = clock();
 	double Energy = bundle->intraSoluteEnergy();
 	end = clock();
 	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
 	cout << "intraSoluteEnergy: " << Energy << " kcal/mol time: " << cpu_time_used << endl;
+	string outFile = "intraSolute.pdb";
+	pdbWriter(bundle, outFile);
 	
 	start = clock();
 	Energy = bundle->protEnergy();
 	end = clock();
 	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
 	cout << "protEnergy: " << Energy << " kcal/mol time: " << cpu_time_used << endl;
+	outFile = "protEnergy.pdb";
+	pdbWriter(bundle, outFile);
 	
 	start = clock();
 	Energy = bundle->intraSoluteEnergy();

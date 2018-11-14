@@ -1746,6 +1746,42 @@ double chain::intraSoluteEnergy()
 	}
 	return Energy;
 }
+void chain::polarizability()
+{
+	for(UInt i=0; i<itsResidues.size(); i++)
+	{	
+		if (itsResidues[i]->getMoved()){
+			itsResidues[i]->polarizability();
+			for(UInt j=i+1; j<itsResidues.size(); j++)
+			{	
+				itsResidues[i]->polarizability(itsResidues[j]);
+			}
+		}
+	}
+}
+
+void chain::polarizability(chain* _other)
+{
+	for(UInt i=0; i<itsResidues.size(); i++)
+	{
+		if (itsResidues[i]->getMoved()){
+			for(UInt j=0; j<_other->itsResidues.size(); j++)
+			{
+				itsResidues[i]->polarizability(_other->itsResidues[j]);
+			}
+		}
+	}
+}
+
+void chain::calculateDielectrics()
+{
+	for(UInt i=0; i<itsResidues.size(); i++)
+	{	
+		if (itsResidues[i]->getMoved()){
+			itsResidues[i]->calculateDielectrics();
+		}
+	}
+}
 
 vector <double> chain::calculateDielectric(chain* _other, UInt _residueIndex, UInt _atomIndex)
 {	

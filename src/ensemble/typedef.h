@@ -15,6 +15,7 @@ using namespace std;
 #ifndef TYPEDEF_H
 #define TYPEDEF_H
 
+#define PI 3.14159265359
 typedef unsigned int UInt;
 typedef vector<double> DouVec;
 typedef vector<double> DblVec;

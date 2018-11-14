@@ -197,6 +197,9 @@ public:
 	double getDielectric(UInt _resIndex, UInt _atomIndex) {return itsResidues[_resIndex]->itsAtoms[_atomIndex]->getDielectric();}
 	double intraEnergy();
 	double intraSoluteEnergy();
+	void polarizability();
+	void polarizability(chain* _other);
+	void calculateDielectrics();
 	vector <double> calculateDielectric(chain* _other, UInt _residueIndex, UInt _atomIndex);
 	vector <double> calculateDielectric(chain* _other, residue* _residue, atom* _atom);
 	double interEnergy(chain* _other);

@@ -236,6 +236,9 @@ public:
 	void printCoords() const;
 	double intraEnergy();
 	double intraSoluteEnergy();
+	void polarizability();
+	void polarizability(residue* _other);
+	void calculateDielectrics();
 	vector <double> calculateDielectric(residue* _other, UInt _atomIndex);
 	vector <double> calculateDielectric(residue* _other, atom* _atom);
 	vector <double> calculateDielectric(atom* _atom);
@@ -399,6 +402,8 @@ private:
 	static double cutoffDistance;
 	static double cutoffDistanceSquared;
     static double cutoffCubeVolume;
+    static double dielectricWidth;
+    static double dielectricCubeVolume;
 };
 
 #endif

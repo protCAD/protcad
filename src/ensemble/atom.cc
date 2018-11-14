@@ -272,7 +272,14 @@ void atom::setDielectric(double _dielectric)
 {	
 	itsDielectric = _dielectric;
 }
-
+void atom::setEnvPol(double _envPol)
+{	
+	EnvPol = _envPol;
+}
+void atom::setEnvVol(double _envVol)
+{	
+	EnvVol = _envVol;
+}
 void atom::setNumberofWaters(double _waters)
 {
     itsWaters = _waters;

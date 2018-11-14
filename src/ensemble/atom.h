@@ -106,6 +106,10 @@ public:
 
 public:
 	// Radius Related Operations
+	double getEnvPol() {return EnvPol; }
+	double getEnvVol() {return EnvVol; }
+	void setEnvPol(double _envPol);
+	void setEnvVol(double _envVol);
 	double getRadius() const {return itsRadius; }
 	double getEpsilon() const {return itsEpsilon; }
     double getPolarizability() const {return itsPolarizability; }
@@ -200,6 +204,8 @@ public:
 
 protected:
 	// non-static variable declaration
+	double EnvPol = 0.0;
+	double EnvVol = 0.0;
 	double itsRadius;
 	double itsSolvationEnergy;
 	double itsDielectric;

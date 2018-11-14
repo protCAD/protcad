@@ -21,9 +21,11 @@ bool residue::dataBaseBuilt = false;
 double residue::temperature = 300.0;
 double residue::HsolvationFactor = 1.0;
 double residue::EsolvationFactor = 1.0;
-double residue::cutoffDistance = 8;
+double residue::cutoffDistance = 6;
 double residue::cutoffDistanceSquared = residue::cutoffDistance*residue::cutoffDistance;
 double residue::cutoffCubeVolume = pow((residue::cutoffDistance*2),3);
+double residue::dielectricWidth = 5.5;
+double residue::dielectricCubeVolume = pow((residue::dielectricWidth*2),3);
 
 void residue::setupDataBase()
 {	if (!dataBaseBuilt)
@@ -2690,40 +2692,41 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
 	vector <double> solvationEnergy;
 	double soluteSolventEnthalpy = 0.0;
 	double soluteSolventEntropy = 0.0;
-
-	// First estimate water occupancy around solute atom in solvent volume shells of total proximal solute atom excluded volume
-	int atomVDWtype = dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex][0];
-	double solvationRadius = residueTemplate::getVDWRadius(52);
-	double solvatedRadius = residueTemplate::getVDWRadius(atomVDWtype)+solvationRadius;
-	double totalVol = cutoffCubeVolume;
 	double waters = itsAtoms[_atomIndex]->getNumberofWaters();
-	double atomShellVol = 4.18*pow((solvatedRadius),3);
-	double atomVol = residueTemplate::getVolume(atomVDWtype);
-	double waterShellVol = atomShellVol-atomVol;
-	double shellVolFraction = waterShellVol/totalVol;
-	int shellWaters = waters*shellVolFraction;
-
-	// Polar solvation
-	if (EsolvationFactor != 0.0)
-	{	// Electrostatic enthalpy estimate of solute atom and solvent
-		// with variable dielectric and water occupancy estimate
-		// Born Electrostatic solvation Still WC, et al J Am Chem Soc 1990
-		double atomDielectric = itsAtoms[_atomIndex]->getDielectric();
-		double charge = residueTemplate::itsAmberElec.getItsCharge(itsType, _atomIndex);
-		double chargeSquared = charge*charge;
-		soluteSolventEnthalpy += (-166*chargeSquared/(solvatedRadius*atomDielectric))*shellWaters*EsolvationFactor;
-	}
-
-	// Non-Polar solvation
-	if (HsolvationFactor != 0.0)
-	{	// Lennard Jones dipole packing ethalpy estimate assuming ideal interaction of solute atom and solvent
-		// TIP3P VDW water interaction R. W. Impey, and M. L. Klein, J. Chem. Phys. 79 (1983) 926-935
-		double tempvdwEnergy = residueTemplate::getVDWWaterEnergy(atomVDWtype);
-		soluteSolventEnthalpy += tempvdwEnergy*shellWaters;
-
-		// Solvent Entropy loss estimate due to lack of ideal water lattice hydrogen bond network formation (hydrophobic effect)
-		// Gill Hydrophobic solvation  S.J.Gill, S.F.Dec. J Phys. Chem. 1985
-		soluteSolventEntropy = (-temperature*0.0019872041*log(pow(0.5,(shellWaters))))*HsolvationFactor;
+	if (waters > 0){
+		// First estimate water occupancy around solute atom in solvent volume shells of total proximal solute atom excluded volume
+		int atomVDWtype = dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex][0];
+		double solvationRadius = residueTemplate::getVDWRadius(52);
+		double solvatedRadius = residueTemplate::getVDWRadius(atomVDWtype)+solvationRadius;
+		double totalVol = dielectricWidth;
+		double atomShellVol = 4.18*pow((solvatedRadius),3);
+		double atomVol = residueTemplate::getVolume(atomVDWtype);
+		double waterShellVol = atomShellVol-atomVol;
+		double shellVolFraction = waterShellVol/totalVol;
+		int shellWaters = waters*shellVolFraction;
+	
+		// Polar solvation
+		if (EsolvationFactor != 0.0)
+		{	// Electrostatic enthalpy estimate of solute atom and solvent
+			// with variable dielectric and water occupancy estimate
+			// Born Electrostatic solvation Still WC, et al J Am Chem Soc 1990
+			double atomDielectric = itsAtoms[_atomIndex]->getDielectric();
+			double charge = residueTemplate::itsAmberElec.getItsCharge(itsType, _atomIndex);
+			double chargeSquared = charge*charge;
+			soluteSolventEnthalpy += (-166*chargeSquared/(solvatedRadius*atomDielectric))*shellWaters*EsolvationFactor;
+		}
+	
+		// Non-Polar solvation
+		if (HsolvationFactor != 0.0)
+		{	// Lennard Jones dipole packing ethalpy estimate assuming ideal interaction of solute atom and solvent
+			// TIP3P VDW water interaction R. W. Impey, and M. L. Klein, J. Chem. Phys. 79 (1983) 926-935
+			double tempvdwEnergy = residueTemplate::getVDWWaterEnergy(atomVDWtype);
+			soluteSolventEnthalpy += tempvdwEnergy*shellWaters;
+	
+			// Solvent Entropy loss estimate due to lack of ideal water lattice hydrogen bond network formation (hydrophobic effect)
+			// Gill Hydrophobic solvation  S.J.Gill, S.F.Dec. J Phys. Chem. 1985
+			soluteSolventEntropy = (-temperature*0.0019872041*log(pow(0.5,(shellWaters))))*HsolvationFactor;
+		}
 	}
 
 	//Total atom solvation Energy
@@ -2752,7 +2755,98 @@ double residue::getDielectric()
 	}
 	return dielectricTotal/itsAtoms.size();
 }
-		
+
+void residue::polarizability()
+{	
+	bool inCube;
+	int vdwIndex;
+	double polarizability, volume, currentPol, currentVol;
+	for(UInt i=0; i<itsAtoms.size(); i++)
+	{
+		if (!itsAtoms[i]->getSilentStatus())
+		{
+			polarizability = 0.0, volume = 0.0;
+			for(UInt j=i+1; j<itsAtoms.size(); j++)
+			{
+				if (!itsAtoms[j]->getSilentStatus())
+				{
+					inCube = itsAtoms[i]->inCube(itsAtoms[j], dielectricWidth);
+					if (inCube)
+					{
+						vdwIndex = dataBase[itsType].itsAtomEnergyTypeDefinitions[j][0];
+						polarizability += residueTemplate::getPolarizability(vdwIndex);
+						volume += residueTemplate::getVolume(vdwIndex);
+					}
+				}
+			}
+			currentPol = itsAtoms[i]->getEnvPol();
+			currentVol = itsAtoms[i]->getEnvVol();
+			itsAtoms[i]->setEnvPol(currentPol+polarizability);
+			itsAtoms[i]->setEnvVol(currentVol+volume);
+		}
+	}
+}
+
+void residue::polarizability(residue* _other)
+{	
+	bool inCube;
+	int vdwIndex;
+	double polarizability, volume, currentPol, currentVol;
+	for(UInt i=0; i<itsAtoms.size(); i++)
+	{
+		if (!itsAtoms[i]->getSilentStatus())
+		{
+			polarizability = 0.0, volume = 0.0;
+			for(UInt j=0; j<_other->itsAtoms.size(); j++)
+			{
+				if (!_other->itsAtoms[j]->getSilentStatus())
+				{
+					inCube = itsAtoms[i]->inCube(_other->itsAtoms[j], dielectricWidth);
+					if (inCube)
+					{
+						vdwIndex = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[j][0];
+						polarizability += residueTemplate::getPolarizability(vdwIndex);
+						volume += residueTemplate::getVolume(vdwIndex);
+					}
+				}
+			}
+			currentPol = itsAtoms[i]->getEnvPol();
+			currentVol = itsAtoms[i]->getEnvVol();
+			itsAtoms[i]->setEnvPol(currentPol+polarizability);
+			itsAtoms[i]->setEnvVol(currentVol+volume);
+		}
+	}
+}
+
+void residue::calculateDielectrics()
+{
+	double envPol, envVol, totalWaterVol, totalWaterPol, dielectric;
+	double waterPol = residueTemplate::getPolarizability(52);
+	double waterVol = residueTemplate::getVolume(52);
+	double totalVol = dielectricCubeVolume;
+	double waters= 0.0;
+	for(UInt i=0; i<itsAtoms.size(); i++)
+	{
+		if (!itsAtoms[i]->getSilentStatus())
+		{
+			// calculate local dielectric for atom
+			envPol = itsAtoms[i]->getEnvPol();
+			envVol = itsAtoms[i]->getEnvVol();
+			totalWaterVol = totalVol-envVol;
+			if (totalWaterVol > waterVol){
+				waters = (totalWaterVol/waterVol);
+				cout << waters << endl;
+				totalWaterPol = waters*waterPol;
+				dielectric = 1+4*PI*((waters)/totalVol)*(totalWaterPol+envPol);
+			}
+			else dielectric = 2;
+			//if (dielectric < 2){dielectric = 2;}
+			itsAtoms[i]->setDielectric(dielectric);
+			itsAtoms[i]->setNumberofWaters(waters);
+		}
+	}
+}
+
 vector <double> residue::calculateDielectric(residue* _other, UInt _atomIndex)
 {	
 	vector <double> polarizabilities(2);

@@ -1199,6 +1199,33 @@ double protein::interSoluteEnergy(bool _updateDielectrics, UInt _chain1, UInt _c
 	return interEnergy;
 }
 
+void protein::polarizability()
+{
+	// get volume and polarizabilities through protein around each atom and save to atom
+	for(UInt i=0; i<itsChains.size(); i++)
+	{
+		itsChains[i]->polarizability();
+		for(UInt j=i+1; j<itsChains.size(); j++)
+		{
+			itsChains[i]->polarizability(itsChains[j]);
+		}
+	}
+}
+
+void protein::calculateDielectrics()
+{
+	for(UInt i=0; i<itsChains.size(); i++)
+	{
+		itsChains[i]->calculateDielectrics();
+	}
+}
+
+void protein::updateDielectrics()
+{
+	polarizability();
+	calculateDielectrics();
+}
+
 vector <double> protein::calculateDielectric(UInt _chainIndex, UInt _residueIndex, UInt _atomIndex)
 {
     vector <double> polarization(2);
@@ -1354,7 +1381,7 @@ void protein::updateTotalNumResidues()
 }
 
 //Functions used in fast (non-redundant) energy calculation (protEnergy) //////////////////
-void protein::updateDielectrics()
+/*void protein::updateDielectrics()
 {
 	vector <double> dielectric(2);
 	for(UInt i=0; i<itsChains.size(); i++)
@@ -1369,7 +1396,7 @@ void protein::updateDielectrics()
 			}
 		}
 	}
-}
+}*/
 
 void protein::updatePositionDielectrics(UInt _chainIndex, UInt _residueIndex)
 {
@@ -3780,7 +3807,6 @@ vector < double >  protein::getRotationEnergySurface(UIntVec  _active, UInt _ste
 double protein::getHBondEnergy(const UInt _chain1, const UInt _res1, const UInt _chain2, const UInt _res2)
 {
     enum aminoAcid {A, R, N, D, C, Q, E, G, H, I, L, K, M, F, P, S, T, W, Y, V};
-    double PI = 3.1415;
 
     UInt type1 = getTypeFromResNum(_chain1, _res1);
     UInt type2 = getTypeFromResNum(_chain2, _res2);
