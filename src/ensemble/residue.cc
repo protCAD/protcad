@@ -2692,41 +2692,40 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
 	vector <double> solvationEnergy;
 	double soluteSolventEnthalpy = 0.0;
 	double soluteSolventEntropy = 0.0;
+
+	// First estimate water occupancy around solute atom in solvent volume shells of total proximal solute atom excluded volume
+	int atomVDWtype = dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex][0];
+	double solvationRadius = residueTemplate::getVDWRadius(52);
+	double solvatedRadius = residueTemplate::getVDWRadius(atomVDWtype)+solvationRadius;
+	double totalVol = dielectricCubeVolume;
 	double waters = itsAtoms[_atomIndex]->getNumberofWaters();
-	if (waters > 0){
-		// First estimate water occupancy around solute atom in solvent volume shells of total proximal solute atom excluded volume
-		int atomVDWtype = dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex][0];
-		double solvationRadius = residueTemplate::getVDWRadius(52);
-		double solvatedRadius = residueTemplate::getVDWRadius(atomVDWtype)+solvationRadius;
-		double totalVol = dielectricWidth;
-		double atomShellVol = 4.18*pow((solvatedRadius),3);
-		double atomVol = residueTemplate::getVolume(atomVDWtype);
-		double waterShellVol = atomShellVol-atomVol;
-		double shellVolFraction = waterShellVol/totalVol;
-		int shellWaters = waters*shellVolFraction;
-	
-		// Polar solvation
-		if (EsolvationFactor != 0.0)
-		{	// Electrostatic enthalpy estimate of solute atom and solvent
-			// with variable dielectric and water occupancy estimate
-			// Born Electrostatic solvation Still WC, et al J Am Chem Soc 1990
-			double atomDielectric = itsAtoms[_atomIndex]->getDielectric();
-			double charge = residueTemplate::itsAmberElec.getItsCharge(itsType, _atomIndex);
-			double chargeSquared = charge*charge;
-			soluteSolventEnthalpy += (-166*chargeSquared/(solvatedRadius*atomDielectric))*shellWaters*EsolvationFactor;
-		}
-	
-		// Non-Polar solvation
-		if (HsolvationFactor != 0.0)
-		{	// Lennard Jones dipole packing ethalpy estimate assuming ideal interaction of solute atom and solvent
-			// TIP3P VDW water interaction R. W. Impey, and M. L. Klein, J. Chem. Phys. 79 (1983) 926-935
-			double tempvdwEnergy = residueTemplate::getVDWWaterEnergy(atomVDWtype);
-			soluteSolventEnthalpy += tempvdwEnergy*shellWaters;
-	
-			// Solvent Entropy loss estimate due to lack of ideal water lattice hydrogen bond network formation (hydrophobic effect)
-			// Gill Hydrophobic solvation  S.J.Gill, S.F.Dec. J Phys. Chem. 1985
-			soluteSolventEntropy = (-temperature*0.0019872041*log(pow(0.5,(shellWaters))))*HsolvationFactor;
-		}
+	double atomShellVol = 4.18*pow((solvatedRadius),3);
+	double atomVol = residueTemplate::getVolume(atomVDWtype);
+	double waterShellVol = atomShellVol-atomVol;
+	double shellVolFraction = waterShellVol/totalVol;
+	double shellWaters = waters*shellVolFraction;
+
+	// Polar solvation
+	if (EsolvationFactor != 0.0)
+	{	// Electrostatic enthalpy estimate of solute atom and solvent
+		// with variable dielectric and water occupancy estimate
+		// Born Electrostatic solvation Still WC, et al J Am Chem Soc 1990
+		double atomDielectric = itsAtoms[_atomIndex]->getDielectric();
+		double charge = residueTemplate::itsAmberElec.getItsCharge(itsType, _atomIndex);
+		double chargeSquared = charge*charge;
+		soluteSolventEnthalpy += (-166*chargeSquared/(solvatedRadius*atomDielectric))*shellWaters*EsolvationFactor;
+	}
+
+	// Non-Polar solvation
+	if (HsolvationFactor != 0.0)
+	{	// Lennard Jones dipole packing ethalpy estimate assuming ideal interaction of solute atom and solvent
+		// TIP3P VDW water interaction R. W. Impey, and M. L. Klein, J. Chem. Phys. 79 (1983) 926-935
+		double tempvdwEnergy = residueTemplate::getVDWWaterEnergy(atomVDWtype);
+		soluteSolventEnthalpy += tempvdwEnergy*shellWaters;
+
+		// Solvent Entropy loss estimate due to lack of ideal water lattice hydrogen bond network formation (hydrophobic effect)
+		// Gill Hydrophobic solvation  S.J.Gill, S.F.Dec. J Phys. Chem. 1985
+		soluteSolventEntropy = (-temperature*0.0019872041*log(pow(0.5,(shellWaters))))*HsolvationFactor;
 	}
 
 	//Total atom solvation Energy
@@ -2835,11 +2834,10 @@ void residue::calculateDielectrics()
 			totalWaterVol = totalVol-envVol;
 			if (totalWaterVol > waterVol){
 				waters = (totalWaterVol/waterVol);
-				cout << waters << endl;
 				totalWaterPol = waters*waterPol;
 				dielectric = 1+4*PI*((waters)/totalVol)*(totalWaterPol+envPol);
 			}
-			else dielectric = 2;
+			else{ dielectric = 2;}
 			//if (dielectric < 2){dielectric = 2;}
 			itsAtoms[i]->setDielectric(dielectric);
 			itsAtoms[i]->setNumberofWaters(waters);

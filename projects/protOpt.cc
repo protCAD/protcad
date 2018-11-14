@@ -47,7 +47,7 @@ int main (int argc, char* argv[])
     }
     cout << "start: " << _prot->protEnergy() << " kcal/mol  clashes: " << _prot->getNumHardClashes() << endl;
     //_prot->protOpt(backbone,frozenResidues,activeChains);
-    _prot->protRelax(backbone);
+    _prot->protOpt(backbone);
     cout << "end: " << _prot->protEnergy() << " kcal/mol  clashes: " << _prot->getNumHardClashes() << endl;
 	pdbWriter(_prot, outFile);
 
