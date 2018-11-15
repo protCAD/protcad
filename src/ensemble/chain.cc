@@ -1783,37 +1783,6 @@ void chain::calculateDielectrics()
 	}
 }
 
-vector <double> chain::calculateDielectric(chain* _other, UInt _residueIndex, UInt _atomIndex)
-{	
-    vector <double> polarization(2);
-    vector <double> _polarization(2);
-    polarization[0] = 0.0;
-    polarization[1] = 0.0;
-	for(UInt i=0; i<_other->itsResidues.size(); i++)
-	{
-        _polarization = itsResidues[_residueIndex]->calculateDielectric(_other->itsResidues[i], _atomIndex);
-        polarization[0] += _polarization[0];
-        polarization[1] += _polarization[1];
-	}
-    return polarization;
-}
-
-vector <double> chain::calculateDielectric(chain* _other, residue* _residue, atom* _atom)
-{	
-    vector <double> polarization(2);
-    vector <double> _polarization(2);
-    polarization[0] = 0.0;
-    polarization[1] = 0.0;
-	for(UInt i=0; i<_other->itsResidues.size(); i++)
-	{
-        _polarization = _residue->calculateDielectric(_other->itsResidues[i], _atom);
-        polarization[0] += _polarization[0];
-        polarization[1] += _polarization[1];
-	}
-    return polarization;
-}
-
-
 double chain::getPositionIntraEnergy(vector <int> _position)
 {
 	double intraEnergy = 0.0;

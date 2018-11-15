@@ -1023,34 +1023,6 @@ double protein::getPositionEnergy(vector <int> _position)
     return intraEnergy;
 }
 
-double protein::getPositionSoluteEnergy(vector <int> _position)
-{
-	if (_position.size() == 2) // ensemble number not in
-	{
-		vector <int> temp;
-		temp.resize(0);
-		temp.push_back(0);
-		temp.push_back(_position[0]);
-		temp.push_back(_position[1]);
-		_position = temp;
-	}
-   double intraEnergy = 0.0;
-   if (_position[1] >=0 && _position[1] < (int)itsChains.size())
-   {
-       double tempE = itsChains[_position[1]]->getPositionIntraSoluteEnergy(_position);
-       intraEnergy += tempE;
-       for (UInt i = 0; i < itsChains.size(); i++)
-       {
-           if ((int)i != _position[1])
-           {
-               tempE = itsChains[_position[1]]->getPositionInterSoluteEnergy(_position, itsChains[i]);
-               intraEnergy += tempE;
-           }
-       }
-   }
-   return intraEnergy;
-}
-
 int protein::setPhi(const UInt _chain, const UInt _res, double _phi)
 {
 	if (_chain < itsChains.size())
@@ -1102,21 +1074,6 @@ double protein::getPositionEnergy(UInt _chain, UInt _residue)
 	return energy;
 }
 
-double protein::getPositionSoluteEnergy(UInt _chain, UInt _residue, bool _updateDielectrics)
-{
-	if (_updateDielectrics)
-	{
-		this->updatePositionDielectrics(_chain, _residue);
-	}
-	vector <int> position;
-	position.resize(0);
-	position.push_back(-1);
-	position.push_back((int)_chain);
-	position.push_back((int)_residue);
-	double positionEnergy=getPositionSoluteEnergy(position);
-	return positionEnergy;
-}
-
 double protein::getIntraEnergy(const UInt _chain1, const UInt _residue1, const UInt _atom1, const UInt _chain2, const UInt _residue2, const UInt _atom2)
 {
 	if (_chain1 >=0 && _chain1 < itsChains.size() && _chain2 >= 0 && _chain2 < itsChains.size())
@@ -1165,7 +1122,6 @@ double protein::intraSoluteEnergy()
 		for(UInt j=i+1; j<itsChains.size(); j++)
 		{
 			intraEnergy += itsChains[i]->interSoluteEnergy(itsChains[j]);
-
 		}
 	}
 	return intraEnergy;
@@ -1226,69 +1182,7 @@ void protein::updateDielectrics()
 	calculateDielectrics();
 }
 
-vector <double> protein::calculateDielectric(UInt _chainIndex, UInt _residueIndex, UInt _atomIndex)
-{
-    vector <double> polarization(2);
-    vector <double> _polarization(2);
-    vector <double> dielectric(2);
-    double waterPol = residueTemplate::getPolarizability(52);
-    double waterVol = residueTemplate::getVolume(52);
-    double totalVol = residue::cutoffCubeVolume;
-    polarization[0] = 0.0;
-    polarization[1] = 0.0;
-
-    // get volume and polarizabilities through protein around atom
-	for(UInt i=0; i<itsChains.size(); i++)
-	{
-        _polarization = itsChains[_chainIndex]->calculateDielectric(itsChains[i], _residueIndex, _atomIndex);
-        polarization[0] += _polarization[0];
-        polarization[1] += _polarization[1];
-	}
-
-    // calculate local dielectric for atom
-	double totalWaterVol = totalVol-(polarization[0]/1.89);
-    int waters = totalWaterVol/waterVol;
-    double totalWaterPol = waters*waterPol;
-	double die = 1+4*3.14*((waters)/totalVol)*(totalWaterPol+polarization[1]);
-    if (die < 2) { die = 2.0;}
-    if (die > 78) { die = 78.0;}
-    dielectric[0] = die;
-    dielectric[1] = waters;
-    return dielectric;
-}
-
-vector <double> protein::calculateDielectric(chain* _chain, residue* _residue, atom* _atom)
-{
-    vector <double> polarization(2);
-    vector <double> _polarization(2);
-    vector <double> dielectric(2);
-    double waterPol = residueTemplate::getPolarizability(52);
-    double waterVol = residueTemplate::getVolume(52);
-    double totalVol = residue::cutoffCubeVolume;
-    polarization[0] = 0.0;
-    polarization[1] = 0.0;
-
-    // get volume and polarizabilities through protein around atom
-    for(UInt i=0; i<itsChains.size(); i++)
-    {
-        _polarization = _chain->calculateDielectric(itsChains[i], _residue, _atom);
-        polarization[0] += _polarization[0];
-        polarization[1] += _polarization[1];
-    }
-
-    // calculate local dielectric for atom
-	double totalWaterVol = totalVol-(polarization[0]/1.89);
-    int waters = totalWaterVol/waterVol;
-    double totalWaterPol = waters*waterPol;
-	double die = 1+4*3.14*((waters)/totalVol)*(totalWaterPol+polarization[1]);
-    if (die < 2) { die = 2.0;}
-    if (die > 78) { die = 78.0;}
-    dielectric[0] = die;
-    dielectric[1] = waters;
-    return dielectric;
-}
-
-vector <double> protein::calculateChainIndependentDielectric(chain* _chain, residue* _residue, atom* _atom)
+/*vector <double> protein::calculateChainIndependentDielectric(chain* _chain, residue* _residue, atom* _atom)
 {
     vector <double> polarization(2);
     vector <double> _polarization(2);
@@ -1368,7 +1262,7 @@ void protein::updateResidueIndependentDielectrics(UInt _chainIndex, UInt _resInd
 		itsChains[_chainIndex]->itsResidues[_resIndex]->itsAtoms[j]->setDielectric(dielectric[0]);
 		itsChains[_chainIndex]->itsResidues[_resIndex]->itsAtoms[j]->setNumberofWaters(dielectric[1]);
 	}
-}
+}*/
 
 void protein::updateTotalNumResidues()
 {
@@ -1380,66 +1274,12 @@ void protein::updateTotalNumResidues()
 	itsNumResidues = numResidues;
 }
 
-//Functions used in fast (non-redundant) energy calculation (protEnergy) //////////////////
-/*void protein::updateDielectrics()
-{
-	vector <double> dielectric(2);
-	for(UInt i=0; i<itsChains.size(); i++)
-	{
-		for(UInt j=0; j<itsChains[i]->itsResidues.size(); j++)
-		{
-			for(UInt k=0; k<itsChains[i]->itsResidues[j]->itsAtoms.size(); k++)
-			{
-				dielectric = this->calculateDielectric(itsChains[i], itsChains[i]->itsResidues[j], itsChains[i]->itsResidues[j]->itsAtoms[k]);
-				itsChains[i]->itsResidues[j]->itsAtoms[k]->setDielectric(dielectric[0]);
-				itsChains[i]->itsResidues[j]->itsAtoms[k]->setNumberofWaters(dielectric[1]);
-			}
-		}
-	}
-}*/
-
-void protein::updatePositionDielectrics(UInt _chainIndex, UInt _residueIndex)
-{
-	vector <double> dielectric(2);
-	for(UInt i=0; i<itsChains[_chainIndex]->itsResidues[_residueIndex]->itsAtoms.size(); i++)
-	{
-		dielectric = this->calculateDielectric(itsChains[_chainIndex], itsChains[_chainIndex]->itsResidues[_residueIndex], itsChains[_chainIndex]->itsResidues[_residueIndex]->itsAtoms[i]);
-		itsChains[_chainIndex]->itsResidues[_residueIndex]->itsAtoms[i]->setDielectric(dielectric[0]);
-		itsChains[_chainIndex]->itsResidues[_residueIndex]->itsAtoms[i]->setNumberofWaters(dielectric[1]);
-	}
-}
-
-void protein::updateEnergyDatabase(vector < vector < vector <double> > > &_energies)
-{
-	if (_energies.empty()) // build energy database
-	{
-		buildResidueEnergyPairs(_energies);
-	}
-	else // update energy database
-	{
-		updateProtEnergy(_energies);
-	}
-}
-
 double protein::protEnergy()
 {
-	updateEnergyDatabase(energies);
-
-	double protEnergy = 0;
-	for (UInt i = 0; i < energies.size(); i++) // total energy database
-	{
-		for (UInt j = 0; j < energies[i].size(); j++)
-		{
-			for (UInt k = 0; k < energies[i][j].size(); k++)
-			{
-				protEnergy += energies[i][j][k];
-			}
-		}
-	}
-	return protEnergy;
+	return intraSoluteEnergy();
 }
 
-double protein::resEnergy(UInt chainIndex, UInt resIndex)
+/*double protein::resEnergy(UInt chainIndex, UInt resIndex)
 {
 	if (itsChains[chainIndex]->itsResidues[resIndex]->getMoved())
 	{
@@ -1563,194 +1403,6 @@ double protein::getMedianResEnergy(UIntVec _activeChains, UIntVec _activeResidue
 	return median;
 }
 
-double protein::getMedianDeltaH()
-{
-	double median, resE;
-	vector <double> resEnergies;
-	for (UInt i = 0; i < itsChains.size(); i++)
-	{
-		for (UInt j = 0; j < itsChains[i]->itsResidues.size(); j++)
-		{
-			resE = deltaH(i,j);
-			resEnergies.push_back(resE);
-		}
-	}
-	size_t size = resEnergies.size();
-
-	sort(resEnergies.begin(), resEnergies.end());
-
-	if (size  % 2 == 0)
-	{
-	  median = (resEnergies[size / 2 - 1] + resEnergies[size / 2]) / 2;
-	}
-	else
-	{
-	  median = resEnergies[size / 2];
-	}
-	return median;
-}
-
-
-void protein::buildResidueEnergyPairs(vector < vector < vector <double> > > &_energies)
-{
-	_energies.clear();
-	double Energy;
-	vector < vector < vector <double> > > chainE;
-	vector < vector <double> > resE;
-	vector <double> E;
-
-	//populate energy vector with starting energies
-	if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0 || residue::getHydroSolvationScaleFactor() != 0.0 || residue::getElectroSolvationScaleFactor() != 0.0)
-	{
-		updateDielectrics();
-	}
-	UInt chaini, chainj, resi, resj;
-	for (chaini = 0; chaini < itsChains.size(); chaini++)
-	{
-		resE.clear();
-		for (resi = 0; resi < getNumResidues(chaini); resi++)
-		{
-			E.clear();
-			for (chainj = 0; chainj < chaini+1; chainj++)
-			{
-				for (resj = 0; resj < getNumResidues(chainj); resj++)
-				{
-					//cout << chaini << " " << resi << " " << chainj << " " << resj<< " | ";
-					if (chaini == chainj && resi == resj)
-					{
-						Energy = itsChains[chaini]->itsResidues[resi]->intraSoluteEnergy();
-						E.push_back(Energy);
-						break;
-					}
-					else
-					{
-						Energy = itsChains[chaini]->itsResidues[resi]->interSoluteEnergy(itsChains[chainj]->itsResidues[resj]);
-						E.push_back(Energy);
-					}
-				}
-			}
-			resE.push_back(E);
-			//cout << endl;
-		}
-		chainE.push_back(resE);
-	}
-	for (chaini = 0; chaini < itsChains.size(); chaini++)
-	{
-		for (resi = 0; resi < itsChains[chaini]->itsResidues.size(); resi++)
-		{
-			itsChains[chaini]->itsResidues[resi]->setMoved(false);
-		}
-	}
-	_energies = chainE;
-	return;
-}
-
-void protein::updateProtEnergy(vector < vector < vector <double> > > &_energies)
-{
-	double residueEnergy;
-
-	//update energies of residues transformed since last calculation
-	UInt chaini, chainj, resi, resj, k;
-	for (chaini = 0; chaini < itsChains.size(); chaini++)
-	{
-		for (resi = 0; resi < itsChains[chaini]->itsResidues.size(); resi++)
-		{
-			k = 0;
-			for (chainj = 0; chainj < chaini+1; chainj++)
-			{
-				for (resj = 0; resj < getNumResidues(chainj); resj++)
-				{
-					if (chaini == chainj && resi == resj)
-					{
-						if (itsChains[chaini]->itsResidues[resi]->getMoved())
-						{
-							if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0 || residue::getHydroSolvationScaleFactor() != 0.0 || residue::getElectroSolvationScaleFactor() != 0.0)
-							{
-								updatePositionDielectrics(chaini, resi);
-							}
-							residueEnergy = itsChains[chaini]->itsResidues[resi]->intraSoluteEnergy();
-							_energies[chaini][resi][k] = residueEnergy;
-						}
-						k++;
-						break;
-					}
-					else
-					{
-						if (itsChains[chaini]->itsResidues[resi]->getMoved() || itsChains[chainj]->itsResidues[resj]->getMoved())
-						{
-							if (itsChains[chainj]->itsResidues[resj]->getMoved() && (residueTemplate::itsAmberElec.getScaleFactor() != 0.0 || residue::getHydroSolvationScaleFactor() != 0.0 || residue::getElectroSolvationScaleFactor() != 0.0))
-							{
-								updatePositionDielectrics(chainj, resj);
-							}
-							residueEnergy = itsChains[chaini]->itsResidues[resi]->interSoluteEnergy(itsChains[chainj]->itsResidues[resj]);
-							_energies[chaini][resi][k] = residueEnergy;
-						}
-					}
-					k++;
-				}
-			}
-		}
-	}
-	for (chaini = 0; chaini < itsChains.size(); chaini++)
-	{
-		for (resi = 0; resi < itsChains[chaini]->itsResidues.size(); resi++)
-		{
-			itsChains[chaini]->itsResidues[resi]->setMoved(false);
-		}
-	}
-	return;
-}
-
-double protein::getFreeAminoAcidEnergy()
-{
-	double refEnergy = 0;
-	UInt chaini, resi;
-	for (chaini = 0; chaini < itsChains.size(); chaini++)
-	{
-		for (resi = 0; resi < itsChains[chaini]->itsResidues.size(); resi++)
-		{
-			refEnergy += getFreeAminoAcidEnergy(chaini,resi);
-		}
-	}
-	return refEnergy;
-}
-
-double protein::getFreeAminoAcidEnergy(UInt _chainIndex, UInt _resIndex)   // protEnergy of free amino acids in current conformation
-{
-	updateResidueIndependentDielectrics(_chainIndex, _resIndex);
-	double refEnergy = itsChains[_chainIndex]->itsResidues[_resIndex]->intraSoluteEnergy();
-	itsChains[_chainIndex]->itsResidues[_resIndex]->setMoved(true);
-	return refEnergy;
-}
-
-double protein::deltaH()
-{
-    double deltaH;
-	deltaH = protEnergy()-getFreeAminoAcidEnergy();
-    return deltaH;
-}
-
-double protein::deltaH(UInt chainIndex, UInt resIndex)
-{
-	double deltaH = resEnergy(chainIndex, resIndex)-getFreeAminoAcidEnergy(chainIndex, resIndex);
-    return deltaH;
-}
-
-vector <double> protein::protLigandBindingEnergy(UInt ligChainIndex, UInt ligResIndex)
-{
-    vector <double> Energies(2);
-    double holoEnergy = protEnergy();
-    Energies[0] = holoEnergy;
-    double freeLigandEnergy = getFreeAminoAcidEnergy(ligChainIndex, ligResIndex);
-    makeResidueSilent(ligChainIndex, ligResIndex);
-    double apoEnergy = intraSoluteEnergy();
-    double BindingEnergy = holoEnergy - (apoEnergy + freeLigandEnergy);
-    Energies[1] = BindingEnergy;
-    return Energies;
-}
-
-//-/////////////////////////////////////////////////////////////////////////////
-
 vector <double> protein::chainBindingEnergy()
 {
     double bindingEnergy, complexEnergy, intraChainEnergy = 0.0;
@@ -1766,24 +1418,7 @@ vector <double> protein::chainBindingEnergy()
     bindingEnergy = complexEnergy - intraChainEnergy;
     Energy.push_back(bindingEnergy);
     return Energy;
-}
-
-double protein::bindingPositionSoluteEnergy(UInt _chain, UInt _residue, UInt _otherChain)
-{
-	double bindingPositionE, intraChainPositionE, complexPositionE = 0.0;
-	vector <int> position;
-	position.resize(0);
-	position.push_back(-1);
-	position.push_back((int)_chain);
-	position.push_back((int)_residue);
-    this->updateChainIndependentDielectrics(_chain);
-	intraChainPositionE = itsChains[_chain]->getPositionIntraSoluteEnergy(position);
-    this->updateDielectrics();
-	complexPositionE += itsChains[_chain]->getPositionIntraSoluteEnergy(position);
-	complexPositionE += itsChains[_chain]->getPositionInterSoluteEnergy(position, itsChains[_otherChain]);
-	bindingPositionE = complexPositionE - intraChainPositionE;
-	return bindingPositionE;
-}
+}*/
 
 double protein::intraEnergy(UInt _chain1, UInt _chain2)
 {
@@ -2954,9 +2589,9 @@ void protein::protOpt(bool _backbone)
 		//--Backslide optimization-----------------------------------------------------------------------
 		if (nobetter > _plateau && _backbone)
 		{
-			resE = resEnergy(randchain, randres), medResE = getMedianResEnergy();
-			if (resE > medResE)
-			{
+			//resE = resEnergy(randchain, randres), medResE = getMedianResEnergy();
+			//if (resE > medResE)
+			//{
 				//--transform angle while energy improves, until energy degrades, then revert one step
 				do{dihedralD = (rand() % 3)-1;}while(dihedralD == 0);
 				foldD = rand() % 2;
@@ -2976,13 +2611,13 @@ void protein::protOpt(bool _backbone)
 				} while (keep == 1);
 				setDihedral(randchain,randres,sPhi,0,foldD);
 				setDihedral(randchain,randres,sPsi,1,foldD);
-			}
+			//}
 		}
 
 		//--Rotamer optimization-----------------------------------------------------------------------
-		resE = resEnergy(randchain, randres), medResE = getMedianResEnergy();
-		if (resE > medResE)
-		{
+		//resE = resEnergy(randchain, randres), medResE = getMedianResEnergy();
+		//if (resE > medResE)
+		//{
 			currentRot = getSidechainDihedrals(randchain, randres);
 			allowedRots = getAllowedRotamers(randchain, randres, randrestype);
 
@@ -3004,7 +2639,7 @@ void protein::protOpt(bool _backbone)
 					}
 				}
 			}
-		}
+		//}
 	} while (nobetter < _plateau * 1.2);
 	return;
 }
@@ -3116,9 +2751,9 @@ void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 		//--Backslide optimization-----------------------------------------------------------------------
 		if (nobetter > _plateau && _backbone)
 		{
-			resE = resEnergy(randchain, randres), medResE = getMedianResEnergy(_activeChains);
-			if (resE > medResE)
-			{
+			//resE = resEnergy(randchain, randres), medResE = getMedianResEnergy(_activeChains);
+			//if (resE > medResE)
+			//{
 				//--transform angle while energy improves, until energy degrades, then revert one step
 				do{dihedralD = (rand() % 3)-1;}while(dihedralD == 0);
 				foldD = rand() % 2;
@@ -3138,13 +2773,13 @@ void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 				} while (keep == 1);
 				setDihedral(randchain,randres,sPhi,0,foldD);
 				setDihedral(randchain,randres,sPsi,1,foldD);
-			}
+			//}
 		}
 
 		//--Rotamer optimization-----------------------------------------------------------------------
-		resE = resEnergy(randchain, randres), medResE = getMedianResEnergy(_activeChains);
-		if (resE > medResE)
-		{
+		//resE = resEnergy(randchain, randres), medResE = getMedianResEnergy(_activeChains);
+		//if (resE > medResE)
+		//{
 			currentRot = getSidechainDihedrals(randchain, randres);
 			allowedRots = getAllowedRotamers(randchain, randres, randrestype);
 
@@ -3166,7 +2801,7 @@ void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 					}
 				}
 			}
-		}
+		//}
 	} while (nobetter < _plateau * 1.2);
 	return;
 }

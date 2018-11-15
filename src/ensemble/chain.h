@@ -200,8 +200,6 @@ public:
 	void polarizability();
 	void polarizability(chain* _other);
 	void calculateDielectrics();
-	vector <double> calculateDielectric(chain* _other, UInt _residueIndex, UInt _atomIndex);
-	vector <double> calculateDielectric(chain* _other, residue* _residue, atom* _atom);
 	double interEnergy(chain* _other);
 	double interSoluteEnergy(chain* _other);
 	double getInterEnergy(const UInt _res1, chain* _other, const UInt _res2);
