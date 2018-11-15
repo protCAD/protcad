@@ -24,7 +24,7 @@ double residue::EsolvationFactor = 1.0;
 double residue::cutoffDistance = 6;
 double residue::cutoffDistanceSquared = residue::cutoffDistance*residue::cutoffDistance;
 double residue::cutoffCubeVolume = pow((residue::cutoffDistance*2),3);
-double residue::dielectricWidth = 5.5;
+double residue::dielectricWidth = 6;
 double residue::dielectricCubeVolume = pow((residue::dielectricWidth*2),3);
 
 void residue::setupDataBase()
@@ -2702,32 +2702,31 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
 	double atomShellVol = 4.18*pow((solvatedRadius),3);
 	double atomVol = residueTemplate::getVolume(atomVDWtype);
 	double waterShellVol = atomShellVol-atomVol;
-	double shellVolFraction = waterShellVol/totalVol;
-	double shellWaters = waters*shellVolFraction;
-
-	// Polar solvation
-	if (EsolvationFactor != 0.0)
-	{	// Electrostatic enthalpy estimate of solute atom and solvent
-		// with variable dielectric and water occupancy estimate
-		// Born Electrostatic solvation Still WC, et al J Am Chem Soc 1990
-		double atomDielectric = itsAtoms[_atomIndex]->getDielectric();
-		double charge = residueTemplate::itsAmberElec.getItsCharge(itsType, _atomIndex);
-		double chargeSquared = charge*charge;
-		soluteSolventEnthalpy += (-166*chargeSquared/(solvatedRadius*atomDielectric))*shellWaters*EsolvationFactor;
+	int shellWaters = (waterShellVol/totalVol)*waters;
+	if (shellWaters > 0){
+		// Polar solvation
+		if (EsolvationFactor != 0.0)
+		{	// Electrostatic enthalpy estimate of solute atom and solvent
+			// with variable dielectric and water occupancy estimate
+			// Born Electrostatic solvation Still WC, et al J Am Chem Soc 1990
+			double atomDielectric = itsAtoms[_atomIndex]->getDielectric();
+			double charge = residueTemplate::itsAmberElec.getItsCharge(itsType, _atomIndex);
+			double chargeSquared = charge*charge;
+			soluteSolventEnthalpy += (-166*chargeSquared/(solvatedRadius*atomDielectric))*shellWaters*EsolvationFactor;
+		}
+	
+		// Non-Polar solvation
+		if (HsolvationFactor != 0.0)
+		{	// Lennard Jones dipole packing ethalpy estimate assuming ideal interaction of solute atom and solvent
+			// TIP3P VDW water interaction R. W. Impey, and M. L. Klein, J. Chem. Phys. 79 (1983) 926-935
+			double tempvdwEnergy = residueTemplate::getVDWWaterEnergy(atomVDWtype);
+			soluteSolventEnthalpy += tempvdwEnergy*shellWaters;
+	
+			// Solvent Entropy loss estimate due to lack of ideal water lattice hydrogen bond network formation (hydrophobic effect)
+			// Gill Hydrophobic solvation  S.J.Gill, S.F.Dec. J Phys. Chem. 1985
+			soluteSolventEntropy = (-temperature*KB*log(pow(0.5,shellWaters)))*HsolvationFactor;
+		}
 	}
-
-	// Non-Polar solvation
-	if (HsolvationFactor != 0.0)
-	{	// Lennard Jones dipole packing ethalpy estimate assuming ideal interaction of solute atom and solvent
-		// TIP3P VDW water interaction R. W. Impey, and M. L. Klein, J. Chem. Phys. 79 (1983) 926-935
-		double tempvdwEnergy = residueTemplate::getVDWWaterEnergy(atomVDWtype);
-		soluteSolventEnthalpy += tempvdwEnergy*shellWaters;
-
-		// Solvent Entropy loss estimate due to lack of ideal water lattice hydrogen bond network formation (hydrophobic effect)
-		// Gill Hydrophobic solvation  S.J.Gill, S.F.Dec. J Phys. Chem. 1985
-		soluteSolventEntropy = (-temperature*0.0019872041*log(pow(0.5,(shellWaters))))*HsolvationFactor;
-	}
-
 	//Total atom solvation Energy
 	solvationEnergy.push_back(soluteSolventEnthalpy);
 	solvationEnergy.push_back(soluteSolventEntropy);
@@ -2758,13 +2757,17 @@ double residue::getDielectric()
 void residue::polarizability()
 {	
 	bool inCube;
-	int vdwIndex;
+	int vdwIndex, currentMol;
 	double polarizability, volume, currentPol, currentVol;
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
 		if (!itsAtoms[i]->getSilentStatus())
 		{
+			//--inlude self volume and polarizability
 			polarizability = 0.0, volume = 0.0;
+			vdwIndex = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][0];
+			polarizability += residueTemplate::getPolarizability(vdwIndex);
+			volume += residueTemplate::getVolume(vdwIndex);
 			for(UInt j=i+1; j<itsAtoms.size(); j++)
 			{
 				if (!itsAtoms[j]->getSilentStatus())
@@ -2780,8 +2783,10 @@ void residue::polarizability()
 			}
 			currentPol = itsAtoms[i]->getEnvPol();
 			currentVol = itsAtoms[i]->getEnvVol();
+			currentMol = itsAtoms[i]->getEnvMol();
 			itsAtoms[i]->setEnvPol(currentPol+polarizability);
 			itsAtoms[i]->setEnvVol(currentVol+volume);
+			itsAtoms[i]->setEnvMol(currentMol+1);
 		}
 	}
 }
@@ -2789,7 +2794,7 @@ void residue::polarizability()
 void residue::polarizability(residue* _other)
 {	
 	bool inCube;
-	int vdwIndex;
+	int vdwIndex, currentMol;
 	double polarizability, volume, currentPol, currentVol;
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
@@ -2811,19 +2816,22 @@ void residue::polarizability(residue* _other)
 			}
 			currentPol = itsAtoms[i]->getEnvPol();
 			currentVol = itsAtoms[i]->getEnvVol();
+			currentMol = itsAtoms[i]->getEnvMol();
 			itsAtoms[i]->setEnvPol(currentPol+polarizability);
 			itsAtoms[i]->setEnvVol(currentVol+volume);
+			itsAtoms[i]->setEnvMol(currentMol+1);
 		}
 	}
 }
 
 void residue::calculateDielectrics()
 {
-	double envPol, envVol, totalWaterVol, totalWaterPol, dielectric;
+	double envPol, envVol, totalWaterVol, totalWaterPol, dielectric = 1;
 	double waterPol = residueTemplate::getPolarizability(52);
 	double waterVol = residueTemplate::getVolume(52);
 	double totalVol = dielectricCubeVolume;
 	double waters= 0.0;
+	int envMol = 0;
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
 		if (!itsAtoms[i]->getSilentStatus())
@@ -2831,14 +2839,13 @@ void residue::calculateDielectrics()
 			// calculate local dielectric for atom
 			envPol = itsAtoms[i]->getEnvPol();
 			envVol = itsAtoms[i]->getEnvVol();
+			envMol = itsAtoms[i]->getEnvMol();
 			totalWaterVol = totalVol-envVol;
 			if (totalWaterVol > waterVol){
 				waters = (totalWaterVol/waterVol);
 				totalWaterPol = waters*waterPol;
-				dielectric = 1+4*PI*((waters)/totalVol)*(totalWaterPol+envPol);
+				dielectric = 1+4*PI*((waters+envMol)/totalVol)*(totalWaterPol+envPol);
 			}
-			else{ dielectric = 2;}
-			//if (dielectric < 2){dielectric = 2;}
 			itsAtoms[i]->setDielectric(dielectric);
 			itsAtoms[i]->setNumberofWaters(waters);
 		}
@@ -3062,63 +3069,6 @@ double residue::interSoluteEnergy(residue* _other)
 			}
 		}
 	}
-	return interEnergy;
-}
-
-double residue::BBEnergy(residue* _other)
-{
-	double distanceSquared;
-	int index1;
-	int index2;
-	double interEnergy = 0.0;
-	double vdwEnergy = 0.0;
-	double amberElecEnergy = 0.0;
-	bool twoBonded, threeBonded;
-
-	for(UInt i=0; i<itsAtoms.size(); i++)
-	{
-		if (!itsAtoms[i]->getSilentStatus())
-		{
-			for(UInt j=0; j<_other->itsAtoms.size(); j++)
-			{
-				if (!_other->itsAtoms[j]->getSilentStatus())
-				{
-					distanceSquared = itsAtoms[i]->distanceSquared(_other->itsAtoms[j]);
-					threeBonded = isSeparatedByFewBonds(this,i,_other,j);
-					twoBonded = isSeparatedByOneOrTwoBonds(i, _other, j);
-					if (threeBonded && !twoBonded)
-					{
-						// ** inter AMBER Electrostatics
-						if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
-						{
-							UInt resType1 = itsType;
-							UInt resType2 = _other->itsType;
-							UInt index1 = i;
-							UInt index2 = j;
- 							double tempAmberElecEnergy = residueTemplate::getAmberElecEnergySQ(resType1, index1, resType2, index2, distanceSquared);
-							amberElecEnergy += tempAmberElecEnergy;
-						}
-
-						// ** inter AMBER vdW
-						if (residueTemplate::itsAmberVDW.getScaleFactor() != 0.0)
-						{	if (hydrogensOn)
-							{	index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][0];
-								index2 = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[j][0];
-							}
-							else
-							{	index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][1];
-								index2 = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[j][1];
-							}
-
-							double tempvdwEnergy = residueTemplate::getVDWEnergySQ(index1, index2, distanceSquared);
-							vdwEnergy += tempvdwEnergy;
-						}
-					}
-				}
-			}
-		}
-	}
-	interEnergy =  vdwEnergy + amberElecEnergy;
 	return interEnergy;
 }
 

@@ -280,6 +280,10 @@ void atom::setEnvVol(double _envVol)
 {	
 	EnvVol = _envVol;
 }
+void atom::setEnvMol(int _envMol)
+{	
+	EnvMol = _envMol;
+}
 void atom::setNumberofWaters(double _waters)
 {
     itsWaters = _waters;
