@@ -147,9 +147,14 @@ public:
 	
 	//--Energy functions
 	void setMoved (UInt chainIndex, UInt resIndex, bool _moved) {itsChains[chainIndex]->setMoved(resIndex, _moved);}
+	void setMoved(bool _moved);
+	bool getMoved(UInt chainIndex, UInt resIndex) {return itsChains[chainIndex]->getMoved(resIndex);}
 	double protEnergy();
-	/*double getMedianResEnergy();
-	double getMedianResEnergy(UIntVec _activeChains);
+	double getEnergy();
+	void updateEnergy();
+	double getResidueEnergy(UInt chainIndex, UInt resIndex);
+	double getMedianResidueEnergy();
+	/*double getMedianResEnergy(UIntVec _activeChains);
 	double getMedianResEnergy(UIntVec _activeChains, UIntVec _activeResidues);*/
 	double getSolvationEnergy(UInt _chainIndex, UInt _residueIndex) {return itsChains[_chainIndex]->getSolvationEnergy(_residueIndex); }
 	double getAtomCharge(UInt _chainNum, UInt _resNum, UInt _atomNum) { return itsChains[_chainNum]->getAtomCharge(_resNum, _atomNum); }
@@ -162,7 +167,6 @@ public:
 	double getDielectric(UInt _chainIndex, UInt _residueIndex) {return itsChains[_chainIndex]->getDielectric(_residueIndex); }
 	double getDielectric(UInt _chainIndex, UInt _resIndex, UInt _atomIndex) {return itsChains[_chainIndex]->itsResidues[_resIndex]->itsAtoms[_atomIndex]->getDielectric();}
 	double intraEnergy();
-	double intraSoluteEnergy();
 	double intraSoluteEnergy(bool _updateDielectrics, UInt _activeChain);
 	double interSoluteEnergy(bool _updateDielectrics, UInt _chain1, UInt _chain2);
 	vector <double> chainBindingEnergy();

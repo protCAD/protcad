@@ -29,11 +29,11 @@ int main (int argc, char* argv[])
 	amberVDW::setScaleFactor(1.0);
 	
 	start = clock();
-	double Energy = bundle->intraSoluteEnergy();
+	double Energy = bundle->protEnergy();
 	end = clock();
 	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-	cout << "intraSoluteEnergy: " << Energy << " kcal/mol time: " << cpu_time_used << endl;
-	string outFile = "intraSolute.pdb";
+	cout << "protEnergy: " << Energy << " kcal/mol time: " << cpu_time_used << endl;
+	string outFile = "protEnergy_out.pdb";
 	pdbWriter(bundle, outFile);
 	
 	start = clock();
@@ -41,14 +41,6 @@ int main (int argc, char* argv[])
 	end = clock();
 	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
 	cout << "protEnergy: " << Energy << " kcal/mol time: " << cpu_time_used << endl;
-	outFile = "protEnergy.pdb";
-	pdbWriter(bundle, outFile);
-	
-	start = clock();
-	Energy = bundle->intraSoluteEnergy();
-	end = clock();
-	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-	cout << "intraSoluteEnergy: " << Energy << " kcal/mol time: " << cpu_time_used << endl;
 	
 	start = clock();
 	UInt clashes = bundle->getNumHardClashes();
@@ -61,12 +53,5 @@ int main (int argc, char* argv[])
 	end = clock();
 	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
 	cout << clashes << " clashes time: " << cpu_time_used << endl;
-	
-	start = clock();
-	Energy = bundle->protEnergy();
-	end = clock();
-	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-	cout << "protEnergy: " << Energy << " kcal/mol time: " << cpu_time_used << endl;
-
 	return 0;
 }

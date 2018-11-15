@@ -1574,6 +1574,7 @@ void residue::setRotamer(const UInt _lib, const UInt _bpt, const UInt _rotamer)
 	{	setChi(_bpt,i,itsSidechainDihedralAngles[_bpt][i]);
 	}
 	//calculateSidechainDihedralAngles();
+	setMoved(true);
 }
 
 void residue::setRotamer(const UInt _bpt, const DouVec _rotamer)
@@ -1583,6 +1584,7 @@ void residue::setRotamer(const UInt _bpt, const DouVec _rotamer)
 	{	setChi(_bpt,i,itsSidechainDihedralAngles[_bpt][i]);
 	}
 	//calculateSidechainDihedralAngles();
+	setMoved(true);
 }
 
 void residue::setRotamerWithCheck(const UInt _lib, const UInt _bpt, const UInt _rotamer)
@@ -1661,7 +1663,6 @@ void residue::setChi(const UInt _bpt, const UInt _index, const double _angle)
 	ASSERT(currentChi < 1e5 && currentChi > -1e5);
 	double diff = _angle - currentChi;
 	setChiByDelta(_bpt, _index, diff);
-	setMoved(true);
 }
 
 void residue::setChiByDelta(const UInt _bpt, const UInt _index, const double _angleDelta)
@@ -3979,6 +3980,15 @@ double residue::getSelfEnergy(residue* _other)
 void residue::setMoved(bool _moved)
 {
 	moved = _moved;
+	if (_moved){
+		setEnergy(0.0);
+		for (UInt i=0; i < itsAtoms.size(); i++)
+		{
+			itsAtoms[i]->setEnvPol(0.0);
+			itsAtoms[i]->setEnvVol(0.0);
+			itsAtoms[i]->setEnvMol(0.0);
+		}
+	}
 }
 
 void residue::setClashes(UInt _clashes)

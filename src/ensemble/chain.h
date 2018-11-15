@@ -116,6 +116,9 @@ public:
     double netCharge();
 
     void setMoved (UInt resIndex, bool _moved) {itsResidues[resIndex]->setMoved(_moved);}
+    void setMoved (bool _moved);
+    bool getMoved (UInt resIndex) {return itsResidues[resIndex]->getMoved();}
+    double getResidueEnergy (UInt resIndex) {return itsResidues[resIndex]->getEnergy();}
     double getSolvationEnergy(const UInt _resIndex) {return itsResidues[_resIndex]->getSolvationEnergy();}
 	double getDielectric(const UInt _resIndex) {return itsResidues[_resIndex]->getDielectric();}
 	double getBetaChi(const UInt _resIndex) {return itsResidues[_resIndex]->getBetaChi();}
@@ -196,12 +199,13 @@ public:
 	int setDihedral(const UInt _resIndex, double _dihedral, UInt _angleType, UInt _direction);
 	double getDielectric(UInt _resIndex, UInt _atomIndex) {return itsResidues[_resIndex]->itsAtoms[_atomIndex]->getDielectric();}
 	double intraEnergy();
-	double intraSoluteEnergy();
+	void updateEnergy();
+	void updateEnergy(chain* _other);
+	double getEnergy();
 	void polarizability();
 	void polarizability(chain* _other);
 	void calculateDielectrics();
 	double interEnergy(chain* _other);
-	double interSoluteEnergy(chain* _other);
 	double getInterEnergy(const UInt _res1, chain* _other, const UInt _res2);
 	double getInterEnergy(const UInt _residue1, const UInt _atom1, chain* _other, const UInt _residue2, const UInt _atom2);
 	double getSelfEnergy(UInt _residueIndex);

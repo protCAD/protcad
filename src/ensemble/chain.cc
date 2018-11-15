@@ -1726,26 +1726,41 @@ double chain::intraEnergy()
 	return intraEnergy;
 }
 
-double chain::intraSoluteEnergy()
+void chain::updateEnergy()
 {	
-	double resEnergy, currentEnergy, Energy = 0.0;
+	double resEnergy, currentEnergy;
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{	
-		resEnergy = 0.0;
 		if (itsResidues[i]->getMoved()){
+			resEnergy = 0.0;
 			resEnergy += itsResidues[i]->intraSoluteEnergy();
 			for(UInt j=i+1; j<itsResidues.size(); j++)
-			{	
+			{
 				resEnergy += itsResidues[i]->interSoluteEnergy(itsResidues[j]);
 			}
 			currentEnergy = itsResidues[i]->getEnergy();
-			itsResidues[i]->setEnergy(currentEnergy+resEnergy);
-			Energy += resEnergy;
+			itsResidues[i]->setEnergy(resEnergy+currentEnergy);
 		}
-		else{ Energy += itsResidues[i]->getEnergy();}
 	}
-	return Energy;
 }
+
+void chain::updateEnergy(chain* _other)
+{
+	double resEnergy, currentEnergy;
+	for(UInt i=0; i<itsResidues.size(); i++)
+	{
+		if (itsResidues[i]->getMoved()){
+			resEnergy = 0.0;
+			for(UInt j=0; j<_other->itsResidues.size(); j++)
+			{
+				resEnergy += itsResidues[i]->interSoluteEnergy(_other->itsResidues[j]);
+			}
+			currentEnergy = itsResidues[i]->getEnergy();
+			itsResidues[i]->setEnergy(resEnergy+currentEnergy);
+		}
+	}
+}
+
 void chain::polarizability()
 {
 	for(UInt i=0; i<itsResidues.size(); i++)
@@ -1782,6 +1797,25 @@ void chain::calculateDielectrics()
 		}
 	}
 }
+
+void chain::setMoved(bool _moved)
+{
+	for(UInt i=0; i<itsResidues.size(); i++)
+	{	
+		itsResidues[i]->setMoved(_moved);
+	}
+}
+
+double chain::getEnergy()
+{
+	double Energy = 0.0;
+	for(UInt i=0; i<itsResidues.size(); i++)
+	{	
+		Energy += itsResidues[i]->getEnergy();
+	}
+	return Energy;
+}
+
 
 double chain::getPositionIntraEnergy(vector <int> _position)
 {
@@ -1847,26 +1881,6 @@ double chain::interEnergy(chain* _other)
 	}
 	//cout << " done!" << endl;
 	return interEnergy;
-}
-
-double chain::interSoluteEnergy(chain* _other)
-{
-	double resEnergy, currentEnergy, Energy = 0.0;
-	for(UInt i=0; i<itsResidues.size(); i++)
-	{
-		resEnergy = 0.0;
-		if (itsResidues[i]->getMoved()){
-			for(UInt j=0; j<_other->itsResidues.size(); j++)
-			{
-				resEnergy += itsResidues[i]->interSoluteEnergy(_other->itsResidues[j]);
-			}
-			currentEnergy = itsResidues[i]->getEnergy();
-			itsResidues[i]->setEnergy(currentEnergy+resEnergy);
-			Energy += resEnergy;
-		}
-		else{ Energy += itsResidues[i]->getEnergy();}
-	}
-	return Energy;
 }
 
 double chain::getPositionInterEnergy(vector <int> _position, chain* _other)
