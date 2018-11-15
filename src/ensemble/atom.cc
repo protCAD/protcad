@@ -280,7 +280,7 @@ void atom::setEnvVol(double _envVol)
 {	
 	EnvVol = _envVol;
 }
-void atom::setEnvMol(int _envMol)
+void atom::setEnvMol(double _envMol)
 {	
 	EnvMol = _envMol;
 }

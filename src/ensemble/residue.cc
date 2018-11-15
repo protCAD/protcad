@@ -2757,17 +2757,18 @@ double residue::getDielectric()
 void residue::polarizability()
 {	
 	bool inCube;
-	int vdwIndex, currentMol;
-	double polarizability, volume, currentPol, currentVol;
+	int vdwIndex, atoms;
+	double polarizability, volume, currentPol, currentVol, currentMol;
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
 		if (!itsAtoms[i]->getSilentStatus())
 		{
 			//--inlude self volume and polarizability
-			polarizability = 0.0, volume = 0.0;
+			polarizability = 0.0, volume = 0.0, atoms = 0;
 			vdwIndex = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][0];
 			polarizability += residueTemplate::getPolarizability(vdwIndex);
 			volume += residueTemplate::getVolume(vdwIndex);
+			atoms++;
 			for(UInt j=i+1; j<itsAtoms.size(); j++)
 			{
 				if (!itsAtoms[j]->getSilentStatus())
@@ -2778,6 +2779,7 @@ void residue::polarizability()
 						vdwIndex = dataBase[itsType].itsAtomEnergyTypeDefinitions[j][0];
 						polarizability += residueTemplate::getPolarizability(vdwIndex);
 						volume += residueTemplate::getVolume(vdwIndex);
+						atoms++;
 					}
 				}
 			}
@@ -2786,7 +2788,7 @@ void residue::polarizability()
 			currentMol = itsAtoms[i]->getEnvMol();
 			itsAtoms[i]->setEnvPol(currentPol+polarizability);
 			itsAtoms[i]->setEnvVol(currentVol+volume);
-			itsAtoms[i]->setEnvMol(currentMol+1);
+			itsAtoms[i]->setEnvMol(currentMol+(atoms/itsAtoms.size()));
 		}
 	}
 }
@@ -2794,13 +2796,13 @@ void residue::polarizability()
 void residue::polarizability(residue* _other)
 {	
 	bool inCube;
-	int vdwIndex, currentMol;
-	double polarizability, volume, currentPol, currentVol;
+	int vdwIndex, atoms;
+	double polarizability, volume, currentPol, currentVol, currentMol;
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
 		if (!itsAtoms[i]->getSilentStatus())
 		{
-			polarizability = 0.0, volume = 0.0;
+			polarizability = 0.0, volume = 0.0, atoms = 0;
 			for(UInt j=0; j<_other->itsAtoms.size(); j++)
 			{
 				if (!_other->itsAtoms[j]->getSilentStatus())
@@ -2811,6 +2813,7 @@ void residue::polarizability(residue* _other)
 						vdwIndex = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[j][0];
 						polarizability += residueTemplate::getPolarizability(vdwIndex);
 						volume += residueTemplate::getVolume(vdwIndex);
+						atoms++;
 					}
 				}
 			}
@@ -2819,19 +2822,17 @@ void residue::polarizability(residue* _other)
 			currentMol = itsAtoms[i]->getEnvMol();
 			itsAtoms[i]->setEnvPol(currentPol+polarizability);
 			itsAtoms[i]->setEnvVol(currentVol+volume);
-			itsAtoms[i]->setEnvMol(currentMol+1);
+			itsAtoms[i]->setEnvMol(currentMol+(atoms/_other->itsAtoms.size()));
 		}
 	}
 }
 
 void residue::calculateDielectrics()
 {
-	double envPol, envVol, totalWaterVol, totalWaterPol, dielectric = 1;
+	double envPol, envVol, envMol, totalWaterVol, totalWaterPol, dielectric=1.0, waters=0.0;
 	double waterPol = residueTemplate::getPolarizability(52);
 	double waterVol = residueTemplate::getVolume(52);
 	double totalVol = dielectricCubeVolume;
-	double waters= 0.0;
-	int envMol = 0;
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
 		if (!itsAtoms[i]->getSilentStatus())
