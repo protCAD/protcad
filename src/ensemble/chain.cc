@@ -1728,18 +1728,18 @@ double chain::intraEnergy()
 
 void chain::updateEnergy()
 {	
-	double resEnergy, currentEnergy;
+	double resEnergy;
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{	
 		if (itsResidues[i]->getMoved()){
+			itsResidues[i]->setEnergy(0.0);
 			resEnergy = 0.0;
 			resEnergy += itsResidues[i]->intraSoluteEnergy();
 			for(UInt j=i+1; j<itsResidues.size(); j++)
 			{
 				resEnergy += itsResidues[i]->interSoluteEnergy(itsResidues[j]);
 			}
-			currentEnergy = itsResidues[i]->getEnergy();
-			itsResidues[i]->setEnergy(resEnergy+currentEnergy);
+			itsResidues[i]->setEnergy(resEnergy);
 		}
 	}
 }
@@ -1766,6 +1766,7 @@ void chain::polarizability()
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{	
 		if (itsResidues[i]->getMoved()){
+			itsResidues[i]->clearEnvironment();
 			itsResidues[i]->polarizability();
 			for(UInt j=i+1; j<itsResidues.size(); j++)
 			{	

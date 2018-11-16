@@ -330,6 +330,7 @@ public:
 	void setPolarHydrogensOn(const bool _polarHydrogensOn);
 	bool getHasPolarHRotamers() const {return dataBase[itsType].getHasPolarHRotamers(); }
     void setMoved (bool _moved);
+    void clearEnvironment();
     bool getMoved() const {return moved;}
     void setClashes (UInt _clashes);
     UInt getClashes() const {return clashes;}

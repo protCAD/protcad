@@ -1115,9 +1115,7 @@ double protein::intraEnergy()
 
 double protein::protEnergy()
 {
-	if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0 || residue::getHydroSolvationScaleFactor() != 0.0 || residue::getElectroSolvationScaleFactor() != 0.0){
-		updateDielectrics();
-	}
+	updateDielectrics();
 	updateEnergy();
 	setMoved(false);
 	return getEnergy();
@@ -2591,7 +2589,7 @@ void protein::protOpt(bool _backbone)
 					Energy = protEnergy();
 					if (Energy < pastEnergy-energyBuffer)
 					{
-						cout << Energy << endl;
+						//cout << Energy << endl;
 						pastEnergy = Energy;
 						nobetter = 0, keep = 1;
 					}
@@ -2616,9 +2614,12 @@ void protein::protOpt(bool _backbone)
 					randrot = rand() % allowedRots[b].size();
 					setRotamerWBC(randchain, randres, b, allowedRots[b][randrot]);
 					Energy = protEnergy();
+					//cout << Energy << endl;
 					if (Energy < (pastEnergy-energyBuffer))
 					{
 						cout << Energy << endl;
+						string outFile = "protOpt_out.pdb";
+						pdbWriter(this, outFile);
 						nobetter = 0, pastEnergy = Energy; break;
 					}
 					else
