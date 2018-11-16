@@ -346,7 +346,7 @@ public:
 public:
 	// static function cannot have const modifier
 	static void setupDataBase();
-        static void setupDataBase(const bool _Hflag);
+    static void setupDataBase(const bool _Hflag);
     static void setupDataBase(const bool _Hflag, const bool _HPflag);
 	static double getCutoffDistance() {return cutoffDistance; }
 	static void setCutoffDistance( const double _cutoff ) { cutoffDistance = _cutoff; cutoffDistanceSquared = _cutoff*_cutoff; }
@@ -373,7 +373,7 @@ private:
 	bool hydrogensOn;
     bool polarHydrogensOn;
 	bool isArtificiallyBuilt;
-    bool moved = false;
+    bool moved = true;
     UInt clashes = 0;
     double Energy = 0.0;
     

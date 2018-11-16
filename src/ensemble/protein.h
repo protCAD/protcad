@@ -152,10 +152,10 @@ public:
 	double protEnergy();
 	double getEnergy();
 	void updateEnergy();
-	double getResidueEnergy(UInt chainIndex, UInt resIndex);
+	double getEnergy(UInt chainIndex, UInt resIndex);
 	double getMedianResidueEnergy();
-	/*double getMedianResEnergy(UIntVec _activeChains);
-	double getMedianResEnergy(UIntVec _activeChains, UIntVec _activeResidues);*/
+	double getMedianResidueEnergy(UIntVec _activeChains);
+	//double getMedianResEnergy(UIntVec _activeChains, UIntVec _activeResidues);
 	double getSolvationEnergy(UInt _chainIndex, UInt _residueIndex) {return itsChains[_chainIndex]->getSolvationEnergy(_residueIndex); }
 	double getAtomCharge(UInt _chainNum, UInt _resNum, UInt _atomNum) { return itsChains[_chainNum]->getAtomCharge(_resNum, _atomNum); }
 	double calculateHCA_O_hBondEnergy();

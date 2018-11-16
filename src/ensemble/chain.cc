@@ -1832,44 +1832,6 @@ double chain::getPositionIntraEnergy(vector <int> _position)
 	return intraEnergy;
 }
 
-double chain::getPositionIntraSoluteEnergy(vector <int> _position)
-{
-	bool withinCube;
-	double intraEnergy = 0.0;
-	intraEnergy += itsResidues[_position[2]]->intraSoluteEnergy();
-	for (UInt i = 0; i < itsResidues.size(); i++)
-	{
-		if ((int)i != _position[2]) 
-		{
-			withinCube = itsResidues[_position[2]]->inCube(itsResidues[i], 16);
-			if (withinCube)
-			{
-				intraEnergy += itsResidues[_position[2]]->interSoluteEnergy(itsResidues[i]);
-			}
-		}
-	}
-	return intraEnergy;
-}
-
-double chain::getPositionIntraSoluteEnergy(UInt _residueIndex)
-{
-	bool withinCube;
-	double intraEnergy = 0.0;
-	intraEnergy += itsResidues[_residueIndex]->intraSoluteEnergy();
-	for (UInt i = 0; i < itsResidues.size(); i++)
-	{
-		if (i != _residueIndex)
-		{
-			withinCube = itsResidues[_residueIndex]->inCube(itsResidues[i], 16);
-			if (withinCube)
-			{
-				intraEnergy += itsResidues[_residueIndex]->interSoluteEnergy(itsResidues[i]);
-			}
-		}
-	}
-	return intraEnergy;
-}
-
 double chain::interEnergy(chain* _other)
 {	double interEnergy = 0.0;
 	//cout << "chain::interEnergy";
@@ -1893,21 +1855,6 @@ double chain::getPositionInterEnergy(vector <int> _position, chain* _other)
 		//cout << interEnergy << endl;
 	}
 
-	return interEnergy;
-}
-
-double chain::getPositionInterSoluteEnergy(vector <int> _position, chain* _other)
-{
-	bool withinCube;
-	double interEnergy = 0.0;
-	for (UInt i = 0; i < _other->itsResidues.size(); i++)
-	{
-		withinCube = itsResidues[_position[2]]->inCube(_other->itsResidues[i], 16);
-		if (withinCube)
-		{	
-			interEnergy+= itsResidues[_position[2]]->interSoluteEnergy(_other->itsResidues[i]);
-		}
-	}
 	return interEnergy;
 }
 

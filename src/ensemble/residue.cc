@@ -1608,6 +1608,7 @@ void residue::setRotamerWithCheck(const UInt _lib, const UInt _bpt, const UInt _
 	}
 	//else cout << "ERROR in setRotamerWithCheck...\n bpt " << _bpt << " does not exist." << endl;
 	//calculateSidechainDihedralAngles();
+	setMoved(true);
 }
 
 void residue::setPolarHRotamer(UInt _rotamerIndex)
@@ -1643,6 +1644,7 @@ DouVec residue::setRotamerWithCheckTest(const UInt _lib, const UInt _bpt, const 
 	else cout << "ERROR in setRotamerWithCheckTest...\n bpt " << _bpt << " does not exist." << endl;
 	calculateSidechainDihedralAngles();
 	return theAngles;
+	setMoved(true);
 }
 
 void residue::setBetaChi(const double _angle)

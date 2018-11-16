@@ -1115,9 +1115,7 @@ double protein::intraEnergy()
 
 double protein::protEnergy()
 {
-	updateDielectrics();
 	updateEnergy();
-	setMoved(false);
 	return getEnergy();
 }
 
@@ -1149,6 +1147,7 @@ void protein::calculateDielectrics()
 
 void protein::updateEnergy()
 {
+	updateDielectrics();
 	for(UInt i=0; i<itsChains.size(); i++)
 	{
 		itsChains[i]->updateEnergy();
@@ -1157,6 +1156,7 @@ void protein::updateEnergy()
 			itsChains[i]->updateEnergy(itsChains[j]);
 		}
 	}
+	setMoved(false);
 }
 
 void protein::setMoved(bool _moved)
@@ -1177,24 +1177,24 @@ double protein::getEnergy()
 	return Energy;
 }
 
-double protein::getResidueEnergy(UInt chainIndex, UInt resIndex)
+double protein::getEnergy(UInt chainIndex, UInt resIndex)
 {
 	if (getMoved(chainIndex, resIndex)){
 		updateEnergy();
 	}
-	double Energy = itsChains[chainIndex]->getResidueEnergy(resIndex);
-	return Energy;
+	return itsChains[chainIndex]->getEnergy(resIndex);
 }
 
 double protein::getMedianResidueEnergy()
 {
+	updateEnergy();
 	double median, resE;
 	vector <double> resEnergies;
 	for (UInt i = 0; i < itsChains.size(); i++)
 	{
 		for (UInt j = 0; j < itsChains[i]->itsResidues.size(); j++)
 		{
-			resE = getResidueEnergy(i,j);
+			resE = itsChains[i]->getEnergy(j);
 			resEnergies.push_back(resE);
 		}
 	}
@@ -1212,34 +1212,33 @@ double protein::getMedianResidueEnergy()
 	return median;
 }
 
-/*double protein::getMedianResEnergy(UIntVec _activeChains)
+double protein::getMedianResidueEnergy(UIntVec _activeChains)
 {
+	updateEnergy();
 	double median, resE;
 	vector <double> resEnergies;
-	updateEnergyDatabase(energies);
 	for (UInt i = 0; i < _activeChains.size(); i++)
 	{
 		for (UInt j = 0; j < itsChains[_activeChains[i]]->itsResidues.size(); j++)
 		{
-			resE = resEnergy(_activeChains[i],j);
+			resE = itsChains[_activeChains[i]]->getEnergy(j);
 			resEnergies.push_back(resE);
 		}
 	}
+	
 	size_t size = resEnergies.size();
-
 	sort(resEnergies.begin(), resEnergies.end());
-
-	if (size  % 2 == 0)
+	if (size % 2 == 0)
 	{
-	  median = (resEnergies[size / 2 - 1] + resEnergies[size / 2]) / 2;
+		median = (resEnergies[size / 2 - 1] + resEnergies[size / 2]) / 2;
 	}
 	else
 	{
-	  median = resEnergies[size / 2];
-    }
+		median = resEnergies[size / 2];
+	}
 	return median;
 }
-
+/*
 double protein::getMedianResEnergy(UIntVec _activeChains, UIntVec _activeResidues)
 {
 	double median, resE;
@@ -2573,7 +2572,7 @@ void protein::protOpt(bool _backbone)
 		//--Backslide optimization-----------------------------------------------------------------------
 		if (nobetter > _plateau && _backbone)
 		{
-			resE = getResidueEnergy(randchain, randres), medResE = getMedianResidueEnergy();
+			resE = getEnergy(randchain, randres), medResE = getMedianResidueEnergy();
 			if (resE > medResE)
 			{
 				//--transform angle while energy improves, until energy degrades, then revert one step
@@ -2600,7 +2599,7 @@ void protein::protOpt(bool _backbone)
 		}
 
 		//--Rotamer optimization-----------------------------------------------------------------------
-		resE = getResidueEnergy(randchain, randres), medResE = getMedianResidueEnergy();
+		resE = getEnergy(randchain, randres), medResE = getMedianResidueEnergy();
 		if (resE > medResE)
 		{
 			currentRot = getSidechainDihedrals(randchain, randres);
@@ -2740,9 +2739,9 @@ void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 		//--Backslide optimization-----------------------------------------------------------------------
 		if (nobetter > _plateau && _backbone)
 		{
-			//resE = resEnergy(randchain, randres), medResE = getMedianResEnergy(_activeChains);
-			//if (resE > medResE)
-			//{
+			resE = getEnergy(randchain, randres), medResE = getMedianResidueEnergy(_activeChains);
+			if (resE > medResE)
+			{
 				//--transform angle while energy improves, until energy degrades, then revert one step
 				do{dihedralD = (rand() % 3)-1;}while(dihedralD == 0);
 				foldD = rand() % 2;
@@ -2762,13 +2761,13 @@ void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 				} while (keep == 1);
 				setDihedral(randchain,randres,sPhi,0,foldD);
 				setDihedral(randchain,randres,sPsi,1,foldD);
-			//}
+			}
 		}
 
 		//--Rotamer optimization-----------------------------------------------------------------------
-		//resE = resEnergy(randchain, randres), medResE = getMedianResEnergy(_activeChains);
-		//if (resE > medResE)
-		//{
+		resE = getEnergy(randchain, randres), medResE = getMedianResidueEnergy(_activeChains);
+		if (resE > medResE)
+		{
 			currentRot = getSidechainDihedrals(randchain, randres);
 			allowedRots = getAllowedRotamers(randchain, randres, randrestype);
 
@@ -2790,7 +2789,7 @@ void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 					}
 				}
 			}
-		//}
+		}
 	} while (nobetter < _plateau * 1.2);
 	return;
 }
