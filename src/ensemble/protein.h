@@ -150,9 +150,8 @@ public:
 	void setMoved(bool _moved);
 	bool getMoved(UInt chainIndex, UInt resIndex) {return itsChains[chainIndex]->getMoved(resIndex);}
 	double protEnergy();
-	double getEnergy();
 	void updateEnergy();
-	double getEnergy(UInt chainIndex, UInt resIndex);
+	double protEnergy(UInt chainIndex, UInt resIndex);
 	double getMedianResidueEnergy();
 	double getMedianResidueEnergy(UIntVec _activeChains);
 	//double getMedianResEnergy(UIntVec _activeChains, UIntVec _activeResidues);

@@ -1401,6 +1401,7 @@ void chain::setSidechainDihedralAngles(UInt _indexInChain, vector <vector <doubl
 		{	itsResidues[_indexInChain]->setChi(i,j,Angles[i][j]);
 		}
 	}
+    itsResidues[_indexInChain]->setMoved(true);
 	return;
 }
 

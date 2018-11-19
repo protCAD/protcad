@@ -1112,11 +1112,29 @@ double protein::intraEnergy()
 
 
 //--Non-redundant complete Energy calculation/////////////////////////////////////////////////////////////////
-
 double protein::protEnergy()
 {
 	updateEnergy();
-	return getEnergy();
+	double Energy = 0.0;
+	for(UInt i=0; i<itsChains.size(); i++)
+	{
+		Energy += itsChains[i]->getEnergy();
+	}
+	return Energy;
+}
+
+void protein::updateEnergy()
+{
+	updateDielectrics();
+	for(UInt i=0; i<itsChains.size(); i++)
+	{
+		itsChains[i]->updateEnergy();
+		for(UInt j=i+1; j<itsChains.size(); j++)
+		{
+			itsChains[i]->updateEnergy(itsChains[j]);
+		}
+	}
+	setMoved(false);
 }
 
 void protein::updateDielectrics()
@@ -1145,20 +1163,6 @@ void protein::calculateDielectrics()
 	}
 }
 
-void protein::updateEnergy()
-{
-	updateDielectrics();
-	for(UInt i=0; i<itsChains.size(); i++)
-	{
-		itsChains[i]->updateEnergy();
-		for(UInt j=i+1; j<itsChains.size(); j++)
-		{
-			itsChains[i]->updateEnergy(itsChains[j]);
-		}
-	}
-	setMoved(false);
-}
-
 void protein::setMoved(bool _moved)
 {
 	for(UInt i=0; i<itsChains.size(); i++)
@@ -1167,17 +1171,7 @@ void protein::setMoved(bool _moved)
 	}
 }
 
-double protein::getEnergy()
-{
-	double Energy = 0.0;
-	for(UInt i=0; i<itsChains.size(); i++)
-	{
-		Energy += itsChains[i]->getEnergy();
-	}
-	return Energy;
-}
-
-double protein::getEnergy(UInt chainIndex, UInt resIndex)
+double protein::protEnergy(UInt chainIndex, UInt resIndex)
 {
 	if (getMoved(chainIndex, resIndex)){
 		updateEnergy();
@@ -2572,7 +2566,7 @@ void protein::protOpt(bool _backbone)
 		//--Backslide optimization-----------------------------------------------------------------------
 		if (nobetter > _plateau && _backbone)
 		{
-			resE = getEnergy(randchain, randres), medResE = getMedianResidueEnergy();
+			resE = protEnergy(randchain, randres), medResE = getMedianResidueEnergy();
 			if (resE > medResE)
 			{
 				//--transform angle while energy improves, until energy degrades, then revert one step
@@ -2599,7 +2593,7 @@ void protein::protOpt(bool _backbone)
 		}
 
 		//--Rotamer optimization-----------------------------------------------------------------------
-		resE = getEnergy(randchain, randres), medResE = getMedianResidueEnergy();
+		resE = protEnergy(randchain, randres), medResE = getMedianResidueEnergy();
 		if (resE > medResE)
 		{
 			currentRot = getSidechainDihedrals(randchain, randres);
@@ -2739,7 +2733,7 @@ void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 		//--Backslide optimization-----------------------------------------------------------------------
 		if (nobetter > _plateau && _backbone)
 		{
-			resE = getEnergy(randchain, randres), medResE = getMedianResidueEnergy(_activeChains);
+			resE = protEnergy(randchain, randres), medResE = getMedianResidueEnergy(_activeChains);
 			if (resE > medResE)
 			{
 				//--transform angle while energy improves, until energy degrades, then revert one step
@@ -2765,7 +2759,7 @@ void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 		}
 
 		//--Rotamer optimization-----------------------------------------------------------------------
-		resE = getEnergy(randchain, randres), medResE = getMedianResidueEnergy(_activeChains);
+		resE = protEnergy(randchain, randres), medResE = getMedianResidueEnergy(_activeChains);
 		if (resE > medResE)
 		{
 			currentRot = getSidechainDihedrals(randchain, randres);

@@ -118,7 +118,7 @@ public:
     void setMoved (UInt resIndex, bool _moved) {itsResidues[resIndex]->setMoved(_moved);}
     void setMoved (bool _moved);
     bool getMoved (UInt resIndex) {return itsResidues[resIndex]->getMoved();}
-    double getEnergy (UInt resIndex) {return itsResidues[resIndex]->getEnergy();}
+	double getEnergy (UInt resIndex) {return itsResidues[resIndex]->getEnergy();}
     double getSolvationEnergy(const UInt _resIndex) {return itsResidues[_resIndex]->getSolvationEnergy();}
 	double getDielectric(const UInt _resIndex) {return itsResidues[_resIndex]->getDielectric();}
 	double getBetaChi(const UInt _resIndex) {return itsResidues[_resIndex]->getBetaChi();}

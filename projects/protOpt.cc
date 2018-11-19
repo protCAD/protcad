@@ -28,9 +28,9 @@ int main (int argc, char* argv[])
     bool homosymmetric = false;
     bool backbone = false;
     
-	residue::setElectroSolvationScaleFactor(0.0);
-	residue::setHydroSolvationScaleFactor(0.0);
-	amberElec::setScaleFactor(0.0);
+    residue::setElectroSolvationScaleFactor(1.0);
+    residue::setHydroSolvationScaleFactor(1.0);
+    amberElec::setScaleFactor(1.0);
 	amberVDW::setScaleFactor(1.0);
 
     UInt _frozenResidues[] = {};
