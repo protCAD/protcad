@@ -1665,6 +1665,7 @@ void residue::setChi(const UInt _bpt, const UInt _index, const double _angle)
 	ASSERT(currentChi < 1e5 && currentChi > -1e5);
 	double diff = _angle - currentChi;
 	setChiByDelta(_bpt, _index, diff);
+	setMoved(true);
 }
 
 void residue::setChiByDelta(const UInt _bpt, const UInt _index, const double _angleDelta)
