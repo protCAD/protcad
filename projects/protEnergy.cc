@@ -28,7 +28,7 @@ int main (int argc, char* argv[])
 	amberElec::setScaleFactor(1.0);
 	amberVDW::setScaleFactor(1.0);
 	
-	start = clock();
+	/*start = clock();
 	double Energy = bundle->protEnergy();
 	end = clock();
 	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
@@ -51,7 +51,7 @@ int main (int argc, char* argv[])
 	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
 	cout << "protEnergy: " << Energy << " kcal/mol time: " << cpu_time_used << endl;
 	outFile = "protEnergy_out3.pdb";
-	pdbWriter(bundle, outFile);
+	pdbWriter(bundle, outFile);*/
 	
 	
 	
@@ -60,11 +60,15 @@ int main (int argc, char* argv[])
 	end = clock();
 	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
 	cout << clashes << " clashes time: " << cpu_time_used << endl;
+	string outFile = "protRelax_out.pdb";
+	pdbWriter(bundle, outFile);
 	
 	start = clock();
 	clashes = bundle->getNumHardClashes();
 	end = clock();
 	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
 	cout << clashes << " clashes time: " << cpu_time_used << endl;
+	outFile = "protRelax_out.pdb";
+	pdbWriter(bundle, outFile);
 	return 0;
 }

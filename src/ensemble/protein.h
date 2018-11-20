@@ -64,10 +64,6 @@ public:
 	void finishProteinBuild();
 	void listSecondaryStructure();
 	void listDihedrals();
-	UInt getNumChis(const UInt _chainIndex, const UInt _resIndex, const UInt _bpt) {return itsChains[_chainIndex]->getNumChis(_resIndex,0); }
-	UInt getNumHardClashes(UInt _chainIndex, UInt _resIndex);
-	UInt getNumHardClashes();
-	UInt getNumHardClashes(const UInt _chainIndex) {return itsChains[_chainIndex]->getNumHardClashes(); }
     double getRadius(UInt chainIndex, UInt resIndex, UInt atomIndex) {return itsChains[chainIndex]->getRadius(resIndex, atomIndex);}
 	char getChainID(UInt chainIndex) {return itsChains[chainIndex]->getChainID();}
     void listConnectivity(UInt _chainIndex, UInt _resIndex) {return itsChains[_chainIndex]->listConnectivity(_resIndex);}
@@ -154,6 +150,11 @@ public:
 	double protEnergy(UInt chainIndex, UInt resIndex);
 	double getMedianResidueEnergy();
 	double getMedianResidueEnergy(UIntVec _activeChains);
+	UInt getNumChis(const UInt _chainIndex, const UInt _resIndex, const UInt _bpt) {return itsChains[_chainIndex]->getNumChis(_resIndex,0); }
+	UInt getNumHardClashes(UInt chainIndex, UInt resIndex);
+	UInt getNumHardClashes();
+	void updateClashes();
+	UInt getMedianResidueNumHardClashes();
 	//double getMedianResEnergy(UIntVec _activeChains, UIntVec _activeResidues);
 	double getSolvationEnergy(UInt _chainIndex, UInt _residueIndex) {return itsChains[_chainIndex]->getSolvationEnergy(_residueIndex); }
 	double getAtomCharge(UInt _chainNum, UInt _resNum, UInt _atomNum) { return itsChains[_chainNum]->getAtomCharge(_resNum, _atomNum); }

@@ -1614,69 +1614,6 @@ double chain::getVolume(UInt _method)
 	return itsVolume;
 }
 
-UInt chain::getNumHardClashes()
-{
-	UInt resClashes, currentClashes, numClashes = 0;
-	for (UInt i = 0; i < itsResidues.size(); i ++)
-	{
-		resClashes = 0;
-		if (itsResidues[i]->getMoved()){
-			resClashes += itsResidues[i]->getNumHardClashes();
-			for (UInt j = i + 1; j < itsResidues.size(); j ++)
-			{
-				resClashes += itsResidues[i]->getNumHardClashes(itsResidues[j]);
-			}
-			currentClashes = itsResidues[i]->getClashes();
-			itsResidues[i]->setClashes(currentClashes+resClashes);
-			numClashes += resClashes;
-		}
-		else{ numClashes += itsResidues[i]->getClashes();}
-	}
-	return numClashes;
-}
-
-UInt chain::getNumHardClashes(UInt _resIndex)
-{
-	UInt numClashes = 0;
-	for (UInt i = 0; i < itsResidues.size(); i++)
-	{
-		numClashes += itsResidues[_resIndex]->getNumHardClashes(itsResidues[i]);
-	}
-	return numClashes;
-}
-
-UInt chain::getNumHardClashes(chain* _other)
-{
-	UInt resClashes, currentClashes, numClashes = 0;
-	for (UInt i = 0; i < itsResidues.size(); i ++)
-	{
-		resClashes = 0;
-		if (itsResidues[i]->getMoved()){
-			for (UInt j = 0; j < _other->getNumResidues(); j ++)
-			{
-				resClashes += itsResidues[i]->getNumHardClashes(_other->getResidue(j));
-			}
-			currentClashes = itsResidues[i]->getClashes();
-			itsResidues[i]->setClashes(currentClashes+resClashes);
-			numClashes += resClashes;
-		}
-		else{ numClashes += itsResidues[i]->getClashes();}
-	}
-	return numClashes;
-}
-
-UInt chain::getNumHardClashes(chain* _other, UInt _resIndex)
-{
-	UInt numClashes = 0;
-	for (UInt i = 0; i < _other->getNumResidues(); i++)
-	{
-		numClashes += itsResidues[_resIndex]->getNumHardClashes(_other->getResidue(i));
-	}
-	return numClashes;
-}
-
-
-
 double chain::getInterEnergy(const UInt _residue1, const UInt _atom1, chain* _other, const UInt _residue2, const UInt _atom2)
 {
 	if (_residue1 >=0 && _residue1 < itsResidues.size() && _residue2 >=0 && _residue2 < _other->itsResidues.size())
@@ -1818,6 +1755,51 @@ double chain::getEnergy()
 	return Energy;
 }
 
+
+void chain::updateClashes()
+{
+	UInt clashes;
+	for(UInt i=0; i<itsResidues.size(); i++)
+	{	
+		if (itsResidues[i]->getMoved()){
+			itsResidues[i]->setClashes(0);
+			clashes = 0;
+			clashes += itsResidues[i]->getNumHardClashes();
+			for(UInt j=i+1; j<itsResidues.size(); j++)
+			{
+				clashes += itsResidues[i]->getNumHardClashes(itsResidues[j]);
+			}
+			itsResidues[i]->setClashes(clashes);
+		}
+	}
+}
+
+void chain::updateClashes(chain* _other)
+{
+	UInt clashes, currentClashes;
+	for(UInt i=0; i<itsResidues.size(); i++)
+	{
+		if (itsResidues[i]->getMoved()){
+			clashes = 0;
+			for(UInt j=0; j<_other->itsResidues.size(); j++)
+			{
+				clashes += itsResidues[i]->getNumHardClashes(_other->itsResidues[j]);
+			}
+			currentClashes = itsResidues[i]->getClashes();
+			itsResidues[i]->setClashes(clashes+currentClashes);
+		}
+	}
+}
+
+UInt chain::getClashes()
+{
+	UInt clashes = 0;
+	for(UInt i=0; i<itsResidues.size(); i++)
+	{	
+		clashes += itsResidues[i]->getClashes();
+	}
+	return clashes;
+}
 
 double chain::getPositionIntraEnergy(vector <int> _position)
 {

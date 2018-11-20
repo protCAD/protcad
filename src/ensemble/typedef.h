@@ -16,7 +16,7 @@ using namespace std;
 #define TYPEDEF_H
 
 #define PI 3.1415926535
-#define KB 0.0019872041
+#define KB 0.0019872041 //Boltzmann constant kcal/mol
 
 typedef unsigned int UInt;
 typedef vector<double> DouVec;

@@ -155,10 +155,10 @@ public:
 	UInt chooseNextMutationIdentity(ran& _ran, vector <int> _position) { return chooseTargetIdentity(_position[2],_ran); }
 	residue* superimposeGLY(const UInt _residue);
 	double calculateHCA_O_hBondEnergy(chain* _other);
-	UInt getNumHardClashes();
-	UInt getNumHardClashes(chain* _other);
-	UInt getNumHardClashes(UInt _resIndex);
-	UInt getNumHardClashes(chain* _other, UInt _resIndex);
+	UInt getClashes();
+	void updateClashes(chain* _other);
+	void updateClashes();
+	UInt getClashes (UInt resIndex) {return itsResidues[resIndex]->getClashes();}
     void listConnectivity(UInt _resIndex) {return itsResidues[_resIndex]->listConnectivity();}
 private:
 	int chooseTargetResidue(ran& _ran);

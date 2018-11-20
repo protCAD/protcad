@@ -1111,7 +1111,7 @@ double protein::intraEnergy()
 }
 
 
-//--Non-redundant complete Energy calculation/////////////////////////////////////////////////////////////////
+//**************Default non-Redundant optimized Energy Function***************************************
 double protein::protEnergy()
 {
 	updateEnergy();
@@ -1134,16 +1134,9 @@ void protein::updateEnergy()
 			itsChains[i]->updateEnergy(itsChains[j]);
 		}
 	}
-	setMoved(false);
-}
+	setMoved(false);}
 
 void protein::updateDielectrics()
-{
-	polarizability();
-	calculateDielectrics();
-}
-
-void protein::polarizability()
 {
 	for(UInt i=0; i<itsChains.size(); i++)
 	{
@@ -1153,6 +1146,7 @@ void protein::polarizability()
 			itsChains[i]->polarizability(itsChains[j]);
 		}
 	}
+	calculateDielectrics();
 }
 
 void protein::calculateDielectrics()
@@ -1232,6 +1226,66 @@ double protein::getMedianResidueEnergy(UIntVec _activeChains)
 	}
 	return median;
 }
+
+void protein::updateClashes()
+{
+	for(UInt i=0; i<itsChains.size(); i++)
+	{
+		itsChains[i]->updateClashes();
+		for(UInt j=i+1; j<itsChains.size(); j++)
+		{
+			itsChains[i]->updateClashes(itsChains[j]);
+		}
+	}
+	setMoved(false);
+}
+
+UInt protein::getNumHardClashes()
+{
+	updateClashes();
+	UInt clashes = 0;
+	for(UInt i=0; i<itsChains.size(); i++)
+	{
+		clashes += itsChains[i]->getClashes();
+	}
+	return clashes;
+}
+
+UInt protein::getNumHardClashes(UInt chainIndex, UInt resIndex)
+{
+	if (getMoved(chainIndex, resIndex)){
+		updateClashes();
+	}
+	return itsChains[chainIndex]->getClashes(resIndex);
+}
+
+UInt protein::getMedianResidueNumHardClashes()
+{
+	updateClashes();
+	UInt median, clashes;
+	vector <UInt> resClashes;
+	for (UInt i = 0; i < itsChains.size(); i++)
+	{
+		for (UInt j = 0; j < itsChains[i]->itsResidues.size(); j++)
+		{
+			clashes = itsChains[i]->getClashes(j);
+			resClashes.push_back(clashes);
+		}
+	}
+	
+	size_t size = resClashes.size();
+	sort(resClashes.begin(), resClashes.end());
+	if (size % 2 == 0)
+	{
+		median = (resClashes[size / 2 - 1] + resClashes[size / 2]) / 2;
+	}
+	else
+	{
+		median = resClashes[size / 2];
+	}
+	return median;
+}
+
 /*
 double protein::getMedianResEnergy(UIntVec _activeChains, UIntVec _activeResidues)
 {
@@ -2633,7 +2687,7 @@ void protein::protRelax(bool _backbone)
 	if (pastProtClashes > 0)
 	{
 		//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
-		UInt randchain, randres, randrestype, randrot, chainNum = getNumChains(), keep, foldD, protClashes, resClashes, nobetter = 0, _plateau = 350;
+		UInt randchain, randres, randrestype, randrot, chainNum = getNumChains(), keep, foldD, protClashes, resClashes, medResC, nobetter = 0, _plateau = 350;
 		vector < vector <double> > currentRot; vector <UIntVec> allowedRots; srand (time(NULL));
 		double sPhi, sPsi;
 		int dihedralD;
@@ -2648,8 +2702,9 @@ void protein::protRelax(bool _backbone)
 			//--Backslide optimization-----------------------------------------------------------------------
 			if (nobetter > _plateau && _backbone)
 			{
+				medResC = getMedianResidueNumHardClashes();
 				resClashes = getNumHardClashes(randchain, randres);
-				if (resClashes > 0)
+				if (resClashes > medResC)
 				{
 					//--transform angle while energy improves, until energy degrades, then revert one step
 					do{dihedralD = (rand() % 3)-1;}while(dihedralD == 0);
@@ -2674,8 +2729,9 @@ void protein::protRelax(bool _backbone)
 			}
 	
 			//--Rotamer optimization-----------------------------------------------------------------------
+			medResC = getMedianResidueNumHardClashes();
 			resClashes = getNumHardClashes(randchain, randres);
-			if (resClashes > 0)
+			if (resClashes > medResC)
 			{
 				currentRot = getSidechainDihedrals(randchain, randres);
 				allowedRots = getAllowedRotamers(randchain, randres, randrestype);
@@ -3608,27 +3664,3 @@ double protein::getHBondEnergy(const UInt _chain1, const UInt _res1, const UInt 
     return energy;
 }
 
-UInt protein::getNumHardClashes()
-{
-	UInt numClashes = 0;
-	for (UInt i = 0; i < itsChains.size(); i ++)
-	{
-		numClashes += itsChains[i]->getNumHardClashes();
-		for (UInt j = i +1; j < itsChains.size(); j ++)
-		{
-			numClashes += itsChains[i]->getNumHardClashes(itsChains[j]);
-		}
-	}
-	return numClashes;
-}
-
-UInt protein::getNumHardClashes(UInt _chainIndex, UInt _resIndex)
-{
-	UInt numClashes = 0;
-	numClashes += itsChains[_chainIndex]->getNumHardClashes(_resIndex);
-	for (UInt i = 0; i < itsChains.size(); i++)
-	{
-		numClashes += itsChains[_chainIndex]->getNumHardClashes(itsChains[i], _resIndex);
-	}
-	return numClashes;
-}

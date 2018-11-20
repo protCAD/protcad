@@ -3033,7 +3033,7 @@ UInt residue::getNumHardClashes()
 	{
 		for (UInt j = i + 1; j < itsAtoms.size(); j ++)
 		{
-			if (isClash(i,j)) numClashes ++;
+			if (isClash(i,j)) numClashes++;
 		}
 	}
 	return numClashes;
@@ -3046,7 +3046,7 @@ UInt residue::getNumHardClashes(residue* _other)
 	{
 		for (UInt j = 0; j < _other->getNumAtoms(); j ++)
 		{
-			if (isClash(i, _other, j)) numClashes ++;
+			if (isClash(i, _other, j)) numClashes++;
 		}
 	}
 	return numClashes;
