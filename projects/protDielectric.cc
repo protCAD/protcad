@@ -34,7 +34,7 @@ int main (int argc, char* argv[])
 	protein* _prot = static_cast<protein*>(pMol);
 	string outFile;
 
-    _prot->intraSoluteEnergy();
+    _prot->protEnergy();
     cout << "chain" << " position" << " residue" << " dielectric" << " solvationEnergy" << endl;
     for (UInt i = 0; i < _prot->getNumChains(); i++)
     {

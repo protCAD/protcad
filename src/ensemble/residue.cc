@@ -21,10 +21,10 @@ bool residue::dataBaseBuilt = false;
 double residue::temperature = 300.0;
 double residue::HsolvationFactor = 1.0;
 double residue::EsolvationFactor = 1.0;
-double residue::cutoffDistance = 6;
+double residue::cutoffDistance = 7.0;
 double residue::cutoffDistanceSquared = residue::cutoffDistance*residue::cutoffDistance;
 double residue::cutoffCubeVolume = pow((residue::cutoffDistance*2),3);
-double residue::dielectricWidth = 6;
+double residue::dielectricWidth = 7.0;
 double residue::dielectricCubeVolume = pow((residue::dielectricWidth*2),3);
 
 void residue::setupDataBase()
@@ -313,11 +313,6 @@ residue::~residue()
 	{	delete itsAtoms[i];
 	}
 	howMany--;
-}
-
-void residue::removeResidue()
-{
-    howMany--;
 }
 
 // ************************************************************************
@@ -2647,9 +2642,11 @@ double residue::intraSoluteEnergy()
 		if (!itsAtoms[i]->getSilentStatus())
 		{
 			// ** get solvationEnergy
-			vector <double> tempSolvEnergy = calculateSolvationEnergy(i);
-			intraEnergy += tempSolvEnergy[0];
-			intraEnergy += tempSolvEnergy[1];
+			if (EsolvationFactor != 0.0 || HsolvationFactor != 0.0){
+				vector <double> tempSolvEnergy = calculateSolvationEnergy(i);
+				intraEnergy += tempSolvEnergy[0];
+				intraEnergy += tempSolvEnergy[1];
+			}
 			for(UInt j=i+1; j<itsAtoms.size(); j++)
 			{
 				if (!itsAtoms[j]->getSilentStatus())
@@ -2809,18 +2806,16 @@ double residue::getDielectric()
 void residue::polarizability()
 {	
 	bool inCube;
-	int vdwIndex, atoms;
-	double polarizability, volume, currentPol, currentVol, currentMol;
+	int vdwIndexI, vdwIndexJ;
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
 		if (!itsAtoms[i]->getSilentStatus())
 		{
 			//--inlude self volume and polarizability
-			polarizability = 0.0, volume = 0.0, atoms = 0;
-			vdwIndex = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][0];
-			polarizability += residueTemplate::getPolarizability(vdwIndex);
-			volume += residueTemplate::getVolume(vdwIndex);
-			atoms++;
+			vdwIndexI = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][0];
+			itsAtoms[i]->sumEnvPol(residueTemplate::getPolarizability(vdwIndexI));
+			itsAtoms[i]->sumEnvVol(residueTemplate::getVolume(vdwIndexI));
+			itsAtoms[i]->sumEnvMol(1/itsAtoms.size());
 			for(UInt j=i+1; j<itsAtoms.size(); j++)
 			{
 				if (!itsAtoms[j]->getSilentStatus())
@@ -2828,33 +2823,32 @@ void residue::polarizability()
 					inCube = itsAtoms[i]->inCube(itsAtoms[j], dielectricWidth);
 					if (inCube)
 					{
-						vdwIndex = dataBase[itsType].itsAtomEnergyTypeDefinitions[j][0];
-						polarizability += residueTemplate::getPolarizability(vdwIndex);
-						volume += residueTemplate::getVolume(vdwIndex);
-						atoms++;
+						//i sum environment j
+						vdwIndexJ = dataBase[itsType].itsAtomEnergyTypeDefinitions[j][0];
+						itsAtoms[i]->sumEnvPol(residueTemplate::getPolarizability(vdwIndexJ));
+						itsAtoms[i]->sumEnvVol(residueTemplate::getVolume(vdwIndexJ));
+						itsAtoms[i]->sumEnvMol(1/itsAtoms.size());
+						
+						//j sum environment i
+						itsAtoms[j]->sumEnvPol(residueTemplate::getPolarizability(vdwIndexI));
+						itsAtoms[j]->sumEnvVol(residueTemplate::getVolume(vdwIndexI));
+						itsAtoms[j]->sumEnvMol(1/itsAtoms.size());
 					}
 				}
 			}
-			currentPol = itsAtoms[i]->getEnvPol();
-			currentVol = itsAtoms[i]->getEnvVol();
-			currentMol = itsAtoms[i]->getEnvMol();
-			itsAtoms[i]->setEnvPol(currentPol+polarizability);
-			itsAtoms[i]->setEnvVol(currentVol+volume);
-			itsAtoms[i]->setEnvMol(currentMol+(atoms/itsAtoms.size()));
 		}
 	}
 }
 
 void residue::polarizability(residue* _other)
 {	
-	bool inCube;
-	int vdwIndex, atoms;
-	double polarizability, volume, currentPol, currentVol, currentMol;
+	bool inCube, resI = getMoved(), resJ = _other->getMoved();
+	int vdwIndexI, vdwIndexJ;
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
 		if (!itsAtoms[i]->getSilentStatus())
 		{
-			polarizability = 0.0, volume = 0.0, atoms = 0;
+			vdwIndexI = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][0];
 			for(UInt j=0; j<_other->itsAtoms.size(); j++)
 			{
 				if (!_other->itsAtoms[j]->getSilentStatus())
@@ -2862,20 +2856,22 @@ void residue::polarizability(residue* _other)
 					inCube = itsAtoms[i]->inCube(_other->itsAtoms[j], dielectricWidth);
 					if (inCube)
 					{
-						_other->setMoved(true);
-						vdwIndex = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[j][0];
-						polarizability += residueTemplate::getPolarizability(vdwIndex);
-						volume += residueTemplate::getVolume(vdwIndex);
-						atoms++;
+						//i sum environment j
+						if (resI){
+							vdwIndexJ = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[j][0];
+							itsAtoms[i]->sumEnvPol(residueTemplate::getPolarizability(vdwIndexJ));
+							itsAtoms[i]->sumEnvVol(residueTemplate::getVolume(vdwIndexJ));
+							itsAtoms[i]->sumEnvMol(1/_other->itsAtoms.size());
+						}
+						//j sum environment i
+						if (resJ){
+							_other->itsAtoms[j]->sumEnvPol(residueTemplate::getPolarizability(vdwIndexI));
+							_other->itsAtoms[j]->sumEnvVol(residueTemplate::getVolume(vdwIndexI));
+							_other->itsAtoms[j]->sumEnvMol(1/itsAtoms.size());
+						}
 					}
 				}
 			}
-			currentPol = itsAtoms[i]->getEnvPol();
-			currentVol = itsAtoms[i]->getEnvVol();
-			currentMol = itsAtoms[i]->getEnvMol();
-			itsAtoms[i]->setEnvPol(currentPol+polarizability);
-			itsAtoms[i]->setEnvVol(currentVol+volume);
-			itsAtoms[i]->setEnvMol(currentMol+(atoms/_other->itsAtoms.size()));
 		}
 	}
 }
@@ -2892,7 +2888,7 @@ void residue::calculateDielectrics()
 		{
 			// calculate local dielectric for atom
 			envPol = itsAtoms[i]->getEnvPol();
-			envVol = itsAtoms[i]->getEnvVol();
+			envVol = itsAtoms[i]->getEnvVol()/2; // ~half of volume lost in covalent overlap
 			envMol = itsAtoms[i]->getEnvMol();
 			totalWaterVol = totalVol-envVol;
 			if (totalWaterVol > waterVol){
@@ -2902,6 +2898,31 @@ void residue::calculateDielectrics()
 			}
 			itsAtoms[i]->setDielectric(dielectric);
 			itsAtoms[i]->setNumberofWaters(waters);
+		}
+	}
+}
+
+
+void residue::updateMovedDependence(residue* _other)
+{	
+	bool inCube;
+	for(UInt i=0; i<itsAtoms.size(); i++)
+	{
+		if (!itsAtoms[i]->getSilentStatus())
+		{
+			for(UInt j=0; j<_other->itsAtoms.size(); j++)
+			{
+				if (!_other->itsAtoms[j]->getSilentStatus())
+				{
+					inCube = itsAtoms[i]->inCube(_other->itsAtoms[j], cutoffDistance);
+					if (inCube)
+					{
+						_other->setMoved(true);
+						_other->setCheckMovedDependence(false);
+						return;
+					}
+				}
+			}
 		}
 	}
 }
@@ -3048,7 +3069,7 @@ UInt residue::getNumHardClashes(residue* _other)
 		for (UInt j = 0; j < _other->getNumAtoms(); j ++)
 		{
 			if (isClash(i, _other, j)) numClashes++;
-		}
+		} 
 	}
 	return numClashes;
 }
@@ -3819,12 +3840,12 @@ UInt residue::getBondSeparation(residue* _pRes1, UInt _index1, residue*
 
 bool residue::notHydrogen(UInt _atomIndex)
 {
-    string atomType = getTypeStringFromAtomNum(_atomIndex);
-    if (atomType != "H")
-    {
-        return true;
-    }
-    return false;
+	string atomType = getTypeStringFromAtomNum(_atomIndex);
+	if (atomType != "H")
+	{
+		return true;
+	}
+	return false;
 }
 
 
@@ -3929,60 +3950,71 @@ bool residue::isBonded(atom* _pAtom1, atom* _pAtom2)
 
 double residue::getSelfEnergy(residue* _other)
 {
-    double selfEnergy = 0.0;
-    UInt index1, index2;
-    for (UInt i = 0; i < itsAtoms.size(); i++)
-    {
-        bool isSideChain = true;  // for this energy term, CA is considered to be SIDECHAIN
-        for (UInt counter = dataBase[itsType].mainChain[0]; counter < dataBase[itsType].mainChain.size(); counter++)
-        {
-            if (i == dataBase[itsType].mainChain[counter] && itsAtoms[i]->getName() != "CA") isSideChain = false;
-        }
-        if (isSideChain)
-        {
-            for (UInt j = dataBase[_other->itsType].mainChain[0]; j < dataBase[_other->itsType].mainChain.size(); j++)
-            {
-                bool withinCutoff = itsAtoms[i]->inCutoffSQ(_other->itsAtoms[j], cutoffDistance, cutoffDistanceSquared);
-                bool isBonded;
+	double selfEnergy = 0.0;
+	UInt index1, index2;
+	for (UInt i = 0; i < itsAtoms.size(); i++)
+	{
+		bool isSideChain = true;  // for this energy term, CA is considered to be SIDECHAIN
+		for (UInt counter = dataBase[itsType].mainChain[0]; counter < dataBase[itsType].mainChain.size(); counter++)
+		{
+			if (i == dataBase[itsType].mainChain[counter] && itsAtoms[i]->getName() != "CA") isSideChain = false;
+		}
+		if (isSideChain)
+		{
+			for (UInt j = dataBase[_other->itsType].mainChain[0]; j < dataBase[_other->itsType].mainChain.size(); j++)
+			{
+				bool withinCutoff = itsAtoms[i]->inCutoffSQ(_other->itsAtoms[j], cutoffDistance, cutoffDistanceSquared);
+				bool isBonded;
 		if (0 == 0)//_other->itsAtoms[j]->getName() != "CA")
 		{
-                	if (this != _other)
-                	{
-                	    isBonded = isSeparatedByFewBonds(this, i, _other, j);
-                	}
-                	else
-                	    isBonded = isSeparatedByFewBonds(i,j);
-                	if (!isBonded && !itsAtoms[j]->getSilentStatus() && withinCutoff && residueTemplate::itsAmberVDW.getScaleFactor() != 0.0)
-                	{
-                	    double distanceSquared = itsAtoms[i]->distanceSquared(_other->itsAtoms[j]);
-                	    if (hydrogensOn)
-                	    {
-                	        index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][0];
-                	        index2 = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[j][0];
-                	    }
-                	    else
-                	    {
-                	        index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][1];
-                	        index2 = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[j][1];
-                	    }
-			    UInt resType1 = itsType;
-			    UInt resType2 = _other->itsType;
-			    double tempElecEnergy = residueTemplate::getAmberElecEnergySQ(resType1, i, resType2, j, distanceSquared);
-                	    double tempvdwEnergy = residueTemplate::getVDWEnergySQ(index1, index2, distanceSquared);
-                	    selfEnergy += tempvdwEnergy + tempElecEnergy;
-                    	// atom* temp = _other->itsAtoms[j];
-                    	//cout <<  itsAtoms[i]->getName() << " to " << temp->getName()  << " " << selfEnergy <<endl;
-                	}
+					if (this != _other)
+					{
+						isBonded = isSeparatedByFewBonds(this, i, _other, j);
+					}
+					else
+						isBonded = isSeparatedByFewBonds(i,j);
+					if (!isBonded && !itsAtoms[j]->getSilentStatus() && withinCutoff && residueTemplate::itsAmberVDW.getScaleFactor() != 0.0)
+					{
+						double distanceSquared = itsAtoms[i]->distanceSquared(_other->itsAtoms[j]);
+						if (hydrogensOn)
+						{
+							index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][0];
+							index2 = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[j][0];
+						}
+						else
+						{
+							index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][1];
+							index2 = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[j][1];
+						}
+				UInt resType1 = itsType;
+				UInt resType2 = _other->itsType;
+				double tempElecEnergy = residueTemplate::getAmberElecEnergySQ(resType1, i, resType2, j, distanceSquared);
+						double tempvdwEnergy = residueTemplate::getVDWEnergySQ(index1, index2, distanceSquared);
+						selfEnergy += tempvdwEnergy + tempElecEnergy;
+						// atom* temp = _other->itsAtoms[j];
+						//cout <<  itsAtoms[i]->getName() << " to " << temp->getName()  << " " << selfEnergy <<endl;
+					}
 		}
-            }
-        }
-    }
-    return selfEnergy;
+			}
+		}
+	}
+	return selfEnergy;
 }
 
 void residue::setMoved(bool _moved)
 {
 	moved = _moved;
+	if (_moved){
+		setEnergy(0.0);
+		clearEnvironment();
+		setCheckMovedDependence(true);
+	}
+	else{setCheckMovedDependence(false);}
+}
+
+void residue::setCheckMovedDependence(bool _check)
+{
+	dependentMove = _check;
 }
 
 void residue::clearEnvironment()
@@ -4005,6 +4037,11 @@ void residue::setEnergy(double _Energy)
 	Energy = _Energy;
 }
 
+void residue::sumEnergy(double _Energy)
+{
+	Energy += _Energy;
+}
+
 double residue::getVolume(UInt _method)
 {
 	double itsVolume = 0.0;
@@ -4021,21 +4058,21 @@ double residue::getVolume(UInt _method)
 
 double residue::netCharge()
 {
-    double nCharge = 0.0;
-    string residueType = getDataBaseItem(itsType);
-    if (residueType == "ARG") nCharge =  1.0;
-    if (residueType == "ASP") nCharge = -1.0;
-    if (residueType == "GLU") nCharge = -1.0;
-    if (residueType == "HIN") nCharge = -1.0;
-    if (residueType == "HIP") nCharge =  1.0;
-    if (residueType == "LYS") nCharge =  1.0;
-    if (residueType == "ARD") nCharge =  1.0;
-    if (residueType == "APD") nCharge = -1.0;
-    if (residueType == "GUD") nCharge = -1.0;
-    if (residueType == "HND") nCharge = -1.0;
-    if (residueType == "HPD") nCharge =  1.0;
-    if (residueType == "LYD") nCharge =  1.0;
-    return nCharge;
+	double nCharge = 0.0;
+	string residueType = getDataBaseItem(itsType);
+	if (residueType == "ARG") nCharge =  1.0;
+	if (residueType == "ASP") nCharge = -1.0;
+	if (residueType == "GLU") nCharge = -1.0;
+	if (residueType == "HIN") nCharge = -1.0;
+	if (residueType == "HIP") nCharge =  1.0;
+	if (residueType == "LYS") nCharge =  1.0;
+	if (residueType == "ARD") nCharge =  1.0;
+	if (residueType == "APD") nCharge = -1.0;
+	if (residueType == "GUD") nCharge = -1.0;
+	if (residueType == "HND") nCharge = -1.0;
+	if (residueType == "HPD") nCharge =  1.0;
+	if (residueType == "LYD") nCharge =  1.0;
+	return nCharge;
 }
 
 

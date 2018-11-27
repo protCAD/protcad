@@ -201,6 +201,8 @@ public:
 	double intraEnergy();
 	void updateEnergy();
 	void updateEnergy(chain* _other);
+	void updateMovedDependence();
+	void updateMovedDependence(chain* _other);
 	double getEnergy();
 	void polarizability();
 	void polarizability(chain* _other);

@@ -112,20 +112,23 @@ public:
 	void setEnvPol(double _envPol);
 	void setEnvVol(double _envVol);
 	void setEnvMol(double _envMol);
+	void sumEnvPol(double _envPol);
+	void sumEnvVol(double _envVol);
+	void sumEnvMol(double _envMol);
 	double getRadius() const {return itsRadius; }
 	double getEpsilon() const {return itsEpsilon; }
-    double getPolarizability() const {return itsPolarizability; }
-    double getVolume() const {return itsVolume; }
+	double getPolarizability() const {return itsPolarizability; }
+	double getVolume() const {return itsVolume; }
 	void setRadius(const double _radius);
 	void setAtomicRadius(double _radius);
 	double getSolvationEnergy() {return itsSolvationEnergy;}
 	double getDielectric() {return itsDielectric;}
-    double getNumberofWaters() {return itsWaters;}
+	double getNumberofWaters() {return itsWaters;}
 	double getMaxDielectric() {return itsMaxDielectric;}
 	double getMinDielectric() {return itsMinDielectric;}
 	void setSolvationEnergy(double _solvationEnergy);
 	void setDielectric(double _dielectric);
-    void setNumberofWaters(double _waters);
+	void setNumberofWaters(double _waters);
 	void setMaxDielectric(double _maxDielectric);
 	void setMinDielectric(double _minDielectric);
 
@@ -139,7 +142,7 @@ public:
 	char  getChainID() const {return itsChainID;}
 	string getLigChainID() const {return itsLigChainID;}
 	void  setChainID(char _ID) {itsChainID = _ID; }
-        void  setLigChainID(string _ID){itsLigChainID= _ID;}
+	void  setLigChainID(string _ID){itsLigChainID= _ID;}
 	string getResType() const;
 	bool getSilentStatus() { return isSilent; }
 

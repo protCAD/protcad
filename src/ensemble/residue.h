@@ -77,15 +77,14 @@ public:
 	residue(const UInt _itsType);
 	residue(const UInt _itsType, const bool _hFlag);
 	residue(const residue& _rhs);
-        residue(const string& _aaType, const bool _hFlag, const bool _hPFlag);
+	residue(const string& _aaType, const bool _hFlag, const bool _hPFlag);
 	residue(const UInt _itsType, const bool _hFlag, const bool _hPFlag);
 	~residue();
-    void removeResidue();
 
 private:
 	void initializeAtomsAndConnectivity();
 	void initializeSidechainDihedralAngles();
-        void initializePolarHDihedralAngle();
+	void initializePolarHDihedralAngle();
 	// generateAtoms and buildConnectivity are auxilary functions
 	// for constructors, so PRIVATE
 	void generateAtoms();
@@ -238,6 +237,7 @@ public:
 	double intraSoluteEnergy();
 	void polarizability();
 	void polarizability(residue* _other);
+	void updateMovedDependence(residue* _other);
 	void calculateDielectrics();
     vector <double> calculateSolvationEnergy(UInt _atomIndex);
     double getSolvationEnergy();
@@ -247,16 +247,6 @@ public:
 	double interSoluteEnergy(residue* _other);
 	double getSelfEnergy(residue* _other);
 	double calculateHCA_O_hBondEnergy(residue* _other);
-	double BBEnergy();
-	double BBEnergy(residue* _other);
-	/* 1-4 atom interaction variables and accessors
-	static double oneFourVDWScaleFactor;
-	static double oneFourAmberElecScaleFactor;
-	static void setOneFourVDWScaleFactor(double scale) { oneFourVDWScaleFactor = scale; }
-	static double getOneFourVDWScaleFactor() { return oneFourVDWScaleFactor; }
-	static void setOneFourAmberElecScaleFactor(double scale) {oneFourAmberElecScaleFactor = scale; }
-	static double getOneFourAmberElecScaleFactor() { return oneFourAmberElecScaleFactor; }
-	*/
 	double getVolume(UInt _method);
     bool notHydrogen(UInt _atomIndex);
     double getTotalVolumeofBondedAtoms(UInt _atomIndex);
@@ -324,19 +314,22 @@ public:
 // ***********************************************************************
 
 public:
-        bool getHydrogensOn() const {return hydrogensOn;}
+	bool getHydrogensOn() const {return hydrogensOn;}
 	void setHydrogensOn(const bool _hydrogensOn) ;
 	bool getPolarHydorgensOn() const {return polarHydrogensOn;}
 	void setPolarHydrogensOn(const bool _polarHydrogensOn);
 	bool getHasPolarHRotamers() const {return dataBase[itsType].getHasPolarHRotamers(); }
-    void setMoved (bool _moved);
-    void clearEnvironment();
-    bool getMoved() const {return moved;}
-    void setClashes (UInt _clashes);
-    UInt getClashes() const {return clashes;}
-    void setEnergy (double _energy);
-    double getEnergy() const {return Energy;}
-        
+	void setMoved (bool _moved);
+	void setCheckMovedDependence (bool _check);
+	void clearEnvironment();
+	bool getMoved() const {return moved;}
+	bool getCheckMovedDependence() const {return dependentMove;}
+	void setClashes (UInt _clashes);
+	UInt getClashes() const {return clashes;}
+	void setEnergy (double _energy);
+	void sumEnergy (double _energy);
+	double getEnergy() const {return Energy;}
+
 // ***********************************************************************
 // ***********************************************************************
 // 	Static Variable Accessors
@@ -346,15 +339,15 @@ public:
 public:
 	// static function cannot have const modifier
 	static void setupDataBase();
-    static void setupDataBase(const bool _Hflag);
-    static void setupDataBase(const bool _Hflag, const bool _HPflag);
+	static void setupDataBase(const bool _Hflag);
+	static void setupDataBase(const bool _Hflag, const bool _HPflag);
 	static double getCutoffDistance() {return cutoffDistance; }
 	static void setCutoffDistance( const double _cutoff ) { cutoffDistance = _cutoff; cutoffDistanceSquared = _cutoff*_cutoff; }
-    static void setTemperature( const double _temp ) { temperature = _temp; }
-    static void setElectroSolvationScaleFactor( const double _Esolv ) { EsolvationFactor = _Esolv; }
-    static double getElectroSolvationScaleFactor() { return EsolvationFactor; }
-    static void setHydroSolvationScaleFactor( const double _Hsolv ) { HsolvationFactor = _Hsolv; }
-    static double getHydroSolvationScaleFactor() { return HsolvationFactor; }
+	static void setTemperature( const double _temp ) { temperature = _temp; }
+	static void setElectroSolvationScaleFactor( const double _Esolv ) { EsolvationFactor = _Esolv; }
+	static double getElectroSolvationScaleFactor() { return EsolvationFactor; }
+	static void setHydroSolvationScaleFactor( const double _Hsolv ) { HsolvationFactor = _Hsolv; }
+	static double getHydroSolvationScaleFactor() { return HsolvationFactor; }
 
 
 // ***********************************************************************
@@ -371,17 +364,18 @@ private:
 	residue* pItsNextRes;
 	residue* pItsPrevRes;
 	bool hydrogensOn;
-    bool polarHydrogensOn;
+	bool polarHydrogensOn;
 	bool isArtificiallyBuilt;
-    bool moved = true;
-    UInt clashes = 0;
-    double Energy = 0.0;
-    
+	bool moved = true;
+	bool dependentMove = false;
+	UInt clashes = 0;
+	double Energy = 0.0;
+
 
 	//variables relating to the rotameric state
 	//or lack thereof....
 	vector< vector <double> > itsSidechainDihedralAngles;
-        double itsPolarHDihedralAngle;
+	double itsPolarHDihedralAngle;
 
 	public:
 	static vector<residueTemplate> dataBase;
@@ -394,14 +388,14 @@ private:
 	private:
 	static UInt howMany;
 	static bool dataBaseBuilt;
-    static double temperature;
-    static double EsolvationFactor;
-    static double HsolvationFactor;
+	static double temperature;
+	static double EsolvationFactor;
+	static double HsolvationFactor;
 	static double cutoffDistance;
 	static double cutoffDistanceSquared;
-    static double cutoffCubeVolume;
-    static double dielectricWidth;
-    static double dielectricCubeVolume;
+	static double cutoffCubeVolume;
+	static double dielectricWidth;
+	static double dielectricCubeVolume;
 };
 
 #endif

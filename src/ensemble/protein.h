@@ -48,11 +48,11 @@ public:
 	static UInt getHowMany() {return howMany; }
 	void add(chain* _pChain);
 	chain* getChain(UInt _chainIndex) {return itsChains[_chainIndex]; }
-   	dblVec getCoords(const UInt _chainIndex, const UInt _resIndex, const string _atomName)
-                { return itsChains[_chainIndex]->getCoords(_resIndex, _atomName);}
-   	dblVec getCoords(const UInt _chainIndex, const UInt _resIndex, const UInt _atomIndex) 
+	dblVec getCoords(const UInt _chainIndex, const UInt _resIndex, const string _atomName)
+		{ return itsChains[_chainIndex]->getCoords(_resIndex, _atomName);}
+	dblVec getCoords(const UInt _chainIndex, const UInt _resIndex, const UInt _atomIndex) 
 		{ return itsChains[_chainIndex]->getCoords(_resIndex, _atomIndex);}
-   	UInt getNumAtoms(const UInt _chainIndex, const UInt _resIndex) 
+	UInt getNumAtoms(const UInt _chainIndex, const UInt _resIndex) 
 		{ return itsChains[_chainIndex]->getNumAtoms(_resIndex); }
 	void setCoords(UInt _chainIndex, UInt _resIndex, UInt _atomIndex, dblVec _coords)
 		{ return itsChains[_chainIndex]->setCoords(_resIndex, _atomIndex, _coords);}
@@ -64,13 +64,13 @@ public:
 	void finishProteinBuild();
 	void listSecondaryStructure();
 	void listDihedrals();
-    double getRadius(UInt chainIndex, UInt resIndex, UInt atomIndex) {return itsChains[chainIndex]->getRadius(resIndex, atomIndex);}
+	double getRadius(UInt chainIndex, UInt resIndex, UInt atomIndex) {return itsChains[chainIndex]->getRadius(resIndex, atomIndex);}
 	char getChainID(UInt chainIndex) {return itsChains[chainIndex]->getChainID();}
-    void listConnectivity(UInt _chainIndex, UInt _resIndex) {return itsChains[_chainIndex]->listConnectivity(_resIndex);}
+	void listConnectivity(UInt _chainIndex, UInt _resIndex) {return itsChains[_chainIndex]->listConnectivity(_resIndex);}
 
 	
 	//--Organization functions
-    void updateTotalNumResidues();
+	void updateTotalNumResidues();
 	void initializeModificationMethods();
 
 	void resetAllBuffers();
@@ -80,13 +80,13 @@ public:
 	void printAllLinkageInfo();
 	int getIndexFromResNum(UInt _chainIndex, UInt _resnum);
 	UInt getNumChains() const {return itsChains.size();}
-    UInt getNumBpt(UInt restype) {return residue::getNumBpt(restype);}
+	UInt getNumBpt(UInt restype) {return residue::getNumBpt(restype);}
 	int getResNum(UInt _chainIndex, UInt _resIndex) {return itsChains[_chainIndex]->getResNum(_resIndex);}
 	UInt getNumResidues(UInt _chainIndex) const;
 	UInt getTypeFromResNum(UInt _chainIndex, UInt _resNum) { return itsChains[_chainIndex]->getTypeFromResNum(_resNum);}
 	string getTypeStringFromAtomNum(UInt _chainIndex, UInt _resNum, UInt _atomNum) { return itsChains[_chainIndex]->getTypeStringFromAtomNum(_resNum, _atomNum);}
 	string getTypeStringFromResNum(UInt _chainIndex, UInt _resNum) {return itsChains[_chainIndex]->getTypeStringFromResNum(_resNum);}
-    void removeResidue(UInt _chainIndex, UInt _resNum) {return itsChains[_chainIndex]->removeResidue(_resNum);}
+	void removeResidue(UInt _chainIndex, UInt _resNum) {return itsChains[_chainIndex]->removeResidue(_resNum);}
 
 	//--Mutations functions
 	void stripToGlycine();
@@ -124,13 +124,13 @@ public:
 	int modify(ran& _ran, vector <int> _position);
 	void acceptModification();
 	void rejectModification();
-    double netCharge();
+	double netCharge();
 	
-    //--Optimization functions
-    void protOpt(bool _backbone); // --Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics-- dpike
+	//--Optimization functions
+	void protOpt(bool _backbone); // --Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics-- dpike
 	void protRelax(bool _backbone);
 	void protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeChains);
-    void optimizeSmallRotations(UInt _steps, double _stepSize);
+	void optimizeSmallRotations(UInt _steps, double _stepSize);
 	void optimizeSmallRotations(vector <UIntVec> _positions, UInt _steps, double _stepSize);
 	void optimizeSmallRotations(UIntVec _position, UInt _steps, double _stepSize);
 	vector <vector < double > > getRotationEnergySurface(vector < UIntVec > _active, UInt _steps, double _stepSize, UInt _activePos, vector <vector< double > > _bestChiArray, double &_lowestEnergy);
@@ -176,6 +176,7 @@ public:
 	//vector <double> calculateChainIndependentDielectric(chain* _chain, residue* _residue, atom* _atom);
 	//vector <double> calculateResidueIndependentDielectric(residue* _residue, atom* _atom);
 	void updateDielectrics();
+	void updateMovedDependence();
 	//void updatePositionDielectrics(UInt _chainIndex, UInt _residueIndex);
 	//void updateChainIndependentDielectrics(UInt _chainIndex);
 	//void updateResidueIndependentDielectrics(UInt _chainIndex, UInt _resIndex);
@@ -218,7 +219,7 @@ public:
 	void rotateChain(UInt _chain, const axis _axis, const double _theta);
 
 	//--Rotamer functions
-    void setRotamerNotAllowed(const UInt _chainIndex, const UInt _resIndex, const UInt _resType, const UInt _bpt, const UInt _rotamer);
+	void setRotamerNotAllowed(const UInt _chainIndex, const UInt _resIndex, const UInt _resType, const UInt _bpt, const UInt _rotamer);
 	void listAllowedRotamers(UInt _chain, UInt _resIndex);
 	void setRotamer(const UInt _chainIndex, const UInt _resIndex, const UInt _bpt, const UInt _rotamer);
 	void setRotamerWBC(const UInt _chainIndex, const UInt _resIndex, const UInt _bpt, const UInt _rotamer);
@@ -236,7 +237,7 @@ public:
 	void setCanonicalHelixRotamersOnly(const UInt _chainIndex, const UInt _resIndex);
 	void setCanonicalHelixRotamersOnly(const UInt _chainIndex);
 	UIntVec getAllowedRotamers(UInt _chainIndex, UInt _resIndex, UInt _resType, UInt _bpt) { return itsChains[_chainIndex]->getAllowedRotamers(_resIndex, _resType, _bpt); }
-    vector <UIntVec> getAllowedRotamers(UInt _chainIndex, UInt _resIndex, UInt _resType) { return itsChains[_chainIndex]->getAllowedRotamers(_resIndex, _resType); }
+	vector <UIntVec> getAllowedRotamers(UInt _chainIndex, UInt _resIndex, UInt _resType) { return itsChains[_chainIndex]->getAllowedRotamers(_resIndex, _resType); }
 	void setRelativeChi(const UInt _chainIndex, const UInt _resIndex, const UInt _bpt, const UInt _chi, const double _angle);
 	void setChi (const UInt _chainIndex, const UInt _resIndex, const UInt _bpt, const UInt _chi, const double _angle);
 	double getChi (const UInt _chainIndex, const UInt _resIndex, const UInt _bpt, const UInt _chi) { return itsChains[_chainIndex]->getChi(_resIndex, _bpt, _chi); }
@@ -271,11 +272,11 @@ private:
 	static bool messagesActive;
 	static bool calcSelfEnergy;
 	static UInt howMany;
-    UInt itsNumResidues;
-    vector < vector < vector  <double> > > energies;
+	UInt itsNumResidues;
+	vector < vector < vector  <double> > > energies;
 	static UInt itsSolvationParam;
-    vector <chain*> itsChains;
-    vector <UInt> itsIndependentChainsMap;
+	vector <chain*> itsChains;
+	vector <UInt> itsIndependentChainsMap;
 	vector<vector<int> > itsChainLinkageMap;
 	bool (protein::*itsModificationMethods[5])(ran& _ran);
 	

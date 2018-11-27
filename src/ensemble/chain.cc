@@ -101,7 +101,6 @@ chain::~chain()
 
 void chain::removeResidue(UInt _resNum)
 {
-    itsResidues[_resNum]->removeResidue();
     delete itsResidues[_resNum];
     itsResidues.resize(itsResidues.size()-1);
     delete itsChainPositions[_resNum];
@@ -1666,61 +1665,75 @@ double chain::intraEnergy()
 
 void chain::updateEnergy()
 {	
+	bool resI, resJ;
 	double resEnergy;
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{	
-		if (itsResidues[i]->getMoved()){
-			itsResidues[i]->setEnergy(0.0);
-			resEnergy = 0.0;
-			resEnergy += itsResidues[i]->intraSoluteEnergy();
-			for(UInt j=i+1; j<itsResidues.size(); j++)
-			{
-				resEnergy += itsResidues[i]->interSoluteEnergy(itsResidues[j]);
+		resI = itsResidues[i]->getMoved();
+		for(UInt j=i+1; j<itsResidues.size(); j++)
+		{
+			resJ =  itsResidues[j]->getMoved();
+			if (resI || resJ){
+				resEnergy = itsResidues[i]->interSoluteEnergy(itsResidues[j]), resEnergy /= 2;
+				if(resI){itsResidues[i]->sumEnergy(resEnergy);}
+				if(resJ){itsResidues[j]->sumEnergy(resEnergy);}
 			}
-			itsResidues[i]->setEnergy(resEnergy);
+		}
+		if(resI){
+			resEnergy = itsResidues[i]->intraSoluteEnergy();
+			itsResidues[i]->sumEnergy(resEnergy);
 		}
 	}
 }
 
 void chain::updateEnergy(chain* _other)
 {
-	double resEnergy, currentEnergy;
+	bool resI, resJ;
+	double resEnergy;
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{
-		if (itsResidues[i]->getMoved()){
-			resEnergy = 0.0;
-			for(UInt j=0; j<_other->itsResidues.size(); j++)
-			{
-				resEnergy += itsResidues[i]->interSoluteEnergy(_other->itsResidues[j]);
+		resI = itsResidues[i]->getMoved();
+		for(UInt j=0; j<_other->itsResidues.size(); j++)
+		{
+			resJ = _other->itsResidues[j]->getMoved();
+			if (resI || resJ){
+				resEnergy = itsResidues[i]->interSoluteEnergy(_other->itsResidues[j]), resEnergy /= 2;
+				if(resI){itsResidues[i]->sumEnergy(resEnergy);}
+				if(resJ){_other->itsResidues[j]->sumEnergy(resEnergy);}
 			}
-			currentEnergy = itsResidues[i]->getEnergy();
-			itsResidues[i]->setEnergy(resEnergy+currentEnergy);
 		}
 	}
 }
 
 void chain::polarizability()
 {
+	bool resI, resJ;
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{	
-		if (itsResidues[i]->getMoved()){
-			itsResidues[i]->clearEnvironment();
-			itsResidues[i]->polarizability();
-			for(UInt j=i+1; j<itsResidues.size(); j++)
-			{	
+		resI = itsResidues[i]->getMoved();
+		for(UInt j=i+1; j<itsResidues.size(); j++)
+		{	
+			resJ = itsResidues[j]->getMoved();
+			if (resI || resJ){
 				itsResidues[i]->polarizability(itsResidues[j]);
 			}
+		}
+		if (resI){
+			itsResidues[i]->polarizability();
 		}
 	}
 }
 
 void chain::polarizability(chain* _other)
 {
+	bool resI, resJ;
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{
-		if (itsResidues[i]->getMoved()){
-			for(UInt j=0; j<_other->itsResidues.size(); j++)
-			{
+		resI = itsResidues[i]->getMoved();
+		for(UInt j=0; j<_other->itsResidues.size(); j++)
+		{
+			resJ = _other->itsResidues[j]->getMoved();
+			if (resI || resJ){
 				itsResidues[i]->polarizability(_other->itsResidues[j]);
 			}
 		}
@@ -1736,6 +1749,33 @@ void chain::calculateDielectrics()
 		}
 	}
 }
+
+void chain::updateMovedDependence()
+{
+	for(UInt i=0; i<itsResidues.size(); i++)
+	{	
+		if (itsResidues[i]->getCheckMovedDependence()){
+			for(UInt j=i+1; j<itsResidues.size(); j++)
+			{	
+				itsResidues[i]->updateMovedDependence(itsResidues[j]);
+			}
+		}
+	}
+}
+
+void chain::updateMovedDependence(chain* _other)
+{
+	for(UInt i=0; i<itsResidues.size(); i++)
+	{
+		if (itsResidues[i]->getCheckMovedDependence()){
+			for(UInt j=0; j<_other->itsResidues.size(); j++)
+			{
+				itsResidues[i]->updateMovedDependence(_other->itsResidues[j]);
+			}
+		}
+	}
+}
+
 
 void chain::setMoved(bool _moved)
 {
