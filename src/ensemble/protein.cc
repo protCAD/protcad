@@ -2618,6 +2618,9 @@ void protein::protOpt(bool _backbone)
 {   // Sidechain and backrub optimization with a local dielectric scaling of electrostatics and corresponding Born/Gill implicit solvation energy
 	//_plateau: the number of consecutive optimization cycles without an energy decrease (default: 150 for general purpose optimization)
 
+	//--reset saved protein energies prior to optimization
+	setMoved(true);
+
 	//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
 	UInt randchain, randres, randrestype, randrot, chainNum = getNumChains(), keep, foldD, nobetter = 0, plateau = 700, _plateau=plateau*0.8;
 	double Energy, resE, medResE, pastEnergy = protEnergy(), sPhi, sPsi, energyBuffer = 0.1;
@@ -2697,6 +2700,9 @@ void protein::protRelax(bool _backbone)
 	UInt pastProtClashes = getNumHardClashes();
 	if (pastProtClashes > 0)
 	{
+		//--reset saved protein energies prior to optimization
+		setMoved(true);
+		
 		//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
 		UInt randchain, randres, randrestype, randrot, chainNum = getNumChains(), keep, foldD, protClashes, resClashes, medResC, nobetter = 0, plateau = 700, _plateau=plateau*0.8;
 		vector < vector <double> > currentRot; vector <UIntVec> allowedRots; srand (time(NULL));
@@ -2778,6 +2784,9 @@ void protein::protRelax(bool _backbone)
 void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeChains) //_activeChain only optimized and energy calculated for it
 {   // Sidechain and backrub optimization with a local dielectric scaling of electrostatics and corresponding Born/Gill implicit solvation energy
 	//_plateau: the number of consecutive optimization cycles without an energy decrease (default: 150 for general purpose optimization)
+
+	//--reset saved protein energies prior to optimization
+	setMoved(true);
 
 	//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
 	UInt randchain, randres, randrestype, randrot, chainNum = _activeChains.size(), keep, foldD, nobetter = 0, _plateau = 700;
