@@ -116,6 +116,9 @@ public:
     double netCharge();
 
     void setMoved (UInt resIndex, bool _moved) {itsResidues[resIndex]->setMoved(_moved);}
+    void setMoved (bool _moved);
+    bool getMoved (UInt resIndex) {return itsResidues[resIndex]->getMoved();}
+	double getEnergy (UInt resIndex) {return itsResidues[resIndex]->getEnergy();}
     double getSolvationEnergy(const UInt _resIndex) {return itsResidues[_resIndex]->getSolvationEnergy();}
 	double getDielectric(const UInt _resIndex) {return itsResidues[_resIndex]->getDielectric();}
 	double getBetaChi(const UInt _resIndex) {return itsResidues[_resIndex]->getBetaChi();}
@@ -152,10 +155,10 @@ public:
 	UInt chooseNextMutationIdentity(ran& _ran, vector <int> _position) { return chooseTargetIdentity(_position[2],_ran); }
 	residue* superimposeGLY(const UInt _residue);
 	double calculateHCA_O_hBondEnergy(chain* _other);
-	UInt getNumHardClashes();
-	UInt getNumHardClashes(chain* _other);
-	UInt getNumHardClashes(UInt _resIndex);
-	UInt getNumHardClashes(chain* _other, UInt _resIndex);
+	UInt getClashes();
+	void updateClashes(chain* _other);
+	void updateClashes();
+	UInt getClashes (UInt resIndex) {return itsResidues[resIndex]->getClashes();}
     void listConnectivity(UInt _resIndex) {return itsResidues[_resIndex]->listConnectivity();}
 private:
 	int chooseTargetResidue(ran& _ran);
@@ -196,11 +199,15 @@ public:
 	int setDihedral(const UInt _resIndex, double _dihedral, UInt _angleType, UInt _direction);
 	double getDielectric(UInt _resIndex, UInt _atomIndex) {return itsResidues[_resIndex]->itsAtoms[_atomIndex]->getDielectric();}
 	double intraEnergy();
-	double intraSoluteEnergy();
-	vector <double> calculateDielectric(chain* _other, UInt _residueIndex, UInt _atomIndex);
-	vector <double> calculateDielectric(chain* _other, residue* _residue, atom* _atom);
+	void updateEnergy();
+	void updateEnergy(chain* _other);
+	void updateMovedDependence();
+	void updateMovedDependence(chain* _other);
+	double getEnergy();
+	void polarizability();
+	void polarizability(chain* _other);
+	void calculateDielectrics();
 	double interEnergy(chain* _other);
-	double interSoluteEnergy(chain* _other);
 	double getInterEnergy(const UInt _res1, chain* _other, const UInt _res2);
 	double getInterEnergy(const UInt _residue1, const UInt _atom1, chain* _other, const UInt _residue2, const UInt _atom2);
 	double getSelfEnergy(UInt _residueIndex);

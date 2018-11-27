@@ -43,6 +43,7 @@ int main (int argc, char* argv[])
 	while (true)
 	{
 		UInt misses = protSampling(prot);
+		prot->setMoved(true);
 		newEnergy = prot->protEnergy();
 		cout << startstr << " " << prot->getNumResidues(0)*5 << " " << misses << " " << newEnergy;
 		if (newEnergy < Energy){
@@ -142,13 +143,13 @@ UInt protSampling(protein* _prot)
 			if (numClashes <= startNumClashes)
 			{
 				sampled++;
-				_prot->protOpt(true);
+				_prot->protRelax(true);
 			}
 			else{
 				_prot->setDihedral(randchain,randres,sPhi,0,foldD);
 				_prot->setDihedral(randchain,randres,sPsi,1,foldD);
 			}
 		}
-	} while (sampled < totalres*5);
+	} while (sampled < totalres);
 	return count;
 }

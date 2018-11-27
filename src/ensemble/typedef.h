@@ -15,15 +15,14 @@ using namespace std;
 #ifndef TYPEDEF_H
 #define TYPEDEF_H
 
+#define PI 3.1415926535
+#define KB 0.0019872041 //Boltzmann constant kcal/mol
+
 typedef unsigned int UInt;
 typedef vector<double> DouVec;
 typedef vector<double> DblVec;
 typedef vector<UInt> UIntVec;
 typedef vector<string> StrVec;
-
-//typedef doubleVector dblVec;
-//typedef doubleMatrix dblMat;
-
 typedef TNT::Vector<double> dblVec;
 typedef TNT::Matrix<double> dblMat;
 
