@@ -151,11 +151,11 @@ void protSampling(protein* _prot)
 				cout << numClashes << endl;
 				startNumClashes = numClashes;
 				//_prot->protOpt(true);
-				_prot->setMoved(true);
-				Energy = _prot->protEnergy();
-				if (Energy < pastEnergy){
-					pastEnergy = Energy;
-				}
+				//_prot->setMoved(true);
+				//Energy = _prot->protEnergy();
+				//if (Energy < pastEnergy){
+				//	pastEnergy = Energy;
+				//}
 				//else{
 				//	_prot->setDihedral(randchain,randres,sPhi,0,foldD);
 				//	_prot->setDihedral(randchain,randres,sPsi,1,foldD);
