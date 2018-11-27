@@ -2936,7 +2936,7 @@ void residue::listConnectivity()
         {
             // ** get distance
             double distanceSquared = itsAtoms[i]->distanceSquared(itsAtoms[j]);
-            if (distanceSquared < 6)
+            if (distanceSquared < 4)
             {
                 cout << " " << itsAtoms[j]->getName();
             }
@@ -4006,6 +4006,7 @@ void residue::setMoved(bool _moved)
 	moved = _moved;
 	if (_moved){
 		setEnergy(0.0);
+		setClashes(0);
 		clearEnvironment();
 		setCheckMovedDependence(true);
 	}
@@ -4030,6 +4031,11 @@ void residue::clearEnvironment()
 void residue::setClashes(UInt _clashes)
 {
 	clashes = _clashes;
+}
+
+void residue::sumClashes(UInt _clashes)
+{
+	clashes += _clashes;
 }
 
 void residue::setEnergy(double _Energy)

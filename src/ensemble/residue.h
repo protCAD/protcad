@@ -325,6 +325,7 @@ public:
 	bool getMoved() const {return moved;}
 	bool getCheckMovedDependence() const {return dependentMove;}
 	void setClashes (UInt _clashes);
+	void sumClashes (UInt _clashes);
 	UInt getClashes() const {return clashes;}
 	void setEnergy (double _energy);
 	void sumEnergy (double _energy);

@@ -51,8 +51,6 @@ int main (int argc, char* argv[])
 
 
 	//--running parameters
-    residue::setCutoffDistance(8.0);
-	residue::setTemperature(300);
 	residue::setElectroSolvationScaleFactor(1.0);
 	residue::setHydroSolvationScaleFactor(1.0);
 	amberElec::setScaleFactor(1.0);
@@ -72,10 +70,9 @@ int main (int argc, char* argv[])
 	//--set initial variables
 	srand (getpid());
 	double bestEnergy, pastEnergy, Energy;
-    UInt timeid, sec, mutant = 0, numResidues, startingClashes, plateau = 10, nobetter = 0;
+	UInt timeid, sec, mutant = 0, numResidues, startingClashes, plateau = 10, nobetter = 0;
 	vector < UInt > mutantPosition, chainSequence, sequencePosition, randomPosition;
 	vector < vector < UInt > > sequencePool, proteinSequence, finalSequence, possibleMutants;
-	vector < double > bindingEnergy;
 	stringstream convert;
 	string infile = argv[1];
 	string startstr, outFile;
@@ -105,7 +102,7 @@ int main (int argc, char* argv[])
 		createPossibleMutantsDatabase(startProt, activeChains, activeResidues, allowedLResidues, allowedDResidues, homoSymmetric);
 		possibleMutants = buildPossibleMutants();
 	}
-    startingClashes = startProt->getNumHardClashes();
+	startingClashes = startProt->getNumHardClashes();
 	delete thePDB;
 
 	//--Run multiple independent evolution cycles-----------------------------------------------------
@@ -209,7 +206,7 @@ int main (int argc, char* argv[])
 		molecule* modelMol = theModelEnsemble->getMoleculePointer(0);
 		protein* model = static_cast<protein*>(modelMol);
 
-        if (model->getNumHardClashes() <= startingClashes)
+		if (model->getNumHardClashes() <= startingClashes)
 		{
 			Energy = model->protEnergy();
 			sec = time(NULL);
@@ -249,8 +246,8 @@ int main (int argc, char* argv[])
 			finalline.close();
 		}
 		delete theModelPDB;
-		bindingEnergy.clear(),sequencePool.clear(),proteinSequence.clear(), chainSequence.clear(), mutantPosition.clear(), chainSequence.clear(), sequencePosition.clear(), randomPosition.clear();
-		bindingEnergy.resize(0),sequencePool.resize(0),proteinSequence.resize(0), chainSequence.resize(0), mutantPosition.resize(0), chainSequence.resize(0), sequencePosition.resize(0), randomPosition.resize(0);
+		sequencePool.clear(),proteinSequence.clear(), chainSequence.clear(), mutantPosition.clear(), chainSequence.clear(), sequencePosition.clear(), randomPosition.clear();
+		sequencePool.resize(0),proteinSequence.resize(0), chainSequence.resize(0), mutantPosition.resize(0), chainSequence.resize(0), sequencePosition.resize(0), randomPosition.resize(0);
 	}
 	return 0;
 }
@@ -279,14 +276,14 @@ vector <UInt> getMutationPosition(protein* _prot, UIntVec &_activeChains, UIntVe
 	UInt randres, randchain;
 	double posE, medE;
 	vector <UInt> _mutantPosition;
-	medE = _prot->getMedianResEnergy(_activeChains, _activeResidues);
+	medE = _prot->getMedianResidueEnergy(_activeChains, _activeResidues);
 
 	//--find random position with worse than median energy
 	do
 	{
 		randchain = _activeChains[rand() % _activeChains.size()];
 		randres = _activeResidues[rand() % _activeResidues.size()];
-		posE = _prot->resEnergy(randchain,randres);
+		posE = _prot->protEnergy(randchain,randres);
 	}while (posE < medE);
 	_mutantPosition.push_back(randchain);
 	_mutantPosition.push_back(randres);

@@ -1798,35 +1798,42 @@ double chain::getEnergy()
 
 void chain::updateClashes()
 {
+	bool resI, resJ;
 	UInt clashes;
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{	
-		if (itsResidues[i]->getMoved()){
-			itsResidues[i]->setClashes(0);
-			clashes = 0;
-			clashes += itsResidues[i]->getNumHardClashes();
-			for(UInt j=i+1; j<itsResidues.size(); j++)
-			{
-				clashes += itsResidues[i]->getNumHardClashes(itsResidues[j]);
+		resI = itsResidues[i]->getMoved();
+		for(UInt j=i+1; j<itsResidues.size(); j++)
+		{
+			resJ =  itsResidues[j]->getMoved();
+			if (resI || resJ){
+				clashes = itsResidues[i]->getNumHardClashes(itsResidues[j]), clashes /= 2;
+				if(resI){itsResidues[i]->sumClashes(clashes);}
+				if(resJ){itsResidues[j]->sumClashes(clashes);}
 			}
-			itsResidues[i]->setClashes(clashes);
+		}
+		if(resI){
+			clashes = itsResidues[i]->getNumHardClashes();
+			itsResidues[i]->sumClashes(clashes);
 		}
 	}
 }
 
 void chain::updateClashes(chain* _other)
 {
-	UInt clashes, currentClashes;
+	bool resI, resJ;
+	UInt clashes;
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{
-		if (itsResidues[i]->getMoved()){
-			clashes = 0;
-			for(UInt j=0; j<_other->itsResidues.size(); j++)
-			{
-				clashes += itsResidues[i]->getNumHardClashes(_other->itsResidues[j]);
+		resI = itsResidues[i]->getMoved();
+		for(UInt j=0; j<_other->itsResidues.size(); j++)
+		{
+			resJ = _other->itsResidues[j]->getMoved();
+			if (resI || resJ){
+				clashes = itsResidues[i]->getNumHardClashes(_other->itsResidues[j]), clashes /= 2;
+				if(resI){itsResidues[i]->sumClashes(clashes);}
+				if(resJ){_other->itsResidues[j]->sumClashes(clashes);}
 			}
-			currentClashes = itsResidues[i]->getClashes();
-			itsResidues[i]->setClashes(clashes+currentClashes);
 		}
 	}
 }

@@ -53,6 +53,8 @@ int main (int argc, char* argv[])
 	outFile = "protEnergy_out3.pdb";
 	pdbWriter(bundle, outFile);
 	
+	bundle->listConnectivity(0,0);
+	
 	
 	
 	/*start = clock();
