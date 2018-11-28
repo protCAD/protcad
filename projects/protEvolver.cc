@@ -49,7 +49,6 @@ int main (int argc, char* argv[])
 	bool homoSymmetric = false;                                                          // if true all chains are structurally and sequentially symmetric to desired listed active chain above
 	bool backboneRelaxation = false;                                                    // if true allow backrub relaxation in structural optimization
 
-
 	//--running parameters
 	residue::setElectroSolvationScaleFactor(1.0);
 	residue::setHydroSolvationScaleFactor(1.0);
@@ -322,7 +321,7 @@ UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector 
 		variance = (rand() % 100) + 1;
 		mutant = _possibleMutants[position][rand() % positionPossibles];
 		if (count >= 500){
-			entropy = 5;  // probablistically allow 10% random genetic drift once sequence pool is sufficiently large
+			entropy = 5;  // probabalistically allow 5% random genetic drift once sequence pool is sufficiently large
 		}
 		else{
 			entropy = 100;  // 100% random sequences until sequence pool is built
