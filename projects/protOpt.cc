@@ -55,7 +55,7 @@ int main (int argc, char* argv[])
     cout << "start Energy: " << _prot->protEnergy() << endl;
     //_prot->protOpt(backbone,frozenResidues,activeChains);
     start = clock();
-    _prot->protOpt(backbone);
+    _prot->protMin();
     end = clock();
     cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
     cout << "end Energy: "  << _prot->protEnergy() << " time: " << cpu_time_used << endl;

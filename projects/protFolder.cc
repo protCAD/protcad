@@ -15,7 +15,6 @@
 #include <time.h>
 #include <unistd.h>
 
-void protSampling(protein* _prot);
 int main (int argc, char* argv[])
 {
 	if (argc !=2)
@@ -35,51 +34,21 @@ int main (int argc, char* argv[])
 	PDBInterface* thePDB = new PDBInterface(infile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
-	protein* prot = static_cast<protein*>(pMol);
-	double Energy = 1E10;
-	double newEnergy = Energy;
-	
-	//--sample folds and save energetic minima
-	while (true)
-	{
-		protSampling(prot);
-		prot->setMoved(true);
-		newEnergy = prot->protEnergy();
-		cout << startstr << " " << newEnergy;
-		if (newEnergy < Energy){
-			pdbWriter(prot, foldModel);
-			cout << " minima!" << endl;
-			Energy = newEnergy;
-		}
-		else{cout << endl;}
-	}
-	return 0;
-}
+	protein* _prot = static_cast<protein*>(pMol);
 
-void protSampling(protein* _prot)
-{
-	//--reset saved protein energies prior to optimization
-	_prot->setMoved(true);
-	
 	//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
-	UInt randchain, randres, totalres = 0, chainNum = _prot->getNumChains(), foldD, numres, type, GisL;
-	UInt alphaBias, startNumClashes = _prot->getNumHardClashes(), numClashes, sampled = 0, count = 0;
-	double sPhi, sPsi, Energy;
+	UInt randchain, randres, chainNum = _prot->getNumChains(), foldD, numres, type, GisL;
+	UInt alphaBias, startNumClashes = _prot->getNumHardClashes(), numClashes;
+	double sPhi, sPsi, Energy, pastEnergy;
 	
 	_prot->setMoved(true);
-	double pastEnergy = _prot->protEnergy();
-	for (UInt i = 0; i < chainNum; i++)
-	{
-		totalres+= _prot->getNumResidues(i);
-	}
-	
-	//--Run optimizaiton loop to relative minima, determined by _plateau----------------------------
-	do
-	{   //--choose random residue
+	pastEnergy = _prot->protEnergy();
+
+	while (true){
+		//--choose random residue
 		randchain = rand() % chainNum;
 		numres = _prot->getNumResidues(randchain);
 		randres = rand() % numres;
-		count++;
 	
 		//--Backbone sampling-----------------------------------------------------------------------
 		if (randres != 0 && randres != numres-1)
@@ -147,25 +116,20 @@ void protSampling(protein* _prot)
 			_prot->protRelax(false);
 			numClashes = _prot->getNumHardClashes();
 			if (numClashes <= startNumClashes){
-				sampled++;
-				cout << numClashes << endl;
 				startNumClashes = numClashes;
-				//_prot->protOpt(true);
-				//_prot->setMoved(true);
-				//Energy = _prot->protEnergy();
-				//if (Energy < pastEnergy){
-				//	pastEnergy = Energy;
-				//}
-				//else{
-				//	_prot->setDihedral(randchain,randres,sPhi,0,foldD);
-				//	_prot->setDihedral(randchain,randres,sPsi,1,foldD);
-				//}
+				_prot->protOpt(true);
+				Energy = _prot->protEnergy();
+				if (Energy < pastEnergy){
+					pastEnergy = Energy;
+					cout << startstr << " " << Energy << endl;
+					pdbWriter(_prot, foldModel);
+				}
 			}
 			else{
 				_prot->setDihedral(randchain,randres,sPhi,0,foldD);
 				_prot->setDihedral(randchain,randres,sPsi,1,foldD);
 			}
 		}
-	} while (sampled < 1/*totalres*/);
-	return;
+	}
+	return 0;
 }

@@ -2614,6 +2614,14 @@ double protein::getResPairEnergy(const UInt _chain1, const UInt _res1, const UIn
 	}
 }
 
+void protein::protMin()
+{
+	for (UInt i = 0; i < 3; i++){
+		protRelax(true);
+		protOpt(true);
+	}
+}
+
 void protein::protOpt(bool _backbone)
 {   // Sidechain and backrub optimization with a local dielectric scaling of electrostatics and corresponding Born/Gill implicit solvation energy
 	//_plateau: the number of consecutive optimization cycles without an energy decrease (default: 150 for general purpose optimization)
