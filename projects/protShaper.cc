@@ -424,22 +424,15 @@ int main (int argc, char* argv[])
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* frame = static_cast<protein*>(pMol);
-	double delta = 20;
+	double delta = 40;
 
 	double phi = frame->getAngle(0,5,0);
-	double psi = frame->getAngle(0,5,1);
+	//double psi = frame->getAngle(0,5,0);
 	
 	frame->setDihedral(0,5,phi+delta,0,1);
-	frame->setDihedral(0,5,psi-delta,1,1);
+	//frame->setDihedral(0,5,psi-delta,1,1);
 	
-	phi = frame->getAngle(0,7,0);
-	psi = frame->getAngle(0,7,1);
-	
-	frame->setDihedral(0,7,phi+(delta),0,1);
-	frame->setDihedral(0,7,psi-(delta),1,1);
-	
-
-    pdbWriter(frame, "testn.pdb");/*
+    pdbWriter(frame, "test_phc.pdb");/*
 
 	PDBInterface* thePDB = new PDBInterface(inFile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();

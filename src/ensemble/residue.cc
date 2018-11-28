@@ -1425,33 +1425,7 @@ residue* residue::mutate(const UInt _newTypeIndex)
 	// code above which sets the coordinates of the branchpoint atoms.
 	if (hydrogensOn)
 	{
-		// get the index of "H" if it exists
-		string name = "H";
-        UInt HIndex = 99;
-        for (UInt i = 0; i < newAA->itsAtoms.size(); i++)
-        {
-            //cout << itsAtoms[i]->getName() << " ";
-            string itsName = newAA->itsAtoms[i]->getName();
-            if (itsName == name)
-            {
-                HIndex = i;
-            }
-        }
-        if (HIndex != 99)
-        {
-            atom* pHNew = newAA->getAtom(HIndex);
-            if (pItsPrevRes)
-            {
-                dblVec newCoords(3);
-                dblVec prevCarbon = pItsPrevRes->getCoords("C");
-                dblVec prevOxygen = pItsPrevRes->getCoords("O");
-                dblVec itsNitrogen = getCoords("N");
-                newCoords[0] = ((prevCarbon[0]-prevOxygen[0])*0.8)+itsNitrogen[0];
-                newCoords[1] = ((prevCarbon[1]-prevOxygen[1])*0.8)+itsNitrogen[1];
-                newCoords[2] = ((prevCarbon[2]-prevOxygen[2])*0.8)+itsNitrogen[2];
-                pHNew->setCoords(newCoords); // translate Hydrogen to same plane as C=O of prev residue and axis of Nitrogen
-            }
-        }
+		newAA->alignAmideProtonToBackbone();
 	}
 	setMoved(true);
 	newAA->setMoved(true);
@@ -1556,6 +1530,36 @@ residue* residue::fixBrokenResidue()
 		fixedres = this;
 	}
 	return fixedres;
+}
+
+void residue::alignAmideProtonToBackbone()
+{
+	if (pItsPrevRes)
+	{	
+		// get the index of "H" if it exists
+		string amideProton = "H";
+		UInt HIndex = 99;
+		for (UInt i = 0; i < itsAtoms.size(); i++)
+		{
+			string itsName = itsAtoms[i]->getName();
+			if (itsName == amideProton)
+			{
+				HIndex = i;
+			}
+		}
+		if (HIndex != 99)
+		{
+			atom* pHNew = getAtom(HIndex);
+			dblVec newCoords(3);
+			dblVec prevCarbon = pItsPrevRes->getCoords("C");
+			dblVec prevOxygen = pItsPrevRes->getCoords("O");
+			dblVec itsNitrogen = getCoords("N");
+			newCoords[0] = ((prevCarbon[0]-prevOxygen[0])*0.8)+itsNitrogen[0];
+			newCoords[1] = ((prevCarbon[1]-prevOxygen[1])*0.8)+itsNitrogen[1];
+			newCoords[2] = ((prevCarbon[2]-prevOxygen[2])*0.8)+itsNitrogen[2];
+			pHNew->setCoords(newCoords); // translate Hydrogen to same plane as C=O of prev residue and axis of Nitrogen
+		}
+	}
 }
 // ************************************************************************
 // ************************************************************************
@@ -2162,6 +2166,8 @@ void residue::rotateDihedral(atom* _pAtom1, atom* _pAtom2, double _deltaTheta,  
 	{
 		recursiveTranslateWithDirection(backHome, _direction);
 	}
+	if(_angleType == 0 && _direction == 1)
+	{alignAmideProtonToBackbone();}
 }
 
 void residue::rotate(atom* _pAtom1, atom* _pAtom2, double _theta,

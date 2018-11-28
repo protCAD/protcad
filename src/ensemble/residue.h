@@ -230,6 +230,7 @@ public:
 	void coilcoil(const double _pitch);
 	residue* superimposeGLY();
 	dblVec getBackBoneCentroid();
+	void alignAmideProtonToBackbone();
 
 	// utilities
 	void printCoords() const;
