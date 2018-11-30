@@ -116,10 +116,10 @@ int main (int argc, char* argv[])
 			_prot->protRelax(false);
 			numClashes = _prot->getNumHardClashes();
 			if (numClashes <= startNumClashes){
-				startNumClashes = numClashes;
 				_prot->protOpt(true);
 				Energy = _prot->protEnergy();
 				if (Energy < pastEnergy){
+					startNumClashes = numClashes;
 					pastEnergy = Energy;
 					cout << startstr << " " << Energy << endl;
 					pdbWriter(_prot, foldModel);

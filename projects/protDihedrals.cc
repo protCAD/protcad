@@ -27,7 +27,7 @@ int main (int argc, char* argv[])
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
     protein* bundle = static_cast<protein*>(pMol);
 
-	//cout << endl << "chain res phi psi" << endl;
+	cout << endl << "phi psi RPT" << endl;
 
 
 	//--Search sequence of inFile for phis >= 0 --------------------------------------------------------
@@ -35,14 +35,14 @@ int main (int argc, char* argv[])
 	for (UInt i = 0; i < chainNum; i ++)
 	{
 		UInt resNum = bundle->getNumResidues(i);
-        cout << "NA " << bundle->getPsi(i,0) << endl;
+        cout << "NA " << bundle->getPsi(i,0) << " NA" << endl;
         for (UInt j = 1; j < resNum-1; j ++)
         {
 			double phi = bundle->getPhi(i,j);
             double psi = bundle->getPsi(i,j);
-            cout << phi << " " << psi << endl;
+            cout << phi << " " << psi << " " << bundle->getResiduesPerTurn(i,j) << endl;
         }
-        cout << bundle->getPhi(i,resNum-1) << " NA" << endl;
+        cout << bundle->getPhi(i,resNum-1) << " NA " << "NA" << endl;
 	}
 	return 0;
 }

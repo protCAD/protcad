@@ -424,15 +424,42 @@ int main (int argc, char* argv[])
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* frame = static_cast<protein*>(pMol);
-	double delta = 40;
-
-	double phi = frame->getAngle(0,5,0);
-	//double psi = frame->getAngle(0,5,0);
+	double delta = 20;
+	UInt resIndex = 4;
 	
-	frame->setDihedral(0,5,phi+delta,0,1);
+	double phi = frame->getAngle(0,resIndex,0);
+	double psi = frame->getAngle(0,resIndex,1);
+
+	
+	frame->setDihedral(0,resIndex,psi+delta,1,1);
+	vector <double> rpts(4);
+	for (UInt i = resIndex+1; i < resIndex+4; i++)
+	{
+		rpts[i-(resIndex+1)]= frame->getResiduesPerTurn(0,i)/2;
+	}
+	double aveRPT;
+	for (UInt i = 0; i < rpts.size(); i++)
+	{
+		double rptsum = 0;
+		for (UInt j = 0; j <= i; j++)
+		{rptsum += rpts[j];}
+		double rptsAve = rptsum/(i+1);
+		cout << i+1 << " " << rpts[i] << endl;
+		if (i+1 > rptsAve){aveRPT = rptsAve; break;}
+	}
+	cout << aveRPT << endl;
+	UInt rptI = aveRPT;
+	rptI = rptI+1;
+	cout << rptI << endl;
+	double fractionRPT = rptI-aveRPT;
+	cout << fractionRPT << endl;
+	double newDelta = delta-((fractionRPT/aveRPT)*delta);
+	cout << newDelta << endl;
+	double psi2 = frame->getAngle(0,resIndex+rptI,1);
+	frame->setDihedral(0,resIndex+rptI,psi2+newDelta,1,0);
 	//frame->setDihedral(0,5,psi-delta,1,1);
 	
-    pdbWriter(frame, "test_phc.pdb");/*
+    pdbWriter(frame, "test_local.pdb");/*
 
 	PDBInterface* thePDB = new PDBInterface(inFile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
