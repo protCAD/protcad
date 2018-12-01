@@ -21,7 +21,7 @@ LIB_CC_OBJECTS = ran1.o ran.o point.o treeNode.o atom.o atomIterator.o residue.o
 
 DEFS = -DHAVE_OPENGL=1 -D__STL_USE_EXCEPTIONS
 
-FLAG_OPTMAX = -Wall -oFast -ffast-math -ftree-vectorize -march=native -mtune=native -pipe -msse3 -Wno-deprecated -std=gnu++11
+FLAG_OPTMAX = -Wall -oFast -ffast-math -ftree-vectorize -march=native -mtune=native -pipe -msse3 -Wno-deprecated -std=gnu++11 -fopenmp
 
 CFLAGS = $(FLAG_OPTMAX) $(DEFS)
 

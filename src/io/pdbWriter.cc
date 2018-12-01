@@ -12,8 +12,8 @@ unsigned int pdbWriter(protein* _pProtein, const string& _pdbFile)
                 return 0;
         }
 
-	renumberAtoms(_pProtein);
-	
+		_pProtein->calculateResiduesPerTurn();
+		renumberAtoms(_pProtein);
         atomIterator theIterator(_pProtein);
 	for (; !(theIterator.last()); theIterator++)
 	{
@@ -142,32 +142,11 @@ unsigned int pdbWriter(protein* _pProtein, const string& _pdbFile)
 			outFile << setprecision(4) << dielectric;
 		}
 
-		// output solvation energy
-		double solvationEnergy = pCurrentAtom->getSolvationEnergy();
-		if ((solvationEnergy > -10.0 && solvationEnergy <= -1.0) || (solvationEnergy < 10.0 && solvationEnergy >= 1.0))
-		{
-			outFile.width(6);
-			outFile.setf(ios::showpoint);
-			   outFile << setprecision(4) << solvationEnergy;
-		}
-		else if ((solvationEnergy > -1.0 && solvationEnergy <= -0.1) || (solvationEnergy < 1.0 && solvationEnergy >= 0.1))
-		{
-			outFile.width(6);
-			outFile.setf(ios::showpoint);
-			   outFile << setprecision(3) << solvationEnergy;
-		}
-		else if ((solvationEnergy > -0.1 && solvationEnergy <= -0.01) || (solvationEnergy < 0.1 && solvationEnergy >= 0.01))
-		{
-			outFile.width(6);
-			outFile.setf(ios::showpoint);
-			   outFile << setprecision(2) << solvationEnergy;
-		}
-		else if ((solvationEnergy > -0.01 && solvationEnergy > -0.001) || (solvationEnergy < 0.01 && solvationEnergy > 0.001))
-		{
-			outFile.width(6);
-			outFile.setf(ios::showpoint);
-			  outFile << setprecision(1) << solvationEnergy;
-		}
+		//output residues per turn
+		double RPT = pCurrentAtom->getRPT();
+		outFile.width(6);
+		outFile.setf(ios::showpoint);
+		outFile << setprecision(3) << RPT;
 		outFile << endl;
 	}
 	outFile.close();

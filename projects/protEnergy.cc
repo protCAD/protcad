@@ -15,7 +15,7 @@
 //--Program setup-------------------------------------------------------------
 int main (int argc, char* argv[])
 {	
-	/*string infile = argv[1];
+	string infile = argv[1];
 	PDBInterface* thePDB = new PDBInterface(infile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
@@ -26,9 +26,9 @@ int main (int argc, char* argv[])
 	residue::setElectroSolvationScaleFactor(1.0);
 	residue::setHydroSolvationScaleFactor(1.0);
 	amberElec::setScaleFactor(1.0);
-	amberVDW::setScaleFactor(1.0);*/
+	amberVDW::setScaleFactor(1.0);
 	
-	/*start = clock();
+	start = clock();
 	double Energy = bundle->protEnergy();
 	end = clock();
 	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
@@ -36,7 +36,7 @@ int main (int argc, char* argv[])
 	string outFile = "protEnergy_out.pdb";
 	pdbWriter(bundle, outFile);
 	
-	start = clock();
+	/*start = clock();
 	Energy = bundle->protEnergy();
 	end = clock();
 	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;

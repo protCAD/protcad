@@ -4054,6 +4054,15 @@ void residue::sumEnergy(double _Energy)
 	Energy += _Energy;
 }
 
+void residue::setResiduesPerTurn(double _RPT)
+{
+	RPT = _RPT;
+	for (UInt i = 0; i < itsAtoms.size(); i++)
+	{
+		itsAtoms[i]->setRPT(_RPT);
+	}
+}
+
 double residue::getVolume(UInt _method)
 {
 	double itsVolume = 0.0;

@@ -1328,6 +1328,14 @@ double protein::getMedianResidueEnergy(UIntVec _activeChains, UIntVec _activeRes
 	}
 	return median;
 }
+
+void protein::calculateResiduesPerTurn()
+{
+	for(UInt i=0; i<itsChains.size(); i++)
+	{
+		itsChains[i]->calculateResiduesPerTurn();
+	}
+}
 /*
 double protein::intraSoluteEnergy(bool _updateDielectrics, UInt _activeChain)
 {

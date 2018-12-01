@@ -38,7 +38,7 @@ int main (int argc, char* argv[])
 	residue::setTemperature(300);
 	residue::setElectroSolvationScaleFactor(0.0);
 	residue::setHydroSolvationScaleFactor(0.0);
-	amberElec::setScaleFactor(1.0);
+	amberElec::setScaleFactor(0.0);
 	amberVDW::setScaleFactor(1.0);
 	srand (time(NULL));
 
@@ -121,306 +121,8 @@ int main (int argc, char* argv[])
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
-	/*DIR *pdir;
-	struct dirent *pent;
-	pdir=opendir(".");
-
-	vector < double > angles3(6);
-	vector < double > angles6(12);
-	vector < vector < double > > XCXmotifs;
-	vector < vector < double > > XCXXCXmotifs;
-	UInt count = 0, interval = 15;
-	for (int h1 = -150; h1 < -15; h1+=interval)///1
-	{
-		for (int s1 = -150; s1 < 165; s1+=interval)
-		{
-			for (int h2 = 30; h2 < 165; h2+=interval)///2
-			{
-				for (int s2 = -150; s2 < 165; s2+=interval)
-				{
-					for (int h3 = -150; h3 < -15; h3+=interval)///3
-					{
-						for (int s3 = -150; s3 < 165; s3+=interval)
-						{
-							count++;
-							PDBInterface* thePDB = new PDBInterface(inFile);
-							ensemble* theEnsemble = thePDB->getEnsemblePointer();
-							molecule* pMol = theEnsemble->getMoleculePointer(0);
-							protein* frame = static_cast<protein*>(pMol);
-
-							frame->makeResidueSilent(0,0);
-							frame->makeResidueSilent(0,4);
-							frame->makeResidueSilent(0,5);
-							frame->makeResidueSilent(0,6);
-							frame->makeResidueSilent(0,7);
-							frame->makeResidueSilent(0,8);
-							frame->makeResidueSilent(0,9);
-							frame->makeResidueSilent(0,10);
-							frame->makeResidueSilent(0,11);
-							frame->makeResidueSilent(0,12);
-							frame->makeResidueSilent(0,13);
-
-							frame->setDihedral(0,1,h1,0,0);
-							frame->setDihedral(0,1,s1,1,0);
-							if (h1 > 0){ frame->mutateWBC(0,1,dA);}
-							else { frame->mutateWBC(0,1,A);}
-
-							frame->setDihedral(0,2,h2,0,0);
-							frame->setDihedral(0,2,s2,1,0);
-							if (h2 > 0){ frame->mutateWBC(0,2,dA);}
-							else { frame->mutateWBC(0,2,A);}
-
-							frame->setDihedral(0,3,h3,0,0);
-							frame->setDihedral(0,3,s3,1,0);
-							if (h3 > 0){ frame->mutateWBC(0,3,dA);}
-							else { frame->mutateWBC(0,3,A);}
-
-							double Energy = frame->protEnergy();
-							if (Energy < 3.8)
-							{
-								cout << count << " " << Energy << " " << h1 << " " << s1 << " " << h2 << " " << s2 << " " << h3 << " " << s3 << endl;
-								angles3[0] = h1*-1,angles3[1] = s1*-1,angles3[2] = h2*-1,angles3[3] = s2*-1,angles3[4] = h3*-1,angles3[5] = s3*-1;
-								XCXmotifs.push_back(angles3);
-								stringstream convert;
-								string countstr;
-								convert << count, countstr = convert.str();
-								outFile = countstr + ".XCX.pdb";
-								pdbWriter(frame, outFile);
-							}
-							delete thePDB;
-						}
-					}
-				}
-			}2
-		}
-	}
-	while ((pent=readdir(pdir)))
-	{
-		string inFrame = pent->d_name;
-		if (inFrame.find(".XCX.pdb") != std::string::npos)
-		{
-			for (UInt i = 0; i < XCXmotifs.size(); i++)
-			{
-				count++;
-				PDBInterface* thePDB = new PDBInterface(inFrame);
-				ensemble* theEnsemble = thePDB->getEnsemblePointer();
-				molecule* pMol = theEnsemble->getMoleculePointer(0);
-				protein* frame = static_cast<protein*>(pMol);
-
-				frame->makeResidueSilent(0,0);
-				frame->makeResidueSilent(0,7);
-				frame->makeResidueSilent(0,8);
-				frame->makeResidueSilent(0,9);
-				frame->makeResidueSilent(0,10);
-				frame->makeResidueSilent(0,11);
-				frame->makeResidueSilent(0,12);
-				frame->makeResidueSilent(0,13);
-
-				frame->setDihedral(0,4,XCXmotifs[i][0],0,0);
-				frame->setDihedral(0,4,XCXmotifs[i][1],1,0);
-				if (XCXmotifs[i][0] > 0){ frame->mutateWBC(0,4,dA);}
-				else { frame->mutateWBC(0,4,A);}
-
-				frame->setDihedral(0,5,XCXmotifs[i][2],0,0);
-				frame->setDihedral(0,5,XCXmotifs[i][3],1,0);
-				if (XCXmotifs[i][2] > 0){ frame->mutateWBC(0,5,dA);}
-				else { frame->mutateWBC(0,5,A);}
-
-				frame->setDihedral(0,6,XCXmotifs[i][4],0,0);
-				frame->setDihedral(0,6,XCXmotifs[i][5],1,0);
-				if (XCXmotifs[i][4] > 0){ frame->mutateWBC(0,6,dA);}
-				else { frame->mutateWBC(0,6,A);}
-
-				dblVec C1coords = frame->getCoords(0, 2, "CB");
-				dblVec C2coords = frame->getCoords(0, 5, "CB");
-				double dist = CMath::distance(C1coords, C2coords);
-				if (dist < 10.6)
-				{
-					double Energy = frame->protEnergy();
-					if (Energy < 7.6)
-					{
-						cout << count << " " << Energy << " " << frame->getAngle(0,1,0) << " " << frame->getAngle(0,1,1) << " " << frame->getAngle(0,2,0) << " " << frame->getAngle(0,2,1) << " " << frame->getAngle(0,3,0) << " " << frame->getAngle(0,3,1) << " " << XCXmotifs[i][0] << " " << XCXmotifs[i][1] << " " << XCXmotifs[i][2] << " " << XCXmotifs[i][3] << " " << XCXmotifs[i][4] << " " << XCXmotifs[i][5] << endl;
-						angles6[0] = frame->getAngle(0,1,0),angles6[1] = frame->getAngle(0,1,1),angles6[2] = frame->getAngle(0,2,0),angles6[3] = frame->getAngle(0,2,1),angles6[4] = frame->getAngle(0,3,0),angles6[5] = frame->getAngle(0,3,1),angles6[6] = frame->getAngle(0,4,0),angles6[7] = frame->getAngle(0,4,1),angles6[8] = frame->getAngle(0,5,0),angles6[9] = frame->getAngle(0,5,1),angles6[10] = frame->getAngle(0,6,0),angles6[11] = frame->getAngle(0,6,1);
-						XCXXCXmotifs.push_back(angles6);
-						stringstream convert;
-						string countstr;
-						convert << count, countstr = convert.str();
-						outFile = countstr + ".XCXXCX.pdb";
-						pdbWriter(frame, outFile);
-					}
-				}
-				delete thePDB;
-			}
-		}
-	}
-	closedir(pdir);
-	while ((pent=readdir(pdir)))
-	{
-		string inFrame = pent->d_name;
-		if (inFrame.find(".XCXXCX.pdh") != std::string::npos)
-		{
-			PDBInterface* thePDB = new PDBInterface(inFrame);
-			ensemble* theEnsemble = thePDB->getEnsemblePointer();
-			molecule* pMol = theEnsemble->getMoleculePointer(0);
-			protein* frame = static_cast<protein*>(pMol);
-			angles[0] = frame->getAngle(0,1,0),angles[1] = frame->getAngle(0,1,1),angles[2] = frame->getAngle(0,2,0),angles[3] = frame->getAngle(0,2,1),angles[4] = frame->getAngle(0,3,0),angles[5] = frame->getAngle(0,3,1),angles[6] = frame->getAngle(0,4,0),angles[7] = frame->getAngle(0,4,1),angles[8] = frame->getAngle(0,5,0),angles[9] = frame->getAngle(0,5,1),angles[10] = frame->getAngle(0,6,0),angles[11] = frame->getAngle(0,6,1);
-			XCXXCXmotifs.push_back(angles);
-		}
-	}
-	closedir(pdir);
-	DIR *pdir2;
-	struct dirent *pent2;
-	pdir2=opendir(".");
-	while ((pent2=readdir(pdir2)))
-	{
-		string inFrame = pent2->d_name;
-		if (inFrame.find(".XCXXCX.pdb") != std::string::npos)
-		{
-			for (UInt i = 0; i < XCXXCXmotifs.size(); i++)
-			{
-				count++;
-				PDBInterface* thePDB = new PDBInterface(inFrame);
-				ensemble* theEnsemble = thePDB->getEnsemblePointer();
-				molecule* pMol = theEnsemble->getMoleculePointer(0);
-				protein* frame = static_cast<protein*>(pMol);
-
-				frame->makeResidueSilent(0,0);
-				frame->makeResidueSilent(0,13);
-
-				frame->setDihedral(0,7,XCXXCXmotifs[i][0],0,0);
-				frame->setDihedral(0,7,XCXXCXmotifs[i][1],1,0);
-				if (XCXmotifs[i][0] > 0){ frame->mutateWBC(0,7,dA);}
-				else { frame->mutateWBC(0,7,A);}
-
-				frame->setDihedral(0,8,XCXXCXmotifs[i][2],0,0);
-				frame->setDihedral(0,8,XCXXCXmotifs[i][3],1,0);
-				if (XCXmotifs[i][2] > 0){ frame->mutateWBC(0,8,dA);}
-				else { frame->mutateWBC(0,8,A);}
-
-				frame->setDihedral(0,9,XCXXCXmotifs[i][4],0,0);
-				frame->setDihedral(0,9,XCXXCXmotifs[i][5],1,0);
-				if (XCXmotifs[i][4] > 0){ frame->mutateWBC(0,9,dA);}
-				else { frame->mutateWBC(0,9,A);}
-
-				frame->setDihedral(0,10,XCXXCXmotifs[i][6],0,0);
-				frame->setDihedral(0,10,XCXXCXmotifs[i][7],1,0);
-				if (XCXmotifs[i][6] > 0){ frame->mutateWBC(0,10,dA);}
-				else { frame->mutateWBC(0,10,A);}
-
-				frame->setDihedral(0,11,XCXXCXmotifs[i][8],0,0);
-				frame->setDihedral(0,11,XCXXCXmotifs[i][9],1,0);
-				if (XCXmotifs[i][8] > 0){ frame->mutateWBC(0,11,dA);}
-				else { frame->mutateWBC(0,11,A);}
-
-				frame->setDihedral(0,12,XCXXCXmotifs[i][10],0,0);
-				frame->setDihedral(0,12,XCXXCXmotifs[i][11],1,0);
-				if (XCXmotifs[i][10] > 0){ frame->mutateWBC(0,12,dA);}
-				else { frame->mutateWBC(0,12,A);}
-
-				dblVec C1coords = frame->getCoords(0, 2, "CB");
-				dblVec C2coords = frame->getCoords(0, 5, "CB");
-				dblVec C3coords = frame->getCoords(0, 8, "CB");
-				dblVec C4coords = frame->getCoords(0, 11, "CB");
-				double dist1 = CMath::distance(C1coords, C4coords);
-				if (dist1 < 10.6)
-				{
-					double dist2 = CMath::distance(C2coords, C4coords);
-					if (dist2 < 10.6)
-					{
-						double dist1 = CMath::distance(C3coords, C4coords);
-						if (dist1 < 10.6)
-						{
-							double dist2 = CMath::distance(C1coords, C3coords);
-							if (dist2 < 10.6)
-							{
-								double dist3 = CMath::distance(C2coords, C3coords);
-								if (dist3 < 10.6)
-								{
-									double Energy = frame->protEnergy();
-									if (Energy < 20)
-									{
-										cout << count << " " << Energy << " " << frame->getAngle(0,1,0) << " " << frame->getAngle(0,1,1) << " " << frame->getAngle(0,2,0) << " " << frame->getAngle(0,2,1) << " " << frame->getAngle(0,3,0) << " " << frame->getAngle(0,3,1) << " " << frame->getAngle(0,4,0) << " " << frame->getAngle(0,4,1) << " " << frame->getAngle(0,5,0) << " " << frame->getAngle(0,5,1) << " " << frame->getAngle(0,6,0) << " " << frame->getAngle(0,6,1) << " "<< XCXXCXmotifs[i][0] << " " << XCXXCXmotifs[i][1] << " " << XCXXCXmotifs[i][2] << " " << XCXXCXmotifs[i][3] << " " << XCXXCXmotifs[i][4] << " " << XCXXCXmotifs[i][5] << " "<< XCXXCXmotifs[i][6] << " " << XCXXCXmotifs[i][7] << " " << XCXXCXmotifs[i][8] << " " << XCXXCXmotifs[i][9] << " " << XCXXCXmotifs[i][10] << " " << XCXXCXmotifs[i][11] << endl;
-										stringstream convert;
-										string countstr;
-										convert << count, countstr = convert.str();
-										outFile = countstr + ".XCXXCXXCXXCX.pdb";
-										pdbWriter(frame, outFile);
-									}
-								}
-							}
-						}
-					}
-				}
-				delete thePDB;
-			}
-		}
-	}
-	closedir(pdir2);
-	DIR *pdir3;
-	struct dirent *pent3;
-	pdir3=opendir(".");
-	while ((pent3=readdir(pdir3)))
-	{
-		string inFrame = pent3->d_name;
-		if (inFrame.find(".XCXXCXXCX.pdb") != std::string::npos)
-		{
-			for (UInt i = 0; i < XCXmotifs.size(); i++)
-			{
-				count++;
-				PDBInterface* thePDB = new PDBInterface(inFrame);
-				ensemble* theEnsemble = thePDB->getEnsemblePointer();
-				molecule* pMol = theEnsemble->getMoleculePointer(0);
-				protein* frame = static_cast<protein*>(pMol);
-
-				frame->makeResidueSilent(0,0);
-				frame->makeResidueSilent(0,13);
-
-				frame->setDihedral(0,10,XCXmotifs[i][0],0,0);
-				frame->setDihedral(0,10,XCXmotifs[i][1],1,0);
-				if (XCXmotifs[i][0] > 0){ frame->mutateWBC(0,10,dA);}
-				else { frame->mutateWBC(0,10,A);}
-
-				frame->setDihedral(0,11,XCXmotifs[i][2],0,0);
-				frame->setDihedral(0,11,XCXmotifs[i][3],1,0);
-				if (XCXmotifs[i][2] > 0){ frame->mutateWBC(0,11,dA);}
-				else { frame->mutateWBC(0,11,A);}
-
-				frame->setDihedral(0,12,XCXmotifs[i][4],0,0);
-				frame->setDihedral(0,12,XCXmotifs[i][5],1,0);
-				if (XCXmotifs[i][4] > 0){ frame->mutateWBC(0,12,dA);}
-				else { frame->mutateWBC(0,12,A);}
-
-				dblVec C1coords = frame->getCoords(0, 2, "CB");
-				dblVec C2coords = frame->getCoords(0, 5, "CB");
-				dblVec C3coords = frame->getCoords(0, 8, "CB");
-				dblVec C4coords = frame->getCoords(0, 11, "CB");
-				double dist1 = CMath::distance(C1coords, C4coords);
-				if (dist1 < 10.6)
-				{
-					double dist2 = CMath::distance(C2coords, C4coords);
-					if (dist2 < 10.6)
-					{
-						double dist3 = CMath::distance(C3coords, C4coords);
-						if (dist3 < 10.6)
-						{
-							double Energy = frame->protEnergy();
-							if (Energy < 48)
-							{
-								cout << count << " " << Energy << " " << frame->getAngle(0,1,0) << " " << frame->getAngle(0,1,1) << " " << frame->getAngle(0,2,0) << " " << frame->getAngle(0,2,1) << " " << frame->getAngle(0,3,0) << " " << frame->getAngle(0,3,1) << " " << frame->getAngle(0,4,0) << " " << frame->getAngle(0,4,1) << " " << frame->getAngle(0,5,0) << " " << frame->getAngle(0,5,1) << " " << frame->getAngle(0,6,0) << " " << frame->getAngle(0,6,1) << " " << frame->getAngle(0,7,0) << " " << frame->getAngle(0,7,1) << " " << frame->getAngle(0,8,0) << " " << frame->getAngle(0,8,1) << " " << frame->getAngle(0,9,0) << " " << frame->getAngle(0,9,1) << " " << XCXmotifs[i][0] << " " << XCXmotifs[i][1] << " " << XCXmotifs[i][2] << " " << XCXmotifs[i][3] << " " << XCXmotifs[i][4] << " " << XCXmotifs[i][5] << endl;
-								stringstream convert;
-								string countstr;
-								convert << count, countstr = convert.str();
-								outFile = countstr + ".XCXXCXXCXXCX.pdb";
-								pdbWriter(frame, outFile);
-							}
-						}
-					}
-				}
-				delete thePDB;
-			}
-		}
-	}*/
-	PDBInterface* thePDB = new PDBInterface(inFile);
+	
+	/*PDBInterface* thePDB = new PDBInterface(inFile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* frame = static_cast<protein*>(pMol);
@@ -459,35 +161,33 @@ int main (int argc, char* argv[])
 	frame->setDihedral(0,resIndex+rptI,psi2+newDelta,1,0);
 	//frame->setDihedral(0,5,psi-delta,1,1);
 	
-    pdbWriter(frame, "test_local.pdb");/*
+    pdbWriter(frame, "test_local.pdb");
 
 	PDBInterface* thePDB = new PDBInterface(inFile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* start = static_cast<protein*>(pMol);
-    for (int phi = -180; phi < 180; phi++)
+	//#pragma omp parallel for
+	for (int phi = -180; phi < 180; phi++)
 	{
-        for (int psi = -180; psi < 180; psi++)
+		for (int psi = -180; psi < 180; psi++)
 		{
-            protein* frame = new protein(*start);
-            frame->setDihedral(0,0,psi,1,0);
-            frame->setDihedral(0,1,phi*-1,0,0);
-            frame->setDihedral(0,1,psi*-1,1,0);
-            frame->setDihedral(0,2,phi,0,0);
-            frame->setDihedral(0,2,psi,1,0);
-            frame->setDihedral(0,3,phi*-1,0,0);
-            double Energy = frame->protEnergy();
-            if (Energy < 10)
-            {
-                cout << Energy << "," << phi << "," << psi << "," << phi*-1 << "," << psi*-1 << endl;
-            }
-            delete frame;
-            psi=psi+4;
-        }
-        phi=phi+4;
-    }*/
+			protein* frame = new protein(*start);
+			frame->setDihedral(0,0,psi,1,0);
+			frame->setDihedral(0,1,phi,0,0);
+			frame->setDihedral(0,1,psi,1,0);
+			frame->setDihedral(0,2,phi,0,0);
+			frame->setDihedral(0,2,psi,1,0);
+			frame->setDihedral(0,3,phi,0,0);
+			frame->setDihedral(0,3,psi,1,0);
+			frame->setDihedral(0,4,phi,0,0);
+			double Energy = frame->protEnergy();
+			if (Energy < 40){cout << phi << " " << psi << " " << Energy << endl;}
+			delete frame;
+		}
+	}
 
-    /*PDBInterface* thePDB = new PDBInterface(inFile);
+    PDBInterface* thePDB = new PDBInterface(inFile);
     ensemble* theEnsemble = thePDB->getEnsemblePointer();
     molecule* pMol = theEnsemble->getMoleculePointer(0);
     protein* prot = static_cast<protein*>(pMol);
@@ -529,19 +229,19 @@ int main (int argc, char* argv[])
     }
     outFile = "dala14.pdb";
     pdbWriter(prot, outFile);*/
-    /*double radius;
+    double radius;
     int count=0;
-    for (int d = 240; d < 260; d++)
+    for (int d = 0; d < 360; d++)
     {
-        radius = 5.7;//4.5+d*0.1;
-        for (int p = 280; p < 300; p++)
+        radius = 7;
+        for (int p = 0; p < 360; p++)
         {
             count++;
             PDBInterface* thePDB = new PDBInterface(inFile);
             ensemble* theEnsemble = thePDB->getEnsemblePointer();
             molecule* pMol = theEnsemble->getMoleculePointer(0);
             protein* bundle = static_cast<protein*>(pMol);
-            buildSymmetricOligamer (bundle, true, radius, 0, p, d, 0);
+            buildSymmetricOligamer (bundle, true, radius, 0, p, d, 5);
             cout << count << " " << radius << " " << d << " " << p << " " << bundle->protEnergy() << endl;
             stringstream convert;
             string countstr;
@@ -549,10 +249,10 @@ int main (int argc, char* argv[])
             outFile = countstr + "hethelix.pdb";
             pdbWriter(bundle, outFile);
             delete bundle;
-            //p=p+9;
+            p=p+9;
         }
-        //d=d+9;
-    }*/
+        d=d+9;
+    }
     return 0;
 }
 void buildSymmetricOligamer (protein* _prot, bool antiParallel, double _radius, double _coil, double _phaseoffset1, double _phaseoffset2, double _offset)
@@ -569,7 +269,7 @@ void buildSymmetricOligamer (protein* _prot, bool antiParallel, double _radius, 
 		{
 			if (odd)
 			{
-				//_prot->rotate(i, Y_axis, 180);
+				_prot->rotate(i, Y_axis, 180);
                 _prot->rotate(i,Z_axis, _phaseoffset2);
 				odd = false;
 			}

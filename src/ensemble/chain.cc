@@ -1499,9 +1499,19 @@ void chain::rotate(const point& _point,const dblVec& _R_axis, const double _thet
 	}
 }
 
+
+void chain::calculateResiduesPerTurn()
+{
+	for(UInt i=0; i<itsResidues.size(); i++)
+	{	
+		double RPT = getResiduesPerTurn(i);
+		itsResidues[i]->setResiduesPerTurn(RPT);
+	}
+}
+
 double chain::getResiduesPerTurn(const UInt _resIndex)
 {
-	double residuesPerTurn = 0.0;
+	double residuesPerTurn = 2.0;
 	if (_resIndex != 0 && _resIndex != itsResidues.size()-1)
 	{
 		double phi = itsResidues[_resIndex]->getPhi();
