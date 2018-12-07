@@ -1511,22 +1511,26 @@ void chain::calculateResiduesPerTurn()
 double chain::getResiduesPerTurn(const UInt _resIndex)
 {
 	double phi, psi, residuesPerTurn = 2.0;
-	if (_resIndex == 0){
-		psi = itsResidues[_resIndex]->getPsi();
-		phi = itsResidues[_resIndex+1]->getPhi();
+	UInt type = getTypeFromResNum(_resIndex);
+	if (type < 53)
+	{
+		if (_resIndex == 0){
+			psi = itsResidues[_resIndex]->getPsi();
+			phi = itsResidues[_resIndex+1]->getPhi();
+		}
+		else if (_resIndex == itsResidues.size()-1){
+			psi = itsResidues[_resIndex-1]->getPsi();
+			phi = itsResidues[_resIndex]->getPhi();
+		}
+		else{
+			phi = itsResidues[_resIndex]->getPhi();
+			psi = itsResidues[_resIndex]->getPsi();
+		}
+		double angleSumHalfRad = ((phi+psi)/2)*PI/180;
+		double radAngle = acos(-0.3333333-0.6666666*cos(2*angleSumHalfRad));
+		double radAngletoDeg = radAngle*180/PI;
+		residuesPerTurn = 360/radAngletoDeg;
 	}
-	else if (_resIndex == itsResidues.size()-1){
-		psi = itsResidues[_resIndex-1]->getPsi();
-		phi = itsResidues[_resIndex]->getPhi();
-	}
-	else{
-		phi = itsResidues[_resIndex]->getPhi();
-		psi = itsResidues[_resIndex]->getPsi();
-	}
-	double angleSumHalfRad = ((phi+psi)/2)*PI/180;
-	double radAngle = acos(-0.3333333-0.6666666*cos(2*angleSumHalfRad));
-	double radAngletoDeg = radAngle*180/PI;
-	residuesPerTurn = 360/radAngletoDeg;
 	return residuesPerTurn;
 }
 

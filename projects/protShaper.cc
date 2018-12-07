@@ -126,6 +126,22 @@ int main (int argc, char* argv[])
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* frame = static_cast<protein*>(pMol);
+	
+	
+	double phi = -60;
+	double psi = -43;
+	
+	for (UInt i = 0; i < frame->getNumChains(); i++)
+	{
+		for (UInt j = 0; j < frame->getNumResidues(i); j++)
+		{
+			frame->setDihedral(i,j,phi,0,0);
+			frame->setDihedral(i,j,psi,1,0);
+		}
+	}
+	outFile = inFile;
+	pdbWriter(frame, outFile);
+	
 	double delta = 20;
 	UInt resIndex = 4;
 	
@@ -185,51 +201,41 @@ int main (int argc, char* argv[])
 			if (Energy < 40){cout << phi << " " << psi << " " << Energy << endl;}
 			delete frame;
 		}
-	}
+	}*/
 
     PDBInterface* thePDB = new PDBInterface(inFile);
     ensemble* theEnsemble = thePDB->getEnsemblePointer();
     molecule* pMol = theEnsemble->getMoleculePointer(0);
     protein* prot = static_cast<protein*>(pMol);
-
-    for (UInt i = 0; i < prot->getNumChains(); i++)
+    UInt count = 0;
+    UInt res = 7,res2;
+    UInt chain = 0;
+    UInt foldD = 0;
+    double sPhi, sPsi, dihedralD = 20;
+    for (UInt i = 0; i < 14; i++)
     {
-        for (UInt j = 0; j < prot->getNumResidues(i); j++)
-        {
-			//vector<vector<double>> rot = prot->getSidechainDihedrals(1,6);
-			prot->setDihedral(i,j,hetPhis[0]*-1,0,0);
-            prot->setDihedral(i,j,hetPsis[0]*-1,1,0);
-            prot->mutateWBC(i,j,dA);
-            prot->setSidechainDihedralAngles(0,6,rot);
-            prot->setDihedral(2,5,47,1,0);
-            prot->setDihedral(2,6,57,0,0);
-            prot->mutateWBC(2,6,dN);
-            prot->setSidechainDihedralAngles(2,6,rot);
-            prot->setDihedral(4,5,47,1,0);
-            prot->setDihedral(4,6,57,0,0);
-            prot->mutateWBC(4,6,dN);
-            prot->setSidechainDihedralAngles(4,6,rot);
-            prot->mutateWBC(0,1,dK);
-            prot->mutateWBC(0,3,dK);
-            prot->mutateWBC(0,5,dK);
-            prot->mutateWBC(2,1,dK);
-            prot->mutateWBC(2,3,dK);
-            prot->mutateWBC(2,5,dK);
-            prot->mutateWBC(4,1,dK);
-            prot->mutateWBC(4,3,dK);
-            prot->mutateWBC(4,5,dK);
-            if (prot->getTypeFromResNum(i,j) == dV){
-               prot->mutateWBC(i,j,dA);
-            }
-            if (prot->getTypeFromResNum(i,j) == V){
-               prot->mutateWBC(i,j,A);
-            }
-
-        }
+		sPhi = prot->getPhi(chain,res+i);
+		sPsi = prot->getPsi(chain,res+i);
+		if (i < 7){
+			prot->setDihedral(chain,res+i,sPhi+dihedralD,0,0);
+			prot->setDihedral(chain,res+i,sPsi-dihedralD,1,0);
+		}
+		else{
+			prot->setDihedral(chain,res+i,sPhi+dihedralD*-1,0,0);
+			prot->setDihedral(chain,res+i,sPsi-dihedralD*-1,1,0);
+		}
+		stringstream convert;
+        string countstr;
+        convert << i, countstr = convert.str();
+        outFile = countstr + "_helixangle.pdb";
+        pdbWriter(prot, outFile);
     }
-    outFile = "dala14.pdb";
-    pdbWriter(prot, outFile);*/
-    double radius;
+   
+    
+    
+    
+    
+    /*double radius;
     int count=0;
     for (int d = 0; d < 360; d++)
     {
@@ -252,7 +258,7 @@ int main (int argc, char* argv[])
             p=p+9;
         }
         d=d+9;
-    }
+    }*/
     return 0;
 }
 void buildSymmetricOligamer (protein* _prot, bool antiParallel, double _radius, double _coil, double _phaseoffset1, double _phaseoffset2, double _offset)

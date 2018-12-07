@@ -26,7 +26,7 @@ int main (int argc, char* argv[])
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* _prot = static_cast<protein*>(pMol);
     bool homosymmetric = false;
-    bool backbone = false;
+    bool backbone = true;
     clock_t start, end;
 	double cpu_time_used;
     
@@ -55,9 +55,10 @@ int main (int argc, char* argv[])
     cout << "start Energy: " << _prot->protEnergy() << endl;
     //_prot->protOpt(backbone,frozenResidues,activeChains);
     start = clock();
-    _prot->protMin();
+    _prot->protOpt(backbone);
     end = clock();
     cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    _prot->setMoved(true);
     cout << "end Energy: "  << _prot->protEnergy() << " time: " << cpu_time_used << endl;
 	pdbWriter(_prot, outFile);
 
