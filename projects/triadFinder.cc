@@ -51,7 +51,7 @@ int main (int argc, char* argv[])
 
 	//--Run multiple independent evolutions
     cout << "frame time distance" << endl;
-	for (UInt a = 1; a < 19981; a++)
+	for (UInt a = 1; a < 45000; a++)
 	{ 
 		name = a;
 		stringstream convert; 

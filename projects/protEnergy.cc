@@ -33,10 +33,10 @@ int main (int argc, char* argv[])
 	end = clock();
 	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
 	cout << "protEnergy: " << Energy << " kcal/mol time: " << cpu_time_used << endl;
-	string outFile = "protEnergy_out.pdb";
+	string outFile = infile;
 	pdbWriter(bundle, outFile);
 	
-	start = clock();
+	/*start = clock();
 	Energy = bundle->protEnergy();
 	end = clock();
 	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;

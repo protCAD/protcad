@@ -113,20 +113,20 @@ public:
 	void listAllowedRotamers(UInt _indexInChain) const;
 	void listChiDefinitions() const;
 	UInt getNumChis(const UInt _resIndex, const UInt _bpt);
-    double netCharge();
-
-    void setMoved (UInt resIndex, bool _moved) {itsResidues[resIndex]->setMoved(_moved);}
-    void setMoved (bool _moved);
-    bool getMoved (UInt resIndex) {return itsResidues[resIndex]->getMoved();}
+	double netCharge();
+	
+	void setMoved (UInt resIndex, bool _moved) {itsResidues[resIndex]->setMoved(_moved);}
+	void setMoved (bool _moved);
+	bool getMoved (UInt resIndex) {return itsResidues[resIndex]->getMoved();}
 	double getEnergy (UInt resIndex) {return itsResidues[resIndex]->getEnergy();}
-    double getSolvationEnergy(const UInt _resIndex) {return itsResidues[_resIndex]->getSolvationEnergy();}
+	double getSolvationEnergy(const UInt _resIndex) {return itsResidues[_resIndex]->getSolvationEnergy();}
 	double getDielectric(const UInt _resIndex) {return itsResidues[_resIndex]->getDielectric();}
 	double getBetaChi(const UInt _resIndex) {return itsResidues[_resIndex]->getBetaChi();}
 	void setBetaChi(const UInt _resIndex, double _chi) {return itsResidues[_resIndex]->setBetaChi(_chi);}
 	UIntVec getActiveResidues() { return itsRepackActivePositionMap;}
 	void setRotamerNotAllowed (const UInt _indexInChain, const UInt aaType, const UInt _bpt, const UInt _rotamer);
 	UIntVec getAllowedRotamers ( const UInt _indexInChain, const UInt  _aaType, const UInt _bpt);
-    vector <UIntVec> getAllowedRotamers ( const UInt _indexInChain, const UInt  _aaType);
+	vector <UIntVec> getAllowedRotamers ( const UInt _indexInChain, const UInt  _aaType);
 	void setResNotAllowed(const UInt _indexInChain, const UInt _aaType);
 	void setResAllowed(const UInt _indexInChain, const UInt _aaType);
 	UIntVec getResAllowed (const UInt _indexInChain);
@@ -159,15 +159,14 @@ public:
 	void updateClashes(chain* _other);
 	void updateClashes();
 	UInt getClashes (UInt resIndex) {return itsResidues[resIndex]->getClashes();}
-    void listConnectivity(UInt _resIndex) {return itsResidues[_resIndex]->listConnectivity();}
+	void listConnectivity(UInt _resIndex) {return itsResidues[_resIndex]->listConnectivity();}
 private:
 	int chooseTargetResidue(ran& _ran);
 	int chooseTargetIdentity(const UInt _indexInChain, ran& _ran);
 	int chooseTargetBranchpoint(const UInt _indexInChain, ran& _ran);
 	int chooseTargetRotamer(const UInt _indexInChain, const UInt _bpt, ran& _ran);
 	int chooseTargetDihedralIndex(const UInt _indexInChain, const UInt _bpt, ran& _ran);
-	double chooseTargetDihedralAngle(const UInt _indes, const UInt _bpt,
-		const UInt _angleIndex, ran& _ran);
+	double chooseTargetDihedralAngle(const UInt _indes, const UInt _bpt, const UInt _angleIndex, ran& _ran);
 
 	void addResidue(residue* _pResidue);
 	void addChainPosition(chainPosition* _pChainPosition);
@@ -189,7 +188,8 @@ public:
 
 	void rotate(const axis _axis,const double _theta);
 	void rotate(const point& _point, const dblVec& _R_axis, const double _theta);
-
+	double getResiduesPerTurn(const UInt _resIndex);
+	void calculateResiduesPerTurn();
 	double getPhi(const UInt _indexInChain);
 	double getPsi(const UInt _indexInChain);
 	double getAngle(const UInt _indexInChain, UInt angleType);

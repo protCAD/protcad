@@ -300,7 +300,10 @@ void atom::setNumberofWaters(double _waters)
 {
     itsWaters = _waters;
 }
-
+void atom::setRPT(double _RPT)
+{	
+	RPT = _RPT;
+}
 void atom::setMaxDielectric(double _maxDielectric)
 {	
 	itsMaxDielectric = _maxDielectric;
