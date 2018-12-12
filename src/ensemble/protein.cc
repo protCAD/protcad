@@ -2882,11 +2882,14 @@ void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 
 double protein::getResiduesPerTurn(double phi, double psi)
 {
-	double residuesPerTurn = 2.0;
-	double angleSumHalfRad = ((phi+psi)/2)*PI/180;
+	double phipsisum = phi+psi;
+	double handedness;
+	if ((phipsisum > 0 && phipsisum < 180)|| phipsisum < -180){handedness = -1.0;}
+	else{handedness = 1.0;}
+	double angleSumHalfRad = ((phipsisum)/2)*PI/180;
 	double radAngle = acos(-0.3333333-0.6666666*cos(2*angleSumHalfRad));
 	double radAngletoDeg = radAngle*180/PI;
-	residuesPerTurn = 360/radAngletoDeg;
+	double residuesPerTurn = (360/radAngletoDeg)*handedness;
 	return residuesPerTurn;
 }
 

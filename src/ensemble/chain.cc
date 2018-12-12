@@ -1526,14 +1526,36 @@ double chain::getResiduesPerTurn(const UInt _resIndex)
 			phi = itsResidues[_resIndex]->getPhi();
 			psi = itsResidues[_resIndex]->getPsi();
 		}
-		double angleSumHalfRad = ((phi+psi)/2)*PI/180;
+		
+		double phipsisum = phi+psi;
+		double handedness;
+		if ((phipsisum > 0 && phipsisum < 180)|| phipsisum < -180){handedness = -1.0;}
+		else{handedness = 1.0;}
+		double angleSumHalfRad = ((phipsisum)/2)*PI/180;
 		double radAngle = acos(-0.3333333-0.6666666*cos(2*angleSumHalfRad));
 		double radAngletoDeg = radAngle*180/PI;
-		residuesPerTurn = 360/radAngletoDeg;
+		residuesPerTurn = (360/radAngletoDeg)*handedness;
 	}
 	return residuesPerTurn;
 }
 
+UInt chain::getBackboneSequenceType(const UInt _resIndex)
+{
+	UInt backboneType;
+	calculateResiduesPerTurn();
+	double RPT = itsResidues[_resIndex]->getResiduesPerTurn();
+	if (RPT > -5.0 && RPT <= -4.5){backboneType = 1;}
+	if (RPT > -4.5 && RPT <= -4.0){backboneType = 2;}
+	if (RPT > -4.0 && RPT <= -3.5){backboneType = 3;}
+	if (RPT > -3.0 && RPT <= -2.5){backboneType = 4;}
+	if (RPT > -2.5 && RPT <= -2.0){backboneType = 5;}
+	if (RPT >  2.0 && RPT <=  2.5){backboneType = 6;}
+	if (RPT >  2.5 && RPT <=  3.0){backboneType = 7;}
+	if (RPT >  3.0 && RPT <=  3.5){backboneType = 8;}
+	if (RPT >  3.5 && RPT <=  4.0){backboneType = 9;}
+	if (RPT >  4.0 && RPT <=  5.0){backboneType = 10;}
+	return backboneType;
+}
 double chain::getPhi(const UInt _indexInChain)
 {
 	double tempdouble;
