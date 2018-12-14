@@ -23,8 +23,9 @@ int main (int argc, char* argv[])
 		exit(1);
 	}
 	enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,Csf,Sf4,Hca,Eoc,Oec,Hem};
-	string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dCf","dQ","dE","dEh","dHd","dHe","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV","Csf","Sf4","Hca","Eoc","Oec","Hem"};
-	string backboneTypes[] = {"Z","J","G","C","D","B","F","P","H","A","K","L","M","N","O","A","Q","R","S","T"};
+	string aminoAcidString[] = {"A","R","N","D","D","C","C","C","Q","E","E","H","H","H","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dD","dC","dC","dC","dQ","dE","dE","dH","dH","dH","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV","Csf","Sf4","Hca","Eoc","Oec","Hem"};
+	string backboneSeq[] =   {"", "M", "C", "L", "P", "B","E","Y","A","I","G"};
+	string backboneTypes[] = {"","-γ","-π","-α","-ρ","-β","β","ρ","α","π","γ"};
 	string infile = argv[1];
 	PDBInterface* thePDB = new PDBInterface(infile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
@@ -35,7 +36,6 @@ int main (int argc, char* argv[])
 	rotamer::setScaleFactor(0.0);
 	amberVDW::setScaleFactor(1.0);
 	amberVDW::setRadiusScaleFactor(1.0);
-	amberVDW::setLinearRepulsionDampeningOff();
 	amberElec::setScaleFactor(1.0);
 
     UInt numChains = _prot->getNumChains();
@@ -49,7 +49,6 @@ int main (int argc, char* argv[])
         }
         cout << endl;
     }
-	cout << endl;
 	
 	for (UInt i = 0; i < numChains; i++)
 	{
@@ -58,7 +57,7 @@ int main (int argc, char* argv[])
         for (UInt j = 0; j < numRes; j++)
         {
             UInt backboneType = _prot->getBackboneSequenceType(i,j);
-			cout << backboneTypes[backboneType];
+			cout << backboneSeq[backboneType];
         }
         cout << endl;
     }

@@ -1510,7 +1510,7 @@ void chain::calculateResiduesPerTurn()
 
 double chain::getResiduesPerTurn(const UInt _resIndex)
 {
-	double phi, psi, residuesPerTurn = 2.0;
+	double phi, psi, residuesPerTurn = 0.0;
 	UInt type = getTypeFromResNum(_resIndex);
 	if (type < 53)
 	{
@@ -1544,16 +1544,16 @@ UInt chain::getBackboneSequenceType(const UInt _resIndex)
 	UInt backboneType;
 	calculateResiduesPerTurn();
 	double RPT = itsResidues[_resIndex]->getResiduesPerTurn();
-	if (RPT > -5.0 && RPT <= -4.5){backboneType = 1;}
-	if (RPT > -4.5 && RPT <= -4.0){backboneType = 2;}
-	if (RPT > -4.0 && RPT <= -3.5){backboneType = 3;}
-	if (RPT > -3.0 && RPT <= -2.5){backboneType = 4;}
-	if (RPT > -2.5 && RPT <= -2.0){backboneType = 5;}
-	if (RPT >  2.0 && RPT <=  2.5){backboneType = 6;}
-	if (RPT >  2.5 && RPT <=  3.0){backboneType = 7;}
-	if (RPT >  3.0 && RPT <=  3.5){backboneType = 8;}
-	if (RPT >  3.5 && RPT <=  4.0){backboneType = 9;}
-	if (RPT >  4.0 && RPT <=  5.0){backboneType = 10;}
+	if (RPT <= -4.8)				{backboneType = 1;}
+	if (RPT > -4.8  && RPT <= -4.1)	{backboneType = 2;}
+	if (RPT > -4.1  && RPT <= -3.4)	{backboneType = 3;}
+	if (RPT > -3.4  && RPT <= -2.7)	{backboneType = 4;}
+	if (RPT > -2.7  && RPT <= -2.0)	{backboneType = 5;}
+	if (RPT >  2.0  && RPT <=  2.7)	{backboneType = 6;}
+	if (RPT >  2.7  && RPT <=  3.4)	{backboneType = 7;}
+	if (RPT >  3.4  && RPT <=  4.1)	{backboneType = 8;}
+	if (RPT >  4.1  && RPT <=  4.8)	{backboneType = 9;}
+	if (RPT >  4.8)					{backboneType = 10;}
 	return backboneType;
 }
 double chain::getPhi(const UInt _indexInChain)
