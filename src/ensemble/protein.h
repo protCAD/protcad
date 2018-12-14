@@ -197,6 +197,7 @@ public:
 	int setPsi(const UInt _chain, const UInt _res, double _angle);
 	int setDihedral(const UInt _chainIndex, const UInt _resIndex, double _dihedral, UInt _angleType, UInt _direction);
 	double getResiduesPerTurn(UInt _chainIndex, UInt _resIndex) {return itsChains[_chainIndex]->getResiduesPerTurn(_resIndex);}
+	UInt getBackboneSequenceType(UInt _chainIndex, UInt _resIndex) {return itsChains[_chainIndex]->getBackboneSequenceType(_resIndex);}
 	double getResiduesPerTurn(double phi, double psi);
 	double getPhi(UInt _chain, UInt _res) {return itsChains[_chain]->getPhi(_res);}
 	double getPsi(UInt _chain, UInt _res) {return itsChains[_chain]->getPsi(_res);}

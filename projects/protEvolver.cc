@@ -85,6 +85,7 @@ int main (int argc, char* argv[])
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* startProt = static_cast<protein*>(pMol);
+	startingClashes = startProt->getNumHardClashes();
 
 	//--mutate all positions starting with a random resdiue to glycine
 	for (UInt i = 0; i < activeChains.size(); i++)
@@ -101,7 +102,6 @@ int main (int argc, char* argv[])
 		createPossibleMutantsDatabase(startProt, activeChains, activeResidues, allowedLResidues, allowedDResidues, homoSymmetric);
 		possibleMutants = buildPossibleMutants();
 	}
-	startingClashes = startProt->getNumHardClashes();
 	delete thePDB;
 
 	//--Run multiple independent evolution cycles-----------------------------------------------------
@@ -207,6 +207,7 @@ int main (int argc, char* argv[])
 
 		if (model->getNumHardClashes() <= startingClashes)
 		{
+			model->setMoved(true);
 			Energy = model->protEnergy();
 			sec = time(NULL);
 			timeid = sec;

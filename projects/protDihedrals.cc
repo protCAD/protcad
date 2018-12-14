@@ -20,7 +20,8 @@ int main (int argc, char* argv[])
 	exit(1);
 	}
 
-	enum aminoAcid {A, R, N, D, Dh, C, Q, E, Eh, G, H, I, L, K, M, F, P, S, T, W, Y, V, dA, dR, dN, dD, dDh, dC, dQ, dE, dEh, dH, dI, dL, dK, dM, dF, dP, dS, dT, dW, dY, dV};
+	enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,Csf,Sf4,Hca,Eoc,Oec,Hem};
+	string aminoAcidString[] = {"A","R","N","D","D","C","C","C","Q","E","E","H","H","H","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dD","dC","dC","dC","dQ","dE","dE","dH","dH","dH","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV","Csf","Sf4","Hca","Eoc","Oec","Hem"};
 	string infile = argv[1];
 	PDBInterface* thePDB = new PDBInterface(infile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
@@ -40,7 +41,8 @@ int main (int argc, char* argv[])
         {
 			double phi = bundle->getPhi(0,j);
             double psi = bundle->getPsi(0,j);
-            cout << phi << " " << psi << " " << bundle->getResiduesPerTurn(phi,psi) << endl;
+            UInt restype = bundle->getTypeFromResNum(0,j);
+            cout << aminoAcidString[restype] << " " << phi << " " << psi << " " << bundle->getResiduesPerTurn(phi,psi) << endl;
         }
        // cout << bundle->getPhi(i,resNum-1) << " NA " << "NA" << endl;
 	//}
