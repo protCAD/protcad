@@ -196,9 +196,10 @@ public:
 	int setPhi(const UInt _chain, const UInt _res, double _angle);
 	int setPsi(const UInt _chain, const UInt _res, double _angle);
 	int setDihedral(const UInt _chainIndex, const UInt _resIndex, double _dihedral, UInt _angleType, UInt _direction);
-	double getResiduesPerTurn(UInt _chainIndex, UInt _resIndex) {return itsChains[_chainIndex]->getResiduesPerTurn(_resIndex);}
+	void updateResiduesPerTurnType();
 	UInt getBackboneSequenceType(UInt _chainIndex, UInt _resIndex) {return itsChains[_chainIndex]->getBackboneSequenceType(_resIndex);}
 	double getResiduesPerTurn(double phi, double psi);
+	double getResiduesPerTurn(UInt _chainIndex, UInt _resIndex) {return itsChains[_chainIndex]->getResiduesPerTurn(_resIndex);}
 	double getPhi(UInt _chain, UInt _res) {return itsChains[_chain]->getPhi(_res);}
 	double getPsi(UInt _chain, UInt _res) {return itsChains[_chain]->getPsi(_res);}
 	double getAngle(UInt _chain, UInt _res, UInt angleType) {return itsChains[_chain]->getAngle(_res, angleType);}
@@ -221,7 +222,7 @@ public:
 	void eulerRotate(UInt _chain, const double _phi, const double _theta, const double _psi);
 	void undoEulerRotate(UInt _chain, const double _phi, const double _theta, const double _psi);
 	void rotateChain(UInt _chain, const axis _axis, const double _theta);
-	void calculateResiduesPerTurn();
+	
 
 	//--Rotamer functions
 	void setRotamerNotAllowed(const UInt _chainIndex, const UInt _resIndex, const UInt _resType, const UInt _bpt, const UInt _rotamer);

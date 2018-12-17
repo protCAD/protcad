@@ -115,8 +115,8 @@ public:
 	void sumEnvPol(double _envPol);
 	void sumEnvVol(double _envVol);
 	void sumEnvMol(double _envMol);
-	void setRPT(double _RPT);
-	double getRPT() const {return RPT;}
+	void setRPTType(UInt _RPT);
+	UInt getRPTType() const {return RPT;}
 	double getRadius() const {return itsRadius; }
 	double getEpsilon() const {return itsEpsilon; }
 	double getPolarizability() const {return itsPolarizability; }
@@ -214,7 +214,7 @@ protected:
 	double EnvPol = 0.0;
 	double EnvVol = 0.0;
 	double EnvMol = 0;
-	double RPT = 0.0;
+	UInt RPT = 0;
 	double itsRadius;
 	double itsSolvationEnergy;
 	double itsDielectric;

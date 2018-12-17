@@ -12,7 +12,7 @@ unsigned int pdbWriter(protein* _pProtein, const string& _pdbFile)
                 return 0;
         }
 
-		_pProtein->calculateResiduesPerTurn();
+		_pProtein->updateResiduesPerTurnType();
 		renumberAtoms(_pProtein);
         atomIterator theIterator(_pProtein);
 	for (; !(theIterator.last()); theIterator++)
@@ -143,10 +143,9 @@ unsigned int pdbWriter(protein* _pProtein, const string& _pdbFile)
 		}
 
 		//output residues per turn
-		double RPT = pCurrentAtom->getRPT();
+		double RPT = pCurrentAtom->getRPTType();
 		outFile.width(6);
-		outFile.setf(ios::showpoint);
-		outFile << setprecision(3) << RPT;
+		outFile << RPT;
 		outFile << endl;
 	}
 	outFile.close();
