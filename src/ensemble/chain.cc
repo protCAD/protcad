@@ -1499,12 +1499,12 @@ void chain::rotate(const point& _point,const dblVec& _R_axis, const double _thet
 	}
 }
 
-void chain::calculateResiduesPerTurn()
+void chain::updateResiduesPerTurnType()
 {
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{	
-		double RPT = getResiduesPerTurn(i);
-		itsResidues[i]->setResiduesPerTurn(RPT);
+		UInt RPT = getBackboneSequenceType(i);
+		itsResidues[i]->setResiduesPerTurnType(RPT);
 	}
 }
 
@@ -1542,8 +1542,7 @@ double chain::getResiduesPerTurn(const UInt _resIndex)
 UInt chain::getBackboneSequenceType(const UInt _resIndex)
 {
 	UInt backboneType;
-	calculateResiduesPerTurn();
-	double RPT = itsResidues[_resIndex]->getResiduesPerTurn();
+	double RPT = getResiduesPerTurn(_resIndex);
 	if (RPT <= -4.8)				{backboneType = 1;}
 	if (RPT > -4.8  && RPT <= -4.1)	{backboneType = 2;}
 	if (RPT > -4.1  && RPT <= -3.4)	{backboneType = 3;}

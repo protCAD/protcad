@@ -300,7 +300,7 @@ void atom::setNumberofWaters(double _waters)
 {
     itsWaters = _waters;
 }
-void atom::setRPT(double _RPT)
+void atom::setRPTType(UInt _RPT)
 {	
 	RPT = _RPT;
 }

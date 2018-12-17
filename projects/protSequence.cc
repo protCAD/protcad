@@ -31,12 +31,6 @@ int main (int argc, char* argv[])
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* _prot = static_cast<protein*>(pMol);
-	_prot->silenceMessages();
-	residue::setCutoffDistance(9.0);
-	rotamer::setScaleFactor(0.0);
-	amberVDW::setScaleFactor(1.0);
-	amberVDW::setRadiusScaleFactor(1.0);
-	amberElec::setScaleFactor(1.0);
 
     UInt numChains = _prot->getNumChains();
     for (UInt i = 0; i < numChains; i++)

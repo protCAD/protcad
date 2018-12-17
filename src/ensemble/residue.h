@@ -331,8 +331,8 @@ public:
 	void setEnergy (double _energy);
 	void sumEnergy (double _energy);
 	double getEnergy() const {return Energy;}
-	void setResiduesPerTurn(double _RPT);
-	double getResiduesPerTurn() const {return RPT;}
+	void setResiduesPerTurnType(UInt _RPT);
+	UInt getResiduesPerTurn() const {return RPT;}
 
 // ***********************************************************************
 // ***********************************************************************
@@ -374,7 +374,7 @@ private:
 	bool dependentMove = false;
 	UInt clashes = 0;
 	double Energy = 0.0;
-	double RPT = 0.0;
+	UInt RPT = 0;
 
 
 	//variables relating to the rotameric state

@@ -1329,11 +1329,11 @@ double protein::getMedianResidueEnergy(UIntVec _activeChains, UIntVec _activeRes
 	return median;
 }
 
-void protein::calculateResiduesPerTurn()
+void protein::updateResiduesPerTurnType()
 {
 	for(UInt i=0; i<itsChains.size(); i++)
 	{
-		itsChains[i]->calculateResiduesPerTurn();
+		itsChains[i]->updateResiduesPerTurnType();
 	}
 }
 /*
@@ -2636,8 +2636,8 @@ void protein::protOpt(bool _backbone)
 	setMoved(true);
 
 	//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
-	UInt randchain, randres, randres2, randrestype, randrot, resnum, chainNum = getNumChains(), keep, foldD, nobetter = 0, plateau = 700, _plateau=plateau*0.8;
-	double Energy, resE, medResE, pastEnergy = protEnergy(), sPhi, sPsi, sPhi2, sPsi2, energyBuffer = 0.1;
+	UInt randchain, randres,randrestype, randrot, resnum, chainNum = getNumChains(), keep, foldD, nobetter = 0, plateau = 700, _plateau=plateau*0.8;
+	double Energy, resE, medResE, pastEnergy = protEnergy(), sPhi, sPsi, energyBuffer = 0.1;
 	vector < vector <double>> currentRot; vector <UIntVec> allowedRots; srand (time(NULL));
 	int dihedralD;
 	

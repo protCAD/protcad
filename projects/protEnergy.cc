@@ -55,7 +55,7 @@ int main (int argc, char* argv[])
 	
 	
 	
-	/*start = clock();
+	start = clock();
 	UInt clashes = bundle->getNumHardClashes();
 	end = clock();
 	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;

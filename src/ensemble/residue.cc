@@ -4054,12 +4054,12 @@ void residue::sumEnergy(double _Energy)
 	Energy += _Energy;
 }
 
-void residue::setResiduesPerTurn(double _RPT)
+void residue::setResiduesPerTurnType(UInt _RPT)
 {
 	RPT = _RPT;
 	for (UInt i = 0; i < itsAtoms.size(); i++)
 	{
-		itsAtoms[i]->setRPT(_RPT);
+		itsAtoms[i]->setRPTType(_RPT);
 	}
 }
 
