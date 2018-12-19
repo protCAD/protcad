@@ -2636,7 +2636,7 @@ void protein::protOpt(bool _backbone)
 	setMoved(true);
 
 	//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
-	UInt randchain, randres,randrestype, randrot, resnum, chainNum = getNumChains(), keep, foldD, nobetter = 0, plateau = 700, _plateau=plateau*0.8;
+	UInt randchain, randres,randrestype, randrot, resnum, chainNum = getNumChains(), keep, foldD, nobetter = 0, plateau = 500, _plateau=plateau*0.8;
 	double Energy, resE, medResE, pastEnergy = protEnergy(), sPhi, sPsi, energyBuffer = 0.1;
 	vector < vector <double>> currentRot; vector <UIntVec> allowedRots; srand (time(NULL));
 	int dihedralD;
@@ -2718,7 +2718,7 @@ void protein::protRelax(bool _backbone)
 		setMoved(true);
 		
 		//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
-		UInt randchain, randres, randrestype, resnum, randrot, chainNum = getNumChains(), keep, foldD, protClashes, resClashes, medResC, nobetter = 0, plateau = 700, _plateau=plateau*0.8;
+		UInt randchain, randres, randrestype, resnum, randrot, chainNum = getNumChains(), keep, foldD, protClashes, resClashes, medResC, nobetter = 0, plateau = 500, _plateau=plateau*0.8;
 		vector < vector <double> > currentRot; vector <UIntVec> allowedRots; srand (time(NULL));
 		double sPhi, sPsi;
 		int dihedralD;
@@ -2801,7 +2801,7 @@ void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 	setMoved(true);
 
 	//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
-	UInt randchain, randres, randrestype, randrot, chainNum = _activeChains.size(), keep, foldD, nobetter = 0, plateau = 700, _plateau=plateau*0.8;
+	UInt randchain, randres, randrestype, randrot, chainNum = _activeChains.size(), keep, foldD, nobetter = 0, plateau = 500, _plateau=plateau*0.8;
 	double Energy, resE, medResE, pastEnergy = protEnergy(), sPhi, sPsi, energyBuffer = 0.1;
 	vector < vector <double> > currentRot; vector <UIntVec> allowedRots; srand (time(NULL));
 	bool skip;

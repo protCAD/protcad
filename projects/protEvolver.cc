@@ -41,14 +41,14 @@ int main (int argc, char* argv[])
 	}
 
   	UInt _activeChains[] = {0};                                                         // chains active for mutation
-	UInt _allowedLResidues[] = {A,N,Q,I,L,M,F,S,T,W,Y,V,G};                     // amino acids allowed with phi < 0
-	UInt _allowedDResidues[] = {A,N,Q,I,L,M,F,S,T,W,Y,V,G};                                                     // amino acids allowed with phi > 0
-	UInt _activeResidues[] = {3,4,6,9,10,13,16,19,20,23,27,30,31,33,35,36,39,40,41,42,44,45,55,56,58,60,61,62,68,69,73,78,79,82,83,85,88,89,90,93,94,96,97,100};                                     // positions active for mutation
-	UInt _randomResidues[] = {3,4,6,9,10,13,16,19,20,23,27,30,31,33,35,36,39,40,41,42,44,45,55,56,58,60,61,62,68,69,73,78,79,82,83,85,88,89,90,93,94,96,97,100};                                     // positions active for a random start sequence initially
-	UInt _frozenResidues[] = {8,43,63,91,102};                                  // positions that cannot move at all
-	bool homoSymmetric = false;                                                          // if true all chains are structurally and sequentially symmetric to desired listed active chain above
-	bool backboneRelaxation = false;                                                    // if true allow backrub relaxation in structural optimization
-
+    UInt _allowedLResidues[] = {A,R,N,D,Q,E,I,L,K,M,F,P,S,T,V,G};                     // amino acids allowed with phi < 0
+    UInt _allowedDResidues[] = {A,R,N,D,Q,E,I,L,K,M,F,P,S,T,V,G};                                                     // amino acids allowed with phi > 0
+    UInt _activeResidues[] = {0,1,2,3,4,5,7,8,9,10,12,15,16,17,19,21,22,23,24,26,28,29,30,31,33,34,35,36,37,38,39,40,41,42,44,46,47,48,49,51,53,54,55,56,58,60,61,62,63,65,67,68,69,70,71,72,73,74,76,77,78,79,80,81,83,84,85,86,88,91,92,93,95,97,98,99,100,102,103,104,105,106,107,109,110,111,112,113,114,115,116,117,118,120,122,123,124,125,127,129,130,131,132,134,136,137,138,139,141,143,144,145,146,147};                                     // positions active for mutation
+    UInt _randomResidues[] = {0,1,2,3,4,5,7,8,9,10,12,15,16,17,19,21,22,23,24,26,28,29,30,31,33,34,35,36,37,38,39,40,41,42,44,46,47,48,49,51,53,54,55,56,58,60,61,62,63,65,67,68,69,70,71,72,73,74,76,77,78,79,80,81,83,84,85,86,88,91,92,93,95,97,98,99,100,102,103,104,105,106,107,109,110,111,112,113,114,115,116,117,118,120,122,123,124,125,127,129,130,131,132,134,136,137,138,139,141,143,144,145,146,147};                                     // positions active for a random start sequence initially
+    UInt _frozenResidues[] = {6,11,13,14,18,20,25,27,32,43,45,50,52,57,59,64,66,75,82,87,89,90,94,96,101,108,119,121,126,128,133,135,140,142};                                  // positions that cannot move at all
+    bool homoSymmetric = false;                                                          // if true all chains are structurally and sequentially symmetric to desired listed active chain above
+    bool backboneRelaxation = false; 
+    
 	//--running parameters
 	residue::setElectroSolvationScaleFactor(1.0);
 	residue::setHydroSolvationScaleFactor(1.0);
@@ -85,7 +85,7 @@ int main (int argc, char* argv[])
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* startProt = static_cast<protein*>(pMol);
-	startingClashes = startProt->getNumHardClashes();
+	startingClashes = startProt->getNumHardClashes()*2;
 
 	//--mutate all positions starting with a random resdiue to glycine
 	for (UInt i = 0; i < activeChains.size(); i++)
@@ -204,8 +204,9 @@ int main (int argc, char* argv[])
 		ensemble* theModelEnsemble = theModelPDB->getEnsemblePointer();
 		molecule* modelMol = theModelEnsemble->getMoleculePointer(0);
 		protein* model = static_cast<protein*>(modelMol);
-
-		if (model->getNumHardClashes() <= startingClashes)
+		UInt clashes = model->getNumHardClashes();
+		cout << clashes << " " << startingClashes << endl;
+		if (clashes <= startingClashes)
 		{
 			model->setMoved(true);
 			Energy = model->protEnergy();
