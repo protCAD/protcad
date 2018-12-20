@@ -205,7 +205,6 @@ int main (int argc, char* argv[])
 		molecule* modelMol = theModelEnsemble->getMoleculePointer(0);
 		protein* model = static_cast<protein*>(modelMol);
 		UInt clashes = model->getNumHardClashes();
-		cout << clashes << " " << startingClashes << endl;
 		if (clashes <= startingClashes)
 		{
 			model->setMoved(true);
@@ -293,11 +292,12 @@ vector <UInt> getMutationPosition(protein* _prot, UIntVec &_activeChains, UIntVe
 
 UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition, UIntVec &_activeResidues)
 {
-	float acceptance, threshold;
+	double acceptance, threshold, resFreqAccept;
+	double poolSize = _sequencePool.size();
 	vector <UInt> resFreqs(58,1);
-	UInt position, entropy, mutant, variance, resFreqAccept;
+	UInt position, entropy, mutant, variance;
 	UInt count = getSizeofPopulation();
-	UInt poolSize = _sequencePool.size();
+	
 
 	//--get sequence evolution results for position
 	for (UInt i = 0; i < poolSize; i++)
@@ -331,7 +331,7 @@ UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector 
 		if (variance > entropy) //control sequence entropy with probabilty
 		{
 			resFreqAccept = resFreqs[mutant];
-			acceptance = (resFreqAccept/(poolSize-1))*100; //chance of accepting given amino acid at position is proportional to population
+			acceptance = (resFreqAccept/(poolSize-1))*100;  //chance of accepting given amino acid at position is proportional to population
 		}
 		else
 		{
