@@ -22,13 +22,14 @@ vector <UInt> getMutationPosition(protein* _prot, UIntVec &_activeChains, UIntVe
 UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition, UIntVec &_activeResidues);
 void createPossibleMutantsDatabase(protein* _prot, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedLResidues, UIntVec &_allowedDResidues, bool _homosymmetric);
 bool isFrozen(UIntVec _frozenResidues, UInt resIndex);
-double calculatePopulationMA();
+bool getStatisticalSelection(double energy);
 UInt getSizeofPopulation();
 vector < vector < UInt > > buildSequencePool();
 vector < vector < UInt > > buildPossibleMutants();
 
 enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,Csf,Sf4,Hca,Eoc,Oec,Hem};
 string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dCf","dQ","dE","dEh","dHd","dHe","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV","Csf","Sf4","Hca","Eoc","Oec","Hem"};
+UInt populationBaseline = 500;
 
 //--Program setup----------------------------------------------------------------------------------------
 int main (int argc, char* argv[])
@@ -226,7 +227,7 @@ int main (int argc, char* argv[])
 			finalline.open ("results.out", fstream::in | fstream::out | fstream::app);
 			finalline << timeid << " " << Energy << " ";
 	
-			double populationMA = calculatePopulationMA();
+			bool statisticalSelection = getStatisticalSelection(Energy);
 			fstream fs;
 			fs.open ("sequencepool.out", fstream::in | fstream::out | fstream::app);
 			for (UInt i = 0; i < activeChains.size(); i++)
@@ -234,13 +235,13 @@ int main (int argc, char* argv[])
 				for (UInt j = 0; j < finalSequence[i].size(); j++)
 				{
 					finalline << aminoAcidString[finalSequence[i][j]] << " ";
-					if (Energy < populationMA)
+					if (statisticalSelection)
 					{
 						fs << finalSequence[i][j] << ",";
 					}
 				}
 			}
-			if (Energy < populationMA){fs << endl;}
+			if (statisticalSelection){fs << endl;}
 			fs.close();
 			finalline << endl;
 			finalline.close();
@@ -322,7 +323,7 @@ UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector 
 		threshold = (rand() % 100) + 1;
 		variance = (rand() % 100) + 1;
 		mutant = _possibleMutants[position][rand() % positionPossibles];
-		if (count >= 500){
+		if (count >= populationBaseline){
 			entropy = 5;  // probabalistically allow 5% random genetic drift once sequence pool is sufficiently large
 		}
 		else{
@@ -362,8 +363,8 @@ vector < vector < UInt > > buildSequencePool()
 		sequence.clear();
 	}
 	file.close();
-	if (sequencePool.size() > 500){
-		sequencePool.erase(sequencePool.begin(),sequencePool.end()-500);
+	if (sequencePool.size() > populationBaseline){
+		sequencePool.erase(sequencePool.begin(),sequencePool.end()-populationBaseline);
 	}
 	return sequencePool;
 }
@@ -519,11 +520,13 @@ bool isFrozen(UIntVec _frozenResidues, UInt resIndex)
 	return frozen;
 }
 
-double calculatePopulationMA()
+bool getStatisticalSelection(double energy)
 {
+	//get energies of recent results
 	ifstream file("results.out");
 	string item, line;
 	bool secondSpace;
+	bool select = true;
 	vector < double > _energy;
 	while(getline(file,line))
 	{
@@ -546,19 +549,23 @@ double calculatePopulationMA()
 		}
 	}
 	file.close();
-	double cutoff = 0.0;
-	if (_energy.size() >= 100){
-		double sum = 0.0;
-		for (UInt i = _energy.size()-100; i < _energy.size(); i++)
-		{
-			sum += _energy[i];
+	if (_energy.size() > populationBaseline){
+		_energy.erase(_energy.begin(),_energy.end()-populationBaseline);
+	}
+	sort(_energy.begin(),_energy.end());
+	
+	UInt energyRank;
+	for (UInt i=0; i < _energy.size(); i++)
+	{
+		if (energy > _energy[i]){
+			energyRank = i;
+			break;
 		}
-		cutoff=sum/100;
 	}
-	else{
-		cutoff = 1E10;
-	}
-	return cutoff;
+	
+	UInt selection = (rand() % populationBaseline) + 1;
+	if (energyRank > selection){select = false;}
+	return select;
 }
 
 UInt getSizeofPopulation()
