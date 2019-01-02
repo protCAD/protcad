@@ -323,7 +323,7 @@ UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector 
 		threshold = (rand() % 100) + 1;
 		variance = (rand() % 100) + 1;
 		mutant = _possibleMutants[position][rand() % positionPossibles];
-		if (count >= populationBaseline){
+		if (count >= ::populationBaseline){
 			entropy = 5;  // probabalistically allow 5% random genetic drift once sequence pool is sufficiently large
 		}
 		else{
@@ -363,8 +363,8 @@ vector < vector < UInt > > buildSequencePool()
 		sequence.clear();
 	}
 	file.close();
-	if (sequencePool.size() > populationBaseline){
-		sequencePool.erase(sequencePool.begin(),sequencePool.end()-populationBaseline);
+	if (sequencePool.size() > ::populationBaseline){
+		sequencePool.erase(sequencePool.begin(),sequencePool.end()-::populationBaseline);
 	}
 	return sequencePool;
 }
@@ -549,8 +549,8 @@ bool getStatisticalSelection(double energy)
 		}
 	}
 	file.close();
-	if (_energy.size() > populationBaseline){
-		_energy.erase(_energy.begin(),_energy.end()-populationBaseline);
+	if (_energy.size() > ::populationBaseline){
+		_energy.erase(_energy.begin(),_energy.end()-::populationBaseline);
 	}
 	sort(_energy.begin(),_energy.end());
 	
@@ -563,7 +563,7 @@ bool getStatisticalSelection(double energy)
 		}
 	}
 	
-	UInt selection = (rand() % populationBaseline) + 1;
+	UInt selection = (rand() % ::populationBaseline) + 1;
 	if (energyRank > selection){select = false;}
 	return select;
 }
