@@ -22,7 +22,7 @@ vector <UInt> getMutationPosition(protein* _prot, UIntVec &_activeChains, UIntVe
 UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition, UIntVec &_activeResidues);
 void createPossibleMutantsDatabase(protein* _prot, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedLResidues, UIntVec &_allowedDResidues, bool _homosymmetric);
 bool isFrozen(UIntVec _frozenResidues, UInt resIndex);
-bool getStatisticalSelection(double energy);
+double calculatePopulationMA();
 UInt getSizeofPopulation();
 vector < vector < UInt > > buildSequencePool();
 vector < vector < UInt > > buildPossibleMutants();
@@ -227,7 +227,7 @@ int main (int argc, char* argv[])
 			finalline.open ("results.out", fstream::in | fstream::out | fstream::app);
 			finalline << timeid << " " << Energy << " ";
 	
-			bool statisticalSelection = getStatisticalSelection(Energy);
+			double popMa = calculatePopulationMA();
 			fstream fs;
 			fs.open ("sequencepool.out", fstream::in | fstream::out | fstream::app);
 			for (UInt i = 0; i < activeChains.size(); i++)
@@ -235,13 +235,13 @@ int main (int argc, char* argv[])
 				for (UInt j = 0; j < finalSequence[i].size(); j++)
 				{
 					finalline << aminoAcidString[finalSequence[i][j]] << " ";
-					if (statisticalSelection)
+					if (Energy < popMa)
 					{
 						fs << finalSequence[i][j] << ",";
 					}
 				}
 			}
-			if (statisticalSelection){fs << endl;}
+			if (Energy < popMa){fs << endl;}
 			fs.close();
 			finalline << endl;
 			finalline.close();
@@ -298,7 +298,6 @@ UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector 
 	vector <UInt> resFreqs(58,1);
 	UInt position, entropy, mutant, variance;
 	UInt count = getSizeofPopulation();
-	
 
 	//--get sequence evolution results for position
 	for (UInt i = 0; i < poolSize; i++)
@@ -324,7 +323,7 @@ UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector 
 		variance = (rand() % 100) + 1;
 		mutant = _possibleMutants[position][rand() % positionPossibles];
 		if (count >= ::populationBaseline){
-			entropy = 5;  // probabalistically allow 5% random genetic drift once sequence pool is sufficiently large
+			entropy = 5;  // probabalistically allow 33% random genetic drift once sequence pool is sufficiently large
 		}
 		else{
 			entropy = 100;  // 100% random sequences until sequence pool is built
@@ -520,13 +519,11 @@ bool isFrozen(UIntVec _frozenResidues, UInt resIndex)
 	return frozen;
 }
 
-bool getStatisticalSelection(double energy)
+double calculatePopulationMA()
 {
-	//get energies of recent results
 	ifstream file("results.out");
 	string item, line;
 	bool secondSpace;
-	bool select = true;
 	vector < double > _energy;
 	while(getline(file,line))
 	{
@@ -549,23 +546,19 @@ bool getStatisticalSelection(double energy)
 		}
 	}
 	file.close();
-	if (_energy.size() > ::populationBaseline){
-		_energy.erase(_energy.begin(),_energy.end()-::populationBaseline);
-	}
-	sort(_energy.begin(),_energy.end());
-	
-	UInt energyRank;
-	for (UInt i=0; i < _energy.size(); i++)
-	{
-		if (energy > _energy[i]){
-			energyRank = i;
-			break;
+	double cutoff = 0.0;
+	if (_energy.size() >= ::populationBaseline){
+		double sum = 0.0;
+		for (UInt i = _energy.size()-100; i < _energy.size(); i++)
+		{
+			sum += _energy[i];
 		}
+		cutoff=sum/100;
 	}
-	
-	UInt selection = (rand() % ::populationBaseline) + 1;
-	if (energyRank > selection){select = false;}
-	return select;
+	else{
+		cutoff = 1E10;
+	}
+	return cutoff;
 }
 
 UInt getSizeofPopulation()
