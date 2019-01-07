@@ -29,6 +29,7 @@ vector < vector < UInt > > buildPossibleMutants();
 
 enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,Csf,Sf4,Hca,Eoc,Oec,Hem};
 string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dCf","dQ","dE","dEh","dHd","dHe","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV","Csf","Sf4","Hca","Eoc","Oec","Hem"};
+UInt populationBaseline = 500;
 
 //--Program setup----------------------------------------------------------------------------------------
 int main (int argc, char* argv[])
@@ -226,7 +227,7 @@ int main (int argc, char* argv[])
 			finalline.open ("results.out", fstream::in | fstream::out | fstream::app);
 			finalline << timeid << " " << Energy << " ";
 	
-			double populationMA = calculatePopulationMA();
+			double popMa = calculatePopulationMA();
 			fstream fs;
 			fs.open ("sequencepool.out", fstream::in | fstream::out | fstream::app);
 			for (UInt i = 0; i < activeChains.size(); i++)
@@ -234,13 +235,13 @@ int main (int argc, char* argv[])
 				for (UInt j = 0; j < finalSequence[i].size(); j++)
 				{
 					finalline << aminoAcidString[finalSequence[i][j]] << " ";
-					if (Energy < populationMA)
+					if (Energy < popMa)
 					{
 						fs << finalSequence[i][j] << ",";
 					}
 				}
 			}
-			if (Energy < populationMA){fs << endl;}
+			if (Energy < popMa){fs << endl;}
 			fs.close();
 			finalline << endl;
 			finalline.close();
@@ -297,7 +298,6 @@ UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector 
 	vector <UInt> resFreqs(58,1);
 	UInt position, entropy, mutant, variance;
 	UInt count = getSizeofPopulation();
-	
 
 	//--get sequence evolution results for position
 	for (UInt i = 0; i < poolSize; i++)
@@ -322,8 +322,8 @@ UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector 
 		threshold = (rand() % 100) + 1;
 		variance = (rand() % 100) + 1;
 		mutant = _possibleMutants[position][rand() % positionPossibles];
-		if (count >= 500){
-			entropy = 5;  // probabalistically allow 5% random genetic drift once sequence pool is sufficiently large
+		if (count >= ::populationBaseline){
+			entropy = 5;  // probabalistically allow 33% random genetic drift once sequence pool is sufficiently large
 		}
 		else{
 			entropy = 100;  // 100% random sequences until sequence pool is built
@@ -362,8 +362,8 @@ vector < vector < UInt > > buildSequencePool()
 		sequence.clear();
 	}
 	file.close();
-	if (sequencePool.size() > 500){
-		sequencePool.erase(sequencePool.begin(),sequencePool.end()-500);
+	if (sequencePool.size() > ::populationBaseline){
+		sequencePool.erase(sequencePool.begin(),sequencePool.end()-::populationBaseline);
 	}
 	return sequencePool;
 }
@@ -547,7 +547,7 @@ double calculatePopulationMA()
 	}
 	file.close();
 	double cutoff = 0.0;
-	if (_energy.size() >= 100){
+	if (_energy.size() >= ::populationBaseline){
 		double sum = 0.0;
 		for (UInt i = _energy.size()-100; i < _energy.size(); i++)
 		{
