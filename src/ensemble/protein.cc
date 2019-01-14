@@ -2636,10 +2636,10 @@ void protein::protOpt(bool _backbone)
 	setMoved(true);
 
 	//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
-	UInt randchain, randres,randrestype, randrot, resnum, chainNum = getNumChains(), keep, foldD, nobetter = 0, plateau = 500, _plateau=plateau*0.8;
-	double Energy, resE, medResE, pastEnergy = protEnergy(), sPhi, sPsi, energyBuffer = 0.1;
+	UInt randchain, randres,randrestype, randrot, resnum, RPTType, chainNum = getNumChains(), nobetter = 0, plateau = 500, _plateau=plateau*0.5;
+	double Energy, resE, medResE, pastEnergy = protEnergy(), sPhi, sPsi, RPT, energyBuffer = 0.1;
 	vector < vector <double>> currentRot; vector <UIntVec> allowedRots; srand (time(NULL));
-	int dihedralD;
+	vector <double> angles(2);
 	
 	//--Run optimizaiton loop to relative minima, determined by _plateau----------------------------
 	do
@@ -2651,30 +2651,28 @@ void protein::protOpt(bool _backbone)
 		nobetter++;
 
 		//--Backslide optimization-----------------------------------------------------------------------
-		if (nobetter > _plateau && _backbone && randres > 1 && randres < resnum-2)
+		if (nobetter > _plateau && _backbone && randres > 0 && randres < resnum-2)
 		{
 			medResE = getMedianResidueEnergy(), resE = protEnergy(randchain, randres);
 			if (resE > medResE)
 			{
-				//--transform angle while energy improves, until energy degrades, then revert one step
-				do{dihedralD = (rand() % 10)-1;}while(dihedralD == 0);
-				foldD = rand() % 2;
-				do
+				sPhi = getPhi(randchain,randres);
+				sPsi = getPsi(randchain,randres);
+				RPT = getResiduesPerTurn(sPhi,sPsi);
+				RPTType = getBackboneSequenceType(RPT);
+				angles = getRandPhiPsifromBackboneSequenceType(RPTType);
+				setDihedral(randchain,randres,angles[0],0,0);
+				setDihedral(randchain,randres,angles[1],1,0);
+				Energy = protEnergy();
+				if (Energy < pastEnergy-energyBuffer)
 				{
-					keep = 0;
-					sPhi = getPhi(randchain,randres);
-					sPsi = getPsi(randchain,randres);
-					setDihedral(randchain,randres,sPhi+dihedralD,0,foldD);
-					setDihedral(randchain,randres,sPsi-dihedralD,1,foldD);;
-					Energy = protEnergy();
-					if (Energy < pastEnergy-energyBuffer)
-					{
-						pastEnergy = Energy;
-						nobetter = 0, keep = 1;
-					}
-				} while (keep == 1);
-				setDihedral(randchain,randres,sPhi,0,foldD);
-				setDihedral(randchain,randres,sPsi,1,foldD);
+					pastEnergy = Energy;
+					nobetter = 0;
+				}
+				else{
+					setDihedral(randchain,randres,sPhi,0,0);
+					setDihedral(randchain,randres,sPsi,1,0);
+				}
 			}
 		}
 
@@ -2891,6 +2889,120 @@ double protein::getResiduesPerTurn(double phi, double psi)
 	double radAngletoDeg = radAngle*180/PI;
 	double residuesPerTurn = (360/radAngletoDeg)*handedness;
 	return residuesPerTurn;
+}
+
+UInt protein::getBackboneSequenceType(double RPT)
+{
+	UInt backboneType = 0;
+	if (RPT <= -4.8)				{backboneType = 1;}
+	if (RPT > -4.8  && RPT <= -4.1)	{backboneType = 2;}
+	if (RPT > -4.1  && RPT <= -3.4)	{backboneType = 3;}
+	if (RPT > -3.4  && RPT <= -2.7)	{backboneType = 4;}
+	if (RPT > -2.7  && RPT <= -2.0)	{backboneType = 5;}
+	if (RPT >  2.0  && RPT <=  2.7)	{backboneType = 6;}
+	if (RPT >  2.7  && RPT <=  3.4)	{backboneType = 7;}
+	if (RPT >  3.4  && RPT <=  4.1)	{backboneType = 8;}
+	if (RPT >  4.1  && RPT <=  4.8)	{backboneType = 9;}
+	if (RPT >  4.8)					{backboneType = 10;}
+	return backboneType;
+}
+
+vector <double> protein::getRandPhiPsifromBackboneSequenceType(UInt _RPTType)
+{
+	vector <double> angles(2);
+	int b, psi, phi;
+
+	if (_RPTType == 1){
+		do{
+			b = 153 + (rand() % 27);
+			phi = (rand() % 360)-180;
+			psi = -1 * phi + b;
+		}while(psi > 180 || psi < -180);
+		angles[0] = phi;
+		angles[1] = psi;
+	}
+	if (_RPTType == 2){
+		do{
+			b = 124 + (rand() % 29);
+			phi = (rand() % 360)-180;
+			psi = -1 * phi + b;
+		}while(psi > 180 || psi < -180);
+		angles[0] = phi;
+		angles[1] = psi;
+	}
+	if (_RPTType == 3){
+		do{
+			b = 95 + (rand() % 29);
+			phi = (rand() % 360)-180;
+			psi = -1 * phi + b;
+		}while(psi > 180 || psi < -180);
+		angles[0] = phi;
+		angles[1] = psi;
+	}
+	if (_RPTType == 4){
+		do{
+			b = 58 + (rand() % 37);
+			phi = (rand() % 360)-180;
+			psi = -1 * phi + b;
+		}while(psi > 180 || psi < -180);
+		angles[0] = phi;
+		angles[1] = psi;
+	}
+	if (_RPTType == 5){
+		do{
+			b = (rand() % 58);
+			phi = (rand() % 360)-180;
+			psi = -1 * phi + b;
+		}while(psi > 180 || psi < -180);
+		angles[0] = phi;
+		angles[1] = psi;
+	}
+	if (_RPTType == 6){
+		do{
+			b = -58 + (rand() % 58);
+			phi = (rand() % 360)-180;
+			psi = -1 * phi + b;
+		}while(psi > 180 || psi < -180);
+		angles[0] = phi;
+		angles[1] = psi;
+	}
+	if (_RPTType == 7){
+		do{
+			b = -95 + (rand() % 37);
+			phi = (rand() % 360)-180;
+			psi = -1 * phi + b;
+		}while(psi > 180 || psi < -180);
+		angles[0] = phi;
+		angles[1] = psi;
+	}
+	if (_RPTType == 8){
+		do{
+			b = -124 + (rand() % 29);
+			phi = (rand() % 360)-180;
+			psi = -1 * phi + b;
+		}while(psi > 180 || psi < -180);
+		angles[0] = phi;
+		angles[1] = psi;
+	}
+	if (_RPTType == 9){
+		do{
+			b = -153 + (rand() % 29);
+			phi = (rand() % 360)-180;
+			psi = -1 * phi + b;
+		}while(psi > 180 || psi < -180);
+		angles[0] = phi;
+		angles[1] = psi;
+	}
+	if (_RPTType == 10){
+		do{
+			b = -180 + (rand() % 27);
+			phi = (rand() % 360)-180;
+			psi = -1 * phi + b;
+		}while(psi > 180 || psi < -180);
+		angles[0] = phi;
+		angles[1] = psi;
+	}
+	return angles;
 }
 
 void protein::optimizeRotamers()

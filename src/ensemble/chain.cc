@@ -1541,7 +1541,7 @@ double chain::getResiduesPerTurn(const UInt _resIndex)
 
 UInt chain::getBackboneSequenceType(const UInt _resIndex)
 {
-	UInt backboneType;
+	UInt backboneType = 0;
 	double RPT = getResiduesPerTurn(_resIndex);
 	if (RPT <= -4.8)				{backboneType = 1;}
 	if (RPT > -4.8  && RPT <= -4.1)	{backboneType = 2;}
@@ -1555,6 +1555,7 @@ UInt chain::getBackboneSequenceType(const UInt _resIndex)
 	if (RPT >  4.8)					{backboneType = 10;}
 	return backboneType;
 }
+
 double chain::getPhi(const UInt _indexInChain)
 {
 	double tempdouble;
