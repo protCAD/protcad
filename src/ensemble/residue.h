@@ -348,6 +348,7 @@ public:
 	static double getCutoffDistance() {return cutoffDistance; }
 	static void setCutoffDistance( const double _cutoff ) { cutoffDistance = _cutoff; cutoffDistanceSquared = _cutoff*_cutoff; }
 	static void setTemperature( const double _temp ) { temperature = _temp; }
+	static double getTemperature() { return temperature; }
 	static void setElectroSolvationScaleFactor( const double _Esolv ) { EsolvationFactor = _Esolv; }
 	static double getElectroSolvationScaleFactor() { return EsolvationFactor; }
 	static void setHydroSolvationScaleFactor( const double _Hsolv ) { HsolvationFactor = _Hsolv; }

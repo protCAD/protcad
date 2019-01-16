@@ -2624,7 +2624,7 @@ double protein::getResPairEnergy(const UInt _chain1, const UInt _res1, const UIn
 
 void protein::protMin()
 {
-	protRelax(true);
+	protRelax(false);
 	protOpt(true);
 }
 
@@ -2636,8 +2636,8 @@ void protein::protOpt(bool _backbone)
 	setMoved(true);
 
 	//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
-	UInt randchain, randres,randrestype, randrot, resnum, RPTType, chainNum = getNumChains(), nobetter = 0, plateau = 500, _plateau=plateau*0.8;
-	double Energy, resE, medResE, pastEnergy = protEnergy(), sPhi, sPsi, RPT, energyBuffer = 0.1;
+	UInt randchain, randres,randrestype, randrot, resnum, RPTType, chainNum = getNumChains(), nobetter = 0, plateau = 500;
+	double Energy, Entropy, PiPj, pastEnergy = protEnergy(), sPhi, sPsi, RPT, KT = KB*residue::temperature;
 	vector < vector <double>> currentRot; vector <UIntVec> allowedRots; srand (time(NULL));
 	vector <double> angles(2);
 	
@@ -2651,54 +2651,53 @@ void protein::protOpt(bool _backbone)
 		nobetter++;
 
 		//--Backslide optimization-----------------------------------------------------------------------
-		if (nobetter > _plateau && _backbone && randres > 0 && randres < resnum-2)
+		if (_backbone && randres > 0 && randres < resnum-2)
 		{
-			medResE = getMedianResidueEnergy(), resE = protEnergy(randchain, randres);
-			if (resE > medResE)
+			sPhi = getPhi(randchain,randres);
+			sPsi = getPsi(randchain,randres);
+			RPT = getResiduesPerTurn(sPhi,sPsi);
+			RPTType = getBackboneSequenceType(RPT);
+			angles = getRandPhiPsifromBackboneSequenceType(RPTType);
+			setDihedral(randchain,randres,angles[0],0,0);
+			setDihedral(randchain,randres,angles[1],1,0);
+			Energy = protEnergy();
+			Entropy = ((1000000/(rand() % 1000000))-1);
+			PiPj = pow(EU,((Energy-pastEnergy)/KT));
+			if (PiPj < Entropy)
 			{
-				sPhi = getPhi(randchain,randres);
-				sPsi = getPsi(randchain,randres);
-				RPT = getResiduesPerTurn(sPhi,sPsi);
-				RPTType = getBackboneSequenceType(RPT);
-				angles = getRandPhiPsifromBackboneSequenceType(RPTType);
-				setDihedral(randchain,randres,angles[0],0,0);
-				setDihedral(randchain,randres,angles[1],1,0);
-				Energy = protEnergy();
-				if (Energy < pastEnergy-energyBuffer)
-				{
-					pastEnergy = Energy;
-					nobetter = 0;
-				}
-				else{
-					setDihedral(randchain,randres,sPhi,0,0);
-					setDihedral(randchain,randres,sPsi,1,0);
-				}
+				cout << Energy << endl;
+				nobetter = 0, pastEnergy = Energy;
+			}
+			else{
+				setDihedral(randchain,randres,sPhi,0,0);
+				setDihedral(randchain,randres,sPsi,1,0);
 			}
 		}
 
 		//--Rotamer optimization-----------------------------------------------------------------------
-		medResE = getMedianResidueEnergy(), resE = protEnergy(randchain, randres);
-		if (resE > medResE)
-		{
-			currentRot = getSidechainDihedrals(randchain, randres);
-			allowedRots = getAllowedRotamers(randchain, randres, randrestype);
+		currentRot = getSidechainDihedrals(randchain, randres);
+		allowedRots = getAllowedRotamers(randchain, randres, randrestype);
 
-			//--Try a max of one rotamer per branchpoint and keep if an improvement, else revert
-			for (UInt b = 0; b < residue::getNumBpt(randrestype); b++)
+		//--Try a max of one rotamer per branchpoint and keep if an improvement, else revert
+		for (UInt b = 0; b < residue::getNumBpt(randrestype); b++)
+		{
+			if (allowedRots[b].size() > 0)
 			{
-				if (allowedRots[b].size() > 0)
+				randrot = rand() % allowedRots[b].size();
+				setRotamerWBC(randchain, randres, b, allowedRots[b][randrot]);
+				Energy = protEnergy();
+				Energy = protEnergy();
+				Entropy = ((1000000/(rand() % 1000000))-1);
+				PiPj = pow(EU,((Energy-pastEnergy)/KT));
+				if (PiPj < Entropy)
 				{
-					randrot = rand() % allowedRots[b].size();
-					setRotamerWBC(randchain, randres, b, allowedRots[b][randrot]);
-					Energy = protEnergy();
-					if (Energy < (pastEnergy-energyBuffer))
-					{
-						nobetter = 0, pastEnergy = Energy; break;
-					}
-					else
-					{
-						setSidechainDihedralAngles(randchain, randres, currentRot);
-					}
+					cout << Energy << endl;
+					nobetter = 0, pastEnergy = Energy;
+					break;
+				}
+				else
+				{
+					setSidechainDihedralAngles(randchain, randres, currentRot);
 				}
 			}
 		}

@@ -18,7 +18,7 @@
 #include "PDBInterface.h"
 
 vector <UInt> getChainSequence(protein* _prot, UInt _chainIndex);
-vector <UInt> getMutationPosition(protein* _prot, UIntVec &_activeChains, UIntVec &_activeResidues);
+vector <UInt> getMutationPosition(UIntVec &_activeChains, UIntVec &_activeResidues);
 UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition, UIntVec &_activeResidues);
 void createPossibleMutantsDatabase(protein* _prot, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedTypes);
 bool isFrozen(UIntVec _frozenResidues, UInt resIndex);
@@ -66,7 +66,7 @@ int main (int argc, char* argv[])
 
 	//--set initial variables
 	srand (getpid());
-	double bestEnergy, pastEnergy, Energy;
+	double bestEnergy, pastEnergy, Energy, Entropy, PiPj, KT = KB*residue::getTemperature();
 	vector <double> backboneAngles(2);
 	UInt timeid, sec, mutant = 0, numResidues, startingClashes, clashes, plateau = 10, nobetter = 0;
 	vector < UInt > mutantPosition, chainSequence, sequencePosition, randomPosition;
@@ -84,7 +84,7 @@ int main (int argc, char* argv[])
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* startProt = static_cast<protein*>(pMol);
-	startingClashes = startProt->getNumHardClashes()*1.5;
+	startingClashes = startProt->getNumHardClashes();
 
 	//--change all positions starting with a random confirmation to an unbiased -180/180
 	for (UInt i = 0; i < activeChains.size(); i++)
@@ -130,14 +130,14 @@ int main (int argc, char* argv[])
 			chainSequence = getChainSequence(prot, activeChains[i]);
 			proteinSequence.push_back(chainSequence);
 		}
-		prot->protMin();
+		prot->protOpt(true);
 
 		//--set Energy startpoint
 		Energy = prot->protEnergy();
 
 		//--Determine next mutation position
 		mutantPosition.clear();
-		mutantPosition = getMutationPosition(prot, activeChains, activeResidues);
+		mutantPosition = getMutationPosition(activeChains, activeResidues);
 		pdbWriter(prot, tempModel);
 		pastEnergy = Energy;
 		bestEnergy = Energy;
@@ -172,21 +172,18 @@ int main (int argc, char* argv[])
 					}
 				}
 			}
-			prot->protRelax(true);
-			clashes = prot->getNumHardClashes();
-			if (clashes <= startingClashes)
-			{
-				prot->protOpt(true);
-			}
+			prot->protOpt(true);
 			protein* tempProt = new protein(*prot);
 
 			//--Determine next mutation position
 			mutantPosition.clear();
-			mutantPosition = getMutationPosition(prot, activeChains, activeResidues);
+			mutantPosition = getMutationPosition(activeChains, activeResidues);
 
 			//--Energy test
 			Energy = prot->protEnergy();
-			if (Energy < pastEnergy)
+			Entropy = ((1000000/(rand() % 1000000))-1);
+			PiPj = pow(EU,((Energy-pastEnergy)/KT));
+			if (PiPj < Entropy)
 			{
 				if (Energy < bestEnergy)
 				{
@@ -194,8 +191,7 @@ int main (int argc, char* argv[])
 					pdbWriter(tempProt, tempModel);
 				}
 				proteinSequence[sequencePosition[0]][sequencePosition[1]] = mutant, pastEnergy = Energy;
-				if (nobetter > 0) { nobetter--;}
-				else{ nobetter = 0; }
+				nobetter = 0;
 			}
 			sequencePosition.clear();
 			delete tempProt;
@@ -273,21 +269,12 @@ vector < UInt > getChainSequence(protein* _prot, UInt _chainIndex)
 	return sequence;
 }
 
-vector <UInt> getMutationPosition(protein* _prot, UIntVec &_activeChains, UIntVec &_activeResidues)
+vector <UInt> getMutationPosition(UIntVec &_activeChains, UIntVec &_activeResidues)
 {
-	//--get median residue energy
 	UInt randres, randchain;
-	double posE, medE;
 	vector <UInt> _mutantPosition;
-	medE = _prot->getMedianResidueEnergy(_activeChains, _activeResidues);
-
-	//--find random position with worse than median energy
-	do
-	{
-		randchain = _activeChains[rand() % _activeChains.size()];
-		randres = _activeResidues[rand() % _activeResidues.size()];
-		posE = _prot->protEnergy(randchain,randres);
-	}while (posE < medE);
+	randchain = _activeChains[rand() % _activeChains.size()];
+	randres = _activeResidues[rand() % _activeResidues.size()];
 	_mutantPosition.push_back(randchain);
 	_mutantPosition.push_back(randres);
 	return _mutantPosition;
