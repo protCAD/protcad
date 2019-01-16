@@ -2636,7 +2636,7 @@ void protein::protOpt(bool _backbone)
 	setMoved(true);
 
 	//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
-	UInt randchain, randres,randrestype, randrot, resnum, RPTType, chainNum = getNumChains(), nobetter = 0, plateau = 500, _plateau=plateau*0.5;
+	UInt randchain, randres,randrestype, randrot, resnum, RPTType, chainNum = getNumChains(), nobetter = 0, plateau = 500, _plateau=plateau*0.8;
 	double Energy, resE, medResE, pastEnergy = protEnergy(), sPhi, sPsi, RPT, energyBuffer = 0.1;
 	vector < vector <double>> currentRot; vector <UIntVec> allowedRots; srand (time(NULL));
 	vector <double> angles(2);
@@ -2715,7 +2715,7 @@ void protein::protRelax(bool _backbone)
 	if (pastProtClashes > 0)
 	{	
 		//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
-		UInt randchain, randres, randrestype, resnum, randrot, RPTType, chainNum = getNumChains(), protClashes, resClashes, medResC, nobetter = 0, plateau = 500, _plateau=plateau*0.5;
+		UInt randchain, randres, randrestype, resnum, randrot, RPTType, chainNum = getNumChains(), protClashes, resClashes, medResC, nobetter = 0, plateau = 500, _plateau=plateau*0.8;
 		vector < vector <double> > currentRot; vector <UIntVec> allowedRots; srand (time(NULL));
 		double sPhi, sPsi, RPT;
 		vector <double> angles(2);
@@ -2795,7 +2795,7 @@ void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 	setMoved(true);
 
 	//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
-	UInt randchain, randres, randrestype, randrot, RPTType, chainNum = _activeChains.size(),nobetter = 0, plateau = 500, _plateau=plateau*0.5;
+	UInt randchain, randres, randrestype, randrot, RPTType, chainNum = _activeChains.size(),nobetter = 0, plateau = 500, _plateau=plateau*0.8;
 	double Energy, resE, medResE, RPT, pastEnergy = protEnergy(), sPhi, sPsi, energyBuffer = 0.1;
 	vector < vector <double> > currentRot; vector <UIntVec> allowedRots; srand (time(NULL));
 	vector < double > angles(2);
