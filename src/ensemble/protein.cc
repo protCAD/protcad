@@ -2709,17 +2709,16 @@ void protein::protOpt(bool _backbone)
 void protein::protRelax(bool _backbone)
 {   // Sidechain and backrub optimization with a local dielectric scaling of electrostatics and corresponding Born/Gill implicit solvation energy
 	//_plateau: the number of consecutive optimization cycles without an energy decrease (default: 150 for general purpose optimization)
+	
+	setMoved(true);
 	UInt pastProtClashes = getNumHardClashes();
 	if (pastProtClashes > 0)
-	{
-		//--reset saved protein energies prior to optimization
-		setMoved(true);
-		
+	{	
 		//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
-		UInt randchain, randres, randrestype, resnum, randrot, chainNum = getNumChains(), keep, foldD, protClashes, resClashes, medResC, nobetter = 0, plateau = 500, _plateau=plateau*0.8;
+		UInt randchain, randres, randrestype, resnum, randrot, RPTType, chainNum = getNumChains(), protClashes, resClashes, medResC, nobetter = 0, plateau = 500, _plateau=plateau*0.5;
 		vector < vector <double> > currentRot; vector <UIntVec> allowedRots; srand (time(NULL));
-		double sPhi, sPsi;
-		int dihedralD;
+		double sPhi, sPsi, RPT;
+		vector <double> angles(2);
 		
 		//--Run optimizaiton loop to relative minima, determined by _plateau----------------------------
 		do
@@ -2731,31 +2730,28 @@ void protein::protRelax(bool _backbone)
 			nobetter++;
 	
 			//--Backslide optimization-----------------------------------------------------------------------
-			if (nobetter > _plateau && _backbone && randres > 1 && randres < resnum-2)
+			if (nobetter > _plateau && _backbone && randres > 0 && randres < resnum-2)
 			{
 				medResC = getMedianResidueNumHardClashes();
 				resClashes = getNumHardClashes(randchain, randres);
 				if (resClashes > medResC)
 				{
-					//--transform angle while energy improves, until energy degrades, then revert one step
-					do{dihedralD = (rand() % 3)-1;}while(dihedralD == 0);
-					foldD = rand() % 2;
-					do
+					sPhi = getPhi(randchain,randres);
+					sPsi = getPsi(randchain,randres);
+					RPT = getResiduesPerTurn(sPhi,sPsi);
+					RPTType = getBackboneSequenceType(RPT);
+					angles = getRandPhiPsifromBackboneSequenceType(RPTType);
+					setDihedral(randchain,randres,angles[0],0,0);
+					setDihedral(randchain,randres,angles[1],1,0);
+					protClashes = getNumHardClashes();
+					if (protClashes < pastProtClashes)
 					{
-						keep = 0;
-						sPhi = getPhi(randchain,randres);
-						sPsi = getPsi(randchain,randres);
-						setDihedral(randchain,randres,sPhi+dihedralD,0,foldD);
-						setDihedral(randchain,randres,sPsi-dihedralD,1,foldD);
-						protClashes = getNumHardClashes();
-						if (protClashes < pastProtClashes)
-						{
-							pastProtClashes = protClashes;
-							nobetter = 0, keep = 1;
-						}
-					} while (keep == 1);
-					setDihedral(randchain,randres,sPhi,0,foldD);
-					setDihedral(randchain,randres,sPsi,1,foldD);
+						nobetter = 0, pastProtClashes = protClashes;
+					}
+					else{
+						setDihedral(randchain,randres,sPhi,0,0);
+						setDihedral(randchain,randres,sPsi,1,0);
+					}
 				}
 			}
 	
@@ -2799,11 +2795,11 @@ void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 	setMoved(true);
 
 	//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
-	UInt randchain, randres, randrestype, randrot, chainNum = _activeChains.size(), keep, foldD, nobetter = 0, plateau = 500, _plateau=plateau*0.8;
-	double Energy, resE, medResE, pastEnergy = protEnergy(), sPhi, sPsi, energyBuffer = 0.1;
+	UInt randchain, randres, randrestype, randrot, RPTType, chainNum = _activeChains.size(),nobetter = 0, plateau = 500, _plateau=plateau*0.5;
+	double Energy, resE, medResE, RPT, pastEnergy = protEnergy(), sPhi, sPsi, energyBuffer = 0.1;
 	vector < vector <double> > currentRot; vector <UIntVec> allowedRots; srand (time(NULL));
+	vector < double > angles(2);
 	bool skip;
-	int dihedralD;
 
 	//--Run optimizaiton loop to relative minima, determined by _plateau----------------------------
 	do
@@ -2826,25 +2822,23 @@ void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 			medResE = getMedianResidueEnergy(_activeChains), resE = protEnergy(randchain, randres);
 			if (resE > medResE)
 			{
-				//--transform angle while energy improves, until energy degrades, then revert one step
-				do{dihedralD = (rand() % 3)-1;}while(dihedralD == 0);
-				foldD = rand() % 2;
-				do
+				sPhi = getPhi(randchain,randres);
+				sPsi = getPsi(randchain,randres);
+				RPT = getResiduesPerTurn(sPhi,sPsi);
+				RPTType = getBackboneSequenceType(RPT);
+				angles = getRandPhiPsifromBackboneSequenceType(RPTType);
+				setDihedral(randchain,randres,angles[0],0,0);
+				setDihedral(randchain,randres,angles[1],1,0);
+				Energy = protEnergy();
+				if (Energy < pastEnergy-energyBuffer)
 				{
-					keep = 0;
-					sPhi = getPhi(randchain,randres);
-					sPsi = getPsi(randchain,randres);
-					setDihedral(randchain,randres,sPhi+dihedralD,0,foldD);
-					setDihedral(randchain,randres,sPsi-dihedralD,1,foldD);
-					Energy = protEnergy();
-					if (Energy < pastEnergy-energyBuffer)
-					{
-						pastEnergy = Energy;
-						nobetter = 0, keep = 1;
-					}
-				} while (keep == 1);
-				setDihedral(randchain,randres,sPhi,0,foldD);
-				setDihedral(randchain,randres,sPsi,1,foldD);
+					pastEnergy = Energy;
+					nobetter = 0;
+				}
+				else{
+					setDihedral(randchain,randres,sPhi,0,0);
+					setDihedral(randchain,randres,sPsi,1,0);
+				}
 			}
 		}
 
