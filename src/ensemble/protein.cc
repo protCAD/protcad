@@ -2909,7 +2909,9 @@ vector <double> protein::getRandPhiPsifromBackboneSequenceType(UInt _RPTType)
 	if (_RPTType == 1){
 		do{
 			b = 153 + (rand() % 27);
-			phi = (rand() % 360)-180;
+			do{
+				phi = (rand() % 360)-180;
+			}while(phi > -30 && phi < 30);
 			psi = -1 * phi + b;
 		}while(psi > 180 || psi < -180);
 		angles[0] = phi;
@@ -2918,7 +2920,9 @@ vector <double> protein::getRandPhiPsifromBackboneSequenceType(UInt _RPTType)
 	if (_RPTType == 2){
 		do{
 			b = 124 + (rand() % 29);
-			phi = (rand() % 360)-180;
+			do{
+				phi = (rand() % 360)-180;
+			}while(phi > -30 && phi < 30);
 			psi = -1 * phi + b;
 		}while(psi > 180 || psi < -180);
 		angles[0] = phi;
@@ -2927,7 +2931,9 @@ vector <double> protein::getRandPhiPsifromBackboneSequenceType(UInt _RPTType)
 	if (_RPTType == 3){
 		do{
 			b = 95 + (rand() % 29);
-			phi = (rand() % 360)-180;
+			do{
+				phi = (rand() % 360)-180;
+			}while(phi > -30 && phi < 30);
 			psi = -1 * phi + b;
 		}while(psi > 180 || psi < -180);
 		angles[0] = phi;
@@ -2936,7 +2942,9 @@ vector <double> protein::getRandPhiPsifromBackboneSequenceType(UInt _RPTType)
 	if (_RPTType == 4){
 		do{
 			b = 58 + (rand() % 37);
-			phi = (rand() % 360)-180;
+			do{
+				phi = (rand() % 360)-180;
+			}while(phi > -30 && phi < 30);
 			psi = -1 * phi + b;
 		}while(psi > 180 || psi < -180);
 		angles[0] = phi;
@@ -2945,7 +2953,9 @@ vector <double> protein::getRandPhiPsifromBackboneSequenceType(UInt _RPTType)
 	if (_RPTType == 5){
 		do{
 			b = (rand() % 58);
-			phi = (rand() % 360)-180;
+			do{
+				phi = (rand() % 360)-180;
+			}while(phi > -30 && phi < 30);
 			psi = -1 * phi + b;
 		}while(psi > 180 || psi < -180);
 		angles[0] = phi;
@@ -2954,7 +2964,9 @@ vector <double> protein::getRandPhiPsifromBackboneSequenceType(UInt _RPTType)
 	if (_RPTType == 6){
 		do{
 			b = -58 + (rand() % 58);
-			phi = (rand() % 360)-180;
+			do{
+				phi = (rand() % 360)-180;
+			}while(phi > -30 && phi < 30);
 			psi = -1 * phi + b;
 		}while(psi > 180 || psi < -180);
 		angles[0] = phi;
@@ -2963,7 +2975,9 @@ vector <double> protein::getRandPhiPsifromBackboneSequenceType(UInt _RPTType)
 	if (_RPTType == 7){
 		do{
 			b = -95 + (rand() % 37);
-			phi = (rand() % 360)-180;
+			do{
+				phi = (rand() % 360)-180;
+			}while(phi > -30 && phi < 30);
 			psi = -1 * phi + b;
 		}while(psi > 180 || psi < -180);
 		angles[0] = phi;
@@ -2972,7 +2986,9 @@ vector <double> protein::getRandPhiPsifromBackboneSequenceType(UInt _RPTType)
 	if (_RPTType == 8){
 		do{
 			b = -124 + (rand() % 29);
-			phi = (rand() % 360)-180;
+			do{
+				phi = (rand() % 360)-180;
+			}while(phi > -30 && phi < 30);
 			psi = -1 * phi + b;
 		}while(psi > 180 || psi < -180);
 		angles[0] = phi;
@@ -2981,7 +2997,9 @@ vector <double> protein::getRandPhiPsifromBackboneSequenceType(UInt _RPTType)
 	if (_RPTType == 9){
 		do{
 			b = -153 + (rand() % 29);
-			phi = (rand() % 360)-180;
+			do{
+				phi = (rand() % 360)-180;
+			}while(phi > -30 && phi < 30);
 			psi = -1 * phi + b;
 		}while(psi > 180 || psi < -180);
 		angles[0] = phi;
@@ -2990,7 +3008,9 @@ vector <double> protein::getRandPhiPsifromBackboneSequenceType(UInt _RPTType)
 	if (_RPTType == 10){
 		do{
 			b = -180 + (rand() % 27);
-			phi = (rand() % 360)-180;
+			do{
+				phi = (rand() % 360)-180;
+			}while(phi > -30 && phi < 30);
 			psi = -1 * phi + b;
 		}while(psi > 180 || psi < -180);
 		angles[0] = phi;
