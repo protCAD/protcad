@@ -84,16 +84,6 @@ int main (int argc, char* argv[])
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* startProt = static_cast<protein*>(pMol);
-
-	//--change all positions starting with a random confirmation to an unbiased -180/180
-	for (UInt i = 0; i < activeChains.size(); i++)
-	{
-		for (UInt j = 0; j < randomResidues.size(); j++)
-		{
-			startProt->setDihedral(activeChains[i], randomResidues[j], -180,0,0);
-			startProt->setDihedral(activeChains[i], randomResidues[j], 180,1,0);
-		}
-	}
 	possibleMutants = buildPossibleMutants();
 	if(possibleMutants.size() < activeResidues.size())
 	{
@@ -111,7 +101,7 @@ int main (int argc, char* argv[])
 		protein* prot = static_cast<protein*>(pMol);
 		sequencePool = buildSequencePool();
 
-		//--load in initial pdb and mutate in random starting sequence on active chains and random residues
+		//--load in initial pdb and mutate in random starting structure on active chains and random residues
 		nobetter = 0;
 		for (UInt i = 0; i < activeChains.size(); i++)
 		{
