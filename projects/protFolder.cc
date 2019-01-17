@@ -205,6 +205,7 @@ int main (int argc, char* argv[])
 		Energy = model->protEnergy();
 		Entropy = (1000000/((rand() % 1000000)+1))-1;
 		PiPj = pow(EU,((Energy-startEnergy)/KT));
+		startEnergy = Energy;
 		sec = time(NULL);
 		timeid = sec;
 		stringstream convert;
@@ -236,7 +237,6 @@ int main (int argc, char* argv[])
 		}
 		if (PiPj < Entropy){
 			fs << endl;
-			startEnergy = Energy;
 		}
 		fs.close();
 		finalline << endl;
