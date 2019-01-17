@@ -2661,11 +2661,10 @@ void protein::protOpt(bool _backbone)
 			setDihedral(randchain,randres,angles[0],0,0);
 			setDihedral(randchain,randres,angles[1],1,0);
 			Energy = protEnergy();
-			Entropy = ((1000000/(rand() % 1000000))-1);
+			Entropy = (1000000/((rand() % 1000000)+1))-1;
 			PiPj = pow(EU,((Energy-pastEnergy)/KT));
 			if (PiPj < Entropy)
 			{
-				cout << Energy << endl;
 				nobetter = 0, pastEnergy = Energy;
 			}
 			else{
@@ -2687,11 +2686,10 @@ void protein::protOpt(bool _backbone)
 				setRotamerWBC(randchain, randres, b, allowedRots[b][randrot]);
 				Energy = protEnergy();
 				Energy = protEnergy();
-				Entropy = ((1000000/(rand() % 1000000))-1);
+				Entropy = (1000000/((rand() % 1000000)+1))-1;
 				PiPj = pow(EU,((Energy-pastEnergy)/KT));
 				if (PiPj < Entropy)
 				{
-					cout << Energy << endl;
 					nobetter = 0, pastEnergy = Energy;
 					break;
 				}

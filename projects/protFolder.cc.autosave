@@ -203,7 +203,7 @@ int main (int argc, char* argv[])
 		molecule* modelMol = theModelEnsemble->getMoleculePointer(0);
 		protein* model = static_cast<protein*>(modelMol);
 		Energy = model->protEnergy();
-		Entropy = ((1000000/(rand() % 1000000))-1);
+		Entropy = (1000000/((rand() % 1000000)+1))-1;
 		PiPj = pow(EU,((Energy-startEnergy)/KT));
 		sec = time(NULL);
 		timeid = sec;
