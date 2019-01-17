@@ -162,13 +162,6 @@ int main (int argc, char* argv[])
 						prot->setDihedral(mutantPosition[0],mutantPosition[1],backboneAngles[0],0,0);
 						prot->setDihedral(mutantPosition[0],mutantPosition[1],backboneAngles[1],1,0);
 					}
-					bool frozen = isFrozen(frozenResidues,j);
-					if (!frozen)
-					{
-						backboneAngles = prot->getRandPhiPsifromBackboneSequenceType(proteinSequence[i][j]);
-						prot->setDihedral(activeChains[i],j,backboneAngles[0],0,0);
-						prot->setDihedral(activeChains[i],j,backboneAngles[1],1,0);
-					}
 				}
 			}
 			prot->protMin();
