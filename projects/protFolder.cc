@@ -22,7 +22,6 @@ vector <UInt> getMutationPosition(UIntVec &_activeChains, UIntVec &_activeResidu
 UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition, UIntVec &_activeResidues);
 void createPossibleMutantsDatabase(protein* _prot, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedTypes);
 bool isFrozen(UIntVec _frozenResidues, UInt resIndex);
-double calculatePopulationMA();
 UInt getSizeofPopulation();
 vector < vector < UInt > > buildSequencePool();
 vector < vector < UInt > > buildPossibleMutants();
@@ -53,6 +52,7 @@ int main (int argc, char* argv[])
 	residue::setHydroSolvationScaleFactor(1.0);
 	amberElec::setScaleFactor(1.0);
 	amberVDW::setScaleFactor(1.0);
+	residue::setTemperature(300);
 
 	//convert input arrays to vectors
 	UInt activeChainsSize = sizeof(_activeChains)/sizeof(_activeChains[0]), randomResiduesSize = sizeof(_randomResidues)/sizeof(_randomResidues[0]), activeResiduesSize = sizeof(_activeResidues)/sizeof(_activeResidues[0]);
@@ -66,9 +66,9 @@ int main (int argc, char* argv[])
 
 	//--set initial variables
 	srand (getpid());
-	double bestEnergy, pastEnergy, Energy, Entropy, PiPj, KT = KB*residue::getTemperature();
+	double startEnergy = 1E10, bestEnergy, pastEnergy, Energy, Entropy, PiPj, KT = KB*residue::getTemperature();
 	vector <double> backboneAngles(2);
-	UInt timeid, sec, mutant = 0, numResidues, startingClashes, clashes, plateau = 10, nobetter = 0;
+	UInt timeid, sec, mutant = 0, numResidues, plateau = 20, nobetter = 0;
 	vector < UInt > mutantPosition, chainSequence, sequencePosition, randomPosition;
 	vector < vector < UInt > > sequencePool, proteinSequence, finalSequence, possibleMutants;
 	stringstream convert;
@@ -84,7 +84,6 @@ int main (int argc, char* argv[])
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* startProt = static_cast<protein*>(pMol);
-	startingClashes = startProt->getNumHardClashes();
 
 	//--change all positions starting with a random confirmation to an unbiased -180/180
 	for (UInt i = 0; i < activeChains.size(); i++)
@@ -104,7 +103,7 @@ int main (int argc, char* argv[])
 	delete thePDB;
 
 	//--Run multiple independent evolution cycles-----------------------------------------------------
-	for (UInt a = 1; a < 10000; a++)
+	while(true)
 	{
 		PDBInterface* thePDB = new PDBInterface(infile);
 		ensemble* theEnsemble = thePDB->getEnsemblePointer();
@@ -130,7 +129,7 @@ int main (int argc, char* argv[])
 			chainSequence = getChainSequence(prot, activeChains[i]);
 			proteinSequence.push_back(chainSequence);
 		}
-		prot->protOpt(true);
+		prot->protMin();
 
 		//--set Energy startpoint
 		Energy = prot->protEnergy();
@@ -172,7 +171,7 @@ int main (int argc, char* argv[])
 					}
 				}
 			}
-			prot->protOpt(true);
+			prot->protMin();
 			protein* tempProt = new protein(*prot);
 
 			//--Determine next mutation position
@@ -203,47 +202,45 @@ int main (int argc, char* argv[])
 		ensemble* theModelEnsemble = theModelPDB->getEnsemblePointer();
 		molecule* modelMol = theModelEnsemble->getMoleculePointer(0);
 		protein* model = static_cast<protein*>(modelMol);
-		clashes = model->getNumHardClashes();
-		if (clashes <= startingClashes)
+		Energy = model->protEnergy();
+		Entropy = ((1000000/(rand() % 1000000))-1);
+		PiPj = pow(EU,((Energy-startEnergy)/KT));
+		sec = time(NULL);
+		timeid = sec;
+		stringstream convert;
+		string countstr;
+		convert << timeid, countstr = convert.str();
+		outFile = countstr + "." + startstr + ".fold.pdb";
+		pdbWriter(model, outFile);
+		finalSequence.clear(), chainSequence.clear();
+		for (UInt i = 0; i < activeChains.size(); i++)
 		{
-			model->setMoved(true);
-			Energy = model->protEnergy();
-			sec = time(NULL);
-			timeid = sec;
-			stringstream convert;
-			string countstr;
-			convert << timeid, countstr = convert.str();
-			outFile = countstr + "." + startstr + ".fold.pdb";
-			pdbWriter(model, outFile);
-			finalSequence.clear(), chainSequence.clear();
-			for (UInt i = 0; i < activeChains.size(); i++)
+			chainSequence = getChainSequence(model, activeChains[i]);
+			finalSequence.push_back(chainSequence);
+		}
+		fstream finalline;
+		finalline.open ("results.out", fstream::in | fstream::out | fstream::app);
+		finalline << timeid << " " << Energy << " ";
+
+		fstream fs;
+		fs.open ("sequencepool.out", fstream::in | fstream::out | fstream::app);
+		for (UInt i = 0; i < activeChains.size(); i++)
+		{
+			for (UInt j = 0; j < finalSequence[i].size(); j++)
 			{
-				chainSequence = getChainSequence(model, activeChains[i]);
-				finalSequence.push_back(chainSequence);
-			}
-			fstream finalline;
-			finalline.open ("results.out", fstream::in | fstream::out | fstream::app);
-			finalline << timeid << " " << Energy << " ";
-	
-			double popMa = calculatePopulationMA();
-			fstream fs;
-			fs.open ("sequencepool.out", fstream::in | fstream::out | fstream::app);
-			for (UInt i = 0; i < activeChains.size(); i++)
-			{
-				for (UInt j = 0; j < finalSequence[i].size(); j++)
-				{
-					finalline << backboneSeq[finalSequence[i][j]] << " ";
-					if (Energy < popMa)
-					{
-						fs << finalSequence[i][j] << ",";
-					}
+				finalline << backboneSeq[finalSequence[i][j]] << " ";
+				if (PiPj < Entropy){
+					fs << finalSequence[i][j] << ",";
 				}
 			}
-			if (Energy < popMa){fs << endl;}
-			fs.close();
-			finalline << endl;
-			finalline.close();
 		}
+		if (PiPj < Entropy){
+			fs << endl;
+			startEnergy = Energy;
+		}
+		fs.close();
+		finalline << endl;
+		finalline.close();
 		delete theModelPDB;
 		sequencePool.clear(),proteinSequence.clear(), chainSequence.clear(), mutantPosition.clear(), chainSequence.clear(), sequencePosition.clear(), randomPosition.clear();
 		sequencePool.resize(0),proteinSequence.resize(0), chainSequence.resize(0), mutantPosition.resize(0), chainSequence.resize(0), sequencePosition.resize(0), randomPosition.resize(0);
@@ -409,48 +406,6 @@ bool isFrozen(UIntVec _frozenResidues, UInt resIndex)
 		}
 	}
 	return frozen;
-}
-
-double calculatePopulationMA()
-{
-	ifstream file("results.out");
-	string item, line;
-	bool secondSpace;
-	vector < double > _energy;
-	while(getline(file,line))
-	{
-		secondSpace = false;
-		stringstream stream(line);
-		while(getline(stream,item,' '))
-		{
-			if (secondSpace)
-			{
-				stringstream energyString(item);
-				double energy;
-				energyString >> energy;
-				_energy.push_back(energy);
-				break;
-			}
-			else
-			{
-				secondSpace = true;
-			}
-		}
-	}
-	file.close();
-	double cutoff = 0.0;
-	if (_energy.size() >= ::populationBaseline){
-		double sum = 0.0;
-		for (UInt i = _energy.size()-100; i < _energy.size(); i++)
-		{
-			sum += _energy[i];
-		}
-		cutoff=sum/100;
-	}
-	else{
-		cutoff = 1E10;
-	}
-	return cutoff;
 }
 
 UInt getSizeofPopulation()

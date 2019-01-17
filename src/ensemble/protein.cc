@@ -2624,7 +2624,7 @@ double protein::getResPairEnergy(const UInt _chain1, const UInt _res1, const UIn
 
 void protein::protMin()
 {
-	protRelax(false);
+	protRelax();
 	protOpt(true);
 }
 
@@ -2636,7 +2636,7 @@ void protein::protOpt(bool _backbone)
 	setMoved(true);
 
 	//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
-	UInt randchain, randres,randrestype, randrot, resnum, RPTType, chainNum = getNumChains(), nobetter = 0, plateau = 500;
+	UInt randchain, randres,randrestype, randrot, resnum, RPTType, chainNum = getNumChains(), nobetter = 0, plateau = 1000;
 	double Energy, Entropy, PiPj, pastEnergy = protEnergy(), sPhi, sPsi, RPT, KT = KB*residue::temperature;
 	vector < vector <double>> currentRot; vector <UIntVec> allowedRots; srand (time(NULL));
 	vector <double> angles(2);
@@ -2705,7 +2705,7 @@ void protein::protOpt(bool _backbone)
 	return;
 }
 
-void protein::protRelax(bool _backbone)
+void protein::protRelax()
 {   // Sidechain and backrub optimization with a local dielectric scaling of electrostatics and corresponding Born/Gill implicit solvation energy
 	//_plateau: the number of consecutive optimization cycles without an energy decrease (default: 150 for general purpose optimization)
 	
@@ -2714,10 +2714,8 @@ void protein::protRelax(bool _backbone)
 	if (pastProtClashes > 0)
 	{	
 		//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
-		UInt randchain, randres, randrestype, resnum, randrot, RPTType, chainNum = getNumChains(), protClashes, resClashes, medResC, nobetter = 0, plateau = 500, _plateau=plateau*0.8;
+		UInt randchain, randres, randrestype, resnum, randrot, chainNum = getNumChains(), protClashes, resClashes, medResC, nobetter = 0, plateau = 1000;
 		vector < vector <double> > currentRot; vector <UIntVec> allowedRots; srand (time(NULL));
-		double sPhi, sPsi, RPT;
-		vector <double> angles(2);
 		
 		//--Run optimizaiton loop to relative minima, determined by _plateau----------------------------
 		do
@@ -2727,32 +2725,6 @@ void protein::protRelax(bool _backbone)
 			randres = rand() % resnum;
 			randrestype = getTypeFromResNum(randchain, randres);
 			nobetter++;
-	
-			//--Backslide optimization-----------------------------------------------------------------------
-			if (nobetter > _plateau && _backbone && randres > 0 && randres < resnum-2)
-			{
-				medResC = getMedianResidueNumHardClashes();
-				resClashes = getNumHardClashes(randchain, randres);
-				if (resClashes > medResC)
-				{
-					sPhi = getPhi(randchain,randres);
-					sPsi = getPsi(randchain,randres);
-					RPT = getResiduesPerTurn(sPhi,sPsi);
-					RPTType = getBackboneSequenceType(RPT);
-					angles = getRandPhiPsifromBackboneSequenceType(RPTType);
-					setDihedral(randchain,randres,angles[0],0,0);
-					setDihedral(randchain,randres,angles[1],1,0);
-					protClashes = getNumHardClashes();
-					if (protClashes < pastProtClashes)
-					{
-						nobetter = 0, pastProtClashes = protClashes;
-					}
-					else{
-						setDihedral(randchain,randres,sPhi,0,0);
-						setDihedral(randchain,randres,sPsi,1,0);
-					}
-				}
-			}
 	
 			//--Rotamer optimization-----------------------------------------------------------------------
 			medResC = getMedianResidueNumHardClashes();
