@@ -122,26 +122,33 @@ int main (int argc, char* argv[])
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	/*PDBInterface* thePDB = new PDBInterface(inFile);
+	PDBInterface* thePDB = new PDBInterface(inFile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* frame = static_cast<protein*>(pMol);
-	
-	
 	double phi = -60;
-	double psi = -43;
+	double psi = 140;
+	bool odd = false;
 	
-	for (UInt i = 0; i < frame->getNumChains(); i++)
+	for (UInt i = 0; i < frame->getNumResidues(0); i++)
 	{
-		for (UInt j = 0; j < frame->getNumResidues(i); j++)
-		{
-			frame->setDihedral(i,j,phi,0,0);
-			frame->setDihedral(i,j,psi,1,0);
+		if (odd){
+			frame->setDihedral(0,i,phi+15,0,0);
+			frame->setDihedral(0,i,psi+15,1,0);
+			frame->mutateWBC(0,i,P);
+			odd  = false;
+		}
+		else{
+			frame->setDihedral(0,i,phi*-1+15,0,0);
+			frame->setDihedral(0,i,psi*-1+15,1,0);
+			frame->mutateWBC(0,i,dP);
+			odd = true;
 		}
 	}
 	outFile = inFile;
 	pdbWriter(frame, outFile);
 	
+	/*
 	double delta = 20;
 	UInt resIndex = 4;
 	
@@ -201,7 +208,7 @@ int main (int argc, char* argv[])
 			if (Energy < 40){cout << phi << " " << psi << " " << Energy << endl;}
 			delete frame;
 		}
-	}*/
+	}
 
     PDBInterface* thePDB = new PDBInterface(inFile);
     ensemble* theEnsemble = thePDB->getEnsemblePointer();

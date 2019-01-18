@@ -30,6 +30,7 @@ int main (int argc, char* argv[])
     clock_t start, end;
 	double cpu_time_used;
     
+    residue::setTemperature(300);
     residue::setElectroSolvationScaleFactor(1.0);
     residue::setHydroSolvationScaleFactor(1.0);
     amberElec::setScaleFactor(1.0);
@@ -55,7 +56,7 @@ int main (int argc, char* argv[])
     cout << "start Energy: " << _prot->protEnergy() << endl;
     //_prot->protOpt(backbone,frozenResidues,activeChains);
     start = clock();
-    _prot->protOpt(backbone);
+    _prot->protMin();
     end = clock();
     cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
     _prot->setMoved(true);
