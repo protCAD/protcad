@@ -7,7 +7,7 @@
 //********  -Sequence Selective Protein Genetic Algorithm Based Folding in Implicit Solvent -  **********
 //*******************************************************************************************************
 
-/////// Just specify infile structure, active chains and residues indexes, and it will evolve a sequence favorable for folding
+/////// Just specify infile structure, active chains and residues indexes, and it will evolve a fold
 
 //--Included files and functions-------------------------------------------------------------------------
 #include <iostream>
@@ -20,8 +20,7 @@
 vector <UInt> getChainSequence(protein* _prot, UInt _chainIndex);
 vector <UInt> getMutationPosition(UIntVec &_activeChains, UIntVec &_activeResidues);
 UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition, UIntVec &_activeResidues);
-void createPossibleMutantsDatabase(protein* _prot, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedTypes);
-bool isFrozen(UIntVec _frozenResidues, UInt resIndex);
+void createPossibleMutantsDatabase(UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedTypes);
 UInt getSizeofPopulation();
 vector < vector < UInt > > buildSequencePool();
 vector < vector < UInt > > buildPossibleMutants();
@@ -37,15 +36,14 @@ int main (int argc, char* argv[])
 	//--Running parameters
 	if (argc !=2)
 	{
-		cout << "protEvolver <inFile.pdb>" << endl;
+		cout << "protFolder <inFile.pdb>" << endl;
 		exit(1);
 	}
 
-  	UInt _activeChains[] = {0};                                                         // chains active for mutation
-    UInt _allowedTypes[] = {M,C,L,P,B,E,Y,A,I,G};                     // backbone types allowable
-    UInt _activeResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};                                     // positions active for mutation
-    UInt _randomResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};                                     // positions active for a random start sequence initially
-    UInt _frozenResidues[] = {};                                  // positions that cannot move at all
+	UInt _activeChains[] = {0};                                                         // chains active for mutation
+	UInt _allowedTypes[] = {M,C,L,P,B,E,Y,A,I,G};                     // backbone types allowable
+	UInt _activeResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};                                     // positions active for mutation
+	UInt _randomResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};                                     // positions active for a random start sequence initially
 
 	//--running parameters
 	residue::setElectroSolvationScaleFactor(1.0);
@@ -55,14 +53,13 @@ int main (int argc, char* argv[])
 	residue::setTemperature(300);
 
 	//convert input arrays to vectors
-	UInt activeChainsSize = sizeof(_activeChains)/sizeof(_activeChains[0]), randomResiduesSize = sizeof(_randomResidues)/sizeof(_randomResidues[0]), activeResiduesSize = sizeof(_activeResidues)/sizeof(_activeResidues[0]);
-	UInt allowedTypesSize = sizeof(_allowedTypes)/sizeof(_allowedTypes[0]), frozenResiduesSize = sizeof(_frozenResidues)/sizeof(_frozenResidues[0]);
-	UIntVec activeChains, allowedTypes, activeResidues, randomResidues, frozenResidues;
+	UInt activeChainsSize = sizeof(_activeChains)/sizeof(_activeChains[0]), randomResiduesSize = sizeof(_randomResidues)/sizeof(_randomResidues[0]);
+	UInt allowedTypesSize = sizeof(_allowedTypes)/sizeof(_allowedTypes[0]),activeResiduesSize = sizeof(_activeResidues)/sizeof(_activeResidues[0]);
+	UIntVec activeChains, allowedTypes, activeResidues, randomResidues;
 	for (UInt i = 0; i < activeChainsSize; i++)		{ activeChains.push_back(_activeChains[i]); }
 	for (UInt i = 0; i < allowedTypesSize; i++)	{ allowedTypes.push_back(_allowedTypes[i]); }
 	for (UInt i = 0; i < activeResiduesSize; i++)	{ activeResidues.push_back(_activeResidues[i]); }
 	for (UInt i = 0; i < randomResiduesSize; i++)	{ randomResidues.push_back(_randomResidues[i]); }
-	for (UInt i = 0; i < frozenResiduesSize; i++)	{ frozenResidues.push_back(_frozenResidues[i]); }
 
 	//--set initial variables
 	srand (getpid());
@@ -78,19 +75,13 @@ int main (int argc, char* argv[])
 	convert << name, startstr = convert.str();
 	string tempModel = startstr + "_temp.pdb";
 
-
-	//--determine which allowed amino acids are possible for each position from activeResidues and set cutoff energy
-	PDBInterface* thePDB = new PDBInterface(infile);
-	ensemble* theEnsemble = thePDB->getEnsemblePointer();
-	molecule* pMol = theEnsemble->getMoleculePointer(0);
-	protein* startProt = static_cast<protein*>(pMol);
+	//-build possible sequence database per position
 	possibleMutants = buildPossibleMutants();
 	if(possibleMutants.size() < activeResidues.size())
 	{
-		createPossibleMutantsDatabase(startProt, activeChains, activeResidues, allowedTypes);
+		createPossibleMutantsDatabase(activeChains, activeResidues, allowedTypes);
 		possibleMutants = buildPossibleMutants();
 	}
-	delete thePDB;
 
 	//--Run multiple independent evolution cycles-----------------------------------------------------
 	while(true)
@@ -185,18 +176,24 @@ int main (int argc, char* argv[])
 		ensemble* theModelEnsemble = theModelPDB->getEnsemblePointer();
 		molecule* modelMol = theModelEnsemble->getMoleculePointer(0);
 		protein* model = static_cast<protein*>(modelMol);
+		
+		//-Determine probability of being accepted into pool
 		Energy = model->protEnergy();
 		Entropy = (1000000/((rand() % 1000000)+1))-1;
 		PiPj = pow(EU,((Energy-startEnergy)/KT));
 		startEnergy = Energy;
+		
+		//-generate pdb output
 		sec = time(NULL);
 		timeid = sec;
-		count = getSizeofPopulation();
 		stringstream convert;
 		string countstr;
 		convert << timeid, countstr = convert.str();
 		outFile = countstr + "." + startstr + ".fold.pdb";
 		pdbWriter(model, outFile);
+		
+		//-write to data files
+		count = getSizeofPopulation();
 		finalSequence.clear(), chainSequence.clear();
 		for (UInt i = 0; i < activeChains.size(); i++)
 		{
@@ -226,6 +223,8 @@ int main (int argc, char* argv[])
 		fs.close();
 		finalline << endl;
 		finalline.close();
+		
+		//-clear variables for next iteration
 		delete theModelPDB;
 		sequencePool.clear(),proteinSequence.clear(), chainSequence.clear(), mutantPosition.clear(), chainSequence.clear(), sequencePosition.clear(), randomPosition.clear();
 		sequencePool.resize(0),proteinSequence.resize(0), chainSequence.resize(0), mutantPosition.resize(0), chainSequence.resize(0), sequencePosition.resize(0), randomPosition.resize(0);
@@ -294,7 +293,7 @@ UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector 
 		variance = (rand() % 100) + 1;
 		mutant = _possibleMutants[position][rand() % positionPossibles];
 		if (count >= ::populationBaseline){
-			entropy = 5;  // probabalistically allow 33% random genetic drift once sequence pool is sufficiently large
+			entropy = 5;  // probabalistically allow 5% random genetic drift once sequence pool is sufficiently large
 		}
 		else{
 			entropy = 100;  // 100% random sequences until sequence pool is built
@@ -302,7 +301,7 @@ UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector 
 		if (variance > entropy) //control sequence entropy with probabilty
 		{
 			FreqAccept = Freqs[mutant];
-			acceptance = (FreqAccept/(poolSize-1))*100;  //chance of accepting given amino acid at position is proportional to population
+			acceptance = (FreqAccept/(poolSize-1))*100;  //chance of accepting given fold at position is proportional to population
 		}
 		else
 		{
@@ -362,7 +361,7 @@ vector < vector < UInt > > buildPossibleMutants()
 	return _possibleMutants;
 }
 
-void createPossibleMutantsDatabase(protein* _prot, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedTypes)
+void createPossibleMutantsDatabase(UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedTypes)
 {
 	fstream pm;
 	pm.open ("possiblemutants.out", fstream::in | fstream::out | fstream::app);
@@ -378,19 +377,6 @@ void createPossibleMutantsDatabase(protein* _prot, UIntVec &_activeChains, UIntV
 			pm << endl;
 		}
 	}
-}
-
-bool isFrozen(UIntVec _frozenResidues, UInt resIndex)
-{
-	bool frozen = false;
-	for (UInt i = 0; i < _frozenResidues.size(); i++)
-	{
-		if (_frozenResidues[i] == resIndex)
-		{
-			frozen = true;
-		}
-	}
-	return frozen;
 }
 
 UInt getSizeofPopulation()
