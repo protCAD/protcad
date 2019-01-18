@@ -65,7 +65,7 @@ int main (int argc, char* argv[])
 	srand (getpid());
 	double startEnergy = 1E10, bestEnergy, pastEnergy, Energy, Entropy, PiPj, KT = KB*residue::getTemperature();
 	vector <double> backboneAngles(2);
-	UInt timeid, sec, mutant = 0, numResidues, plateau = 10, nobetter = 0;
+	UInt timeid, sec, mutant = 0, numResidues, plateau = 20, nobetter = 0;
 	vector < UInt > mutantPosition, chainSequence, sequencePosition, randomPosition;
 	vector < vector < UInt > > sequencePool, proteinSequence, finalSequence, possibleMutants;
 	stringstream convert;
