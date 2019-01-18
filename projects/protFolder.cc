@@ -15,6 +15,7 @@
 #include <sstream>
 #include <fstream>
 #include <unistd.h>
+#include <limits.h>
 #include "PDBInterface.h"
 
 vector <UInt> getChainSequence(protein* _prot, UInt _chainIndex);
@@ -62,7 +63,10 @@ int main (int argc, char* argv[])
 	for (UInt i = 0; i < randomResiduesSize; i++)	{ randomResidues.push_back(_randomResidues[i]); }
 
 	//--set initial variables
-	srand (getpid());
+	char hostname[HOST_NAME_MAX];
+	int result = gethostname(hostname, HOST_NAME_MAX);
+	int ID = getpid();
+	srand (ID*result);
 	double startEnergy = 1E10, bestEnergy, pastEnergy, Energy, Entropy, PiPj, KT = KB*residue::getTemperature();
 	vector <double> backboneAngles(2);
 	UInt timeid, sec, mutant = 0, numResidues, plateau = 20, nobetter = 0;
