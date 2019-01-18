@@ -68,13 +68,13 @@ int main (int argc, char* argv[])
 	srand (getpid());
 	double startEnergy = 1E10, bestEnergy, pastEnergy, Energy, Entropy, PiPj, KT = KB*residue::getTemperature();
 	vector <double> backboneAngles(2);
-	UInt timeid, sec, mutant = 0, numResidues, plateau = 20, nobetter = 0;
+	UInt timeid, sec, mutant = 0, numResidues, plateau = 10, nobetter = 0;
 	vector < UInt > mutantPosition, chainSequence, sequencePosition, randomPosition;
 	vector < vector < UInt > > sequencePool, proteinSequence, finalSequence, possibleMutants;
 	stringstream convert;
 	string infile = argv[1];
 	string startstr, outFile;
-	UInt name = rand() % 100000000;
+	UInt count, name = rand() % 100000000;
 	convert << name, startstr = convert.str();
 	string tempModel = startstr + "_temp.pdb";
 
@@ -191,6 +191,7 @@ int main (int argc, char* argv[])
 		startEnergy = Energy;
 		sec = time(NULL);
 		timeid = sec;
+		count = getSizeofPopulation();
 		stringstream convert;
 		string countstr;
 		convert << timeid, countstr = convert.str();
@@ -213,12 +214,12 @@ int main (int argc, char* argv[])
 			for (UInt j = 0; j < finalSequence[i].size(); j++)
 			{
 				finalline << backboneSeq[finalSequence[i][j]] << " ";
-				if (PiPj < Entropy){
+				if (PiPj < Entropy && count >= ::populationBaseline){
 					fs << finalSequence[i][j] << ",";
 				}
 			}
 		}
-		if (PiPj < Entropy){
+		if (PiPj < Entropy && count >= ::populationBaseline){
 			fs << endl;
 		}
 		fs.close();
