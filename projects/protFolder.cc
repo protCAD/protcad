@@ -211,12 +211,12 @@ int main (int argc, char* argv[])
 			for (UInt j = 0; j < finalSequence[i].size(); j++)
 			{
 				finalline << backboneSeq[finalSequence[i][j]] << " ";
-				if (PiPj < Entropy && count >= ::populationBaseline){
+				if (PiPj < Entropy || count < ::populationBaseline){
 					fs << finalSequence[i][j] << ",";
 				}
 			}
 		}
-		if (PiPj < Entropy && count >= ::populationBaseline){
+		if (PiPj < Entropy || count < ::populationBaseline){
 			finalline << "p";
 			fs << endl;
 		}
