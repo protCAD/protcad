@@ -220,6 +220,7 @@ int main (int argc, char* argv[])
 			}
 		}
 		if (PiPj < Entropy && count >= ::populationBaseline){
+			finalline << "p";
 			fs << endl;
 		}
 		fs.close();
