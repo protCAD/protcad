@@ -15,7 +15,6 @@
 #include <sstream>
 #include <fstream>
 #include <unistd.h>
-#include <limits.h>
 #include "PDBInterface.h"
 
 vector <UInt> getChainSequence(protein* _prot, UInt _chainIndex);
@@ -29,7 +28,7 @@ vector < vector < UInt > > buildPossibleMutants();
 enum structure {Z,M,C,L,P,B,E,Y,A,I,G};
 string backboneSeq[] =   {"", "M", "C", "L", "P", "B","E","Y","A","I","G"};
 string backboneTypes[] = {"","-γ","-π","-α","-ρ","-β","β","ρ","α","π","γ"};
-UInt populationBaseline = 500;
+UInt populationBaseline = 1000;
 
 //--Program setup----------------------------------------------------------------------------------------
 int main (int argc, char* argv[])
@@ -63,13 +62,10 @@ int main (int argc, char* argv[])
 	for (UInt i = 0; i < randomResiduesSize; i++)	{ randomResidues.push_back(_randomResidues[i]); }
 
 	//--set initial variables
-	char hostname[HOST_NAME_MAX];
-	int result = gethostname(hostname, HOST_NAME_MAX);
-	int ID = getpid();
-	srand (ID*result);
-	double startEnergy = 1E10, bestEnergy, pastEnergy, Energy, Entropy, PiPj, KT = KB*residue::getTemperature();
+	srand (getpid());
+	double startEnergy = 1E10, pastEnergy, Energy, Entropy, sPhi, sPsi, PiPj, KT = KB*residue::getTemperature();
 	vector <double> backboneAngles(2);
-	UInt timeid, sec, mutant = 0, numResidues, plateau = 20, nobetter = 0;
+	UInt timeid, sec, mutant = 0, plateau = 50, nobetter = 0;
 	vector < UInt > mutantPosition, chainSequence, sequencePosition, randomPosition;
 	vector < vector < UInt > > sequencePool, proteinSequence, finalSequence, possibleMutants;
 	stringstream convert;
@@ -124,31 +120,20 @@ int main (int argc, char* argv[])
 		mutantPosition = getMutationPosition(activeChains, activeResidues);
 		pdbWriter(prot, tempModel);
 		pastEnergy = Energy;
-		bestEnergy = Energy;
 
 		//--Run through a single evolutionary path (ancestral line) till hitting plateau
 		do
 		{
 			//--Mutate current sequence, new mutant and optimize system
 			nobetter++;
-			for (UInt i = 0; i < activeChains.size(); i++)
-			{
-				numResidues = prot->getNumResidues(activeChains[i]);
-				for (UInt j = 0; j < numResidues; j++)
-				{
-					prot->activateForRepacking(activeChains[i],j);
-					if (activeChains[i] == mutantPosition[0] && j == mutantPosition[1])
-					{
-						//--new mutant
-						sequencePosition.push_back(i);
-						sequencePosition.push_back(j);
-						mutant = getProbabilisticMutation(sequencePool, possibleMutants, mutantPosition, activeResidues);
-						backboneAngles = prot->getRandPhiPsifromBackboneSequenceType(mutant);
-						prot->setDihedral(mutantPosition[0],mutantPosition[1],backboneAngles[0],0,0);
-						prot->setDihedral(mutantPosition[0],mutantPosition[1],backboneAngles[1],1,0);
-					}
-				}
-			}
+			sequencePosition.push_back(mutantPosition[0]);
+			sequencePosition.push_back(mutantPosition[1]);
+			sPhi = prot->getPhi(mutantPosition[0],mutantPosition[1]);
+			sPsi = prot->getPsi(mutantPosition[0],mutantPosition[1]);
+			mutant = getProbabilisticMutation(sequencePool, possibleMutants, mutantPosition, activeResidues);
+			backboneAngles = prot->getRandPhiPsifromBackboneSequenceType(mutant);
+			prot->setDihedral(mutantPosition[0],mutantPosition[1],backboneAngles[0],0,0);
+			prot->setDihedral(mutantPosition[0],mutantPosition[1],backboneAngles[1],1,0);
 			prot->protMin();
 			protein* tempProt = new protein(*prot);
 
@@ -160,15 +145,14 @@ int main (int argc, char* argv[])
 			Energy = prot->protEnergy();
 			Entropy = (1000000/((rand() % 1000000)+1))-1;
 			PiPj = pow(EU,((Energy-pastEnergy)/KT));
-			if (PiPj < Entropy)
-			{
-				if (Energy < bestEnergy)
-				{
-					bestEnergy = Energy;
-					pdbWriter(tempProt, tempModel);
-				}
+			if (PiPj < Entropy){
+				pdbWriter(tempProt, tempModel);
 				proteinSequence[sequencePosition[0]][sequencePosition[1]] = mutant, pastEnergy = Energy;
 				nobetter = 0;
+			}
+			else{
+				prot->setDihedral(mutantPosition[0],mutantPosition[1],sPhi,0,0);
+				prot->setDihedral(mutantPosition[0],mutantPosition[1],sPsi,1,0);
 			}
 			sequencePosition.clear();
 			delete tempProt;

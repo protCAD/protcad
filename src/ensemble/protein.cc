@@ -2636,7 +2636,7 @@ void protein::protOpt(bool _backbone)
 	setMoved(true);
 
 	//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
-	UInt randchain, randres,randrestype, randrot, resnum, RPTType, chainNum = getNumChains(), nobetter = 0, plateau = 500;
+	UInt randchain, randres,randrestype, randrot, resnum, RPTType, chainNum = getNumChains(), nobetter = 0, plateau = 1000, _plateau = plateau/2;
 	double Energy, Entropy, PiPj, pastEnergy = protEnergy(), sPhi, sPsi, RPT, KT = KB*residue::temperature;
 	vector < vector <double>> currentRot; vector <UIntVec> allowedRots; srand (time(NULL));
 	vector <double> angles(2);
@@ -2651,7 +2651,7 @@ void protein::protOpt(bool _backbone)
 		nobetter++;
 
 		//--Backslide optimization-----------------------------------------------------------------------
-		if (_backbone && randres > 0 && randres < resnum-2)
+		if (_backbone && randres > 0 && randres < resnum-2 && nobetter > _plateau)
 		{
 			sPhi = getPhi(randchain,randres);
 			sPsi = getPsi(randchain,randres);
