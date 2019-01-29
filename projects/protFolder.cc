@@ -20,14 +20,14 @@
 vector <UInt> getChainSequence(protein* _prot, UInt _chainIndex);
 vector <UInt> getMutationPosition(UIntVec &_activeChains, UIntVec &_activeResidues);
 UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition, UIntVec &_activeResidues);
-void createPossibleMutantsDatabase(UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedTypes);
+void createPossibleMutantsDatabase(protein* &_prot, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedTypes);
 UInt getSizeofPopulation();
 vector < vector < UInt > > buildSequencePool();
 vector < vector < UInt > > buildPossibleMutants();
 
-enum structure {Z,M,C,L,P,B,E,Y,A,I,G};
-string backboneSeq[] =   {"", "M", "C", "L", "P", "B","E","Y","A","I","G"};
-string backboneTypes[] = {"","-γ","-π","-α","-ρ","-β","β","ρ","α","π","γ"};
+enum structure {Z,M,C,L,P,B,E,Y,A,I,G,N,D,Q,R,F,H,W,K,S,T};
+string backboneSeq[] =   {"", "M", "C", "L", "P", "B","E","Y","A","I","G",  "N",  "D",  "Q",  "R",  "F", "H", "W", "K", "S", "T"};
+string backboneTypes[] = {"","-γ","-π","-α","-ρ","-β","β","ρ","α","π","γ","-γl","-πl","-αl","-ρl","-βl","βl","ρl","αl","πl","γl"};
 UInt populationBaseline = 1000;
 
 //--Program setup----------------------------------------------------------------------------------------
@@ -41,7 +41,7 @@ int main (int argc, char* argv[])
 	}
 
 	UInt _activeChains[] = {0};                                                         // chains active for mutation
-	UInt _allowedTypes[] = {M,C,L,P,B,E,Y,A,I,G};                     // backbone types allowable
+	UInt _allowedTypes[] = {M,C,L,P,B,E,Y,A,I,G,N,D,Q,R,F,H,W,K,S,T};                     // backbone types allowable
 	UInt _activeResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};                                     // positions active for mutation
 	UInt _randomResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};                                     // positions active for a random start sequence initially
 
@@ -65,7 +65,7 @@ int main (int argc, char* argv[])
 	srand (getpid());
 	double startEnergy = 1E10, pastEnergy, Energy, Entropy, sPhi, sPsi, PiPj, KT = KB*residue::getTemperature();
 	vector <double> backboneAngles(2);
-	UInt timeid, sec, mutant = 0, plateau = 50, nobetter = 0;
+	UInt timeid, sec, startNumClashes, numClashes, mutant = 0, plateau = 50, nobetter = 0;
 	vector < UInt > mutantPosition, chainSequence, sequencePosition, randomPosition;
 	vector < vector < UInt > > sequencePool, proteinSequence, finalSequence, possibleMutants;
 	stringstream convert;
@@ -76,13 +76,17 @@ int main (int argc, char* argv[])
 	string tempModel = startstr + "_temp.pdb";
 
 	//-build possible sequence database per position
+	PDBInterface* sthePDB = new PDBInterface(infile);
+	ensemble* stheEnsemble = sthePDB->getEnsemblePointer();
+	molecule* spMol = stheEnsemble->getMoleculePointer(0);
+	protein* sprot = static_cast<protein*>(spMol);
 	possibleMutants = buildPossibleMutants();
 	if(possibleMutants.size() < activeResidues.size())
 	{
-		createPossibleMutantsDatabase(activeChains, activeResidues, allowedTypes);
+		createPossibleMutantsDatabase(sprot, activeChains, activeResidues, allowedTypes);
 		possibleMutants = buildPossibleMutants();
 	}
-
+	delete sthePDB;
 	//--Run multiple independent evolution cycles-----------------------------------------------------
 	while(true)
 	{
@@ -111,6 +115,8 @@ int main (int argc, char* argv[])
 			proteinSequence.push_back(chainSequence);
 		}
 		prot->protMin();
+		startNumClashes = prot->getNumHardClashes();
+		prot->setMoved(true);
 
 		//--set Energy startpoint
 		Energy = prot->protEnergy();
@@ -130,11 +136,19 @@ int main (int argc, char* argv[])
 			sequencePosition.push_back(mutantPosition[1]);
 			sPhi = prot->getPhi(mutantPosition[0],mutantPosition[1]);
 			sPsi = prot->getPsi(mutantPosition[0],mutantPosition[1]);
-			mutant = getProbabilisticMutation(sequencePool, possibleMutants, mutantPosition, activeResidues);
-			backboneAngles = prot->getRandPhiPsifromBackboneSequenceType(mutant);
-			prot->setDihedral(mutantPosition[0],mutantPosition[1],backboneAngles[0],0,0);
-			prot->setDihedral(mutantPosition[0],mutantPosition[1],backboneAngles[1],1,0);
-			prot->protMin();
+			do{
+				mutant = getProbabilisticMutation(sequencePool, possibleMutants, mutantPosition, activeResidues);
+				backboneAngles = prot->getRandPhiPsifromBackboneSequenceType(mutant);
+				prot->setDihedral(mutantPosition[0],mutantPosition[1],backboneAngles[0],0,0);
+				prot->setDihedral(mutantPosition[0],mutantPosition[1],backboneAngles[1],1,0);
+				prot->protRelax();
+				numClashes = prot->getNumHardClashes();
+				if (numClashes > startNumClashes){
+					prot->setDihedral(mutantPosition[0],mutantPosition[1],sPhi,0,0);
+					prot->setDihedral(mutantPosition[0],mutantPosition[1],sPsi,1,0);
+				}
+			}while (numClashes > startNumClashes);
+			prot->protOpt(true);
 			protein* tempProt = new protein(*prot);
 
 			//--Determine next mutation position
@@ -253,7 +267,7 @@ UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector 
 {
 	double acceptance, threshold, FreqAccept;
 	double poolSize = _sequencePool.size();
-	vector <UInt> Freqs(11,1);
+	vector <UInt> Freqs(21,1);
 	UInt position, entropy, mutant, variance;
 	UInt count = getSizeofPopulation();
 
@@ -349,7 +363,7 @@ vector < vector < UInt > > buildPossibleMutants()
 	return _possibleMutants;
 }
 
-void createPossibleMutantsDatabase(UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedTypes)
+void createPossibleMutantsDatabase(protein* &_prot, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedTypes)
 {
 	fstream pm;
 	pm.open ("possiblemutants.out", fstream::in | fstream::out | fstream::app);
@@ -360,7 +374,9 @@ void createPossibleMutantsDatabase(UIntVec &_activeChains, UIntVec &_activeResid
 		{
 			for (UInt k = 0; k <_allowedTypes.size(); k++)
 			{
-				pm << _allowedTypes[k] << ",";
+				if (_allowedTypes[k] < 11 || (_allowedTypes[k] > 10 && _prot->getTypeFromResNum(_activeChains[i],_activeResidues[j]) > 25 )){
+					pm << _allowedTypes[k] << ",";
+				}
 			}
 			pm << endl;
 		}

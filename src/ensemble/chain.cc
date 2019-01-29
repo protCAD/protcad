@@ -1541,19 +1541,35 @@ double chain::getResiduesPerTurn(const UInt _resIndex)
 
 UInt chain::getBackboneSequenceType(const UInt _resIndex)
 {
-	UInt backboneType = 0;
+	double phi;
+	if (_resIndex == 0){
+		phi = itsResidues[_resIndex+1]->getPhi();
+	}
+	else{
+		phi = itsResidues[_resIndex]->getPhi();
+	}
 	double RPT = getResiduesPerTurn(_resIndex);
-	if (RPT <= -4.8)				{backboneType = 1;}
-	if (RPT > -4.8  && RPT <= -4.1)	{backboneType = 2;}
-	if (RPT > -4.1  && RPT <= -3.4)	{backboneType = 3;}
-	if (RPT > -3.4  && RPT <= -2.7)	{backboneType = 4;}
-	if (RPT > -2.7  && RPT <= -2.0)	{backboneType = 5;}
-	if (RPT >  2.0  && RPT <=  2.7)	{backboneType = 6;}
-	if (RPT >  2.7  && RPT <=  3.4)	{backboneType = 7;}
-	if (RPT >  3.4  && RPT <=  4.1)	{backboneType = 8;}
-	if (RPT >  4.1  && RPT <=  4.8)	{backboneType = 9;}
-	if (RPT >  4.8)					{backboneType = 10;}
-	return backboneType;
+	if (RPT <= -4.8 && phi <= 0)				{return 1;}
+	if (RPT > -4.8  && RPT <= -4.1 && phi <= 0)	{return 2;}
+	if (RPT > -4.1  && RPT <= -3.4 && phi <= 0)	{return 3;}
+	if (RPT > -3.4  && RPT <= -2.7 && phi <= 0)	{return 4;}
+	if (RPT > -2.7  && RPT <= -2.0 && phi <= 0)	{return 5;}
+	if (RPT >  2.0  && RPT <=  2.7 && phi <= 0)	{return 6;}
+	if (RPT >  2.7  && RPT <=  3.4 && phi <= 0)	{return 7;}
+	if (RPT >  3.4  && RPT <=  4.1 && phi <= 0)	{return 8;}
+	if (RPT >  4.1  && RPT <=  4.8 && phi <= 0)	{return 9;}
+	if (RPT >  4.8 && phi <= 0)					{return 10;}
+	if (RPT <= -4.8 && phi > 0)					{return 11;}
+	if (RPT > -4.8  && RPT <= -4.1 && phi > 0)	{return 12;}
+	if (RPT > -4.1  && RPT <= -3.4 && phi > 0)	{return 13;}
+	if (RPT > -3.4  && RPT <= -2.7 && phi > 0)	{return 14;}
+	if (RPT > -2.7  && RPT <= -2.0 && phi > 0)	{return 15;}
+	if (RPT >  2.0  && RPT <=  2.7 && phi > 0)	{return 16;}
+	if (RPT >  2.7  && RPT <=  3.4 && phi > 0)	{return 17;}
+	if (RPT >  3.4  && RPT <=  4.1 && phi > 0)	{return 18;}
+	if (RPT >  4.1  && RPT <=  4.8 && phi > 0)	{return 19;}
+	if (RPT >  4.8 && phi > 0)					{return 20;}
+	return 0;
 }
 
 double chain::getPhi(const UInt _indexInChain)
