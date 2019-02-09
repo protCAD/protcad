@@ -183,6 +183,7 @@ private:
 	bool isClash(UInt _index1, residue* _other, UInt _index2);
 	UInt getNumHardClashes(residue* _other);
 	UInt getNumHardClashes();
+	UInt getBackboneClashes(residue* _other);
 
 
 	// Total Residues

@@ -56,7 +56,7 @@ int main (int argc, char* argv[])
     cout << "start Energy: " << _prot->protEnergy() << endl;
     //_prot->protOpt(backbone,frozenResidues,activeChains);
     start = clock();
-    _prot->protRelax();
+    _prot->protSampling();
     end = clock();
     cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
     _prot->setMoved(true);

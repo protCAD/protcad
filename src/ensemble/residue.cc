@@ -3066,7 +3066,6 @@ UInt residue::getNumHardClashes()
 	}
 	return numClashes;
 }
-
 UInt residue::getNumHardClashes(residue* _other)
 {
 	UInt numClashes = 0;
@@ -3080,33 +3079,39 @@ UInt residue::getNumHardClashes(residue* _other)
 	return numClashes;
 }
 
+UInt residue::getBackboneClashes(residue* _other)
+{
+	UInt numClashes = 0;
+	UInt atomsI =4, atomsJ =4;
+	if (itsAtoms[4]->getName() == "CB"){atomsI = 5;}
+	if (_other->itsAtoms[4]->getName() == "CB"){atomsJ = 5;}
+	for (UInt i = 0; i < atomsI; i ++)
+	{
+		for (UInt j = 0; j < atomsJ; j ++)
+		{
+			if (isClash(i, _other, j)) numClashes++;
+		} 
+	}
+	return numClashes;
+}
+
 bool residue::isClash(UInt _index1, UInt _index2)
 {
 	if (isSeparatedByOneOrTwoBonds(_index1, _index2)) {return false;}
-	double radius1 = getRadius(_index1), radius2 = getRadius(_index2);
-	if (radius1 > radius2){
-		if (itsAtoms[_index1]->inCube(itsAtoms[_index2], radius1)) {return true;}
-	}
-	else{
-		if (itsAtoms[_index1]->inCube(itsAtoms[_index2], radius2)) {return true;}
-	}
+	double minDist = getRadius(_index1)+getRadius(_index2);
+	double cubeLength = minDist/1.414213562; //vdw contact distance / sqrt(2) (within a square in circle for fast hard clash)
+	if (itsAtoms[_index1]->inCube(itsAtoms[_index2], cubeLength)) {return true;}
 	return false;
 }
 
 bool residue::isClash(UInt _index1, residue* _other, UInt _index2)
 {
 	if (isSeparatedByOneOrTwoBackboneBonds(_index1, _other, _index2)) {return false;}
-	double radius1 = getRadius(_index1), radius2 = _other->getRadius(_index2);
-	if (radius1 > radius2){
-		if (itsAtoms[_index1]->inCube(_other->itsAtoms[_index2], radius1)) {return true;}
-	}
-	else{
-		if (itsAtoms[_index1]->inCube(_other->itsAtoms[_index2], radius2)) {return true;}
-	}
+	double minDist = getRadius(_index1)+_other->getRadius(_index2);
+	double cubeLength = minDist/1.414213562; //vdw contact distance / sqrt(2) (withing a square in circle for fast hard clash)
+	if (itsAtoms[_index1]->inCube(_other->itsAtoms[_index2], cubeLength)) {return true;}
 	return false;
 }
-	
-	
 
 bool residue::inCube(const residue* _other, double _cutoff)
 {

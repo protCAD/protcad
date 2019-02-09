@@ -1911,6 +1911,32 @@ void chain::updateClashes(chain* _other)
 	}
 }
 
+UInt chain::getBackboneClashes()
+{
+	UInt clashes = 0;
+	for(UInt i=0; i<itsResidues.size(); i++)
+	{	
+		for (UInt j = i+1; j < itsResidues.size(); j++)
+		{	
+			clashes += itsResidues[i]->getBackboneClashes(itsResidues[j]);
+		}
+	}
+	return clashes;
+}
+
+UInt chain::getBackboneClashes(chain* _other)
+{
+	UInt clashes = 0;
+	for(UInt i=0; i<itsResidues.size(); i++)
+	{	
+		for (UInt j = 0; j < _other->itsResidues.size(); j++)
+		{	
+			clashes += itsResidues[i]->getBackboneClashes(_other->itsResidues[j]);
+		}
+	}
+	return clashes;
+}
+
 UInt chain::getClashes()
 {
 	UInt clashes = 0;

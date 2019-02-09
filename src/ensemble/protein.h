@@ -127,8 +127,9 @@ public:
 	double netCharge();
 	
 	//--Optimization functions
+	void protSampling();
 	void protOpt(bool _backbone); // --Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics-- dpike
-	void protRelax();
+	void protRelax(UInt _plateau);
 	void protMin();
 	void protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeChains);
 	void optimizeSmallRotations(UInt _steps, double _stepSize);
@@ -152,7 +153,9 @@ public:
 	double getMedianResidueEnergy();
 	double getMedianResidueEnergy(UIntVec _activeChains);
 	double getMedianResidueEnergy(UIntVec _activeChains, UIntVec _activeResidues);
+	bool boltzmannEnergyCriteria(double _energy, double _pastEnergy);
 	UInt getNumChis(const UInt _chainIndex, const UInt _resIndex, const UInt _bpt) {return itsChains[_chainIndex]->getNumChis(_resIndex,0); }
+	UInt getNumBackboneHardClashes();
 	UInt getNumHardClashes(UInt chainIndex, UInt resIndex);
 	UInt getNumHardClashes();
 	void updateClashes();

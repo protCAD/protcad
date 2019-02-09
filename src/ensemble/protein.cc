@@ -1241,6 +1241,17 @@ double protein::getMedianResidueEnergy(UIntVec _activeChains)
 	return median;
 }
 
+bool protein::boltzmannEnergyCriteria(double _energy, double _pastEnergy)
+{
+	bool acceptance;
+	double KT = KB*residue::getTemperature();
+	double Entropy = (1000000/((rand() % 1000000)+1))-1;
+	double PiPj = pow(EU,((_energy-_pastEnergy)/KT));
+	if (PiPj < Entropy){acceptance = true;}
+	else{acceptance = false;}
+	return acceptance;
+}
+
 void protein::updateClashes()
 {
 	updateMovedDependence();
@@ -1253,6 +1264,20 @@ void protein::updateClashes()
 		}
 	}
 	setMoved(false);
+}
+
+UInt protein::getNumBackboneHardClashes()
+{
+	UInt clashes = 0;
+	for(UInt i=0; i<itsChains.size(); i++)
+	{
+		clashes += itsChains[i]->getBackboneClashes();
+		for (UInt j = i+1; j < itsChains.size(); j++)
+		{
+			clashes += itsChains[i]->getBackboneClashes(itsChains[j]);
+		}
+	}
+	return clashes;
 }
 
 UInt protein::getNumHardClashes()
@@ -2622,9 +2647,101 @@ double protein::getResPairEnergy(const UInt _chain1, const UInt _res1, const UIn
 	}
 }
 
+void protein::protSampling()
+{   // Sidechain and backrub optimization with a local dielectric scaling of electrostatics and corresponding Born/Gill implicit solvation energy
+	//_plateau: the number of consecutive optimization cycles without an energy decrease (default: 150 for general purpose optimization)
+
+	//--reset saved protein energies prior to optimization
+	setMoved(true);
+
+	//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
+	UInt randchain, randres,randrestype, randrot, resnum, clashes, clashesStart, bbClashes, bbClashesStart, RPT, chainNum = getNumChains(), nobetter = 0, plateau = 500, _plateau = plateau/2;
+	double Energy, pastEnergy = protEnergy(), sPhi, sPsi;
+	vector < vector <double>> currentRot; vector <UIntVec> allowedRots; srand (time(NULL));
+	vector <double> angles(2);
+	bool boltzmannAcceptance;
+	
+	//--Run optimizaiton loop to relative minima, determined by _plateau----------------------------
+	do
+	{   //--choose random residue
+		randchain = rand() % chainNum;
+		resnum = getNumResidues(randchain);
+		randres = rand() % resnum;
+		randrestype = getTypeFromResNum(randchain, randres);
+		nobetter++;
+
+		//--Backslide optimization-----------------------------------------------------------------------
+		if (randres > 0 && randres < resnum-2 && nobetter > _plateau)
+		{
+			sPhi = getPhi(randchain,randres);
+			sPsi = getPsi(randchain,randres);
+			bbClashesStart = getNumBackboneHardClashes();
+			clashesStart = getNumHardClashes();
+			clashes = 1000000, RPT = (rand() % 20)+1;
+			for (UInt i = 0; i < 40; i++)
+			{
+				nobetter++;
+				angles = getRandPhiPsifromBackboneSequenceType(RPT);
+				setDihedral(randchain,randres,angles[0],0,0);
+				setDihedral(randchain,randres,angles[1],1,0);
+				angles.clear();
+				bbClashes = getNumBackboneHardClashes();
+				if (bbClashes > bbClashesStart){
+					setDihedral(randchain,randres,sPhi,0,0);
+					setDihedral(randchain,randres,sPsi,1,0);
+					RPT = (rand() % 20)+1;
+				}
+				else{
+					clashes = getNumHardClashes();
+					if (clashes <= clashesStart){break;}
+				}
+			}
+			setMoved(true);
+			Energy = protEnergy();
+			boltzmannAcceptance = boltzmannEnergyCriteria(Energy,pastEnergy);
+			if (boltzmannAcceptance)
+			{
+				cout << Energy << " B" << endl;
+				nobetter = 0, pastEnergy = Energy;
+			}
+			else{
+				setDihedral(randchain,randres,sPhi,0,0);
+				setDihedral(randchain,randres,sPsi,1,0);
+			}
+		}
+
+		//--Rotamer optimization-----------------------------------------------------------------------
+		currentRot = getSidechainDihedrals(randchain, randres);
+		allowedRots = getAllowedRotamers(randchain, randres, randrestype);
+
+		//--Try a max of one rotamer per branchpoint and keep if an improvement, else revert
+		for (UInt b = 0; b < residue::getNumBpt(randrestype); b++)
+		{
+			if (allowedRots[b].size() > 0)
+			{
+				randrot = rand() % allowedRots[b].size();
+				setRotamerWBC(randchain, randres, b, allowedRots[b][randrot]);
+				Energy = protEnergy();
+				boltzmannAcceptance = boltzmannEnergyCriteria(Energy,pastEnergy);
+				if (boltzmannAcceptance)
+				{
+					cout << Energy << " S" << endl;
+					nobetter = 0, pastEnergy = Energy;
+					break;
+				}
+				else
+				{
+					setSidechainDihedralAngles(randchain, randres, currentRot);
+				}
+			}
+		}
+	} while (nobetter < plateau);
+	return;
+}
+
 void protein::protMin()
 {
-	protRelax();
+	protRelax(1000);
 	protOpt(true);
 }
 
@@ -2636,10 +2753,11 @@ void protein::protOpt(bool _backbone)
 	setMoved(true);
 
 	//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
-	UInt randchain, randres,randrestype, randrot, resnum, RPTType, chainNum = getNumChains(), nobetter = 0, plateau = 500, _plateau = plateau/2;
-	double Energy, Entropy, PiPj, pastEnergy = protEnergy(), sPhi, sPsi, RPT, KT = KB*residue::temperature;
+	UInt randchain, randres,randrestype, randrot, resnum, RPTType, bbClashes, bbClashesStart, chainNum = getNumChains(), nobetter = 0, plateau = 500, _plateau = plateau/2;
+	double Energy, pastEnergy = protEnergy(), sPhi, sPsi, RPT;
 	vector < vector <double>> currentRot; vector <UIntVec> allowedRots; srand (time(NULL));
 	vector <double> angles(2);
+	bool boltzmannAcceptance;
 	
 	//--Run optimizaiton loop to relative minima, determined by _plateau----------------------------
 	do
@@ -2657,13 +2775,23 @@ void protein::protOpt(bool _backbone)
 			sPsi = getPsi(randchain,randres);
 			RPT = getResiduesPerTurn(sPhi,sPsi);
 			RPTType = getBackboneSequenceType(RPT,sPhi);
-			angles = getRandPhiPsifromBackboneSequenceType(RPTType);
-			setDihedral(randchain,randres,angles[0],0,0);
-			setDihedral(randchain,randres,angles[1],1,0);
+			bbClashesStart = getNumBackboneHardClashes();
+			for (UInt i = 0; i < 20; i++)
+			{
+				angles = getRandPhiPsifromBackboneSequenceType(RPTType);
+				setDihedral(randchain,randres,angles[0],0,0);
+				setDihedral(randchain,randres,angles[1],1,0);
+				angles.clear();
+				bbClashes = getNumBackboneHardClashes();
+				if (bbClashes > bbClashesStart){
+					setDihedral(randchain,randres,sPhi,0,0);
+					setDihedral(randchain,randres,sPsi,1,0);
+				}
+				else{break;}
+			}
 			Energy = protEnergy();
-			Entropy = (1000000/((rand() % 1000000)+1))-1;
-			PiPj = pow(EU,((Energy-pastEnergy)/KT));
-			if (PiPj < Entropy)
+			boltzmannAcceptance = boltzmannEnergyCriteria(Energy,pastEnergy);
+			if (boltzmannAcceptance)
 			{
 				nobetter = 0, pastEnergy = Energy;
 			}
@@ -2685,10 +2813,8 @@ void protein::protOpt(bool _backbone)
 				randrot = rand() % allowedRots[b].size();
 				setRotamerWBC(randchain, randres, b, allowedRots[b][randrot]);
 				Energy = protEnergy();
-				Energy = protEnergy();
-				Entropy = (1000000/((rand() % 1000000)+1))-1;
-				PiPj = pow(EU,((Energy-pastEnergy)/KT));
-				if (PiPj < Entropy)
+				boltzmannAcceptance = boltzmannEnergyCriteria(Energy,pastEnergy);
+				if (boltzmannAcceptance)
 				{
 					nobetter = 0, pastEnergy = Energy;
 					break;
@@ -2703,7 +2829,7 @@ void protein::protOpt(bool _backbone)
 	return;
 }
 
-void protein::protRelax()
+void protein::protRelax(UInt _plateau)
 {   // Sidechain and backrub optimization with a local dielectric scaling of electrostatics and corresponding Born/Gill implicit solvation energy
 	//_plateau: the number of consecutive optimization cycles without an energy decrease (default: 150 for general purpose optimization)
 	
@@ -2712,7 +2838,7 @@ void protein::protRelax()
 	if (pastProtClashes > 0)
 	{	
 		//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
-		UInt randchain, randres, randrestype, resnum, randrot, chainNum = getNumChains(), protClashes, resClashes, medResC, nobetter = 0, plateau = 1000;
+		UInt randchain, randres, randrestype, resnum, randrot, chainNum = getNumChains(), protClashes, resClashes, medResC, nobetter = 0;
 		vector < vector <double> > currentRot; vector <UIntVec> allowedRots; srand (time(NULL));
 		
 		//--Run optimizaiton loop to relative minima, determined by _plateau----------------------------
@@ -2751,7 +2877,7 @@ void protein::protRelax()
 					}
 				}
 			}
-		} while (nobetter < plateau);
+		} while (nobetter < _plateau);
 	}
 	return;
 }

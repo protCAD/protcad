@@ -155,6 +155,8 @@ public:
 	UInt chooseNextMutationIdentity(ran& _ran, vector <int> _position) { return chooseTargetIdentity(_position[2],_ran); }
 	residue* superimposeGLY(const UInt _residue);
 	double calculateHCA_O_hBondEnergy(chain* _other);
+	UInt getBackboneClashes();
+	UInt getBackboneClashes(chain* _other);
 	UInt getClashes();
 	void updateClashes(chain* _other);
 	void updateClashes();
