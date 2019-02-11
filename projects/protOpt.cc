@@ -56,10 +56,10 @@ int main (int argc, char* argv[])
     cout << "start Energy: " << _prot->protEnergy() << endl;
     //_prot->protOpt(backbone,frozenResidues,activeChains);
     start = clock();
-    _prot->protSampling();
+    _prot->protOpt(backbone);
     end = clock();
     cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-    _prot->setMoved(true);
+    _prot->setMoved(true,0);
     cout << "end Energy: "  << _prot->protEnergy() << " time: " << cpu_time_used << endl;
 	pdbWriter(_prot, outFile);
 

@@ -115,9 +115,9 @@ public:
 	UInt getNumChis(const UInt _resIndex, const UInt _bpt);
 	double netCharge();
 	
-	void setMoved (UInt resIndex, bool _moved) {itsResidues[resIndex]->setMoved(_moved);}
-	void setMoved (bool _moved);
-	bool getMoved (UInt resIndex) {return itsResidues[resIndex]->getMoved();}
+	void setMoved (UInt resIndex, bool _moved, UInt _EorC) {itsResidues[resIndex]->setMoved(_moved, _EorC);}
+	void setMoved (bool _moved, UInt _EorC);
+	bool getMoved (UInt resIndex, UInt _EorC) {return itsResidues[resIndex]->getMoved(_EorC);}
 	double getEnergy (UInt resIndex) {return itsResidues[resIndex]->getEnergy();}
 	double getSolvationEnergy(const UInt _resIndex) {return itsResidues[_resIndex]->getSolvationEnergy();}
 	double getDielectric(const UInt _resIndex) {return itsResidues[_resIndex]->getDielectric();}
@@ -204,8 +204,8 @@ public:
 	double intraEnergy();
 	void updateEnergy();
 	void updateEnergy(chain* _other);
-	void updateMovedDependence();
-	void updateMovedDependence(chain* _other);
+	void updateMovedDependence(UInt _EorC);
+	void updateMovedDependence(chain* _other, UInt _EorC);
 	double getEnergy();
 	void polarizability();
 	void polarizability(chain* _other);

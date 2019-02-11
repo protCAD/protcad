@@ -1400,7 +1400,8 @@ void chain::setSidechainDihedralAngles(UInt _indexInChain, vector <vector <doubl
 		{	itsResidues[_indexInChain]->setChi(i,j,Angles[i][j]);
 		}
 	}
-    itsResidues[_indexInChain]->setMoved(true);
+    itsResidues[_indexInChain]->setMoved(true, 0);
+    itsResidues[_indexInChain]->setMoved(true, 1);
 	return;
 }
 
@@ -1742,10 +1743,10 @@ void chain::updateEnergy()
 	double resEnergy;
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{	
-		resI = itsResidues[i]->getMoved();
+		resI = itsResidues[i]->getMoved(0);
 		for(UInt j=i+1; j<itsResidues.size(); j++)
 		{
-			resJ =  itsResidues[j]->getMoved();
+			resJ =  itsResidues[j]->getMoved(0);
 			if (resI || resJ){
 				resEnergy = itsResidues[i]->interSoluteEnergy(itsResidues[j]), resEnergy /= 2;
 				if(resI){itsResidues[i]->sumEnergy(resEnergy);}
@@ -1765,10 +1766,10 @@ void chain::updateEnergy(chain* _other)
 	double resEnergy;
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{
-		resI = itsResidues[i]->getMoved();
+		resI = itsResidues[i]->getMoved(0);
 		for(UInt j=0; j<_other->itsResidues.size(); j++)
 		{
-			resJ = _other->itsResidues[j]->getMoved();
+			resJ = _other->itsResidues[j]->getMoved(0);
 			if (resI || resJ){
 				resEnergy = itsResidues[i]->interSoluteEnergy(_other->itsResidues[j]), resEnergy /= 2;
 				if(resI){itsResidues[i]->sumEnergy(resEnergy);}
@@ -1783,10 +1784,10 @@ void chain::polarizability()
 	bool resI, resJ;
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{	
-		resI = itsResidues[i]->getMoved();
+		resI = itsResidues[i]->getMoved(0);
 		for(UInt j=i+1; j<itsResidues.size(); j++)
 		{	
-			resJ = itsResidues[j]->getMoved();
+			resJ = itsResidues[j]->getMoved(0);
 			if (resI || resJ){
 				itsResidues[i]->polarizability(itsResidues[j]);
 			}
@@ -1802,10 +1803,10 @@ void chain::polarizability(chain* _other)
 	bool resI, resJ;
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{
-		resI = itsResidues[i]->getMoved();
+		resI = itsResidues[i]->getMoved(0);
 		for(UInt j=0; j<_other->itsResidues.size(); j++)
 		{
-			resJ = _other->itsResidues[j]->getMoved();
+			resJ = _other->itsResidues[j]->getMoved(0);
 			if (resI || resJ){
 				itsResidues[i]->polarizability(_other->itsResidues[j]);
 			}
@@ -1817,44 +1818,44 @@ void chain::calculateDielectrics()
 {
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{	
-		if (itsResidues[i]->getMoved()){
+		if (itsResidues[i]->getMoved(0)){
 			itsResidues[i]->calculateDielectrics();
 		}
 	}
 }
 
-void chain::updateMovedDependence()
+void chain::updateMovedDependence(UInt _EorC)
 {
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{	
-		if (itsResidues[i]->getCheckMovedDependence()){
+		if (itsResidues[i]->getCheckMovedDependence(_EorC)){
 			for(UInt j=i+1; j<itsResidues.size(); j++)
 			{	
-				itsResidues[i]->updateMovedDependence(itsResidues[j]);
+				itsResidues[i]->updateMovedDependence(itsResidues[j], _EorC);
 			}
 		}
 	}
 }
 
-void chain::updateMovedDependence(chain* _other)
+void chain::updateMovedDependence(chain* _other, UInt _EorC)
 {
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{
-		if (itsResidues[i]->getCheckMovedDependence()){
+		if (itsResidues[i]->getCheckMovedDependence(_EorC)){
 			for(UInt j=0; j<_other->itsResidues.size(); j++)
 			{
-				itsResidues[i]->updateMovedDependence(_other->itsResidues[j]);
+				itsResidues[i]->updateMovedDependence(_other->itsResidues[j], _EorC);
 			}
 		}
 	}
 }
 
 
-void chain::setMoved(bool _moved)
+void chain::setMoved(bool _moved, UInt _EorC)
 {
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{	
-		itsResidues[i]->setMoved(_moved);
+		itsResidues[i]->setMoved(_moved, _EorC);
 	}
 }
 
@@ -1875,10 +1876,10 @@ void chain::updateClashes()
 	UInt clashes;
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{	
-		resI = itsResidues[i]->getMoved();
+		resI = itsResidues[i]->getMoved(1);
 		for(UInt j=i+1; j<itsResidues.size(); j++)
 		{
-			resJ =  itsResidues[j]->getMoved();
+			resJ =  itsResidues[j]->getMoved(1);
 			if (resI || resJ){
 				clashes = itsResidues[i]->getNumHardClashes(itsResidues[j]), clashes /= 2;
 				if(resI){itsResidues[i]->sumClashes(clashes);}
@@ -1898,10 +1899,10 @@ void chain::updateClashes(chain* _other)
 	UInt clashes;
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{
-		resI = itsResidues[i]->getMoved();
+		resI = itsResidues[i]->getMoved(1);
 		for(UInt j=0; j<_other->itsResidues.size(); j++)
 		{
-			resJ = _other->itsResidues[j]->getMoved();
+			resJ = _other->itsResidues[j]->getMoved(1);
 			if (resI || resJ){
 				clashes = itsResidues[i]->getNumHardClashes(_other->itsResidues[j]), clashes /= 2;
 				if(resI){itsResidues[i]->sumClashes(clashes);}

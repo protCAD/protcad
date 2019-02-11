@@ -144,9 +144,9 @@ public:
 	void optimizeRotamers(vector <UIntVec> _positions, vector <UIntVec> _rotamerArray);
 	
 	//--Energy functions
-	void setMoved (UInt chainIndex, UInt resIndex, bool _moved) {itsChains[chainIndex]->setMoved(resIndex, _moved);}
-	void setMoved(bool _moved);
-	bool getMoved(UInt chainIndex, UInt resIndex) {return itsChains[chainIndex]->getMoved(resIndex);}
+	void setMoved (UInt chainIndex, UInt resIndex, bool _moved, UInt _EorC) {itsChains[chainIndex]->setMoved(resIndex, _moved, _EorC);}
+	void setMoved(bool _moved, UInt EorC);
+	bool getMoved(UInt chainIndex, UInt resIndex, UInt EorC) {return itsChains[chainIndex]->getMoved(resIndex, EorC);}
 	double protEnergy();
 	void updateEnergy();
 	double protEnergy(UInt chainIndex, UInt resIndex);
@@ -180,7 +180,7 @@ public:
 	//vector <double> calculateChainIndependentDielectric(chain* _chain, residue* _residue, atom* _atom);
 	//vector <double> calculateResidueIndependentDielectric(residue* _residue, atom* _atom);
 	void updateDielectrics();
-	void updateMovedDependence();
+	void updateMovedDependence(UInt _EorC);
 	//void updatePositionDielectrics(UInt _chainIndex, UInt _residueIndex);
 	//void updateChainIndependentDielectrics(UInt _chainIndex);
 	//void updateResidueIndependentDielectrics(UInt _chainIndex, UInt _resIndex);

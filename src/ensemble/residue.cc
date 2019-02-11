@@ -1427,8 +1427,8 @@ residue* residue::mutate(const UInt _newTypeIndex)
 	{
 		newAA->alignAmideProtonToBackbone();
 	}
-	setMoved(true);
-	newAA->setMoved(true);
+	setMoved(true, 0), setMoved(true, 1);
+	newAA->setMoved(true, 0), newAA->setMoved(true,1);
 	return newAA;
 }
 
@@ -1573,7 +1573,7 @@ void residue::setRotamer(const UInt _lib, const UInt _bpt, const UInt _rotamer)
 	{	setChi(_bpt,i,itsSidechainDihedralAngles[_bpt][i]);
 	}
 	//calculateSidechainDihedralAngles();
-	setMoved(true);
+	setMoved(true, 0),setMoved(true, 1);
 }
 
 void residue::setRotamer(const UInt _bpt, const DouVec _rotamer)
@@ -1583,7 +1583,7 @@ void residue::setRotamer(const UInt _bpt, const DouVec _rotamer)
 	{	setChi(_bpt,i,itsSidechainDihedralAngles[_bpt][i]);
 	}
 	//calculateSidechainDihedralAngles();
-	setMoved(true);
+	setMoved(true, 0),setMoved(true, 1);
 }
 
 void residue::setRotamerWithCheck(const UInt _lib, const UInt _bpt, const UInt _rotamer)
@@ -1607,7 +1607,7 @@ void residue::setRotamerWithCheck(const UInt _lib, const UInt _bpt, const UInt _
 	}
 	//else cout << "ERROR in setRotamerWithCheck...\n bpt " << _bpt << " does not exist." << endl;
 	//calculateSidechainDihedralAngles();
-	setMoved(true);
+	setMoved(true, 0),setMoved(true, 1);
 }
 
 void residue::setPolarHRotamer(UInt _rotamerIndex)
@@ -1643,7 +1643,7 @@ DouVec residue::setRotamerWithCheckTest(const UInt _lib, const UInt _bpt, const 
 	else cout << "ERROR in setRotamerWithCheckTest...\n bpt " << _bpt << " does not exist." << endl;
 	calculateSidechainDihedralAngles();
 	return theAngles;
-	setMoved(true);
+	setMoved(true, 0),setMoved(true, 1);
 }
 
 void residue::setBetaChi(const double _angle)
@@ -1654,7 +1654,7 @@ void residue::setBetaChi(const double _angle)
 		ASSERT(currentBetaChi < 1e5 && currentBetaChi > -1e5);
 		double diff = _angle - currentBetaChi;
 		rotate(0,1, diff);
-		setMoved(true);
+		setMoved(true, 0),setMoved(true, 1);
 	}
 }
 
@@ -1664,7 +1664,7 @@ void residue::setChi(const UInt _bpt, const UInt _index, const double _angle)
 	ASSERT(currentChi < 1e5 && currentChi > -1e5);
 	double diff = _angle - currentChi;
 	setChiByDelta(_bpt, _index, diff);
-	setMoved(true);
+	setMoved(true, 0),setMoved(true, 1);
 }
 
 void residue::setChiByDelta(const UInt _bpt, const UInt _index, const double _angleDelta)
@@ -2109,7 +2109,7 @@ void residue::rotate(UInt _first, UInt _second, double _theta)
 
 void residue::rotateDihedral(atom* _pAtom1, atom* _pAtom2, double _deltaTheta,  UInt _angleType, UInt _direction)
 {
-	setMoved(true);
+	setMoved(true, 0),setMoved(true, 1);
 	dblVec toOrigin = _pAtom1->getCoords() * (-1.0);
 	dblVec backHome = _pAtom1->getCoords();
 
@@ -2415,7 +2415,7 @@ void residue::translate(const dblVec& _dblVec)
 
 void residue::recursiveTranslateWithDirection(dblVec& _dblVec, UInt _direction)
 {	
-    setMoved(true);
+    setMoved(true, 0),setMoved(true, 1);
 	translate(_dblVec);
 	if (_direction == 0)
 	{
@@ -2433,7 +2433,7 @@ void residue::recursiveTranslateWithDirection(dblVec& _dblVec, UInt _direction)
 
 void residue::recursiveTranslate(dblVec& _dblVec)
 {
-    setMoved(true);
+    setMoved(true, 0),setMoved(true, 1);
 	translate(_dblVec);
 	if (pItsNextRes)
 	{	pItsNextRes->recursiveTranslate(_dblVec);
@@ -2442,7 +2442,7 @@ void residue::recursiveTranslate(dblVec& _dblVec)
 
 void residue::recursiveTransform(dblMat& _dblMat)
 {
-    setMoved(true);
+    setMoved(true, 0),setMoved(true, 1);
 	transform(_dblMat);
 	if (pItsNextRes)
 	{	pItsNextRes->recursiveTransform(_dblMat);
@@ -2451,7 +2451,7 @@ void residue::recursiveTransform(dblMat& _dblMat)
 
 void residue::recursiveTransformR(dblMat& _dblMat)
 {
-    setMoved(true);
+    setMoved(true, 0),setMoved(true, 1);
 	transform(_dblMat);
 	if (pItsPrevRes)
 	{	pItsPrevRes->recursiveTransformR(_dblMat);
@@ -2462,7 +2462,7 @@ void residue::transform(const dblMat& _dblMat)
 {	for (UInt i=0; i < itsAtoms.size(); i++)
 	{	itsAtoms[i]->transform(_dblMat);
 	}
-    setMoved(true);
+    setMoved(true, 0),setMoved(true, 1);
 }
 
 
@@ -2848,7 +2848,7 @@ void residue::polarizability()
 
 void residue::polarizability(residue* _other)
 {	
-	bool inCube, resI = getMoved(), resJ = _other->getMoved();
+	bool inCube, resI = getMoved(0), resJ = _other->getMoved(0);
 	int vdwIndexI, vdwIndexJ;
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
@@ -2909,7 +2909,7 @@ void residue::calculateDielectrics()
 }
 
 
-void residue::updateMovedDependence(residue* _other)
+void residue::updateMovedDependence(residue* _other, UInt _EorC)
 {	
 	bool inCube;
 	for(UInt i=0; i<itsAtoms.size(); i++)
@@ -2923,8 +2923,8 @@ void residue::updateMovedDependence(residue* _other)
 					inCube = itsAtoms[i]->inCube(_other->itsAtoms[j], cutoffDistance);
 					if (inCube)
 					{
-						_other->setMoved(true);
-						_other->setCheckMovedDependence(false);
+						_other->setMoved(true, _EorC);
+						_other->setCheckMovedDependence(false, _EorC);
 						return;
 					}
 				}
@@ -4012,21 +4012,56 @@ double residue::getSelfEnergy(residue* _other)
 	return selfEnergy;
 }
 
-void residue::setMoved(bool _moved)
+bool residue::getMoved(UInt EorC)
 {
-	moved = _moved;
-	if (_moved){
-		setEnergy(0.0);
-		setClashes(0);
-		clearEnvironment();
-		setCheckMovedDependence(true);
+	if (EorC == 0){
+		return movedE;
 	}
-	else{setCheckMovedDependence(false);}
+	else{
+		return movedC;
+	}
 }
 
-void residue::setCheckMovedDependence(bool _check)
+void residue::setMoved(bool _moved, UInt _EorC)
 {
-	dependentMove = _check;
+	if (_EorC == 0){
+		movedE = _moved;
+		if (_moved){
+			setEnergy(0.0);
+			clearEnvironment();
+			setCheckMovedDependence(true, _EorC);
+		}
+		else{setCheckMovedDependence(false, _EorC);}
+	}
+	else{
+		movedC = _moved;
+		if (_moved){
+			setClashes(0);
+			setCheckMovedDependence(true, _EorC);
+		}
+		else{setCheckMovedDependence(false, _EorC);}
+	}
+}
+
+bool residue::getCheckMovedDependence(UInt _EorC)
+{
+	if (_EorC == 0){
+		return dependentMoveE;
+	}
+	else{
+		return dependentMoveC;
+	}
+}
+
+void residue::setCheckMovedDependence(bool _check, UInt _EorC)
+{
+	if(_EorC)
+	{
+		dependentMoveE = _check;
+	}
+	else{
+		dependentMoveC = _check;
+	}
 }
 
 void residue::clearEnvironment()

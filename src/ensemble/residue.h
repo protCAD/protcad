@@ -239,7 +239,7 @@ public:
 	double intraSoluteEnergy();
 	void polarizability();
 	void polarizability(residue* _other);
-	void updateMovedDependence(residue* _other);
+	void updateMovedDependence(residue* _other, UInt _EorC);
 	void calculateDielectrics();
     vector <double> calculateSolvationEnergy(UInt _atomIndex);
     double getSolvationEnergy();
@@ -321,11 +321,11 @@ public:
 	bool getPolarHydorgensOn() const {return polarHydrogensOn;}
 	void setPolarHydrogensOn(const bool _polarHydrogensOn);
 	bool getHasPolarHRotamers() const {return dataBase[itsType].getHasPolarHRotamers(); }
-	void setMoved (bool _moved);
-	void setCheckMovedDependence (bool _check);
+	void setMoved (bool _moved, UInt _EorC);
+	void setCheckMovedDependence (bool _check, UInt _EorC);
 	void clearEnvironment();
-	bool getMoved() const {return moved;}
-	bool getCheckMovedDependence() const {return dependentMove;}
+	bool getMoved(UInt EorC); //Energy 0 or clashes 1
+	bool getCheckMovedDependence(UInt _EorC);
 	void setClashes (UInt _clashes);
 	void sumClashes (UInt _clashes);
 	UInt getClashes() const {return clashes;}
@@ -372,8 +372,10 @@ private:
 	bool hydrogensOn;
 	bool polarHydrogensOn;
 	bool isArtificiallyBuilt;
-	bool moved = true;
-	bool dependentMove = false;
+	bool movedE = true;
+	bool movedC = true;
+	bool dependentMoveE = false;
+	bool dependentMoveC = false;
 	UInt clashes = 0;
 	double Energy = 0.0;
 	UInt RPT = 0;
