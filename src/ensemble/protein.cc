@@ -2652,7 +2652,8 @@ void protein::protSampling()
 	//_plateau: the number of consecutive optimization cycles without an energy decrease (default: 150 for general purpose optimization)
 
 	//--reset saved protein energies prior to optimization
-	setMoved(true,0), setMoved(true,1);
+	setMoved(true,0);
+	setMoved(true,1);
 
 	//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
 	UInt randchain, randres,randrestype, randrot, resnum, clashes, clashesStart, bbClashes, bbClashesStart, RPT, chainNum = getNumChains(), nobetter = 0, plateau = 500, _plateau = plateau/2;
@@ -2749,7 +2750,8 @@ void protein::protOpt(bool _backbone)
 	//_plateau: the number of consecutive optimization cycles without an energy decrease (default: 150 for general purpose optimization)
 
 	//--reset saved protein energies prior to optimization
-	setMoved(true,0), setMoved(true,1);
+	setMoved(true,0);
+	setMoved(true,1);
 
 	//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
 	UInt randchain, randres,randrestype, randrot, resnum, RPTType, clashes, clashesStart, bbClashes, bbClashesStart, chainNum = getNumChains(), nobetter = 0, plateau = 500, _plateau = plateau/2;
@@ -2890,7 +2892,8 @@ void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 	//_plateau: the number of consecutive optimization cycles without an energy decrease (default: 150 for general purpose optimization)
 
 	//--reset saved protein energies prior to optimization
-	setMoved(true,0), setMoved(true,1);
+	setMoved(true,0);
+	setMoved(true,1);
 
 	//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
 	UInt randchain, randres, randrestype, randrot, RPTType, chainNum = _activeChains.size(),nobetter = 0, plateau = 500, _plateau=plateau*0.8;

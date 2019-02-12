@@ -1427,8 +1427,10 @@ residue* residue::mutate(const UInt _newTypeIndex)
 	{
 		newAA->alignAmideProtonToBackbone();
 	}
-	setMoved(true, 0), setMoved(true, 1);
-	newAA->setMoved(true, 0), newAA->setMoved(true,1);
+	setMoved(true, 0);
+	setMoved(true, 1);
+	newAA->setMoved(true, 0);
+	newAA->setMoved(true,1);
 	return newAA;
 }
 
@@ -1573,7 +1575,8 @@ void residue::setRotamer(const UInt _lib, const UInt _bpt, const UInt _rotamer)
 	{	setChi(_bpt,i,itsSidechainDihedralAngles[_bpt][i]);
 	}
 	//calculateSidechainDihedralAngles();
-	setMoved(true, 0),setMoved(true, 1);
+	setMoved(true, 0);
+	setMoved(true, 1);
 }
 
 void residue::setRotamer(const UInt _bpt, const DouVec _rotamer)
@@ -1583,7 +1586,8 @@ void residue::setRotamer(const UInt _bpt, const DouVec _rotamer)
 	{	setChi(_bpt,i,itsSidechainDihedralAngles[_bpt][i]);
 	}
 	//calculateSidechainDihedralAngles();
-	setMoved(true, 0),setMoved(true, 1);
+	setMoved(true, 0);
+	setMoved(true, 1);
 }
 
 void residue::setRotamerWithCheck(const UInt _lib, const UInt _bpt, const UInt _rotamer)
@@ -1607,7 +1611,8 @@ void residue::setRotamerWithCheck(const UInt _lib, const UInt _bpt, const UInt _
 	}
 	//else cout << "ERROR in setRotamerWithCheck...\n bpt " << _bpt << " does not exist." << endl;
 	//calculateSidechainDihedralAngles();
-	setMoved(true, 0),setMoved(true, 1);
+	setMoved(true, 0);
+	setMoved(true, 1);
 }
 
 void residue::setPolarHRotamer(UInt _rotamerIndex)
@@ -1643,7 +1648,8 @@ DouVec residue::setRotamerWithCheckTest(const UInt _lib, const UInt _bpt, const 
 	else cout << "ERROR in setRotamerWithCheckTest...\n bpt " << _bpt << " does not exist." << endl;
 	calculateSidechainDihedralAngles();
 	return theAngles;
-	setMoved(true, 0),setMoved(true, 1);
+	setMoved(true, 0);
+	setMoved(true, 1);
 }
 
 void residue::setBetaChi(const double _angle)
@@ -1654,7 +1660,8 @@ void residue::setBetaChi(const double _angle)
 		ASSERT(currentBetaChi < 1e5 && currentBetaChi > -1e5);
 		double diff = _angle - currentBetaChi;
 		rotate(0,1, diff);
-		setMoved(true, 0),setMoved(true, 1);
+		setMoved(true, 0);
+		setMoved(true, 1);
 	}
 }
 
@@ -1664,7 +1671,8 @@ void residue::setChi(const UInt _bpt, const UInt _index, const double _angle)
 	ASSERT(currentChi < 1e5 && currentChi > -1e5);
 	double diff = _angle - currentChi;
 	setChiByDelta(_bpt, _index, diff);
-	setMoved(true, 0),setMoved(true, 1);
+	setMoved(true, 0);
+	setMoved(true, 1);
 }
 
 void residue::setChiByDelta(const UInt _bpt, const UInt _index, const double _angleDelta)
@@ -2109,7 +2117,8 @@ void residue::rotate(UInt _first, UInt _second, double _theta)
 
 void residue::rotateDihedral(atom* _pAtom1, atom* _pAtom2, double _deltaTheta,  UInt _angleType, UInt _direction)
 {
-	setMoved(true, 0),setMoved(true, 1);
+	setMoved(true, 0);
+	setMoved(true, 1);
 	dblVec toOrigin = _pAtom1->getCoords() * (-1.0);
 	dblVec backHome = _pAtom1->getCoords();
 
@@ -2415,7 +2424,8 @@ void residue::translate(const dblVec& _dblVec)
 
 void residue::recursiveTranslateWithDirection(dblVec& _dblVec, UInt _direction)
 {	
-    setMoved(true, 0),setMoved(true, 1);
+    setMoved(true, 0);
+    setMoved(true, 1);
 	translate(_dblVec);
 	if (_direction == 0)
 	{
@@ -2433,7 +2443,8 @@ void residue::recursiveTranslateWithDirection(dblVec& _dblVec, UInt _direction)
 
 void residue::recursiveTranslate(dblVec& _dblVec)
 {
-    setMoved(true, 0),setMoved(true, 1);
+    setMoved(true, 0);
+    setMoved(true, 1);
 	translate(_dblVec);
 	if (pItsNextRes)
 	{	pItsNextRes->recursiveTranslate(_dblVec);
@@ -2442,7 +2453,8 @@ void residue::recursiveTranslate(dblVec& _dblVec)
 
 void residue::recursiveTransform(dblMat& _dblMat)
 {
-    setMoved(true, 0),setMoved(true, 1);
+    setMoved(true, 0);
+    setMoved(true, 1);
 	transform(_dblMat);
 	if (pItsNextRes)
 	{	pItsNextRes->recursiveTransform(_dblMat);
@@ -2451,7 +2463,8 @@ void residue::recursiveTransform(dblMat& _dblMat)
 
 void residue::recursiveTransformR(dblMat& _dblMat)
 {
-    setMoved(true, 0),setMoved(true, 1);
+    setMoved(true, 0);
+    setMoved(true, 1);
 	transform(_dblMat);
 	if (pItsPrevRes)
 	{	pItsPrevRes->recursiveTransformR(_dblMat);
@@ -2462,7 +2475,8 @@ void residue::transform(const dblMat& _dblMat)
 {	for (UInt i=0; i < itsAtoms.size(); i++)
 	{	itsAtoms[i]->transform(_dblMat);
 	}
-    setMoved(true, 0),setMoved(true, 1);
+    setMoved(true, 0);
+    setMoved(true, 1);
 }
 
 
@@ -4014,7 +4028,7 @@ double residue::getSelfEnergy(residue* _other)
 
 bool residue::getMoved(UInt EorC)
 {
-	if (EorC == 0){
+	if (EorC < 1){
 		return movedE;
 	}
 	else{
@@ -4024,7 +4038,7 @@ bool residue::getMoved(UInt EorC)
 
 void residue::setMoved(bool _moved, UInt _EorC)
 {
-	if (_EorC == 0){
+	if (_EorC < 1){
 		movedE = _moved;
 		if (_moved){
 			setEnergy(0.0);
@@ -4045,7 +4059,7 @@ void residue::setMoved(bool _moved, UInt _EorC)
 
 bool residue::getCheckMovedDependence(UInt _EorC)
 {
-	if (_EorC == 0){
+	if (_EorC < 1){
 		return dependentMoveE;
 	}
 	else{
@@ -4055,7 +4069,7 @@ bool residue::getCheckMovedDependence(UInt _EorC)
 
 void residue::setCheckMovedDependence(bool _check, UInt _EorC)
 {
-	if(_EorC)
+	if(_EorC < 1)
 	{
 		dependentMoveE = _check;
 	}
