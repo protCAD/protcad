@@ -1244,7 +1244,7 @@ double protein::getMedianResidueEnergy(UIntVec _activeChains)
 bool protein::boltzmannEnergyCriteria(double _energy, double _pastEnergy)
 {
 	bool acceptance;
-	double KT = KB*residue::getTemperature();
+	double KT = KB*residue::temperature;
 	double Entropy = (1000000/((rand() % 1000000)+1))-1;
 	double PiPj = pow(EU,((_energy-_pastEnergy)/KT));
 	if (PiPj < Entropy){acceptance = true;}
@@ -2749,12 +2749,8 @@ void protein::protOpt(bool _backbone)
 {   // Sidechain and backrub optimization with a local dielectric scaling of electrostatics and corresponding Born/Gill implicit solvation energy
 	//_plateau: the number of consecutive optimization cycles without an energy decrease (default: 150 for general purpose optimization)
 
-	//--reset saved protein energies prior to optimization
-	setMoved(true,0);
-	setMoved(true,1);
-
 	//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
-	UInt randchain, randres,randrestype, randrot, resnum, RPTType, clashes, clashesStart, bbClashes, bbClashesStart, chainNum = getNumChains(), nobetter = 0, plateau = 500, _plateau = plateau/2;
+	UInt randchain, randres,randrestype, randrot, resnum, RPTType, clashes, clashesStart, bbClashes, bbClashesStart, chainNum = getNumChains(), nobetter = 0, plateau = 200, _plateau = plateau/2;
 	double Energy, pastEnergy = protEnergy(), sPhi, sPsi, RPT;
 	vector < vector <double>> currentRot; vector <UIntVec> allowedRots; srand (time(NULL));
 	vector <double> angles(2);
@@ -2767,6 +2763,7 @@ void protein::protOpt(bool _backbone)
 		resnum = getNumResidues(randchain);
 		randres = rand() % resnum;
 		randrestype = getTypeFromResNum(randchain, randres);
+		clashesStart = getNumHardClashes();
 		nobetter++;
 
 		//--Backslide optimization-----------------------------------------------------------------------
@@ -2778,8 +2775,7 @@ void protein::protOpt(bool _backbone)
 			RPT = getResiduesPerTurn(sPhi,sPsi);
 			RPTType = getBackboneSequenceType(RPT,sPhi);
 			bbClashesStart = getNumBackboneHardClashes();
-			clashesStart = getNumHardClashes();
-			for (UInt i = 0; i < 20; i++)
+			for (UInt i = 0; i < 1000; i++)
 			{
 				angles = getRandPhiPsifromBackboneSequenceType(RPTType);
 				setDihedral(randchain,randres,angles[0],0,0);
@@ -2789,6 +2785,7 @@ void protein::protOpt(bool _backbone)
 				if (bbClashes <= bbClashesStart){
 					clashes = getNumHardClashes();
 					if (clashes <= clashesStart){
+						clashesStart = clashes;
 						energyTest = true;
 						break;
 					}
@@ -2801,35 +2798,47 @@ void protein::protOpt(bool _backbone)
 				boltzmannAcceptance = boltzmannEnergyCriteria(Energy,pastEnergy);
 				if (boltzmannAcceptance)
 				{
-					cout << Energy << " B" << endl;
+					cout << Energy << " B " << nobetter << endl;
 					nobetter = 0, pastEnergy = Energy;
 				}
 				else{
 					setDihedral(randchain,randres,sPhi,0,0);
 					setDihedral(randchain,randres,sPsi,1,0);
+					clashesStart = getNumHardClashes();
 				}
 			}
 		}
 
 		//--Rotamer optimization-----------------------------------------------------------------------
+		energyTest = false;
 		currentRot = getSidechainDihedrals(randchain, randres);
 		allowedRots = getAllowedRotamers(randchain, randres, randrestype);
-		clashesStart = getNumHardClashes();
-		randrot = rand() % allowedRots[0].size();
-		setRotamerWBC(randchain, randres, 0, allowedRots[0][randrot]);
-		clashes = getNumHardClashes();
-		if (clashes < clashesStart){
+		//--Try a max of one rotamer per branchpoint and keep if an improvement, else revert
+		for (UInt b = 0; b < residue::getNumBpt(randrestype); b++)
+		{
+			if (allowedRots[b].size() > 0)
+			{
+				randrot = rand() % allowedRots[b].size();
+				setRotamerWBC(randchain, randres, b, allowedRots[b][randrot]);
+				clashes = getNumHardClashes();
+				if (clashes <= clashesStart){
+					clashesStart = clashes;
+					energyTest = true;
+					break;
+				}
+				setSidechainDihedralAngles(randchain, randres, currentRot);
+			}
+		}
+		if (energyTest){
 			Energy = protEnergy();
 			boltzmannAcceptance = boltzmannEnergyCriteria(Energy,pastEnergy);
 			if (boltzmannAcceptance)
 			{
-				cout << Energy << " S" << endl;
+				cout << Energy << " S " << nobetter <<  endl;
 				nobetter = 0, pastEnergy = Energy;
-				break;
 			}
 			else{setSidechainDihedralAngles(randchain, randres, currentRot);}
 		}
-		else{setSidechainDihedralAngles(randchain, randres, currentRot);}
 	} while (nobetter < plateau);
 	return;
 }
