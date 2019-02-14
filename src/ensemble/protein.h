@@ -153,7 +153,7 @@ public:
 	double getMedianResidueEnergy();
 	double getMedianResidueEnergy(UIntVec _activeChains);
 	double getMedianResidueEnergy(UIntVec _activeChains, UIntVec _activeResidues);
-	bool boltzmannEnergyCriteria(double _energy, double _pastEnergy);
+	bool boltzmannEnergyCriteria(double _deltaEnergy);
 	UInt getNumChis(const UInt _chainIndex, const UInt _resIndex, const UInt _bpt) {return itsChains[_chainIndex]->getNumChis(_resIndex,0); }
 	UInt getNumBackboneHardClashes();
 	UInt getNumHardClashes(UInt chainIndex, UInt resIndex);
@@ -192,6 +192,8 @@ public:
 	double getPositionEnergy(UInt _chainIndex, UInt _residueIndex);
 	double getSelfEnergy(UInt _chainIndex, UInt _residueIndex);
 	vector <double> protLigandBindingEnergy(UInt ligChainIndex, UInt ligResIndex);
+	static void setTemperature( const double _temp ) { residue::setTemperature(_temp); }
+	static double Temperature() { return residue::getTemperature(); }
 
 	//--Transformation functions
 	double getBetaChi(UInt _chainIndex, UInt _residueIndex) {return itsChains[_chainIndex]->getBetaChi(_residueIndex); }
