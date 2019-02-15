@@ -154,6 +154,7 @@ public:
 	double getMedianResidueEnergy(UIntVec _activeChains);
 	double getMedianResidueEnergy(UIntVec _activeChains, UIntVec _activeResidues);
 	bool boltzmannEnergyCriteria(double _deltaEnergy);
+	double boltzmannTemperature(double _deltaEnergy, double _PiPj);
 	UInt getNumChis(const UInt _chainIndex, const UInt _resIndex, const UInt _bpt) {return itsChains[_chainIndex]->getNumChis(_resIndex,0); }
 	UInt getNumBackboneHardClashes();
 	UInt getNumHardClashes(UInt chainIndex, UInt resIndex);
@@ -205,6 +206,7 @@ public:
 	UInt getBackboneSequenceType(double RPT, double phi);
 	UInt getBackboneSequenceType(UInt _chainIndex, UInt _resIndex) {return itsChains[_chainIndex]->getBackboneSequenceType(_resIndex);}
 	vector <double> getRandPhiPsifromBackboneSequenceType(UInt _RPTType);
+	vector <double> getRandConformationFromBackboneType(double _phi, double _psi);
 	double getResiduesPerTurn(double phi, double psi);
 	double getResiduesPerTurn(UInt _chainIndex, UInt _resIndex) {return itsChains[_chainIndex]->getResiduesPerTurn(_resIndex);}
 	double getPhi(UInt _chain, UInt _res) {return itsChains[_chain]->getPhi(_res);}
