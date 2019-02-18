@@ -126,6 +126,7 @@ public:
 	void calculateSidechainDihedralAngles();
 	void calculatePolarHDihedralAngle();
 	vector< vector< double > > getSidechainDihedralAngles();
+	vector< vector< double > > randContinuousSidechainConformation();
 	double getPhi();
 	double getPsi();
 	double getAngle(UInt angleType);

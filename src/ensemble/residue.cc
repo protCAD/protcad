@@ -2058,6 +2058,26 @@ void residue::calculateSidechainDihedralAngles()
 	}
 }
 
+vector< vector< double > > residue::randContinuousSidechainConformation()
+{	
+	vector < vector <double> > sideChainDihedralAngles;
+	vector <double> chis;
+	double angle;
+	UInt branchpoints = getNumBpt(itsType);
+	for (UInt i=0; i<branchpoints; i++)
+	{	
+		chis.clear();
+		UInt dihedrals = getNumDihedralAngles(itsType,i);
+		for (UInt j=0; j<dihedrals; j++)
+		{
+			angle = (rand() % 360)-179;
+			chis.push_back(angle);
+		}
+		sideChainDihedralAngles.push_back(chis);
+	}
+	return sideChainDihedralAngles;
+}
+
 void residue::calculatePolarHDihedralAngle()
 {
 	if(dataBase[itsType].getHasPolarHRotamers())

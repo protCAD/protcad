@@ -1388,7 +1388,6 @@ void chain::setDihedralWithoutBuffering(const UInt _index, const UInt _bpt,
 vector< vector< double> > chain::getSidechainDihedralAngles(UInt _indexInChain)
 {
 	vector< vector< double> > theAngles;
-	itsResidues[_indexInChain]->calculateSidechainDihedralAngles();
 	theAngles = itsResidues[_indexInChain]->getSidechainDihedralAngles();
 	return theAngles;
 }

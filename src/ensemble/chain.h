@@ -131,6 +131,7 @@ public:
 	void setResAllowed(const UInt _indexInChain, const UInt _aaType);
 	UIntVec getResAllowed (const UInt _indexInChain);
 	void setOnlyNativeIdentity(const UInt _indexInChain);
+	vector< vector< double > > randContinuousSidechainConformation(UInt _resIndex) {return itsResidues[_resIndex]->randContinuousSidechainConformation();}
 	void setRotamerWithoutBuffering(const UInt _indexInChain, vector<UInt> _rotamer);
 	void setRotamerWithoutBuffering(const UInt _indexInChain, vector<UInt> _rotamer, vector< vector< double> > dihedralAngles);
 	void setRotamerWithoutBuffering(const UInt _indexInChain, const UInt _bpt, const UInt _rotamer);

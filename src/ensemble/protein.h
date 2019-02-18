@@ -153,8 +153,7 @@ public:
 	double getMedianResidueEnergy();
 	double getMedianResidueEnergy(UIntVec _activeChains);
 	double getMedianResidueEnergy(UIntVec _activeChains, UIntVec _activeResidues);
-	bool boltzmannEnergyCriteria(double _deltaEnergy);
-	double boltzmannTemperature(double _deltaEnergy, double _PiPj);
+	bool boltzmannEnergyCriteria(double _deltaEnergy, double _KT);
 	UInt getNumChis(const UInt _chainIndex, const UInt _resIndex, const UInt _bpt) {return itsChains[_chainIndex]->getNumChis(_resIndex,0); }
 	UInt getNumBackboneHardClashes();
 	UInt getNumHardClashes(UInt chainIndex, UInt resIndex);
@@ -258,7 +257,9 @@ public:
 	double getChi (const UInt _chainIndex, const UInt _resIndex, const UInt _bpt, const UInt _chi) { return itsChains[_chainIndex]->getChi(_resIndex, _bpt, _chi); }
 	vector < vector <double> >  getSidechainDihedrals(UInt _chainIndex, UInt _indexInChain) {return itsChains[_chainIndex]->getSidechainDihedralAngles(_indexInChain);}
 	void setSidechainDihedralAngles(UInt _chainIndex, UInt _indexInChain, vector< vector<double> > Angles);
-		
+	vector< vector< double > > randContinuousSidechainConformation(UInt _chainIndex, UInt _resIndex) {return itsChains[_chainIndex]->randContinuousSidechainConformation(_resIndex);}
+
+	
 	//--Surface area functions
 	double getVolume(UInt _method);
 	void initializeSpherePoints();
