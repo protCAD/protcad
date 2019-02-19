@@ -41,7 +41,7 @@ int main (int argc, char* argv[])
 	}
 
 	UInt _activeChains[] = {0};                                                         // chains active for mutation
-	UInt _allowedTypes[] = {M,C,L,P,B,E,Y,A,I,G,N,D,Q,R,F,H,W,K,S,T};                     // backbone types allowable
+	UInt _allowedTypes[] = {C,L,P,B,E,Y,A,I,G,N,D,Q,R,F,H,W,K,S,T};                     // backbone types allowable
 	UInt _activeResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};                                     // positions active for mutation
 	UInt _randomResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};                                     // positions active for a random start sequence initially
 
@@ -62,10 +62,11 @@ int main (int argc, char* argv[])
 	for (UInt i = 0; i < randomResiduesSize; i++)	{ randomResidues.push_back(_randomResidues[i]); }
 
 	//--set initial variables
+	//int seed = (int)getpid()*(int)gethostid();
 	srand (getpid());
-	double startEnergy = 1E10, pastEnergy, Energy, Entropy, sPhi, sPsi, PiPj, KT = KB*residue::getTemperature();
+	double startEnergy = 1E10, pastEnergy, Energy, sPhi, sPsi, deltaEnergy, KT = KB*residue::getTemperature();
 	vector <double> backboneAngles(2);
-	UInt timeid, sec, startNumClashes, numClashes, mutant = 0, plateau = 50, nobetter = 0;
+	UInt timeid, sec, numClashes, startNumClashes, startNumBackboneClashes, mutant = 0, plateau = 50, nobetter = 0;
 	vector < UInt > mutantPosition, chainSequence, sequencePosition, randomPosition;
 	vector < vector < UInt > > sequencePool, proteinSequence, finalSequence, possibleMutants;
 	stringstream convert;
@@ -74,6 +75,7 @@ int main (int argc, char* argv[])
 	UInt count, name = rand() % 100000000;
 	convert << name, startstr = convert.str();
 	string tempModel = startstr + "_temp.pdb";
+	bool revert, boltzmannAcceptance;
 
 	//-build possible sequence database per position
 	PDBInterface* sthePDB = new PDBInterface(infile);
@@ -87,6 +89,7 @@ int main (int argc, char* argv[])
 		possibleMutants = buildPossibleMutants();
 	}
 	delete sthePDB;
+	
 	//--Run multiple independent evolution cycles-----------------------------------------------------
 	while(true)
 	{
@@ -102,7 +105,6 @@ int main (int argc, char* argv[])
 		{
 			for (UInt j = 0; j < randomResidues.size(); j++)
 			{
-				prot->activateForRepacking(activeChains[i], randomResidues[j]);
 				randomPosition.push_back(activeChains[i]);
 				randomPosition.push_back(randomResidues[j]);
 				mutant = getProbabilisticMutation(sequencePool, possibleMutants, randomPosition, randomResidues);
@@ -115,61 +117,59 @@ int main (int argc, char* argv[])
 			proteinSequence.push_back(chainSequence);
 		}
 		prot->protMin();
-		startNumClashes = prot->getNumHardClashes();
-		prot->setMoved(true);
-
-		//--set Energy startpoint
-		Energy = prot->protEnergy();
-
-		//--Determine next mutation position
-		mutantPosition.clear();
-		mutantPosition = getMutationPosition(activeChains, activeResidues);
 		pdbWriter(prot, tempModel);
+		Energy = prot->protEnergy();
 		pastEnergy = Energy;
 
 		//--Run through a single evolutionary path (ancestral line) till hitting plateau
 		do
 		{
 			//--Mutate current sequence, new mutant and optimize system
-			nobetter++;
-			sequencePosition.push_back(mutantPosition[0]);
-			sequencePosition.push_back(mutantPosition[1]);
-			sPhi = prot->getPhi(mutantPosition[0],mutantPosition[1]);
-			sPsi = prot->getPsi(mutantPosition[0],mutantPosition[1]);
+			startNumBackboneClashes = prot->getNumHardBackboneClashes();
+			startNumClashes = prot->getNumHardClashes();
+			nobetter++; revert = true;
 			do{
+				mutantPosition.clear();
+				mutantPosition = getMutationPosition(activeChains, activeResidues);
+				sPhi = prot->getPhi(mutantPosition[0],mutantPosition[1]);
+				sPsi = prot->getPsi(mutantPosition[0],mutantPosition[1]);
 				mutant = getProbabilisticMutation(sequencePool, possibleMutants, mutantPosition, activeResidues);
 				backboneAngles = prot->getRandPhiPsifromBackboneSequenceType(mutant);
 				prot->setDihedral(mutantPosition[0],mutantPosition[1],backboneAngles[0],0,0);
 				prot->setDihedral(mutantPosition[0],mutantPosition[1],backboneAngles[1],1,0);
-				prot->protRelax();
-				numClashes = prot->getNumHardClashes();
-				if (numClashes > startNumClashes){
+				numClashes = prot->getNumHardBackboneClashes();
+				if (numClashes <= startNumBackboneClashes){
+					numClashes = prot->getNumHardClashes();
+					if (numClashes <= startNumClashes){
+						sequencePosition.push_back(mutantPosition[0]);
+						sequencePosition.push_back(mutantPosition[1]);
+						revert = false;
+					}
+				}
+				if (revert){
 					prot->setDihedral(mutantPosition[0],mutantPosition[1],sPhi,0,0);
 					prot->setDihedral(mutantPosition[0],mutantPosition[1],sPsi,1,0);
 				}
-			}while (numClashes > startNumClashes);
-			prot->protOpt(true);
-			protein* tempProt = new protein(*prot);
-
-			//--Determine next mutation position
-			mutantPosition.clear();
-			mutantPosition = getMutationPosition(activeChains, activeResidues);
+			}while (revert);
+			prot->protMin();
 
 			//--Energy test
 			Energy = prot->protEnergy();
-			Entropy = (1000000/((rand() % 1000000)+1))-1;
-			PiPj = pow(EU,((Energy-pastEnergy)/KT));
-			if (PiPj < Entropy){
-				pdbWriter(tempProt, tempModel);
-				proteinSequence[sequencePosition[0]][sequencePosition[1]] = mutant, pastEnergy = Energy;
-				nobetter = 0;
+			deltaEnergy = Energy-pastEnergy;
+			boltzmannAcceptance = prot->boltzmannEnergyCriteria(deltaEnergy,KT);
+			if (boltzmannAcceptance){
+				pdbWriter(prot, tempModel);
+				proteinSequence[sequencePosition[0]][sequencePosition[1]] = mutant;
+				pastEnergy = Energy; nobetter = 0;
 			}
 			else{
-				prot->setDihedral(mutantPosition[0],mutantPosition[1],sPhi,0,0);
-				prot->setDihedral(mutantPosition[0],mutantPosition[1],sPsi,1,0);
+				delete thePDB;
+				thePDB = new PDBInterface(tempModel);
+				theEnsemble = thePDB->getEnsemblePointer();
+				pMol = theEnsemble->getMoleculePointer(0);
+				prot = static_cast<protein*>(pMol);
 			}
 			sequencePosition.clear();
-			delete tempProt;
 		}while (nobetter < plateau);
 		delete thePDB;
 
@@ -181,8 +181,8 @@ int main (int argc, char* argv[])
 		
 		//-Determine probability of being accepted into pool
 		Energy = model->protEnergy();
-		Entropy = (1000000/((rand() % 1000000)+1))-1;
-		PiPj = pow(EU,((Energy-startEnergy)/KT));
+		deltaEnergy = Energy-startEnergy;
+		boltzmannAcceptance = model->boltzmannEnergyCriteria(deltaEnergy,KT);
 		startEnergy = Energy;
 		
 		//-generate pdb output
@@ -213,12 +213,12 @@ int main (int argc, char* argv[])
 			for (UInt j = 0; j < finalSequence[i].size(); j++)
 			{
 				finalline << backboneSeq[finalSequence[i][j]] << " ";
-				if (PiPj < Entropy || count < ::populationBaseline){
+				if (boltzmannAcceptance || count < ::populationBaseline){
 					fs << finalSequence[i][j] << ",";
 				}
 			}
 		}
-		if (PiPj < Entropy || count < ::populationBaseline){
+		if (boltzmannAcceptance || count < ::populationBaseline){
 			finalline << "p";
 			fs << endl;
 		}
@@ -267,16 +267,9 @@ UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector 
 {
 	double acceptance, threshold, FreqAccept;
 	double poolSize = _sequencePool.size();
-	vector <UInt> Freqs(21,1);
-	UInt position, entropy, mutant, variance;
+	vector <UInt> Freqs(20,1);
+	UInt position, entropy, mutant, variance, type;
 	UInt count = getSizeofPopulation();
-
-	//--get sequence evolution results for position
-	for (UInt i = 0; i < poolSize; i++)
-	{
-		UInt type = _sequencePool[i][_mutantPosition[1]];
-		Freqs[type] = Freqs[type] + 1;
-	}
 
 	//--find mutant in vector
 	for (UInt i = 0; i < _possibleMutants.size(); i++)
@@ -302,6 +295,12 @@ UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector 
 		}
 		if (variance > entropy) //control sequence entropy with probabilty
 		{
+			//--get sequence evolution results for position
+			for (UInt i = 0; i < poolSize; i++)
+			{
+				type = _sequencePool[i][_mutantPosition[1]];
+				Freqs[type] = Freqs[type] + 1;
+			}
 			FreqAccept = Freqs[mutant];
 			acceptance = (FreqAccept/(poolSize-1))*100;  //chance of accepting given fold at position is proportional to population
 		}

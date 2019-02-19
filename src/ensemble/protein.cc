@@ -2913,6 +2913,7 @@ vector <double> protein::getRandPhiPsifromBackboneSequenceType(UInt _RPTType)
 			b = 153 + (rand() % 27);
 			phi = (rand() % 150)-180;
 			psi = -1 * phi + b;
+			cout << psi << endl;
 		}while(psi > 180 || psi < -180);
 		angles[0] = phi;
 		angles[1] = psi;
