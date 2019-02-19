@@ -41,7 +41,7 @@ int main (int argc, char* argv[])
 	}
 
 	UInt _activeChains[] = {0};                                                         // chains active for mutation
-	UInt _allowedTypes[] = {C,L,P,B,E,Y,A,I,G,N,D,Q,R,F,H,W,K,S,T};                     // backbone types allowable
+	UInt _allowedTypes[] = {C,L,P,B,E,Y,A,I,D,Q,R,F,H,W,K,S};                     // backbone types allowable
 	UInt _activeResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};                                     // positions active for mutation
 	UInt _randomResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};                                     // positions active for a random start sequence initially
 
@@ -62,8 +62,8 @@ int main (int argc, char* argv[])
 	for (UInt i = 0; i < randomResiduesSize; i++)	{ randomResidues.push_back(_randomResidues[i]); }
 
 	//--set initial variables
-	//int seed = (int)getpid()*(int)gethostid();
-	srand (getpid());
+	int seed = (int)getpid()*(int)gethostid();
+	srand (seed);
 	double startEnergy = 1E10, pastEnergy, Energy, sPhi, sPsi, deltaEnergy, KT = KB*residue::getTemperature();
 	vector <double> backboneAngles(2);
 	UInt timeid, sec, numClashes, startNumClashes, startNumBackboneClashes, mutant = 0, plateau = 50, nobetter = 0;
