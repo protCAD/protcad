@@ -155,10 +155,11 @@ public:
 	double getMedianResidueEnergy(UIntVec _activeChains, UIntVec _activeResidues);
 	bool boltzmannEnergyCriteria(double _deltaEnergy, double _KT);
 	UInt getNumChis(const UInt _chainIndex, const UInt _resIndex, const UInt _bpt) {return itsChains[_chainIndex]->getNumChis(_resIndex,0); }
-	UInt getNumBackboneHardClashes();
 	UInt getNumHardClashes(UInt chainIndex, UInt resIndex);
 	UInt getNumHardClashes();
 	void updateClashes();
+	UInt getNumHardBackboneClashes();
+	void updateBackboneClashes();
 	UInt getMedianResidueNumHardClashes();
 	double getSolvationEnergy(UInt _chainIndex, UInt _residueIndex) {return itsChains[_chainIndex]->getSolvationEnergy(_residueIndex); }
 	double getAtomCharge(UInt _chainNum, UInt _resNum, UInt _atomNum) { return itsChains[_chainNum]->getAtomCharge(_resNum, _atomNum); }

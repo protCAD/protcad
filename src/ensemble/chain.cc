@@ -1399,8 +1399,7 @@ void chain::setSidechainDihedralAngles(UInt _indexInChain, vector <vector <doubl
 		{	itsResidues[_indexInChain]->setChi(i,j,Angles[i][j]);
 		}
 	}
-    itsResidues[_indexInChain]->setMoved(true, 0);
-    itsResidues[_indexInChain]->setMoved(true, 1);
+	itsResidues[_indexInChain]->setMoved();
 	return;
 }
 
@@ -1911,38 +1910,61 @@ void chain::updateClashes(chain* _other)
 	}
 }
 
-UInt chain::getBackboneClashes()
-{
-	UInt clashes = 0;
-	for(UInt i=0; i<itsResidues.size(); i++)
-	{	
-		for (UInt j = i+1; j < itsResidues.size(); j++)
-		{	
-			clashes += itsResidues[i]->getBackboneClashes(itsResidues[j]);
-		}
-	}
-	return clashes;
-}
-
-UInt chain::getBackboneClashes(chain* _other)
-{
-	UInt clashes = 0;
-	for(UInt i=0; i<itsResidues.size(); i++)
-	{	
-		for (UInt j = 0; j < _other->itsResidues.size(); j++)
-		{	
-			clashes += itsResidues[i]->getBackboneClashes(_other->itsResidues[j]);
-		}
-	}
-	return clashes;
-}
-
 UInt chain::getClashes()
 {
 	UInt clashes = 0;
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{	
 		clashes += itsResidues[i]->getClashes();
+	}
+	return clashes;
+}
+
+
+void chain::updateBackboneClashes()
+{
+	bool resI, resJ;
+	UInt clashes;
+	for(UInt i=0; i<itsResidues.size(); i++)
+	{	
+		resI = itsResidues[i]->getMoved(2);
+		for(UInt j=i+1; j<itsResidues.size(); j++)
+		{
+			resJ =  itsResidues[j]->getMoved(2);
+			if (resI || resJ){
+				clashes = itsResidues[i]->getNumHardBackboneClashes(itsResidues[j]), clashes /= 2;
+				if(resI){itsResidues[i]->sumBackboneClashes(clashes);}
+				if(resJ){itsResidues[j]->sumBackboneClashes(clashes);}
+			}
+		}
+	}
+}
+
+void chain::updateBackboneClashes(chain* _other)
+{
+	bool resI, resJ;
+	UInt clashes;
+	for(UInt i=0; i<itsResidues.size(); i++)
+	{
+		resI = itsResidues[i]->getMoved(2);
+		for(UInt j=0; j<_other->itsResidues.size(); j++)
+		{
+			resJ = _other->itsResidues[j]->getMoved(2);
+			if (resI || resJ){
+				clashes = itsResidues[i]->getNumHardBackboneClashes(_other->itsResidues[j]), clashes /= 2;
+				if(resI){itsResidues[i]->sumBackboneClashes(clashes);}
+				if(resJ){_other->itsResidues[j]->sumBackboneClashes(clashes);}
+			}
+		}
+	}
+}
+
+UInt chain::getBackboneClashes()
+{
+	UInt clashes = 0;
+	for(UInt i=0; i<itsResidues.size(); i++)
+	{	
+		clashes += itsResidues[i]->getBackboneClashes();
 	}
 	return clashes;
 }

@@ -1251,6 +1251,31 @@ bool protein::boltzmannEnergyCriteria(double _deltaEnergy, double _KT)
 	return acceptance;
 }
 
+void protein::updateBackboneClashes()
+{
+	updateMovedDependence(2);
+	for(UInt i=0; i<itsChains.size(); i++)
+	{
+		itsChains[i]->updateBackboneClashes();
+		for(UInt j=i+1; j<itsChains.size(); j++)
+		{
+			itsChains[i]->updateBackboneClashes(itsChains[j]);
+		}
+	}
+	setMoved(false, 2);
+}
+
+UInt protein::getNumHardBackboneClashes()
+{
+	updateBackboneClashes();
+	UInt clashes = 0;
+	for(UInt i=0; i<itsChains.size(); i++)
+	{
+		clashes += itsChains[i]->getBackboneClashes();
+	}
+	return clashes;
+}
+
 void protein::updateClashes()
 {
 	updateMovedDependence(1);
@@ -1263,20 +1288,6 @@ void protein::updateClashes()
 		}
 	}
 	setMoved(false, 1);
-}
-
-UInt protein::getNumBackboneHardClashes()
-{
-	UInt clashes = 0;
-	for(UInt i=0; i<itsChains.size(); i++)
-	{
-		clashes += itsChains[i]->getBackboneClashes();
-		for (UInt j = i+1; j < itsChains.size(); j++)
-		{
-			clashes += itsChains[i]->getBackboneClashes(itsChains[j]);
-		}
-	}
-	return clashes;
 }
 
 UInt protein::getNumHardClashes()
@@ -2671,18 +2682,16 @@ void protein::protOpt(bool _backbone)
 		backboneTest = false, sidechainTest = false, energyTest = false, revert = true;
 		
 		//--Backbone conformation trial--------------------------------------------------------
-		if (_backbone && randres > 0 && randres < resnum-2 && backboneOrSidechain == 0)
-		{
-			backboneTest = true; bbClashesStart = getNumBackboneHardClashes();
+		if (_backbone && randres > 0 && randres < resnum-2 && backboneOrSidechain == 0){
+			backboneTest = true; bbClashesStart = getNumHardBackboneClashes();
 			sPhi = getPhi(randchain,randres), sPsi = getPsi(randchain,randres);
 			backboneAngles = getRandConformationFromBackboneType(sPhi, sPsi);
 			setDihedral(randchain,randres,backboneAngles[0],0,0); setDihedral(randchain,randres,backboneAngles[1],1,0);
-			bbClashes = getNumBackboneHardClashes();
+			bbClashes = getNumHardBackboneClashes();
 			if (bbClashes <= bbClashesStart){
 				clashes = getNumHardClashes();
 				if (clashes <= clashesStart){
-					energyTest = true;
-					revert = false;
+					energyTest = true; revert = false;
 				}
 			}
 		}
@@ -2694,8 +2703,7 @@ void protein::protOpt(bool _backbone)
 			setSidechainDihedralAngles(randchain, randres, newSidechainConf);
 			clashes = getNumHardClashes();
 			if (clashes <= clashesStart){
-				energyTest = true;
-				revert = false;
+				energyTest = true; revert = false;
 			}
 		}
 		//--Energy-Test-------------------------------------------------------------------------
@@ -2705,7 +2713,6 @@ void protein::protOpt(bool _backbone)
 			boltzmannAcceptance = boltzmannEnergyCriteria(deltaEnergy, KT);
 			if (boltzmannAcceptance){
 				pastEnergy = Energy;
-				cout << Energy << " " << nobetter << endl;
 				if (deltaEnergy < -KT){nobetter = 0;}
 			}
 			else{revert = true;}
@@ -2728,7 +2735,6 @@ void protein::protRelax(UInt _plateau)
 {   // Sidechain and backrub optimization with a local dielectric scaling of electrostatics and corresponding Born/Gill implicit solvation energy
 	//_plateau: the number of consecutive optimization cycles without an energy decrease (default: 150 for general purpose optimization)
 	
-	setMoved(true,1);
 	UInt pastProtClashes = getNumHardClashes();
 	if (pastProtClashes > 0)
 	{	
@@ -2780,10 +2786,6 @@ void protein::protRelax(UInt _plateau)
 void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeChains) //_activeChain only optimized and energy calculated for it
 {   // Sidechain and backrub optimization with a local dielectric scaling of electrostatics and corresponding Born/Gill implicit solvation energy
 	//_plateau: the number of consecutive optimization cycles without an energy decrease (default: 150 for general purpose optimization)
-
-	//--reset saved protein energies prior to optimization
-	setMoved(true,0);
-	setMoved(true,1);
 
 	//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
 	UInt randchain, randres, randrestype, randrot, RPTType, chainNum = _activeChains.size(),nobetter = 0, plateau = 500, _plateau=plateau*0.8;

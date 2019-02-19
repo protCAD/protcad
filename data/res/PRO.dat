@@ -3,13 +3,13 @@ N CA C O
 !sidechain branch points
 CA
 !connectivity
-N	CA
+N	CA	CD
 CA	C	CB	HA
 C	O
 O
 CB	CG	HB2	HB3
 CG	CD	HG2	HG3
-CD	N	HD2	HD3
+CD	HD2	HD3
 HA
 HB2
 HB3

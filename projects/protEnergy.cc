@@ -32,32 +32,42 @@ int main (int argc, char* argv[])
 	double Energy = bundle->protEnergy();
 	end = clock();
 	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-	cout << "protEnergy: " << Energy << " kcal/mol time: " << cpu_time_used << endl;
+	cout << "Energy: " << Energy << " kcal/mol time: " << cpu_time_used << endl;
 	string outFile = infile;
 	pdbWriter(bundle, outFile);
-	
-	start = clock();
-	Energy = bundle->protEnergy();
-	end = clock();
-	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-	cout << "protEnergy: " << Energy << " kcal/mol time: " << cpu_time_used << endl;
 	
 	start = clock();
 	UInt clashes = bundle->getNumHardClashes();
 	end = clock();
 	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-	cout << "protClashes: " << clashes << " clashes time: " << cpu_time_used << endl;
+	cout << "Clashes: " << clashes << " clashes time: " << cpu_time_used << endl;
+	
+	start = clock();
+	clashes = bundle->getNumHardBackboneClashes();
+	end = clock();
+	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+	cout << "Backbone Clashes: " << clashes << " clashes time: " << cpu_time_used << endl;
+	
+	cout << endl << "--second calculation without local structural change--" << endl << endl;
+	
+	start = clock();
+	Energy = bundle->protEnergy();
+	end = clock();
+	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+	cout << "Energy: " << Energy << " kcal/mol time: " << cpu_time_used << endl;
 
 	start = clock();
 	clashes = bundle->getNumHardClashes();
 	end = clock();
 	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-	cout << "protClashes: " << clashes << " clashes time: " << cpu_time_used << endl;
+	cout << "Clashes: " << clashes << " clashes time: " << cpu_time_used << endl;
 	
 	start = clock();
-	clashes = bundle->getNumBackboneHardClashes();
+	clashes = bundle->getNumHardBackboneClashes();
 	end = clock();
 	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-	cout << "protBBClashes: " << clashes << " clashes time: " << cpu_time_used << endl;
+	cout << "Backbone Clashes: " << clashes << " clashes time: " << cpu_time_used << endl;
+	
+	
 	return 0;
 }

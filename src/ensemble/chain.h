@@ -157,7 +157,8 @@ public:
 	residue* superimposeGLY(const UInt _residue);
 	double calculateHCA_O_hBondEnergy(chain* _other);
 	UInt getBackboneClashes();
-	UInt getBackboneClashes(chain* _other);
+	void updateBackboneClashes(chain* _other);
+	void updateBackboneClashes();
 	UInt getClashes();
 	void updateClashes(chain* _other);
 	void updateClashes();

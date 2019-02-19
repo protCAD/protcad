@@ -184,7 +184,7 @@ private:
 	bool isClash(UInt _index1, residue* _other, UInt _index2);
 	UInt getNumHardClashes(residue* _other);
 	UInt getNumHardClashes();
-	UInt getBackboneClashes(residue* _other);
+	UInt getNumHardBackboneClashes(residue* _other);
 
 
 	// Total Residues
@@ -322,7 +322,8 @@ public:
 	bool getPolarHydorgensOn() const {return polarHydrogensOn;}
 	void setPolarHydrogensOn(const bool _polarHydrogensOn);
 	bool getHasPolarHRotamers() const {return dataBase[itsType].getHasPolarHRotamers(); }
-	void setMoved (bool _moved, UInt _EorC);
+	void setMoved(bool _moved, UInt _EorC);
+	void setMoved();
 	void setCheckMovedDependence (bool _check, UInt _EorC);
 	void clearEnvironment();
 	bool getMoved(UInt EorC); //Energy 0 or clashes 1
@@ -330,6 +331,9 @@ public:
 	void setClashes (UInt _clashes);
 	void sumClashes (UInt _clashes);
 	UInt getClashes() const {return clashes;}
+	void setBackboneClashes (UInt _clashes);
+	void sumBackboneClashes (UInt _clashes);
+	UInt getBackboneClashes() const {return clashesB;}
 	void setEnergy (double _energy);
 	void sumEnergy (double _energy);
 	double getEnergy() const {return Energy;}
@@ -375,9 +379,12 @@ private:
 	bool isArtificiallyBuilt;
 	bool movedE = true;
 	bool movedC = true;
+	bool movedB = true;
 	bool dependentMoveE = false;
 	bool dependentMoveC = false;
+	bool dependentMoveB = false;
 	UInt clashes = 0;
+	UInt clashesB = 0;
 	double Energy = 0.0;
 	UInt RPT = 0;
 
