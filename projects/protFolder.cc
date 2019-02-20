@@ -66,7 +66,7 @@ int main (int argc, char* argv[])
 	srand (seed);
 	double startEnergy = 1E10, pastEnergy, Energy, sPhi, sPsi, deltaEnergy, KT = KB*residue::getTemperature();
 	vector <double> backboneAngles(2);
-	UInt timeid, sec, numClashes, startNumClashes, startNumBackboneClashes, mutant = 0, plateau = 50, nobetter = 0;
+	UInt timeid, sec, numClashes, startNumBackboneClashes, mutant = 0, plateau = 50, nobetter = 0;
 	vector < UInt > mutantPosition, chainSequence, sequencePosition, randomPosition;
 	vector < vector < UInt > > sequencePool, proteinSequence, finalSequence, possibleMutants;
 	stringstream convert;
@@ -126,7 +126,6 @@ int main (int argc, char* argv[])
 		{
 			//--Mutate current sequence, new mutant and optimize system
 			startNumBackboneClashes = prot->getNumHardBackboneClashes();
-			startNumClashes = prot->getNumHardClashes();
 			nobetter++; revert = true;
 			do{
 				mutantPosition.clear();
@@ -139,12 +138,9 @@ int main (int argc, char* argv[])
 				prot->setDihedral(mutantPosition[0],mutantPosition[1],backboneAngles[1],1,0);
 				numClashes = prot->getNumHardBackboneClashes();
 				if (numClashes <= startNumBackboneClashes){
-					numClashes = prot->getNumHardClashes();
-					if (numClashes <= startNumClashes){
-						sequencePosition.push_back(mutantPosition[0]);
-						sequencePosition.push_back(mutantPosition[1]);
-						revert = false;
-					}
+					sequencePosition.push_back(mutantPosition[0]);
+					sequencePosition.push_back(mutantPosition[1]);
+					revert = false;
 				}
 				if (revert){
 					prot->setDihedral(mutantPosition[0],mutantPosition[1],sPhi,0,0);
