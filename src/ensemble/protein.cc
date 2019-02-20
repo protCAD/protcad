@@ -2657,10 +2657,10 @@ double protein::getResPairEnergy(const UInt _chain1, const UInt _res1, const UIn
 	}
 }
 
-void protein::protMin()
+void protein::protMin(bool _backboneRelaxation)
 {
 	protRelax(1000);
-	protOpt(true);
+	protOpt(_backboneRelaxation);
 }
 
 void protein::protOpt(bool _backbone)
