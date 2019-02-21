@@ -116,7 +116,7 @@ int main (int argc, char* argv[])
 			chainSequence = getChainSequence(prot, activeChains[i]);
 			proteinSequence.push_back(chainSequence);
 		}
-		prot->protMin();
+		prot->protMin(true);
 		pdbWriter(prot, tempModel);
 		Energy = prot->protEnergy();
 		pastEnergy = Energy;
@@ -147,7 +147,7 @@ int main (int argc, char* argv[])
 					prot->setDihedral(mutantPosition[0],mutantPosition[1],sPsi,1,0);
 				}
 			}while (revert);
-			prot->protMin();
+			prot->protMin(true);
 
 			//--Energy test
 			Energy = prot->protEnergy();
