@@ -32,43 +32,42 @@ int main (int argc, char* argv[])
 	double Energy = bundle->protEnergy();
 	end = clock();
 	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-	cout << "protEnergy: " << Energy << " kcal/mol time: " << cpu_time_used << endl;
+	cout << "Energy: " << Energy << " kcal/mol time: " << cpu_time_used << endl;
 	string outFile = infile;
 	pdbWriter(bundle, outFile);
-	
-	/*start = clock();
-	Energy = bundle->protEnergy();
-	end = clock();
-	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-	cout << "protEnergy: " << Energy << " kcal/mol time: " << cpu_time_used << endl;
-	outFile = "protEnergy_out2.pdb";
-	pdbWriter(bundle, outFile);
-	
-	bundle->setMoved(true);
-	start = clock();
-	Energy = bundle->protEnergy();
-	end = clock();
-	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-	cout << "protEnergy: " << Energy << " kcal/mol time: " << cpu_time_used << endl;
-	outFile = "protEnergy_out3.pdb";
-	pdbWriter(bundle, outFile);
-	
-	
 	
 	start = clock();
 	UInt clashes = bundle->getNumHardClashes();
 	end = clock();
 	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-	cout << clashes << " clashes time: " << cpu_time_used << endl;
-	string outFile = "protRelax_out.pdb";
-	pdbWriter(bundle, outFile);
+	cout << "Clashes: " << clashes << " clashes time: " << cpu_time_used << endl;
 	
+	start = clock();
+	clashes = bundle->getNumHardBackboneClashes();
+	end = clock();
+	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+	cout << "Backbone Clashes: " << clashes << " clashes time: " << cpu_time_used << endl;
+	
+	cout << endl << "--second calculation without local structural change--" << endl << endl;
+	
+	start = clock();
+	Energy = bundle->protEnergy();
+	end = clock();
+	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+	cout << "Energy: " << Energy << " kcal/mol time: " << cpu_time_used << endl;
+
 	start = clock();
 	clashes = bundle->getNumHardClashes();
 	end = clock();
 	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-	cout << clashes << " clashes time: " << cpu_time_used << endl;
-	outFile = "protRelax_out.pdb";
-	pdbWriter(bundle, outFile);*/
+	cout << "Clashes: " << clashes << " clashes time: " << cpu_time_used << endl;
+	
+	start = clock();
+	clashes = bundle->getNumHardBackboneClashes();
+	end = clock();
+	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+	cout << "Backbone Clashes: " << clashes << " clashes time: " << cpu_time_used << endl;
+	
+	
 	return 0;
 }

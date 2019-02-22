@@ -1125,7 +1125,7 @@ double protein::protEnergy()
 
 void protein::updateEnergy()
 {
-	updateMovedDependence();
+	updateMovedDependence(0);
 	updateDielectrics();
 	for(UInt i=0; i<itsChains.size(); i++)
 	{
@@ -1135,7 +1135,7 @@ void protein::updateEnergy()
 			itsChains[i]->updateEnergy(itsChains[j]);
 		}
 	}
-	setMoved(false);
+	setMoved(false,0);
 }
 
 void protein::updateDielectrics()
@@ -1159,29 +1159,29 @@ void protein::calculateDielectrics()
 	}
 }
 
-void protein::updateMovedDependence()
+void protein::updateMovedDependence(UInt _EorC)
 {
 	for(UInt i=0; i<itsChains.size(); i++)
 	{
-		itsChains[i]->updateMovedDependence();
+		itsChains[i]->updateMovedDependence(_EorC);
 		for(UInt j=i+1; j<itsChains.size(); j++)
 		{
-			itsChains[i]->updateMovedDependence(itsChains[j]);
+			itsChains[i]->updateMovedDependence(itsChains[j], _EorC);
 		}
 	}
 }
 
-void protein::setMoved(bool _moved)
+void protein::setMoved(bool _moved, UInt _EorC)
 {
 	for(UInt i=0; i<itsChains.size(); i++)
 	{
-		itsChains[i]->setMoved(_moved);
+		itsChains[i]->setMoved(_moved,_EorC);
 	}
 }
 
 double protein::protEnergy(UInt chainIndex, UInt resIndex)
 {
-	if (getMoved(chainIndex, resIndex)){
+	if (getMoved(chainIndex, resIndex, 0)){
 		updateEnergy();
 	}
 	return itsChains[chainIndex]->getEnergy(resIndex);
@@ -1241,9 +1241,44 @@ double protein::getMedianResidueEnergy(UIntVec _activeChains)
 	return median;
 }
 
+bool protein::boltzmannEnergyCriteria(double _deltaEnergy, double _KT)
+{
+	bool acceptance;
+	double Entropy = (1000000/((rand() % 1000000)+1))-1; //generate high precision random probability as entropy
+	double PiPj = pow(EU,((_deltaEnergy)/(_KT))); //calculate boltzmann probability to test against entropy
+	if (PiPj < Entropy){acceptance = true;}
+	else{acceptance = false;}
+	return acceptance;
+}
+
+void protein::updateBackboneClashes()
+{
+	updateMovedDependence(2);
+	for(UInt i=0; i<itsChains.size(); i++)
+	{
+		itsChains[i]->updateBackboneClashes();
+		for(UInt j=i+1; j<itsChains.size(); j++)
+		{
+			itsChains[i]->updateBackboneClashes(itsChains[j]);
+		}
+	}
+	setMoved(false, 2);
+}
+
+UInt protein::getNumHardBackboneClashes()
+{
+	updateBackboneClashes();
+	UInt clashes = 0;
+	for(UInt i=0; i<itsChains.size(); i++)
+	{
+		clashes += itsChains[i]->getBackboneClashes();
+	}
+	return clashes;
+}
+
 void protein::updateClashes()
 {
-	updateMovedDependence();
+	updateMovedDependence(1);
 	for(UInt i=0; i<itsChains.size(); i++)
 	{
 		itsChains[i]->updateClashes();
@@ -1252,7 +1287,7 @@ void protein::updateClashes()
 			itsChains[i]->updateClashes(itsChains[j]);
 		}
 	}
-	setMoved(false);
+	setMoved(false, 1);
 }
 
 UInt protein::getNumHardClashes()
@@ -1268,7 +1303,7 @@ UInt protein::getNumHardClashes()
 
 UInt protein::getNumHardClashes(UInt chainIndex, UInt resIndex)
 {
-	if (getMoved(chainIndex, resIndex)){
+	if (getMoved(chainIndex, resIndex,1)){
 		updateClashes();
 	}
 	return itsChains[chainIndex]->getClashes(resIndex);
@@ -2622,97 +2657,89 @@ double protein::getResPairEnergy(const UInt _chain1, const UInt _res1, const UIn
 	}
 }
 
-void protein::protMin()
+void protein::protMin(bool _backboneRelaxation)
 {
-	protRelax();
-	protOpt(true);
+	protRelax(1000);
+	protOpt(_backboneRelaxation);
 }
 
 void protein::protOpt(bool _backbone)
-{   // Sidechain and backrub optimization with a local dielectric scaling of electrostatics and corresponding Born/Gill implicit solvation energy
-	//_plateau: the number of consecutive optimization cycles without an energy decrease (default: 150 for general purpose optimization)
-
-	//--reset saved protein energies prior to optimization
-	setMoved(true);
-
-	//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
-	UInt randchain, randres,randrestype, randrot, resnum, RPTType, chainNum = getNumChains(), nobetter = 0, plateau = 500;
-	double Energy, Entropy, PiPj, pastEnergy = protEnergy(), sPhi, sPsi, RPT, KT = KB*residue::temperature;
-	vector < vector <double>> currentRot; vector <UIntVec> allowedRots; srand (time(NULL));
-	vector <double> angles(2);
+{
+	// Sidechain and backslide optimization with a local dielectric scaling of electrostatics and corresponding Born/Gill implicit solvation energy
 	
-	//--Run optimizaiton loop to relative minima, determined by _plateau----------------------------
-	do
-	{   //--choose random residue
-		randchain = rand() % chainNum;
-		resnum = getNumResidues(randchain);
-		randres = rand() % resnum;
-		randrestype = getTypeFromResNum(randchain, randres);
-		nobetter++;
-
-		//--Backslide optimization-----------------------------------------------------------------------
-		if (_backbone && randres > 0 && randres < resnum-2)
-		{
-			sPhi = getPhi(randchain,randres);
-			sPsi = getPsi(randchain,randres);
-			RPT = getResiduesPerTurn(sPhi,sPsi);
-			RPTType = getBackboneSequenceType(RPT);
-			angles = getRandPhiPsifromBackboneSequenceType(RPTType);
-			setDihedral(randchain,randres,angles[0],0,0);
-			setDihedral(randchain,randres,angles[1],1,0);
-			Energy = protEnergy();
-			Entropy = (1000000/((rand() % 1000000)+1))-1;
-			PiPj = pow(EU,((Energy-pastEnergy)/KT));
-			if (PiPj < Entropy)
-			{
-				nobetter = 0, pastEnergy = Energy;
+	//--Initialize variables for loop, calculate starting energy and build energy vectors-----
+	UInt randchain, randres, resnum, backboneOrSidechain;
+	UInt clashes, clashesStart, bbClashes, bbClashesStart, chainNum = getNumChains(), plateau = 1000;
+	double Energy, pastEnergy = protEnergy(), deltaEnergy, sPhi, sPsi,nobetter = 0.0, KT = KB*Temperature();
+	vector < vector <double>> currentSidechainConf, newSidechainConf; srand (time(NULL)); vector <double> backboneAngles(2);
+	bool boltzmannAcceptance, sidechainTest, backboneTest, revert, energyTest;
+	
+	//--Run optimizaiton loop to local minima defined by an RT plateau------------------------
+	do{
+		//--choose random residue and set variables
+		randchain = rand() % chainNum, resnum = getNumResidues(randchain), randres = rand() % resnum;
+		clashesStart = getNumHardClashes(); backboneOrSidechain = rand() % 2; nobetter++;
+		backboneTest = false, sidechainTest = false, energyTest = false, revert = true;
+		
+		//--Backbone conformation trial--------------------------------------------------------
+		if (_backbone && randres > 0 && randres < resnum-2 && backboneOrSidechain == 0){
+			backboneTest = true; bbClashesStart = getNumHardBackboneClashes();
+			sPhi = getPhi(randchain,randres), sPsi = getPsi(randchain,randres);
+			backboneAngles = getRandConformationFromBackboneType(sPhi, sPsi);
+			setDihedral(randchain,randres,backboneAngles[0],0,0); setDihedral(randchain,randres,backboneAngles[1],1,0);
+			bbClashes = getNumHardBackboneClashes();
+			if (bbClashes <= bbClashesStart){
+				clashes = getNumHardClashes();
+				if (clashes <= clashesStart){
+					energyTest = true; revert = false;
+				}
 			}
-			else{
+		}
+		//--Sidechain conformation trial--------------------------------------------------------
+		else{
+			sidechainTest = true;
+			currentSidechainConf = getSidechainDihedrals(randchain, randres);
+			newSidechainConf = randContinuousSidechainConformation(randchain, randres);
+			setSidechainDihedralAngles(randchain, randres, newSidechainConf);
+			clashes = getNumHardClashes();
+			if (clashes <= clashesStart){
+				energyTest = true; revert = false;
+			}
+		}
+		//--Energy-Test-------------------------------------------------------------------------
+		if (energyTest){
+			Energy = protEnergy();
+			deltaEnergy = Energy - pastEnergy;
+			boltzmannAcceptance = boltzmannEnergyCriteria(deltaEnergy, KT);
+			if (boltzmannAcceptance){
+				pastEnergy = Energy;
+				if (deltaEnergy < -KT){nobetter = 0;}
+			}
+			else{revert = true;}
+		}
+		//--Revert conformation-----------------------------------------------------------------
+		if (revert){
+			if(backboneTest){
 				setDihedral(randchain,randres,sPhi,0,0);
 				setDihedral(randchain,randres,sPsi,1,0);
 			}
-		}
-
-		//--Rotamer optimization-----------------------------------------------------------------------
-		currentRot = getSidechainDihedrals(randchain, randres);
-		allowedRots = getAllowedRotamers(randchain, randres, randrestype);
-
-		//--Try a max of one rotamer per branchpoint and keep if an improvement, else revert
-		for (UInt b = 0; b < residue::getNumBpt(randrestype); b++)
-		{
-			if (allowedRots[b].size() > 0)
-			{
-				randrot = rand() % allowedRots[b].size();
-				setRotamerWBC(randchain, randres, b, allowedRots[b][randrot]);
-				Energy = protEnergy();
-				Energy = protEnergy();
-				Entropy = (1000000/((rand() % 1000000)+1))-1;
-				PiPj = pow(EU,((Energy-pastEnergy)/KT));
-				if (PiPj < Entropy)
-				{
-					nobetter = 0, pastEnergy = Energy;
-					break;
-				}
-				else
-				{
-					setSidechainDihedralAngles(randchain, randres, currentRot);
-				}
+			if(sidechainTest){
+				setSidechainDihedralAngles(randchain, randres, currentSidechainConf);
 			}
 		}
 	} while (nobetter < plateau);
 	return;
 }
 
-void protein::protRelax()
+void protein::protRelax(UInt _plateau)
 {   // Sidechain and backrub optimization with a local dielectric scaling of electrostatics and corresponding Born/Gill implicit solvation energy
 	//_plateau: the number of consecutive optimization cycles without an energy decrease (default: 150 for general purpose optimization)
 	
-	setMoved(true);
 	UInt pastProtClashes = getNumHardClashes();
 	if (pastProtClashes > 0)
 	{	
 		//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
-		UInt randchain, randres, randrestype, resnum, randrot, chainNum = getNumChains(), protClashes, resClashes, medResC, nobetter = 0, plateau = 1000;
+		UInt randchain, randres, randrestype, resnum, randrot, chainNum = getNumChains(), protClashes, resClashes, medResC, nobetter = 0;
 		vector < vector <double> > currentRot; vector <UIntVec> allowedRots; srand (time(NULL));
 		
 		//--Run optimizaiton loop to relative minima, determined by _plateau----------------------------
@@ -2751,7 +2778,7 @@ void protein::protRelax()
 					}
 				}
 			}
-		} while (nobetter < plateau);
+		} while (nobetter < _plateau);
 	}
 	return;
 }
@@ -2759,9 +2786,6 @@ void protein::protRelax()
 void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeChains) //_activeChain only optimized and energy calculated for it
 {   // Sidechain and backrub optimization with a local dielectric scaling of electrostatics and corresponding Born/Gill implicit solvation energy
 	//_plateau: the number of consecutive optimization cycles without an energy decrease (default: 150 for general purpose optimization)
-
-	//--reset saved protein energies prior to optimization
-	setMoved(true);
 
 	//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
 	UInt randchain, randres, randrestype, randrot, RPTType, chainNum = _activeChains.size(),nobetter = 0, plateau = 500, _plateau=plateau*0.8;
@@ -2794,7 +2818,7 @@ void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 				sPhi = getPhi(randchain,randres);
 				sPsi = getPsi(randchain,randres);
 				RPT = getResiduesPerTurn(sPhi,sPsi);
-				RPTType = getBackboneSequenceType(RPT);
+				RPTType = getBackboneSequenceType(RPT,sPhi);
 				angles = getRandPhiPsifromBackboneSequenceType(RPTType);
 				setDihedral(randchain,randres,angles[0],0,0);
 				setDihedral(randchain,randres,angles[1],1,0);
@@ -2854,20 +2878,29 @@ double protein::getResiduesPerTurn(double phi, double psi)
 	return residuesPerTurn;
 }
 
-UInt protein::getBackboneSequenceType(double RPT)
+UInt protein::getBackboneSequenceType(double RPT, double phi)
 {
-	UInt backboneType = 0;
-	if (RPT <= -4.8)				{backboneType = 1;}
-	if (RPT > -4.8  && RPT <= -4.1)	{backboneType = 2;}
-	if (RPT > -4.1  && RPT <= -3.4)	{backboneType = 3;}
-	if (RPT > -3.4  && RPT <= -2.7)	{backboneType = 4;}
-	if (RPT > -2.7  && RPT <= -2.0)	{backboneType = 5;}
-	if (RPT >  2.0  && RPT <=  2.7)	{backboneType = 6;}
-	if (RPT >  2.7  && RPT <=  3.4)	{backboneType = 7;}
-	if (RPT >  3.4  && RPT <=  4.1)	{backboneType = 8;}
-	if (RPT >  4.1  && RPT <=  4.8)	{backboneType = 9;}
-	if (RPT >  4.8)					{backboneType = 10;}
-	return backboneType;
+	if (RPT <= -4.8 && phi <= 0)				{return 1;}
+	if (RPT > -4.8  && RPT <= -4.1 && phi <= 0)	{return 2;}
+	if (RPT > -4.1  && RPT <= -3.4 && phi <= 0)	{return 3;}
+	if (RPT > -3.4  && RPT <= -2.7 && phi <= 0)	{return 4;}
+	if (RPT > -2.7  && RPT <= -2.0 && phi <= 0)	{return 5;}
+	if (RPT >  2.0  && RPT <=  2.7 && phi <= 0)	{return 6;}
+	if (RPT >  2.7  && RPT <=  3.4 && phi <= 0)	{return 7;}
+	if (RPT >  3.4  && RPT <=  4.1 && phi <= 0)	{return 8;}
+	if (RPT >  4.1  && RPT <=  4.8 && phi <= 0)	{return 9;}
+	if (RPT >  4.8 && phi <= 0)					{return 10;}
+	if (RPT <= -4.8 && phi > 0)					{return 11;}
+	if (RPT > -4.8  && RPT <= -4.1 && phi > 0)	{return 12;}
+	if (RPT > -4.1  && RPT <= -3.4 && phi > 0)	{return 13;}
+	if (RPT > -3.4  && RPT <= -2.7 && phi > 0)	{return 14;}
+	if (RPT > -2.7  && RPT <= -2.0 && phi > 0)	{return 15;}
+	if (RPT >  2.0  && RPT <=  2.7 && phi > 0)	{return 16;}
+	if (RPT >  2.7  && RPT <=  3.4 && phi > 0)	{return 17;}
+	if (RPT >  3.4  && RPT <=  4.1 && phi > 0)	{return 18;}
+	if (RPT >  4.1  && RPT <=  4.8 && phi > 0)	{return 19;}
+	if (RPT >  4.8 && phi > 0)					{return 20;}
+	return 0;
 }
 
 vector <double> protein::getRandPhiPsifromBackboneSequenceType(UInt _RPTType)
@@ -2878,9 +2911,7 @@ vector <double> protein::getRandPhiPsifromBackboneSequenceType(UInt _RPTType)
 	if (_RPTType == 1){
 		do{
 			b = 153 + (rand() % 27);
-			do{
-				phi = (rand() % 360)-180;
-			}while(phi > -30 && phi < 30);
+			phi = (rand() % 150)-180;
 			psi = -1 * phi + b;
 		}while(psi > 180 || psi < -180);
 		angles[0] = phi;
@@ -2889,9 +2920,7 @@ vector <double> protein::getRandPhiPsifromBackboneSequenceType(UInt _RPTType)
 	if (_RPTType == 2){
 		do{
 			b = 124 + (rand() % 29);
-			do{
-				phi = (rand() % 360)-180;
-			}while(phi > -30 && phi < 30);
+			phi = (rand() % 150)-180;
 			psi = -1 * phi + b;
 		}while(psi > 180 || psi < -180);
 		angles[0] = phi;
@@ -2900,9 +2929,7 @@ vector <double> protein::getRandPhiPsifromBackboneSequenceType(UInt _RPTType)
 	if (_RPTType == 3){
 		do{
 			b = 95 + (rand() % 29);
-			do{
-				phi = (rand() % 360)-180;
-			}while(phi > -30 && phi < 30);
+			phi = (rand() % 150)-180;
 			psi = -1 * phi + b;
 		}while(psi > 180 || psi < -180);
 		angles[0] = phi;
@@ -2911,9 +2938,7 @@ vector <double> protein::getRandPhiPsifromBackboneSequenceType(UInt _RPTType)
 	if (_RPTType == 4){
 		do{
 			b = 58 + (rand() % 37);
-			do{
-				phi = (rand() % 360)-180;
-			}while(phi > -30 && phi < 30);
+			phi = (rand() % 150)-180;
 			psi = -1 * phi + b;
 		}while(psi > 180 || psi < -180);
 		angles[0] = phi;
@@ -2922,9 +2947,7 @@ vector <double> protein::getRandPhiPsifromBackboneSequenceType(UInt _RPTType)
 	if (_RPTType == 5){
 		do{
 			b = (rand() % 58);
-			do{
-				phi = (rand() % 360)-180;
-			}while(phi > -30 && phi < 30);
+			phi = (rand() % 150)-180;
 			psi = -1 * phi + b;
 		}while(psi > 180 || psi < -180);
 		angles[0] = phi;
@@ -2933,9 +2956,7 @@ vector <double> protein::getRandPhiPsifromBackboneSequenceType(UInt _RPTType)
 	if (_RPTType == 6){
 		do{
 			b = -58 + (rand() % 58);
-			do{
-				phi = (rand() % 360)-180;
-			}while(phi > -30 && phi < 30);
+			phi = (rand() % 150)-180;
 			psi = -1 * phi + b;
 		}while(psi > 180 || psi < -180);
 		angles[0] = phi;
@@ -2944,9 +2965,7 @@ vector <double> protein::getRandPhiPsifromBackboneSequenceType(UInt _RPTType)
 	if (_RPTType == 7){
 		do{
 			b = -95 + (rand() % 37);
-			do{
-				phi = (rand() % 360)-180;
-			}while(phi > -30 && phi < 30);
+			phi = (rand() % 150)-180;
 			psi = -1 * phi + b;
 		}while(psi > 180 || psi < -180);
 		angles[0] = phi;
@@ -2955,9 +2974,7 @@ vector <double> protein::getRandPhiPsifromBackboneSequenceType(UInt _RPTType)
 	if (_RPTType == 8){
 		do{
 			b = -124 + (rand() % 29);
-			do{
-				phi = (rand() % 360)-180;
-			}while(phi > -30 && phi < 30);
+			phi = (rand() % 150)-180;
 			psi = -1 * phi + b;
 		}while(psi > 180 || psi < -180);
 		angles[0] = phi;
@@ -2966,9 +2983,7 @@ vector <double> protein::getRandPhiPsifromBackboneSequenceType(UInt _RPTType)
 	if (_RPTType == 9){
 		do{
 			b = -153 + (rand() % 29);
-			do{
-				phi = (rand() % 360)-180;
-			}while(phi > -30 && phi < 30);
+			phi = (rand() % 150)-180;
 			psi = -1 * phi + b;
 		}while(psi > 180 || psi < -180);
 		angles[0] = phi;
@@ -2977,9 +2992,97 @@ vector <double> protein::getRandPhiPsifromBackboneSequenceType(UInt _RPTType)
 	if (_RPTType == 10){
 		do{
 			b = -180 + (rand() % 27);
-			do{
-				phi = (rand() % 360)-180;
-			}while(phi > -30 && phi < 30);
+			phi = (rand() % 150)-180;
+			psi = -1 * phi + b;
+		}while(psi > 180 || psi < -180);
+		angles[0] = phi;
+		angles[1] = psi;
+	}
+	if (_RPTType == 11){
+		do{
+			b = 153 + (rand() % 27);
+			phi = (rand() % 150)+31;
+			psi = -1 * phi + b;
+		}while(psi > 180 || psi < -180);
+		angles[0] = phi;
+		angles[1] = psi;
+	}
+	if (_RPTType == 12){
+		do{
+			b = 124 + (rand() % 29);
+			phi = (rand() % 150)+31;
+			psi = -1 * phi + b;
+		}while(psi > 180 || psi < -180);
+		angles[0] = phi;
+		angles[1] = psi;
+	}
+	if (_RPTType == 13){
+		do{
+			b = 95 + (rand() % 29);
+			phi = (rand() % 150)+31;
+			psi = -1 * phi + b;
+		}while(psi > 180 || psi < -180);
+		angles[0] = phi;
+		angles[1] = psi;
+	}
+	if (_RPTType == 14){
+		do{
+			b = 58 + (rand() % 37);
+			phi = (rand() % 150)+31;
+			psi = -1 * phi + b;
+		}while(psi > 180 || psi < -180);
+		angles[0] = phi;
+		angles[1] = psi;
+	}
+	if (_RPTType == 15){
+		do{
+			b = (rand() % 58);
+			phi = (rand() % 150)+31;
+			psi = -1 * phi + b;
+		}while(psi > 180 || psi < -180);
+		angles[0] = phi;
+		angles[1] = psi;
+	}
+	if (_RPTType == 16){
+		do{
+			b = -58 + (rand() % 58);
+			phi = (rand() % 150)+31;
+			psi = -1 * phi + b;
+		}while(psi > 180 || psi < -180);
+		angles[0] = phi;
+		angles[1] = psi;
+	}
+	if (_RPTType == 17){
+		do{
+			b = -95 + (rand() % 37);
+			phi = (rand() % 150)+31;
+			psi = -1 * phi + b;
+		}while(psi > 180 || psi < -180);
+		angles[0] = phi;
+		angles[1] = psi;
+	}
+	if (_RPTType == 18){
+		do{
+			b = -124 + (rand() % 29);
+			phi = (rand() % 150)+31;
+			psi = -1 * phi + b;
+		}while(psi > 180 || psi < -180);
+		angles[0] = phi;
+		angles[1] = psi;
+	}
+	if (_RPTType == 19){
+		do{
+			b = -153 + (rand() % 29);
+			phi = (rand() % 150)+31;
+			psi = -1 * phi + b;
+		}while(psi > 180 || psi < -180);
+		angles[0] = phi;
+		angles[1] = psi;
+	}
+	if (_RPTType == 20){
+		do{
+			b = -180 + (rand() % 27);
+			phi = (rand() % 150)+31;
 			psi = -1 * phi + b;
 		}while(psi > 180 || psi < -180);
 		angles[0] = phi;
@@ -2987,7 +3090,12 @@ vector <double> protein::getRandPhiPsifromBackboneSequenceType(UInt _RPTType)
 	}
 	return angles;
 }
-
+vector <double> protein::getRandConformationFromBackboneType(double _phi, double _psi)
+{
+	double RPT = getResiduesPerTurn(_phi,_psi);
+	UInt RPTType = getBackboneSequenceType(RPT,_phi);
+	return getRandPhiPsifromBackboneSequenceType(RPTType);
+}
 void protein::optimizeRotamers()
 {
 	vector < UIntVec > activePositions;

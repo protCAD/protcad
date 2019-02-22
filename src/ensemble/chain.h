@@ -115,9 +115,9 @@ public:
 	UInt getNumChis(const UInt _resIndex, const UInt _bpt);
 	double netCharge();
 	
-	void setMoved (UInt resIndex, bool _moved) {itsResidues[resIndex]->setMoved(_moved);}
-	void setMoved (bool _moved);
-	bool getMoved (UInt resIndex) {return itsResidues[resIndex]->getMoved();}
+	void setMoved (UInt resIndex, bool _moved, UInt _EorC) {itsResidues[resIndex]->setMoved(_moved, _EorC);}
+	void setMoved (bool _moved, UInt _EorC);
+	bool getMoved (UInt resIndex, UInt _EorC) {return itsResidues[resIndex]->getMoved(_EorC);}
 	double getEnergy (UInt resIndex) {return itsResidues[resIndex]->getEnergy();}
 	double getSolvationEnergy(const UInt _resIndex) {return itsResidues[_resIndex]->getSolvationEnergy();}
 	double getDielectric(const UInt _resIndex) {return itsResidues[_resIndex]->getDielectric();}
@@ -131,6 +131,7 @@ public:
 	void setResAllowed(const UInt _indexInChain, const UInt _aaType);
 	UIntVec getResAllowed (const UInt _indexInChain);
 	void setOnlyNativeIdentity(const UInt _indexInChain);
+	vector< vector< double > > randContinuousSidechainConformation(UInt _resIndex) {return itsResidues[_resIndex]->randContinuousSidechainConformation();}
 	void setRotamerWithoutBuffering(const UInt _indexInChain, vector<UInt> _rotamer);
 	void setRotamerWithoutBuffering(const UInt _indexInChain, vector<UInt> _rotamer, vector< vector< double> > dihedralAngles);
 	void setRotamerWithoutBuffering(const UInt _indexInChain, const UInt _bpt, const UInt _rotamer);
@@ -155,6 +156,9 @@ public:
 	UInt chooseNextMutationIdentity(ran& _ran, vector <int> _position) { return chooseTargetIdentity(_position[2],_ran); }
 	residue* superimposeGLY(const UInt _residue);
 	double calculateHCA_O_hBondEnergy(chain* _other);
+	UInt getBackboneClashes();
+	void updateBackboneClashes(chain* _other);
+	void updateBackboneClashes();
 	UInt getClashes();
 	void updateClashes(chain* _other);
 	void updateClashes();
@@ -202,8 +206,8 @@ public:
 	double intraEnergy();
 	void updateEnergy();
 	void updateEnergy(chain* _other);
-	void updateMovedDependence();
-	void updateMovedDependence(chain* _other);
+	void updateMovedDependence(UInt _EorC);
+	void updateMovedDependence(chain* _other, UInt _EorC);
 	double getEnergy();
 	void polarizability();
 	void polarizability(chain* _other);

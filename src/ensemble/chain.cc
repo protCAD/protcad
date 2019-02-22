@@ -1388,7 +1388,6 @@ void chain::setDihedralWithoutBuffering(const UInt _index, const UInt _bpt,
 vector< vector< double> > chain::getSidechainDihedralAngles(UInt _indexInChain)
 {
 	vector< vector< double> > theAngles;
-	itsResidues[_indexInChain]->calculateSidechainDihedralAngles();
 	theAngles = itsResidues[_indexInChain]->getSidechainDihedralAngles();
 	return theAngles;
 }
@@ -1400,7 +1399,7 @@ void chain::setSidechainDihedralAngles(UInt _indexInChain, vector <vector <doubl
 		{	itsResidues[_indexInChain]->setChi(i,j,Angles[i][j]);
 		}
 	}
-    itsResidues[_indexInChain]->setMoved(true);
+	itsResidues[_indexInChain]->setMoved();
 	return;
 }
 
@@ -1541,19 +1540,35 @@ double chain::getResiduesPerTurn(const UInt _resIndex)
 
 UInt chain::getBackboneSequenceType(const UInt _resIndex)
 {
-	UInt backboneType = 0;
+	double phi;
+	if (_resIndex == 0){
+		phi = itsResidues[_resIndex+1]->getPhi();
+	}
+	else{
+		phi = itsResidues[_resIndex]->getPhi();
+	}
 	double RPT = getResiduesPerTurn(_resIndex);
-	if (RPT <= -4.8)				{backboneType = 1;}
-	if (RPT > -4.8  && RPT <= -4.1)	{backboneType = 2;}
-	if (RPT > -4.1  && RPT <= -3.4)	{backboneType = 3;}
-	if (RPT > -3.4  && RPT <= -2.7)	{backboneType = 4;}
-	if (RPT > -2.7  && RPT <= -2.0)	{backboneType = 5;}
-	if (RPT >  2.0  && RPT <=  2.7)	{backboneType = 6;}
-	if (RPT >  2.7  && RPT <=  3.4)	{backboneType = 7;}
-	if (RPT >  3.4  && RPT <=  4.1)	{backboneType = 8;}
-	if (RPT >  4.1  && RPT <=  4.8)	{backboneType = 9;}
-	if (RPT >  4.8)					{backboneType = 10;}
-	return backboneType;
+	if (RPT <= -4.8 && phi <= 0)				{return 1;}
+	if (RPT > -4.8  && RPT <= -4.1 && phi <= 0)	{return 2;}
+	if (RPT > -4.1  && RPT <= -3.4 && phi <= 0)	{return 3;}
+	if (RPT > -3.4  && RPT <= -2.7 && phi <= 0)	{return 4;}
+	if (RPT > -2.7  && RPT <= -2.0 && phi <= 0)	{return 5;}
+	if (RPT >  2.0  && RPT <=  2.7 && phi <= 0)	{return 6;}
+	if (RPT >  2.7  && RPT <=  3.4 && phi <= 0)	{return 7;}
+	if (RPT >  3.4  && RPT <=  4.1 && phi <= 0)	{return 8;}
+	if (RPT >  4.1  && RPT <=  4.8 && phi <= 0)	{return 9;}
+	if (RPT >  4.8 && phi <= 0)					{return 10;}
+	if (RPT <= -4.8 && phi > 0)					{return 11;}
+	if (RPT > -4.8  && RPT <= -4.1 && phi > 0)	{return 12;}
+	if (RPT > -4.1  && RPT <= -3.4 && phi > 0)	{return 13;}
+	if (RPT > -3.4  && RPT <= -2.7 && phi > 0)	{return 14;}
+	if (RPT > -2.7  && RPT <= -2.0 && phi > 0)	{return 15;}
+	if (RPT >  2.0  && RPT <=  2.7 && phi > 0)	{return 16;}
+	if (RPT >  2.7  && RPT <=  3.4 && phi > 0)	{return 17;}
+	if (RPT >  3.4  && RPT <=  4.1 && phi > 0)	{return 18;}
+	if (RPT >  4.1  && RPT <=  4.8 && phi > 0)	{return 19;}
+	if (RPT >  4.8 && phi > 0)					{return 20;}
+	return 0;
 }
 
 double chain::getPhi(const UInt _indexInChain)
@@ -1726,10 +1741,10 @@ void chain::updateEnergy()
 	double resEnergy;
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{	
-		resI = itsResidues[i]->getMoved();
+		resI = itsResidues[i]->getMoved(0);
 		for(UInt j=i+1; j<itsResidues.size(); j++)
 		{
-			resJ =  itsResidues[j]->getMoved();
+			resJ =  itsResidues[j]->getMoved(0);
 			if (resI || resJ){
 				resEnergy = itsResidues[i]->interSoluteEnergy(itsResidues[j]), resEnergy /= 2;
 				if(resI){itsResidues[i]->sumEnergy(resEnergy);}
@@ -1749,10 +1764,10 @@ void chain::updateEnergy(chain* _other)
 	double resEnergy;
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{
-		resI = itsResidues[i]->getMoved();
+		resI = itsResidues[i]->getMoved(0);
 		for(UInt j=0; j<_other->itsResidues.size(); j++)
 		{
-			resJ = _other->itsResidues[j]->getMoved();
+			resJ = _other->itsResidues[j]->getMoved(0);
 			if (resI || resJ){
 				resEnergy = itsResidues[i]->interSoluteEnergy(_other->itsResidues[j]), resEnergy /= 2;
 				if(resI){itsResidues[i]->sumEnergy(resEnergy);}
@@ -1767,10 +1782,10 @@ void chain::polarizability()
 	bool resI, resJ;
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{	
-		resI = itsResidues[i]->getMoved();
+		resI = itsResidues[i]->getMoved(0);
 		for(UInt j=i+1; j<itsResidues.size(); j++)
 		{	
-			resJ = itsResidues[j]->getMoved();
+			resJ = itsResidues[j]->getMoved(0);
 			if (resI || resJ){
 				itsResidues[i]->polarizability(itsResidues[j]);
 			}
@@ -1786,10 +1801,10 @@ void chain::polarizability(chain* _other)
 	bool resI, resJ;
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{
-		resI = itsResidues[i]->getMoved();
+		resI = itsResidues[i]->getMoved(0);
 		for(UInt j=0; j<_other->itsResidues.size(); j++)
 		{
-			resJ = _other->itsResidues[j]->getMoved();
+			resJ = _other->itsResidues[j]->getMoved(0);
 			if (resI || resJ){
 				itsResidues[i]->polarizability(_other->itsResidues[j]);
 			}
@@ -1801,44 +1816,44 @@ void chain::calculateDielectrics()
 {
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{	
-		if (itsResidues[i]->getMoved()){
+		if (itsResidues[i]->getMoved(0)){
 			itsResidues[i]->calculateDielectrics();
 		}
 	}
 }
 
-void chain::updateMovedDependence()
+void chain::updateMovedDependence(UInt _EorC)
 {
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{	
-		if (itsResidues[i]->getCheckMovedDependence()){
+		if (itsResidues[i]->getCheckMovedDependence(_EorC)){
 			for(UInt j=i+1; j<itsResidues.size(); j++)
 			{	
-				itsResidues[i]->updateMovedDependence(itsResidues[j]);
+				itsResidues[i]->updateMovedDependence(itsResidues[j], _EorC);
 			}
 		}
 	}
 }
 
-void chain::updateMovedDependence(chain* _other)
+void chain::updateMovedDependence(chain* _other, UInt _EorC)
 {
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{
-		if (itsResidues[i]->getCheckMovedDependence()){
+		if (itsResidues[i]->getCheckMovedDependence(_EorC)){
 			for(UInt j=0; j<_other->itsResidues.size(); j++)
 			{
-				itsResidues[i]->updateMovedDependence(_other->itsResidues[j]);
+				itsResidues[i]->updateMovedDependence(_other->itsResidues[j], _EorC);
 			}
 		}
 	}
 }
 
 
-void chain::setMoved(bool _moved)
+void chain::setMoved(bool _moved, UInt _EorC)
 {
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{	
-		itsResidues[i]->setMoved(_moved);
+		itsResidues[i]->setMoved(_moved, _EorC);
 	}
 }
 
@@ -1859,10 +1874,10 @@ void chain::updateClashes()
 	UInt clashes;
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{	
-		resI = itsResidues[i]->getMoved();
+		resI = itsResidues[i]->getMoved(1);
 		for(UInt j=i+1; j<itsResidues.size(); j++)
 		{
-			resJ =  itsResidues[j]->getMoved();
+			resJ =  itsResidues[j]->getMoved(1);
 			if (resI || resJ){
 				clashes = itsResidues[i]->getNumHardClashes(itsResidues[j]), clashes /= 2;
 				if(resI){itsResidues[i]->sumClashes(clashes);}
@@ -1882,10 +1897,10 @@ void chain::updateClashes(chain* _other)
 	UInt clashes;
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{
-		resI = itsResidues[i]->getMoved();
+		resI = itsResidues[i]->getMoved(1);
 		for(UInt j=0; j<_other->itsResidues.size(); j++)
 		{
-			resJ = _other->itsResidues[j]->getMoved();
+			resJ = _other->itsResidues[j]->getMoved(1);
 			if (resI || resJ){
 				clashes = itsResidues[i]->getNumHardClashes(_other->itsResidues[j]), clashes /= 2;
 				if(resI){itsResidues[i]->sumClashes(clashes);}
@@ -1901,6 +1916,55 @@ UInt chain::getClashes()
 	for(UInt i=0; i<itsResidues.size(); i++)
 	{	
 		clashes += itsResidues[i]->getClashes();
+	}
+	return clashes;
+}
+
+
+void chain::updateBackboneClashes()
+{
+	bool resI, resJ;
+	UInt clashes;
+	for(UInt i=0; i<itsResidues.size(); i++)
+	{	
+		resI = itsResidues[i]->getMoved(2);
+		for(UInt j=i+1; j<itsResidues.size(); j++)
+		{
+			resJ =  itsResidues[j]->getMoved(2);
+			if (resI || resJ){
+				clashes = itsResidues[i]->getNumHardBackboneClashes(itsResidues[j]), clashes /= 2;
+				if(resI){itsResidues[i]->sumBackboneClashes(clashes);}
+				if(resJ){itsResidues[j]->sumBackboneClashes(clashes);}
+			}
+		}
+	}
+}
+
+void chain::updateBackboneClashes(chain* _other)
+{
+	bool resI, resJ;
+	UInt clashes;
+	for(UInt i=0; i<itsResidues.size(); i++)
+	{
+		resI = itsResidues[i]->getMoved(2);
+		for(UInt j=0; j<_other->itsResidues.size(); j++)
+		{
+			resJ = _other->itsResidues[j]->getMoved(2);
+			if (resI || resJ){
+				clashes = itsResidues[i]->getNumHardBackboneClashes(_other->itsResidues[j]), clashes /= 2;
+				if(resI){itsResidues[i]->sumBackboneClashes(clashes);}
+				if(resJ){_other->itsResidues[j]->sumBackboneClashes(clashes);}
+			}
+		}
+	}
+}
+
+UInt chain::getBackboneClashes()
+{
+	UInt clashes = 0;
+	for(UInt i=0; i<itsResidues.size(); i++)
+	{	
+		clashes += itsResidues[i]->getBackboneClashes();
 	}
 	return clashes;
 }

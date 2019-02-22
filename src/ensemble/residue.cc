@@ -1427,8 +1427,7 @@ residue* residue::mutate(const UInt _newTypeIndex)
 	{
 		newAA->alignAmideProtonToBackbone();
 	}
-	setMoved(true);
-	newAA->setMoved(true);
+	newAA->setMoved();
 	return newAA;
 }
 
@@ -1573,7 +1572,7 @@ void residue::setRotamer(const UInt _lib, const UInt _bpt, const UInt _rotamer)
 	{	setChi(_bpt,i,itsSidechainDihedralAngles[_bpt][i]);
 	}
 	//calculateSidechainDihedralAngles();
-	setMoved(true);
+	setMoved();
 }
 
 void residue::setRotamer(const UInt _bpt, const DouVec _rotamer)
@@ -1583,7 +1582,7 @@ void residue::setRotamer(const UInt _bpt, const DouVec _rotamer)
 	{	setChi(_bpt,i,itsSidechainDihedralAngles[_bpt][i]);
 	}
 	//calculateSidechainDihedralAngles();
-	setMoved(true);
+	setMoved();
 }
 
 void residue::setRotamerWithCheck(const UInt _lib, const UInt _bpt, const UInt _rotamer)
@@ -1607,7 +1606,7 @@ void residue::setRotamerWithCheck(const UInt _lib, const UInt _bpt, const UInt _
 	}
 	//else cout << "ERROR in setRotamerWithCheck...\n bpt " << _bpt << " does not exist." << endl;
 	//calculateSidechainDihedralAngles();
-	setMoved(true);
+	setMoved();
 }
 
 void residue::setPolarHRotamer(UInt _rotamerIndex)
@@ -1643,7 +1642,7 @@ DouVec residue::setRotamerWithCheckTest(const UInt _lib, const UInt _bpt, const 
 	else cout << "ERROR in setRotamerWithCheckTest...\n bpt " << _bpt << " does not exist." << endl;
 	calculateSidechainDihedralAngles();
 	return theAngles;
-	setMoved(true);
+	setMoved();
 }
 
 void residue::setBetaChi(const double _angle)
@@ -1654,7 +1653,7 @@ void residue::setBetaChi(const double _angle)
 		ASSERT(currentBetaChi < 1e5 && currentBetaChi > -1e5);
 		double diff = _angle - currentBetaChi;
 		rotate(0,1, diff);
-		setMoved(true);
+		setMoved();
 	}
 }
 
@@ -1664,7 +1663,7 @@ void residue::setChi(const UInt _bpt, const UInt _index, const double _angle)
 	ASSERT(currentChi < 1e5 && currentChi > -1e5);
 	double diff = _angle - currentChi;
 	setChiByDelta(_bpt, _index, diff);
-	setMoved(true);
+	setMoved();
 }
 
 void residue::setChiByDelta(const UInt _bpt, const UInt _index, const double _angleDelta)
@@ -2050,6 +2049,26 @@ void residue::calculateSidechainDihedralAngles()
 	}
 }
 
+vector< vector< double > > residue::randContinuousSidechainConformation()
+{	
+	vector < vector <double> > sideChainDihedralAngles;
+	vector <double> chis;
+	double angle;
+	UInt branchpoints = getNumBpt(itsType);
+	for (UInt i=0; i<branchpoints; i++)
+	{	
+		chis.clear();
+		UInt dihedrals = getNumDihedralAngles(itsType,i);
+		for (UInt j=0; j<dihedrals; j++)
+		{
+			angle = (rand() % 360)-179;
+			chis.push_back(angle);
+		}
+		sideChainDihedralAngles.push_back(chis);
+	}
+	return sideChainDihedralAngles;
+}
+
 void residue::calculatePolarHDihedralAngle()
 {
 	if(dataBase[itsType].getHasPolarHRotamers())
@@ -2109,7 +2128,7 @@ void residue::rotate(UInt _first, UInt _second, double _theta)
 
 void residue::rotateDihedral(atom* _pAtom1, atom* _pAtom2, double _deltaTheta,  UInt _angleType, UInt _direction)
 {
-	setMoved(true);
+	setMoved();
 	dblVec toOrigin = _pAtom1->getCoords() * (-1.0);
 	dblVec backHome = _pAtom1->getCoords();
 
@@ -2415,7 +2434,7 @@ void residue::translate(const dblVec& _dblVec)
 
 void residue::recursiveTranslateWithDirection(dblVec& _dblVec, UInt _direction)
 {	
-    setMoved(true);
+    setMoved();
 	translate(_dblVec);
 	if (_direction == 0)
 	{
@@ -2433,7 +2452,7 @@ void residue::recursiveTranslateWithDirection(dblVec& _dblVec, UInt _direction)
 
 void residue::recursiveTranslate(dblVec& _dblVec)
 {
-    setMoved(true);
+    setMoved();
 	translate(_dblVec);
 	if (pItsNextRes)
 	{	pItsNextRes->recursiveTranslate(_dblVec);
@@ -2442,7 +2461,7 @@ void residue::recursiveTranslate(dblVec& _dblVec)
 
 void residue::recursiveTransform(dblMat& _dblMat)
 {
-    setMoved(true);
+    setMoved();
 	transform(_dblMat);
 	if (pItsNextRes)
 	{	pItsNextRes->recursiveTransform(_dblMat);
@@ -2451,7 +2470,7 @@ void residue::recursiveTransform(dblMat& _dblMat)
 
 void residue::recursiveTransformR(dblMat& _dblMat)
 {
-    setMoved(true);
+    setMoved();
 	transform(_dblMat);
 	if (pItsPrevRes)
 	{	pItsPrevRes->recursiveTransformR(_dblMat);
@@ -2462,7 +2481,7 @@ void residue::transform(const dblMat& _dblMat)
 {	for (UInt i=0; i < itsAtoms.size(); i++)
 	{	itsAtoms[i]->transform(_dblMat);
 	}
-    setMoved(true);
+    setMoved();
 }
 
 
@@ -2848,7 +2867,7 @@ void residue::polarizability()
 
 void residue::polarizability(residue* _other)
 {	
-	bool inCube, resI = getMoved(), resJ = _other->getMoved();
+	bool inCube, resI = getMoved(0), resJ = _other->getMoved(0);
 	int vdwIndexI, vdwIndexJ;
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
@@ -2909,7 +2928,7 @@ void residue::calculateDielectrics()
 }
 
 
-void residue::updateMovedDependence(residue* _other)
+void residue::updateMovedDependence(residue* _other, UInt _EorC)
 {	
 	bool inCube;
 	for(UInt i=0; i<itsAtoms.size(); i++)
@@ -2923,8 +2942,8 @@ void residue::updateMovedDependence(residue* _other)
 					inCube = itsAtoms[i]->inCube(_other->itsAtoms[j], cutoffDistance);
 					if (inCube)
 					{
-						_other->setMoved(true);
-						_other->setCheckMovedDependence(false);
+						_other->setMoved(true, _EorC);
+						_other->setCheckMovedDependence(false, _EorC);
 						return;
 					}
 				}
@@ -3066,7 +3085,6 @@ UInt residue::getNumHardClashes()
 	}
 	return numClashes;
 }
-
 UInt residue::getNumHardClashes(residue* _other)
 {
 	UInt numClashes = 0;
@@ -3080,33 +3098,39 @@ UInt residue::getNumHardClashes(residue* _other)
 	return numClashes;
 }
 
+UInt residue::getNumHardBackboneClashes(residue* _other)
+{
+	UInt numClashes = 0;
+	UInt atomsI =4, atomsJ =4;
+	if (itsAtoms[4]->getName() == "CB"){atomsI = 5;}
+	if (_other->itsAtoms[4]->getName() == "CB"){atomsJ = 5;}
+	for (UInt i = 0; i < atomsI; i ++)
+	{
+		for (UInt j = 0; j < atomsJ; j ++)
+		{
+			if (isClash(i, _other, j)) numClashes++;
+		} 
+	}
+	return numClashes;
+}
+
 bool residue::isClash(UInt _index1, UInt _index2)
 {
 	if (isSeparatedByOneOrTwoBonds(_index1, _index2)) {return false;}
-	double radius1 = getRadius(_index1), radius2 = getRadius(_index2);
-	if (radius1 > radius2){
-		if (itsAtoms[_index1]->inCube(itsAtoms[_index2], radius1)) {return true;}
-	}
-	else{
-		if (itsAtoms[_index1]->inCube(itsAtoms[_index2], radius2)) {return true;}
-	}
+	double minDist = getRadius(_index1)+getRadius(_index2);
+	double cubeLength = minDist/1.414213562; //vdw contact distance / sqrt(2) (within a square in circle for fast hard clash)
+	if (itsAtoms[_index1]->inCube(itsAtoms[_index2], cubeLength)) {return true;}
 	return false;
 }
 
 bool residue::isClash(UInt _index1, residue* _other, UInt _index2)
 {
 	if (isSeparatedByOneOrTwoBackboneBonds(_index1, _other, _index2)) {return false;}
-	double radius1 = getRadius(_index1), radius2 = _other->getRadius(_index2);
-	if (radius1 > radius2){
-		if (itsAtoms[_index1]->inCube(_other->itsAtoms[_index2], radius1)) {return true;}
-	}
-	else{
-		if (itsAtoms[_index1]->inCube(_other->itsAtoms[_index2], radius2)) {return true;}
-	}
+	double minDist = getRadius(_index1)+_other->getRadius(_index2);
+	double cubeLength = minDist/1.414213562; //vdw contact distance / sqrt(2) (withing a square in circle for fast hard clash)
+	if (itsAtoms[_index1]->inCube(_other->itsAtoms[_index2], cubeLength)) {return true;}
 	return false;
 }
-	
-	
 
 bool residue::inCube(const residue* _other, double _cutoff)
 {
@@ -4007,21 +4031,74 @@ double residue::getSelfEnergy(residue* _other)
 	return selfEnergy;
 }
 
-void residue::setMoved(bool _moved)
+bool residue::getMoved(UInt EorC)
 {
-	moved = _moved;
-	if (_moved){
-		setEnergy(0.0);
-		setClashes(0);
-		clearEnvironment();
-		setCheckMovedDependence(true);
-	}
-	else{setCheckMovedDependence(false);}
+	if (EorC == 0){return movedE;}
+	if (EorC == 1){return movedC;}
+	else {return movedB;}
 }
 
-void residue::setCheckMovedDependence(bool _check)
+void residue::setMoved()
 {
-	dependentMove = _check;
+		movedE = true;
+		movedC = true;
+		movedB = true;
+		setEnergy(0.0);
+		clearEnvironment();
+		setClashes(0);
+		setBackboneClashes(0);
+		setCheckMovedDependence(true, 0);
+		setCheckMovedDependence(true, 1);
+		setCheckMovedDependence(true, 2);
+}
+
+void residue::setMoved(bool _moved, UInt _EorC)
+{
+	if(_EorC == 0){
+		movedE = _moved;
+		if (_moved){
+			setEnergy(0.0);
+			clearEnvironment();
+			setCheckMovedDependence(true, _EorC);
+		}
+	}
+	if(_EorC == 1){
+		movedC = _moved;
+		if (_moved){
+			setClashes(0);
+			setCheckMovedDependence(true, _EorC);
+		}
+	}
+	if(_EorC == 2){
+		movedB = _moved;
+		if (_moved){
+			setBackboneClashes(0);
+			setCheckMovedDependence(true, _EorC);
+		}
+	}
+	if (!_moved){
+		setCheckMovedDependence(false, _EorC);
+	}
+}
+
+bool residue::getCheckMovedDependence(UInt _EorC)
+{
+	if(_EorC == 0){return dependentMoveE;}
+	if(_EorC == 1){return dependentMoveC;}
+	else{return dependentMoveB;}
+}
+
+void residue::setCheckMovedDependence(bool _check, UInt _EorC)
+{
+	if(_EorC == 0){
+		dependentMoveE = _check;
+	}
+	if(_EorC == 1){
+		dependentMoveC = _check;
+	}
+	if(_EorC == 2){
+		dependentMoveB = _check;
+	}
 }
 
 void residue::clearEnvironment()
@@ -4042,6 +4119,16 @@ void residue::setClashes(UInt _clashes)
 void residue::sumClashes(UInt _clashes)
 {
 	clashes += _clashes;
+}
+
+void residue::setBackboneClashes(UInt _clashes)
+{
+	clashesB = _clashes;
+}
+
+void residue::sumBackboneClashes(UInt _clashes)
+{
+	clashesB += _clashes;
 }
 
 void residue::setEnergy(double _Energy)

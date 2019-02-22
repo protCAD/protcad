@@ -15,8 +15,8 @@ using namespace std;
 #ifndef TYPEDEF_H
 #define TYPEDEF_H
 
-#define PI 3.1415926535
-#define KB 0.0019872041 //Boltzmann constant kcal/mol
+#define PI 3.1415926535 //Pi (Ratio of a circle's circumference to its diameter)
+#define KB 0.0019872041 //Boltzmann constant (kcal/mol K)
 #define EU 2.7182818284 //Eulers number (base of natural log)
 
 typedef unsigned int UInt;

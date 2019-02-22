@@ -126,6 +126,7 @@ public:
 	void calculateSidechainDihedralAngles();
 	void calculatePolarHDihedralAngle();
 	vector< vector< double > > getSidechainDihedralAngles();
+	vector< vector< double > > randContinuousSidechainConformation();
 	double getPhi();
 	double getPsi();
 	double getAngle(UInt angleType);
@@ -183,6 +184,7 @@ private:
 	bool isClash(UInt _index1, residue* _other, UInt _index2);
 	UInt getNumHardClashes(residue* _other);
 	UInt getNumHardClashes();
+	UInt getNumHardBackboneClashes(residue* _other);
 
 
 	// Total Residues
@@ -238,7 +240,7 @@ public:
 	double intraSoluteEnergy();
 	void polarizability();
 	void polarizability(residue* _other);
-	void updateMovedDependence(residue* _other);
+	void updateMovedDependence(residue* _other, UInt _EorC);
 	void calculateDielectrics();
     vector <double> calculateSolvationEnergy(UInt _atomIndex);
     double getSolvationEnergy();
@@ -320,14 +322,18 @@ public:
 	bool getPolarHydorgensOn() const {return polarHydrogensOn;}
 	void setPolarHydrogensOn(const bool _polarHydrogensOn);
 	bool getHasPolarHRotamers() const {return dataBase[itsType].getHasPolarHRotamers(); }
-	void setMoved (bool _moved);
-	void setCheckMovedDependence (bool _check);
+	void setMoved(bool _moved, UInt _EorC);
+	void setMoved();
+	void setCheckMovedDependence (bool _check, UInt _EorC);
 	void clearEnvironment();
-	bool getMoved() const {return moved;}
-	bool getCheckMovedDependence() const {return dependentMove;}
+	bool getMoved(UInt EorC); //Energy 0 or clashes 1
+	bool getCheckMovedDependence(UInt _EorC);
 	void setClashes (UInt _clashes);
 	void sumClashes (UInt _clashes);
 	UInt getClashes() const {return clashes;}
+	void setBackboneClashes (UInt _clashes);
+	void sumBackboneClashes (UInt _clashes);
+	UInt getBackboneClashes() const {return clashesB;}
 	void setEnergy (double _energy);
 	void sumEnergy (double _energy);
 	double getEnergy() const {return Energy;}
@@ -371,9 +377,14 @@ private:
 	bool hydrogensOn;
 	bool polarHydrogensOn;
 	bool isArtificiallyBuilt;
-	bool moved = true;
-	bool dependentMove = false;
+	bool movedE = true;
+	bool movedC = true;
+	bool movedB = true;
+	bool dependentMoveE = false;
+	bool dependentMoveC = false;
+	bool dependentMoveB = false;
 	UInt clashes = 0;
+	UInt clashesB = 0;
 	double Energy = 0.0;
 	UInt RPT = 0;
 

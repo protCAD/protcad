@@ -127,9 +127,10 @@ public:
 	double netCharge();
 	
 	//--Optimization functions
+	void protSampling();
 	void protOpt(bool _backbone); // --Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics-- dpike
-	void protRelax();
-	void protMin();
+	void protRelax(UInt _plateau);
+	void protMin(bool _backboneRelaxation);
 	void protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeChains);
 	void optimizeSmallRotations(UInt _steps, double _stepSize);
 	void optimizeSmallRotations(vector <UIntVec> _positions, UInt _steps, double _stepSize);
@@ -143,19 +144,22 @@ public:
 	void optimizeRotamers(vector <UIntVec> _positions, vector <UIntVec> _rotamerArray);
 	
 	//--Energy functions
-	void setMoved (UInt chainIndex, UInt resIndex, bool _moved) {itsChains[chainIndex]->setMoved(resIndex, _moved);}
-	void setMoved(bool _moved);
-	bool getMoved(UInt chainIndex, UInt resIndex) {return itsChains[chainIndex]->getMoved(resIndex);}
+	void setMoved (UInt chainIndex, UInt resIndex, bool _moved, UInt _EorC) {itsChains[chainIndex]->setMoved(resIndex, _moved, _EorC);}
+	void setMoved(bool _moved, UInt EorC);
+	bool getMoved(UInt chainIndex, UInt resIndex, UInt EorC) {return itsChains[chainIndex]->getMoved(resIndex, EorC);}
 	double protEnergy();
 	void updateEnergy();
 	double protEnergy(UInt chainIndex, UInt resIndex);
 	double getMedianResidueEnergy();
 	double getMedianResidueEnergy(UIntVec _activeChains);
 	double getMedianResidueEnergy(UIntVec _activeChains, UIntVec _activeResidues);
+	bool boltzmannEnergyCriteria(double _deltaEnergy, double _KT);
 	UInt getNumChis(const UInt _chainIndex, const UInt _resIndex, const UInt _bpt) {return itsChains[_chainIndex]->getNumChis(_resIndex,0); }
 	UInt getNumHardClashes(UInt chainIndex, UInt resIndex);
 	UInt getNumHardClashes();
 	void updateClashes();
+	UInt getNumHardBackboneClashes();
+	void updateBackboneClashes();
 	UInt getMedianResidueNumHardClashes();
 	double getSolvationEnergy(UInt _chainIndex, UInt _residueIndex) {return itsChains[_chainIndex]->getSolvationEnergy(_residueIndex); }
 	double getAtomCharge(UInt _chainNum, UInt _resNum, UInt _atomNum) { return itsChains[_chainNum]->getAtomCharge(_resNum, _atomNum); }
@@ -177,7 +181,7 @@ public:
 	//vector <double> calculateChainIndependentDielectric(chain* _chain, residue* _residue, atom* _atom);
 	//vector <double> calculateResidueIndependentDielectric(residue* _residue, atom* _atom);
 	void updateDielectrics();
-	void updateMovedDependence();
+	void updateMovedDependence(UInt _EorC);
 	//void updatePositionDielectrics(UInt _chainIndex, UInt _residueIndex);
 	//void updateChainIndependentDielectrics(UInt _chainIndex);
 	//void updateResidueIndependentDielectrics(UInt _chainIndex, UInt _resIndex);
@@ -189,6 +193,8 @@ public:
 	double getPositionEnergy(UInt _chainIndex, UInt _residueIndex);
 	double getSelfEnergy(UInt _chainIndex, UInt _residueIndex);
 	vector <double> protLigandBindingEnergy(UInt ligChainIndex, UInt ligResIndex);
+	static void setTemperature( const double _temp ) { residue::setTemperature(_temp); }
+	static double Temperature() { return residue::getTemperature(); }
 
 	//--Transformation functions
 	double getBetaChi(UInt _chainIndex, UInt _residueIndex) {return itsChains[_chainIndex]->getBetaChi(_residueIndex); }
@@ -197,9 +203,10 @@ public:
 	int setPsi(const UInt _chain, const UInt _res, double _angle);
 	int setDihedral(const UInt _chainIndex, const UInt _resIndex, double _dihedral, UInt _angleType, UInt _direction);
 	void updateResiduesPerTurnType();
-	UInt getBackboneSequenceType(double RPT);
+	UInt getBackboneSequenceType(double RPT, double phi);
 	UInt getBackboneSequenceType(UInt _chainIndex, UInt _resIndex) {return itsChains[_chainIndex]->getBackboneSequenceType(_resIndex);}
 	vector <double> getRandPhiPsifromBackboneSequenceType(UInt _RPTType);
+	vector <double> getRandConformationFromBackboneType(double _phi, double _psi);
 	double getResiduesPerTurn(double phi, double psi);
 	double getResiduesPerTurn(UInt _chainIndex, UInt _resIndex) {return itsChains[_chainIndex]->getResiduesPerTurn(_resIndex);}
 	double getPhi(UInt _chain, UInt _res) {return itsChains[_chain]->getPhi(_res);}
@@ -251,7 +258,9 @@ public:
 	double getChi (const UInt _chainIndex, const UInt _resIndex, const UInt _bpt, const UInt _chi) { return itsChains[_chainIndex]->getChi(_resIndex, _bpt, _chi); }
 	vector < vector <double> >  getSidechainDihedrals(UInt _chainIndex, UInt _indexInChain) {return itsChains[_chainIndex]->getSidechainDihedralAngles(_indexInChain);}
 	void setSidechainDihedralAngles(UInt _chainIndex, UInt _indexInChain, vector< vector<double> > Angles);
-		
+	vector< vector< double > > randContinuousSidechainConformation(UInt _chainIndex, UInt _resIndex) {return itsChains[_chainIndex]->randContinuousSidechainConformation(_resIndex);}
+
+	
 	//--Surface area functions
 	double getVolume(UInt _method);
 	void initializeSpherePoints();

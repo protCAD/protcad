@@ -122,7 +122,7 @@ int main (int argc, char* argv[])
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	PDBInterface* thePDB = new PDBInterface(inFile);
+	/*PDBInterface* thePDB = new PDBInterface(inFile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* frame = static_cast<protein*>(pMol);
@@ -148,7 +148,7 @@ int main (int argc, char* argv[])
 	outFile = inFile;
 	pdbWriter(frame, outFile);
 	
-	/*
+	
 	double delta = 20;
 	UInt resIndex = 4;
 	
@@ -184,33 +184,37 @@ int main (int argc, char* argv[])
 	frame->setDihedral(0,resIndex+rptI,psi2+newDelta,1,0);
 	//frame->setDihedral(0,5,psi-delta,1,1);
 	
-    pdbWriter(frame, "test_local.pdb");
+    pdbWriter(frame, "test_local.pdb");*/
 
 	PDBInterface* thePDB = new PDBInterface(inFile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* start = static_cast<protein*>(pMol);
 	//#pragma omp parallel for
-	for (int phi = -180; phi < 180; phi++)
+	UInt count = 0;
+	int phi, psi;
+	for (phi = -180; phi < 180; phi++)
 	{
-		for (int psi = -180; psi < 180; psi++)
+		for (psi = -180; psi < 180; psi++)
 		{
+			count++;
 			protein* frame = new protein(*start);
-			frame->setDihedral(0,0,psi,1,0);
-			frame->setDihedral(0,1,phi,0,0);
-			frame->setDihedral(0,1,psi,1,0);
-			frame->setDihedral(0,2,phi,0,0);
-			frame->setDihedral(0,2,psi,1,0);
-			frame->setDihedral(0,3,phi,0,0);
-			frame->setDihedral(0,3,psi,1,0);
-			frame->setDihedral(0,4,phi,0,0);
-			double Energy = frame->protEnergy();
-			if (Energy < 40){cout << phi << " " << psi << " " << Energy << endl;}
+			frame->setDihedral(0,23,phi,0,0);
+			frame->setDihedral(0,23,psi,1,0);
+			//double Energy = frame->protEnergy();
+			//cout << Energy << " " << count << endl;
+			stringstream convert;
+			string countstr;
+			convert << count, countstr = convert.str();
+			outFile = countstr + "_helixangle.pdb";
+			pdbWriter(frame, outFile);
+			psi = psi+29;
 			delete frame;
 		}
+		phi = phi+29;
 	}
 
-    PDBInterface* thePDB = new PDBInterface(inFile);
+    /*PDBInterface* thePDB = new PDBInterface(inFile);
     ensemble* theEnsemble = thePDB->getEnsemblePointer();
     molecule* pMol = theEnsemble->getMoleculePointer(0);
     protein* prot = static_cast<protein*>(pMol);
@@ -242,7 +246,7 @@ int main (int argc, char* argv[])
     
     
     
-    /*double radius;
+    double radius;
     int count=0;
     for (int d = 0; d < 360; d++)
     {
