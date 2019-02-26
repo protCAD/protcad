@@ -128,9 +128,12 @@ public:
 	
 	//--Optimization functions
 	void protSampling();
-	void protOpt(bool _backbone); // --Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics-- dpike
+	 // --Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics-- dpike
 	void protRelax(UInt _plateau);
+	void protRelax(UIntVec _frozenResidues, UIntVec _activeChains);
 	void protMin(bool _backboneRelaxation);
+	void protMin(bool _backboneRelaxation, UIntVec _frozenResidues, UIntVec _activeChains);
+	void protOpt(bool _backbone);
 	void protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeChains);
 	void optimizeSmallRotations(UInt _steps, double _stepSize);
 	void optimizeSmallRotations(vector <UIntVec> _positions, UInt _steps, double _stepSize);
