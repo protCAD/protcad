@@ -34,7 +34,7 @@ int main (int argc, char* argv[])
 		ensemble* theEnsemble = thePDB->getEnsemblePointer();
 		molecule* pMol = theEnsemble->getMoleculePointer(0);
 		protein* _prot = static_cast<protein*>(pMol);
-		_prot->protMin();
+		_prot->protMin(true);
 		double Energy = _prot->protEnergy();
 		sumEnergy += Energy;
 		Energies[i] = Energy;

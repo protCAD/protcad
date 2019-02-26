@@ -43,7 +43,7 @@ int main (int argc, char* argv[])
 	UInt _allowedTypes[] = {A,R,N,D,C,Q,E,I,L,K,M,F,P,S,T,W,Y,V,G,dA,dR,dN,dD,dC,dQ,dE,dHe,dI,dL,dK,dM,dF,dP,dS,dT,dW,dY,dV};                     // backbone types allowable
 	UInt _activeResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};                                     // positions active for mutation
 	UInt _randomResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};                                     // positions active for a random start sequence initially
-	UInt _frozenResidues[] = {6,11,13,14,18,20,25,27,32,43,45,50,52,57,59,64,66,75,82,87,89,90,94,96,101,108,119,121,126,128,133,135,140,142};
+	UInt _frozenResidues[] = {};
 	bool backboneRelaxation = false;
 	
 	//--running parameters
@@ -111,7 +111,7 @@ int main (int argc, char* argv[])
 				randomPosition.clear();
 			}
 		}
-		prot->protMin(backboneRelaxation);
+		prot->protMin(backboneRelaxation, frozenResidues, activeChains);
 		pdbWriter(prot, tempModel);
 		Energy = prot->protEnergy();
 		pastEnergy = Energy;
@@ -125,7 +125,7 @@ int main (int argc, char* argv[])
 			mutantPosition = getMutationPosition(activeChains, activeResidues);
 			mutant = getProbabilisticMutation(sequencePool, possibleMutants, mutantPosition, activeResidues);
 			prot->mutateWBC(mutantPosition[0], mutantPosition[1], mutant);
-			prot->protMin(backboneRelaxation);
+			prot->protMin(backboneRelaxation, frozenResidues, activeChains);
 
 			//--Energy test
 			Energy = prot->protEnergy();
