@@ -31,13 +31,13 @@ int main (int argc, char* argv[])
 	double cpu_time_used;
     
     residue::setTemperature(300);
-    residue::setElectroSolvationScaleFactor(1.0);
-    residue::setHydroSolvationScaleFactor(1.0);
+    residue::setElectroSolvationScaleFactor(0.0);
+    residue::setHydroSolvationScaleFactor(0.0);
     amberElec::setScaleFactor(1.0);
 	amberVDW::setScaleFactor(1.0);
 
-    UInt _frozenResidues[] = {};
-    UInt _activeChains[] = {0};
+    UInt _frozenResidues[] = {15};
+    UInt _activeChains[] = {0,1,2,3};
 	UInt activeChainsSize = sizeof(_activeChains)/sizeof(_activeChains[0]), frozenResiduesSize = sizeof(_frozenResidues)/sizeof(_frozenResidues[0]);
 	UIntVec activeChains, frozenResidues;
 	for (UInt i = 0; i < activeChainsSize; i++)
@@ -54,9 +54,10 @@ int main (int argc, char* argv[])
         {_prot->symmetryLinkChainAtoB(activeChains[0],i);}
     }
     cout << "start Energy: " << _prot->protEnergy() << endl;
-    //_prot->protOpt(backbone,frozenResidues,activeChains);
     start = clock();
-    _prot->protOpt(backbone);
+    //_prot->protOpt(backbone,0,15);
+    //_prot->protOpt(backbone);
+    _prot->protOpt(backbone, frozenResidues, activeChains);
     end = clock();
     cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
     _prot->setMoved(true,0);

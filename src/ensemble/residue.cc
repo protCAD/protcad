@@ -24,7 +24,7 @@ double residue::EsolvationFactor = 1.0;
 double residue::cutoffDistance = 7.0;
 double residue::cutoffDistanceSquared = residue::cutoffDistance*residue::cutoffDistance;
 double residue::cutoffCubeVolume = pow((residue::cutoffDistance*2),3);
-double residue::dielectricWidth = 7.0;
+double residue::dielectricWidth = 9.0;
 double residue::dielectricCubeVolume = pow((residue::dielectricWidth*2),3);
 
 void residue::setupDataBase()
@@ -2735,13 +2735,18 @@ double residue::interSoluteEnergy(residue* _other)
 							if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
 							{
 								// ** get dielectric average
-								double dielectric = (itsAtoms[i]->getDielectric() + _other->itsAtoms[j]->getDielectric()) * 0.5;
+								double dielectric;
+								dielectric = (itsAtoms[i]->getDielectric() + _other->itsAtoms[j]->getDielectric()) * 0.5;
 								UInt resType1 = itsType;
 								UInt resType2 = _other->itsType;
 								UInt index1 = i;
 								UInt index2 = j;
 								double tempAmberElecEnergy = residueTemplate::getAmberElecSoluteEnergySQ(resType1, index1, resType2, index2, distanceSquared, dielectric);
 								interEnergy += tempAmberElecEnergy;
+								/*if((itsAtoms[i]->getName() == "HH" || itsAtoms[i]->getName() == "NE2") && (_other->itsAtoms[j]->getName() == "HH" || _other->itsAtoms[j]->getName() == "NE2"))
+								{interEnergy += tempAmberElecEnergy*100;}
+								else{interEnergy += tempAmberElecEnergy;}*/
+								
 							}
 							// ** inter AMBER vdW
 							if (residueTemplate::itsAmberVDW.getScaleFactor() != 0.0)
@@ -2907,19 +2912,22 @@ void residue::calculateDielectrics()
 	double waterPol = residueTemplate::getPolarizability(52);
 	double waterVol = residueTemplate::getVolume(52);
 	double totalVol = dielectricCubeVolume;
+	double alpha, N;
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
 		if (!itsAtoms[i]->getSilentStatus())
 		{
 			// calculate local dielectric for atom
 			envPol = itsAtoms[i]->getEnvPol();
-			envVol = itsAtoms[i]->getEnvVol()/2; // ~half of volume lost in covalent overlap
+			envVol = itsAtoms[i]->getEnvVol()/2; // ~half of atom volume in covalent overlap
 			envMol = itsAtoms[i]->getEnvMol();
 			totalWaterVol = totalVol-envVol;
 			if (totalWaterVol > waterVol){
-				waters = (totalWaterVol/waterVol);
-				totalWaterPol = waters*waterPol;
-				dielectric = 1+4*PI*((waters+envMol)/totalVol)*(totalWaterPol+envPol);
+				waters = (totalWaterVol/waterVol); totalWaterPol = waters*waterPol;
+				alpha = (totalWaterPol+envPol)/totalVol; N = envMol+waters;
+
+				// Solve for the effective dielectric with the Lorentz local field correction
+				dielectric =1+(8*PI/3)*N*alpha/1-(4*PI/3)*N*alpha;
 			}
 			itsAtoms[i]->setDielectric(dielectric);
 			itsAtoms[i]->setNumberofWaters(waters);
