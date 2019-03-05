@@ -47,7 +47,7 @@ double amberElec::getEnergy(const UInt _resType1, const UInt _atomType1, const U
 		if (_atomType1 < atomNames[_resType1].size() && _atomType2 < atomNames[_resType2].size())
 		{
 			//cout << "charge 1: " <<charges[_resType1][_atomType1]  << " charge 2: " <<charges[_resType2][_atomType2] << " distance: " << _distance << endl;
-			energy = 332 * (charges[_resType1][_atomType1] * charges[_resType2][_atomType2]) / _distance;
+			energy = KC * (charges[_resType1][_atomType1] * charges[_resType2][_atomType2]) / _distance;
 
 			if (distanceDependance)
 				energy /= 4 * _distance;
@@ -73,7 +73,7 @@ double amberElec::getSoluteEnergy(const UInt _resType1, const UInt _atomType1, c
 	{
 		if (_atomType1 < atomNames[_resType1].size() && _atomType2 < atomNames[_resType2].size())
 		{
-			energy = (332 * (charges[_resType1][_atomType1] * charges[_resType2][_atomType2]) / _distance);
+			energy = (KC * (charges[_resType1][_atomType1] * charges[_resType2][_atomType2]) / _distance);
 
 			if (_dielectric > 0)
 			{
@@ -99,7 +99,7 @@ double amberElec::getSoluteEnergySQ(const UInt _resType1, const UInt _atomType1,
 	{
 		if (_atomType1 < atomNames[_resType1].size() && _atomType2 < atomNames[_resType2].size())
 		{
-			energy = (332 * (charges[_resType1][_atomType1] * charges[_resType2][_atomType2]) / sqrt(_distanceSquared)) / _dielectric;
+			energy = (KC * (charges[_resType1][_atomType1] * charges[_resType2][_atomType2]) / sqrt(_distanceSquared)) / _dielectric;
 			energy *= itsScaleFactor;
 			return energy;
 		}
@@ -114,7 +114,7 @@ double amberElec::getEnergySQ(const UInt _resType1, const UInt _atomType1, const
 {
 	if (distanceDependance)
 	{
-		double energy = itsScaleFactor * 332 * (charges[_resType1][_atomType1] * charges[_resType2][_atomType2]) / (4 * _distanceSquared);
+		double energy = itsScaleFactor * KC * (charges[_resType1][_atomType1] * charges[_resType2][_atomType2]) / (4 * _distanceSquared);
 		//cout << "charge 1: " <<charges[_resType1][_atomType1]  << " charge 2: " <<charges[_resType2][_atomType2] << " distance squared: " << _distanceSquared << endl;
 		if (highEnergyCutOff && energy > 10.0) energy = 10.0;
 		return energy;

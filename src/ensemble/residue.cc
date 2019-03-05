@@ -18,6 +18,7 @@
 typedef vector<atom*>::iterator iterATOM;
 vector<residueTemplate> residue::dataBase;
 bool residue::dataBaseBuilt = false;
+bool residue::polarizableElec = true;
 double residue::temperature = 300.0;
 double residue::HsolvationFactor = 1.0;
 double residue::EsolvationFactor = 1.0;
@@ -2696,13 +2697,14 @@ double residue::intraSoluteEnergy()
 						{
 							// ** get dielectric average of atoms
 							double dielectric = (itsAtoms[i]->getDielectric() + itsAtoms[j]->getDielectric()) * 0.5;
-
-							// **calc coulombic energy
-							UInt resType1 = itsType;
-							UInt atomType1 = i;
-							UInt resType2 = itsType;
-							UInt atomType2 = j;
-							double tempAmberElecEnergy = residueTemplate::getAmberElecSoluteEnergySQ(resType1, atomType1, resType2, atomType2, distanceSquared, dielectric);
+							
+							//recalculate the dielectric using the Maxwell Garnett mixing formula to include the polarizability of the pairwise dipole inclusion
+							if (polarizableElec){
+								dielectric = maxwellGarnettApproximation(i, j, dielectric, distanceSquared);
+							}
+							
+							// calculate coulombic energy with effective dielectric
+							double tempAmberElecEnergy = residueTemplate::getAmberElecSoluteEnergySQ(itsType, i, itsType, j, distanceSquared, dielectric);
 							intraEnergy += tempAmberElecEnergy;
 						}
 					}
@@ -2735,18 +2737,18 @@ double residue::interSoluteEnergy(residue* _other)
 							if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
 							{
 								// ** get dielectric average
-								double dielectric;
-								dielectric = (itsAtoms[i]->getDielectric() + _other->itsAtoms[j]->getDielectric()) * 0.5;
+								double dielectric = (itsAtoms[i]->getDielectric() + _other->itsAtoms[j]->getDielectric()) * 0.5;
+								
+								//recalculate the dielectric using the Maxwell Garnett mixing formula to include the polarizability of the pairwise dipole inclusion
+								if (polarizableElec){
+									dielectric = maxwellGarnettApproximation(i, j, _other, dielectric, distanceSquared);
+								}
 								UInt resType1 = itsType;
 								UInt resType2 = _other->itsType;
 								UInt index1 = i;
 								UInt index2 = j;
 								double tempAmberElecEnergy = residueTemplate::getAmberElecSoluteEnergySQ(resType1, index1, resType2, index2, distanceSquared, dielectric);
 								interEnergy += tempAmberElecEnergy;
-								/*if((itsAtoms[i]->getName() == "HH" || itsAtoms[i]->getName() == "NE2") && (_other->itsAtoms[j]->getName() == "HH" || _other->itsAtoms[j]->getName() == "NE2"))
-								{interEnergy += tempAmberElecEnergy*100;}
-								else{interEnergy += tempAmberElecEnergy;}*/
-								
 							}
 							// ** inter AMBER vdW
 							if (residueTemplate::itsAmberVDW.getScaleFactor() != 0.0)
@@ -2791,7 +2793,7 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
 			double atomDielectric = itsAtoms[_atomIndex]->getDielectric();
 			double charge = residueTemplate::itsAmberElec.getItsCharge(itsType, _atomIndex);
 			double chargeSquared = charge*charge;
-			soluteSolventEnthalpy += (-166*chargeSquared/(solvatedRadius*atomDielectric))*shellWaters*EsolvationFactor;
+			soluteSolventEnthalpy += (-(KC/2)*chargeSquared/(solvatedRadius*atomDielectric))*shellWaters*EsolvationFactor;
 		}
 	
 		// Non-Polar solvation
@@ -2933,6 +2935,60 @@ void residue::calculateDielectrics()
 			itsAtoms[i]->setNumberofWaters(waters);
 		}
 	}
+}
+
+double residue::maxwellGarnettApproximation(UInt _atomIndex1, UInt _atomIndex2, double _dielectric, double _distanceSquared)
+{
+	//calculate the polarizability due to a dipole if charges are opposite sign
+	double dielectric;
+	double charge1 = residueTemplate::itsAmberElec.getItsCharge(itsType, _atomIndex1);
+	double charge2 = residueTemplate::itsAmberElec.getItsCharge(itsType, _atomIndex2);
+	if ((charge1 > 0 && charge2 < 0) || (charge2 > 0 && charge1 < 0)){
+		UInt type1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex1][0];
+		UInt type2 = dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex2][0];
+		double pol1 = residueTemplate::getPolarizability(type1);
+		double pol2 = residueTemplate::getPolarizability(type2);
+		double radius = sqrt(_distanceSquared)/2;
+		double dipole = (charge1*radius)+(charge2*radius);
+		double vol = 4.18*pow(radius,3);
+		double Efield1 = KC*charge1/pow(radius,2);
+		double Efield2 = KC*charge2/pow(radius,2);
+		double Efield = Efield1+Efield2;
+		double pol = (dipole/Efield)+pol1+pol2;
+		
+		//recalculate the dielectric using the Maxwell Garnett mixing formula to include the polarizability of the dipole inclusion
+		dielectric = _dielectric+4*PI*(pol/vol)/1-(4*PI/3*_dielectric)*(pol/vol);
+		//cout << _dielectric << " " << dielectric << " " << (_dielectric-dielectric) << " " << charge1 << " " << charge2 << " " << pol1 << " " << pol2 << " " << radius*2 << endl;
+	}
+	else{dielectric = _dielectric;}
+	return dielectric;
+}
+
+double residue::maxwellGarnettApproximation(UInt _atomIndex1, UInt _atomIndex2, residue* _other, double _dielectric, double _distanceSquared)
+{
+	//calculate the polarizability due to a dipole if charges are opposite sign
+	double dielectric;
+	double charge1 = residueTemplate::itsAmberElec.getItsCharge(itsType, _atomIndex1);
+	double charge2 = residueTemplate::itsAmberElec.getItsCharge(_other->itsType, _atomIndex2);
+	if ((charge1 > 0 && charge2 < 0) || (charge2 > 0 && charge1 < 0)){
+		UInt type1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex1][0];
+		UInt type2 = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[_atomIndex2][0];
+		double pol1 = residueTemplate::getPolarizability(type1);
+		double pol2 = residueTemplate::getPolarizability(type2);
+		double radius = sqrt(_distanceSquared)/2;
+		double dipole = (charge1*radius)+(charge2*radius);
+		double vol = 4.18*pow(radius,3);
+		double Efield1 = KC*charge1/pow(radius,2);
+		double Efield2 = KC*charge2/pow(radius,2);
+		double Efield = Efield1+Efield2;
+		double pol = (dipole/Efield)+pol1+pol2;
+		
+		//recalculate the dielectric using the Maxwell Garnett mixing formula to include the polarizability of the dipole inclusion
+		dielectric = _dielectric+4*PI*(pol/vol)/1-(4*PI/3*_dielectric)*(pol/vol);
+		//cout << _dielectric << " " << dielectric << " " << (_dielectric-dielectric) << " " << charge1 << " " << charge2 << " " << pol1 << " " << pol2 << " " << radius*2 << endl;
+	}
+	else{dielectric = _dielectric;}
+	return dielectric;
 }
 
 
