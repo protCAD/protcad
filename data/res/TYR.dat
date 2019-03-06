@@ -1,7 +1,7 @@
 !main chain atoms
 N CA C O
 !sidechain branch points
-CA
+CA CZ
 !connectivity
 N	CA	H
 CA	C	CB	HA
@@ -25,7 +25,8 @@ HE1
 HE2
 HH
 !defined dihedral angles
-N	CA	CB	CG	CD1
+1	N	CA	CB	CG	CD1
+2	CE2	CZ	OH	HH
 !atom types
 # column 1: atom name
 # column 2: AMBER all atom atomtype

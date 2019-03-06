@@ -18,7 +18,7 @@ HG21
 HG22
 HG23
 !defined dihedral angles
-N	CA	CB	OG1
+N	CA	CB	OG1	HG1
 !atom types
 # column 1: atom name
 # column 2: AMBER all atom atomtype

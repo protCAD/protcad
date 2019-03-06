@@ -2675,7 +2675,7 @@ void protein::protOpt(bool _backbone)
 	
 	//--Initialize variables for loop, calculate starting energy and build energy vectors-----
 	UInt randchain, randres, resnum, backboneOrSidechain = 1;
-	UInt clashes, clashesStart, bbClashes, bbClashesStart, chainNum = getNumChains(), plateau = 1000;
+	UInt clashes, clashesStart, bbClashes, bbClashesStart, chainNum = getNumChains(), plateau = 500;
 	double Energy, pastEnergy = protEnergy(), deltaEnergy, sPhi, sPsi,nobetter = 0.0, KT = KB*Temperature();
 	vector < vector <double>> currentSidechainConf, newSidechainConf; srand (time(NULL)); vector <double> backboneAngles(2);
 	bool boltzmannAcceptance, sidechainTest, backboneTest, revert, energyTest;
@@ -2744,7 +2744,7 @@ void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 	
 	//--Initialize variables for loop, calculate starting energy and build energy vectors-----
 	UInt randchain, randres, resnum, backboneOrSidechain = 1;
-	UInt clashes, clashesStart, bbClashes, bbClashesStart, chainNum = _activeChains.size(), plateau = 1000;
+	UInt clashes, clashesStart, bbClashes, bbClashesStart, chainNum = _activeChains.size(), plateau = 500;
 	double Energy, pastEnergy = protEnergy(), deltaEnergy, sPhi, sPsi,nobetter = 0.0, KT = KB*Temperature();
 	vector < vector <double>> currentSidechainConf, newSidechainConf; srand (time(NULL)); vector <double> backboneAngles(2);
 	bool boltzmannAcceptance, sidechainTest, backboneTest, revert, energyTest, skip;
@@ -2821,7 +2821,7 @@ void protein::protOpt(bool _backbone, UInt chainIndex, UInt resIndex)
 	
 	//--Initialize variables for loop, calculate starting energy and build energy vectors-----
 	UInt randchain = chainIndex, randres = resIndex, resnum, backboneOrSidechain = 1;
-	UInt clashes, clashesStart, bbClashes, bbClashesStart, plateau = 1000;
+	UInt clashes, clashesStart, bbClashes, bbClashesStart, plateau = 500;
 	double Energy, pastEnergy = protEnergy(), deltaEnergy, sPhi, sPsi,nobetter = 0.0, KT = KB*Temperature();
 	vector < vector <double>> currentSidechainConf, newSidechainConf; srand (time(NULL)); vector <double> backboneAngles(2);
 	bool boltzmannAcceptance, sidechainTest, backboneTest, revert, energyTest;

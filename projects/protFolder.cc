@@ -48,6 +48,7 @@ int main (int argc, char* argv[])
 	//--running parameters
 	residue::setElectroSolvationScaleFactor(1.0);
 	residue::setHydroSolvationScaleFactor(1.0);
+	residue::setPolarizableElec(true);
 	amberElec::setScaleFactor(1.0);
 	amberVDW::setScaleFactor(1.0);
 	residue::setTemperature(300);
@@ -66,9 +67,9 @@ int main (int argc, char* argv[])
 	srand (seed);
 	double startEnergy = 1E10, pastEnergy, Energy, sPhi, sPsi, deltaEnergy, KT = KB*residue::getTemperature();
 	vector <double> backboneAngles(2);
-	UInt timeid, sec, numClashes, startNumBackboneClashes, mutant = 0, plateau = 50, nobetter = 0;
-	vector < UInt > mutantPosition, chainSequence, sequencePosition, randomPosition;
-	vector < vector < UInt > > sequencePool, proteinSequence, finalSequence, possibleMutants;
+	UInt timeid, sec, numClashes, startNumBackboneClashes, startNumClashes, mutant = 0, plateau = 50, nobetter = 0;
+	vector < UInt > mutantPosition, chainSequence, randomPosition;
+	vector < vector < UInt > > sequencePool, finalSequence, possibleMutants;
 	stringstream convert;
 	string infile = argv[1];
 	string startstr, outFile;
@@ -113,8 +114,6 @@ int main (int argc, char* argv[])
 				prot->setDihedral(activeChains[i], randomResidues[j],backboneAngles[1],1,0);
 				randomPosition.clear();
 			}
-			chainSequence = getChainSequence(prot, activeChains[i]);
-			proteinSequence.push_back(chainSequence);
 		}
 		prot->protMin(true);
 		pdbWriter(prot, tempModel);
@@ -126,6 +125,7 @@ int main (int argc, char* argv[])
 		{
 			//--Mutate current sequence, new mutant and optimize system
 			startNumBackboneClashes = prot->getNumHardBackboneClashes();
+			startNumClashes = prot->getNumHardClashes();
 			nobetter++; revert = true;
 			do{
 				mutantPosition.clear();
@@ -138,16 +138,18 @@ int main (int argc, char* argv[])
 				prot->setDihedral(mutantPosition[0],mutantPosition[1],backboneAngles[1],1,0);
 				numClashes = prot->getNumHardBackboneClashes();
 				if (numClashes <= startNumBackboneClashes){
-					sequencePosition.push_back(mutantPosition[0]);
-					sequencePosition.push_back(mutantPosition[1]);
-					revert = false;
+					prot->protRelax(1000);
+					numClashes = prot->getNumHardClashes();
+					if(numClashes <= startNumClashes){
+						revert = false;
+					}
 				}
 				if (revert){
 					prot->setDihedral(mutantPosition[0],mutantPosition[1],sPhi,0,0);
 					prot->setDihedral(mutantPosition[0],mutantPosition[1],sPsi,1,0);
 				}
 			}while (revert);
-			prot->protMin(true);
+			prot->protOpt(true);
 
 			//--Energy test
 			Energy = prot->protEnergy();
@@ -155,7 +157,6 @@ int main (int argc, char* argv[])
 			boltzmannAcceptance = prot->boltzmannEnergyCriteria(deltaEnergy,KT);
 			if (boltzmannAcceptance){
 				pdbWriter(prot, tempModel);
-				proteinSequence[sequencePosition[0]][sequencePosition[1]] = mutant;
 				pastEnergy = Energy; nobetter = 0;
 			}
 			else{
@@ -165,7 +166,6 @@ int main (int argc, char* argv[])
 				pMol = theEnsemble->getMoleculePointer(0);
 				prot = static_cast<protein*>(pMol);
 			}
-			sequencePosition.clear();
 		}while (nobetter < plateau);
 		delete thePDB;
 
@@ -215,7 +215,7 @@ int main (int argc, char* argv[])
 			}
 		}
 		if (boltzmannAcceptance || count < ::populationBaseline){
-			finalline << "p";
+			finalline << " pool";
 			fs << endl;
 		}
 		fs.close();
@@ -224,8 +224,8 @@ int main (int argc, char* argv[])
 		
 		//-clear variables for next iteration
 		delete theModelPDB;
-		sequencePool.clear(),proteinSequence.clear(), chainSequence.clear(), mutantPosition.clear(), chainSequence.clear(), sequencePosition.clear(), randomPosition.clear();
-		sequencePool.resize(0),proteinSequence.resize(0), chainSequence.resize(0), mutantPosition.resize(0), chainSequence.resize(0), sequencePosition.resize(0), randomPosition.resize(0);
+		sequencePool.clear(), mutantPosition.clear(), chainSequence.clear(), randomPosition.clear();
+		sequencePool.resize(0),  mutantPosition.resize(0), chainSequence.resize(0), randomPosition.resize(0);
 	}
 	return 0;
 }

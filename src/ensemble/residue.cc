@@ -2743,15 +2743,10 @@ double residue::interSoluteEnergy(residue* _other)
 								if (polarizableElec){
 									dielectric = maxwellGarnettApproximation(i, j, _other, dielectric, distanceSquared);
 								}
-								UInt resType1 = itsType;
-								UInt resType2 = _other->itsType;
-								UInt index1 = i;
-								UInt index2 = j;
-								double tempAmberElecEnergy = residueTemplate::getAmberElecSoluteEnergySQ(resType1, index1, resType2, index2, distanceSquared, dielectric);
+								
+								// calculate coulombic energy with effective dielectric
+								double tempAmberElecEnergy = residueTemplate::getAmberElecSoluteEnergySQ(itsType, i, _other->itsType, j, distanceSquared, dielectric);
 								interEnergy += tempAmberElecEnergy;
-								if((itsAtoms[i]->getName() == "H" || itsAtoms[i]->getName() == "O") && (_other->itsAtoms[j]->getName() == "O" || _other->itsAtoms[j]->getName() == "H")){
-									cout << itsAtoms[i]->getName() << " " << _other->itsAtoms[j]->getName() << " " << sqrt(distanceSquared) << " " << tempAmberElecEnergy << endl;
-								}
 							}
 							// ** inter AMBER vdW
 							if (residueTemplate::itsAmberVDW.getScaleFactor() != 0.0)
