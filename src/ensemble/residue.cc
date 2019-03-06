@@ -2951,13 +2951,14 @@ double residue::maxwellGarnettApproximation(UInt _atomIndex1, UInt _atomIndex2, 
 		double radius = sqrt(_distanceSquared)/2;
 		double dipole = (charge1*radius)+(charge2*radius);
 		double vol = 4.18*pow(radius,3);
-		double Efield1 = KC*charge1/pow(radius,2);
-		double Efield2 = KC*charge2/pow(radius,2);
+		double Efield1 = KC*fabs(charge1)/pow(radius,2);
+		double Efield2 = KC*fabs(charge2)/pow(radius,2);
 		double Efield = Efield1+Efield2;
 		double pol = (dipole/Efield)+pol1+pol2;
 		
 		//recalculate the dielectric using the Maxwell Garnett mixing formula to include the polarizability of the dipole inclusion
 		dielectric = _dielectric+4*PI*(pol/vol)/1-(4*PI/3*_dielectric)*(pol/vol);
+		if (dielectric < 1){dielectric = 1;}
 		//cout << _dielectric << " " << dielectric << " " << (_dielectric-dielectric) << " " << charge1 << " " << charge2 << " " << pol1 << " " << pol2 << " " << radius*2 << endl;
 	}
 	else{dielectric = _dielectric;}
@@ -2978,13 +2979,14 @@ double residue::maxwellGarnettApproximation(UInt _atomIndex1, UInt _atomIndex2, 
 		double radius = sqrt(_distanceSquared)/2;
 		double dipole = (charge1*radius)+(charge2*radius);
 		double vol = 4.18*pow(radius,3);
-		double Efield1 = KC*charge1/pow(radius,2);
-		double Efield2 = KC*charge2/pow(radius,2);
+		double Efield1 = KC*fabs(charge1)/pow(radius,2);
+		double Efield2 = KC*fabs(charge2)/pow(radius,2);
 		double Efield = Efield1+Efield2;
 		double pol = (dipole/Efield)+pol1+pol2;
 		
 		//recalculate the dielectric using the Maxwell Garnett mixing formula to include the polarizability of the dipole inclusion
 		dielectric = _dielectric+4*PI*(pol/vol)/1-(4*PI/3*_dielectric)*(pol/vol);
+		if (dielectric < 1){dielectric = 1;}
 		//cout << _dielectric << " " << dielectric << " " << (_dielectric-dielectric) << " " << charge1 << " " << charge2 << " " << pol1 << " " << pol2 << " " << radius*2 << endl;
 	}
 	else{dielectric = _dielectric;}

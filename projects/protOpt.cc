@@ -26,13 +26,13 @@ int main (int argc, char* argv[])
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* _prot = static_cast<protein*>(pMol);
     bool homosymmetric = false;
-    bool backbone = true;
+    bool backbone = false;
     clock_t start, end;
 	double cpu_time_used;
     
     residue::setTemperature(300);
-    residue::setElectroSolvationScaleFactor(0.0);
-    residue::setHydroSolvationScaleFactor(0.0);
+    residue::setElectroSolvationScaleFactor(1.0);
+    residue::setHydroSolvationScaleFactor(1.0);
     amberElec::setScaleFactor(1.0);
 	amberVDW::setScaleFactor(1.0);
 
@@ -57,7 +57,7 @@ int main (int argc, char* argv[])
     start = clock();
     //_prot->protOpt(backbone,0,15);
     //_prot->protOpt(backbone);
-    _prot->protOpt(backbone, frozenResidues, activeChains);
+    _prot->protOpt(backbone);
     end = clock();
     cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
     _prot->setMoved(true,0);
