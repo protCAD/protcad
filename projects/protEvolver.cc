@@ -39,6 +39,7 @@ int main (int argc, char* argv[])
 		exit(1);
 	}
 
+	//--input
 	UInt _activeChains[] = {0};                                                         // chains active for mutation
 	UInt _allowedTypes[] = {A,R,N,D,C,Q,E,I,L,K,M,F,P,S,T,W,Y,V,G,dA,dR,dN,dD,dC,dQ,dE,dHe,dI,dL,dK,dM,dF,dP,dS,dT,dW,dY,dV};                     // backbone types allowable
 	UInt _activeResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};                                     // positions active for mutation
@@ -49,6 +50,7 @@ int main (int argc, char* argv[])
 	//--running parameters
 	residue::setElectroSolvationScaleFactor(1.0);
 	residue::setHydroSolvationScaleFactor(1.0);
+	residue::setPolarizableElec(true);
 	amberElec::setScaleFactor(1.0);
 	amberVDW::setScaleFactor(1.0);
 	residue::setTemperature(300);
@@ -77,25 +79,25 @@ int main (int argc, char* argv[])
 	bool boltzmannAcceptance;
 
 	//-build possible sequence database per position
-	PDBInterface* sthePDB = new PDBInterface(infile);
-	ensemble* stheEnsemble = sthePDB->getEnsemblePointer();
-	molecule* spMol = stheEnsemble->getMoleculePointer(0);
-	protein* sprot = static_cast<protein*>(spMol);
+	PDBInterface* thePDB = new PDBInterface(infile);
+	ensemble* theEnsemble = thePDB->getEnsemblePointer();
+	molecule* pMol = theEnsemble->getMoleculePointer(0);
+	protein* prot = static_cast<protein*>(pMol);
 	possibleMutants = buildPossibleMutants();
 	if(possibleMutants.size() < activeResidues.size())
 	{
-		createPossibleMutantsDatabase(sprot, activeChains, activeResidues, allowedTypes);
+		createPossibleMutantsDatabase(prot, activeChains, activeResidues, allowedTypes);
 		possibleMutants = buildPossibleMutants();
 	}
-	delete sthePDB;
+	delete thePDB;
 	
 	//--Run multiple independent evolution cycles-----------------------------------------------------
 	while(true)
 	{
-		PDBInterface* thePDB = new PDBInterface(infile);
-		ensemble* theEnsemble = thePDB->getEnsemblePointer();
-		molecule* pMol = theEnsemble->getMoleculePointer(0);
-		protein* prot = static_cast<protein*>(pMol);
+		thePDB = new PDBInterface(infile);
+		theEnsemble = thePDB->getEnsemblePointer();
+		pMol = theEnsemble->getMoleculePointer(0);
+		prot = static_cast<protein*>(pMol);
 		sequencePool = buildSequencePool();
 
 		//--load in initial pdb and mutate in random starting structure on active chains and random residues
@@ -119,15 +121,15 @@ int main (int argc, char* argv[])
 		//--Run through a single evolutionary path (ancestral line) till hitting plateau
 		do
 		{
-			//--Mutate current sequence, new mutant and optimize system
+			//--Make new mutantation
 			nobetter++;
 			mutantPosition.clear();
 			mutantPosition = getMutationPosition(activeChains, activeResidues);
 			mutant = getProbabilisticMutation(sequencePool, possibleMutants, mutantPosition, activeResidues);
 			prot->mutateWBC(mutantPosition[0], mutantPosition[1], mutant);
-			prot->protMin(backboneRelaxation, frozenResidues, activeChains);
 
 			//--Energy test
+			prot->protMin(backboneRelaxation, frozenResidues, activeChains);
 			Energy = prot->protEnergy();
 			deltaEnergy = Energy-pastEnergy;
 			boltzmannAcceptance = prot->boltzmannEnergyCriteria(deltaEnergy,KT);
@@ -135,6 +137,8 @@ int main (int argc, char* argv[])
 				pdbWriter(prot, tempModel);
 				pastEnergy = Energy; nobetter = 0;
 			}
+			
+			//--Revert to previously saved structure with previous sequence
 			else{
 				delete thePDB;
 				thePDB = new PDBInterface(tempModel);
@@ -158,10 +162,8 @@ int main (int argc, char* argv[])
 		startEnergy = Energy;
 		
 		//-generate pdb output
-		sec = time(NULL);
-		timeid = sec;
-		stringstream convert;
-		string countstr;
+		sec = time(NULL); timeid = sec;
+		stringstream convert; string countstr;
 		convert << timeid, countstr = convert.str();
 		outFile = countstr + "." + startstr + ".evo.pdb";
 		pdbWriter(model, outFile);
