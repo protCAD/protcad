@@ -110,7 +110,6 @@ c
 	call dsvdc(a,3,3,3,3,d,u,3,v,3,work,info)
 c
 	if(info.ne.0) then
-		write(6,*) 'Error in bestfit : SVD failed !'
 		ierr = 1
 		return
 	endif

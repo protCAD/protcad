@@ -16,7 +16,7 @@
 int main (int argc, char* argv[])
 {
 	if (argc !=3)
-	{   cout << "protOpt <infile.pdb> <temp(K)>" << endl;
+	{   cout << "protMin <infile.pdb> <temp(K)>" << endl;
 		exit(1); }
 
 	string infile = argv[1];
@@ -24,10 +24,10 @@ int main (int argc, char* argv[])
 	double temperature = atof(temp.c_str());
 	string iterate;
 	double meanEnergy, sumEnergy = 0.0;
-	UInt size = 1;
+	UInt size = 10;
 	vector <double> Energies(size);
 	residue::setTemperature(temperature);
-	
+
 	for (UInt i = 0; i < size; i++)
 	{
 		PDBInterface* thePDB = new PDBInterface(infile);
@@ -40,7 +40,7 @@ int main (int argc, char* argv[])
 		Energies[i] = Energy;
 		stringstream convert;
 		convert << i+1, iterate = convert.str();
-		string minModel = iterate + "_min.pdb";
+		string minModel = iterate + "_min400.pdb";
 		pdbWriter(_prot, minModel);
 		delete thePDB;
 	}

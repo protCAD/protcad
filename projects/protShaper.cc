@@ -184,7 +184,7 @@ int main (int argc, char* argv[])
 	frame->setDihedral(0,resIndex+rptI,psi2+newDelta,1,0);
 	//frame->setDihedral(0,5,psi-delta,1,1);
 	
-    pdbWriter(frame, "test_local.pdb");*/
+    pdbWriter(frame, "test_local.pdb");
 
 	PDBInterface* thePDB = new PDBInterface(inFile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
@@ -240,7 +240,7 @@ int main (int argc, char* argv[])
         convert << i, countstr = convert.str();
         outFile = countstr + "_helixangle.pdb";
         pdbWriter(prot, outFile);
-    }
+    }*/
    
     
     
@@ -248,28 +248,35 @@ int main (int argc, char* argv[])
     
     double radius;
     int count=0;
-    for (int d = 0; d < 360; d++)
+	PDBInterface* thePDB = new PDBInterface(inFile);
+	ensemble* theEnsemble = thePDB->getEnsemblePointer();
+	molecule* pMol = theEnsemble->getMoleculePointer(0);
+	protein* start = static_cast<protein*>(pMol);
+    for (int d = 280; d < 290; d++)
     {
-        radius = 7;
-        for (int p = 0; p < 360; p++)
+        for (int p = 340; p < 350; p++)
         {
-            count++;
-            PDBInterface* thePDB = new PDBInterface(inFile);
-            ensemble* theEnsemble = thePDB->getEnsemblePointer();
-            molecule* pMol = theEnsemble->getMoleculePointer(0);
-            protein* bundle = static_cast<protein*>(pMol);
-            buildSymmetricOligamer (bundle, true, radius, 0, p, d, 5);
-            cout << count << " " << radius << " " << d << " " << p << " " << bundle->protEnergy() << endl;
-            stringstream convert;
-            string countstr;
-            convert << count, countstr = convert.str();
-            outFile = countstr + "hethelix.pdb";
-            pdbWriter(bundle, outFile);
-            delete bundle;
-            p=p+9;
+			for (int r = 0; r < 5; r++)
+			{
+				for (int c = 170; c < 190; c++)
+				{
+					count++;
+					radius = 7.5 + (r*0.1);
+					protein* bundle = new protein(*start);
+					buildSymmetricOligamer (bundle, true, radius, c, p, d, 5);
+					cout << count << " " << radius << " " << d << " " << p << " " << bundle->getNumHardClashes() << endl;
+					stringstream convert;
+					string countstr;
+					convert << count, countstr = convert.str();
+					outFile = countstr + "hethelix.pdb";
+					pdbWriter(bundle, outFile);
+					delete bundle;
+				}
+			}
+            //p=p+9;
         }
-        d=d+9;
-    }*/
+        //d=d+9;
+    }
     return 0;
 }
 void buildSymmetricOligamer (protein* _prot, bool antiParallel, double _radius, double _coil, double _phaseoffset1, double _phaseoffset2, double _offset)

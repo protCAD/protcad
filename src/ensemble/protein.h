@@ -135,6 +135,7 @@ public:
 	void protMin(bool _backboneRelaxation, UIntVec _frozenResidues, UIntVec _activeChains);
 	void protOpt(bool _backbone);
 	void protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeChains);
+	void protOpt(bool _backbone, UInt chainIndex, UInt resIndex);
 	void optimizeSmallRotations(UInt _steps, double _stepSize);
 	void optimizeSmallRotations(vector <UIntVec> _positions, UInt _steps, double _stepSize);
 	void optimizeSmallRotations(UIntVec _position, UInt _steps, double _stepSize);

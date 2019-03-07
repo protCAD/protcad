@@ -245,6 +245,8 @@ public:
     vector <double> calculateSolvationEnergy(UInt _atomIndex);
     double getSolvationEnergy();
     double getDielectric();
+    double maxwellGarnettApproximation(UInt _atomIndex1, UInt _atomIndex2, double _dielectric, double _distanceSquared);
+    double maxwellGarnettApproximation(UInt _atomIndex1, UInt _atomIndex2, residue* _other, double _dielectric, double _distanceSquared);
 	double getIntraEnergy(const UInt atom1, residue* _other, const UInt atom2);
 	double interEnergy(residue* _other);
 	double interSoluteEnergy(residue* _other);
@@ -355,6 +357,7 @@ public:
 	static void setCutoffDistance( const double _cutoff ) { cutoffDistance = _cutoff; cutoffDistanceSquared = _cutoff*_cutoff; }
 	static void setTemperature( const double _temp ) { temperature = _temp; }
 	static double getTemperature() { return temperature; }
+	static void setPolarizableElec( bool _polElec ) { polarizableElec = _polElec; }
 	static void setElectroSolvationScaleFactor( const double _Esolv ) { EsolvationFactor = _Esolv; }
 	static double getElectroSolvationScaleFactor() { return EsolvationFactor; }
 	static void setHydroSolvationScaleFactor( const double _Hsolv ) { HsolvationFactor = _Hsolv; }
@@ -405,6 +408,7 @@ private:
 	private:
 	static UInt howMany;
 	static bool dataBaseBuilt;
+	static bool polarizableElec;
 	static double temperature;
 	static double EsolvationFactor;
 	static double HsolvationFactor;

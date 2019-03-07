@@ -1,10 +1,10 @@
 //*******************************************************************************************************
 //*******************************************************************************************************
 //***********************************                          ******************************************
-//***********************************      protFolder 1.0      ******************************************
+//***********************************       protFolder 1       ******************************************
 //***********************************                          ******************************************
 //*******************************************************************************************************
-//********  -Sequence Selective Protein Genetic Algorithm Based Folding in Implicit Solvent -  **********
+//********  -Confirmation Selective Protein Genetic Algorithm Based Folding in Implicit Solvent -  **********
 //*******************************************************************************************************
 
 /////// Just specify infile structure, active chains and residues indexes, and it will evolve a fold
@@ -40,6 +40,7 @@ int main (int argc, char* argv[])
 		exit(1);
 	}
 
+	//--input
 	UInt _activeChains[] = {0};                                                         // chains active for mutation
 	UInt _allowedTypes[] = {C,L,P,B,E,Y,A,I,D,Q,R,F,H,W,K,S};                     // backbone types allowable
 	UInt _activeResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};                                     // positions active for mutation
@@ -48,6 +49,7 @@ int main (int argc, char* argv[])
 	//--running parameters
 	residue::setElectroSolvationScaleFactor(1.0);
 	residue::setHydroSolvationScaleFactor(1.0);
+	residue::setPolarizableElec(true);
 	amberElec::setScaleFactor(1.0);
 	amberVDW::setScaleFactor(1.0);
 	residue::setTemperature(300);
@@ -64,11 +66,11 @@ int main (int argc, char* argv[])
 	//--set initial variables
 	int seed = (int)getpid()*(int)gethostid();
 	srand (seed);
-	double startEnergy = 1E10, pastEnergy, Energy, sPhi, sPsi, deltaEnergy, KT = KB*residue::getTemperature();
+	double startEnergy = 1E10, pastEnergy, Energy, deltaEnergy, KT = KB*residue::getTemperature();
 	vector <double> backboneAngles(2);
-	UInt timeid, sec, numClashes, startNumBackboneClashes, mutant = 0, plateau = 50, nobetter = 0;
-	vector < UInt > mutantPosition, chainSequence, sequencePosition, randomPosition;
-	vector < vector < UInt > > sequencePool, proteinSequence, finalSequence, possibleMutants;
+	UInt timeid, sec, numClashes, startNumBackboneClashes, startNumClashes, mutant = 0, plateau = 100, nobetter = 0;
+	vector < UInt > mutantPosition, chainSequence, randomPosition;
+	vector < vector < UInt > > sequencePool, finalSequence, possibleMutants;
 	stringstream convert;
 	string infile = argv[1];
 	string startstr, outFile;
@@ -77,29 +79,29 @@ int main (int argc, char* argv[])
 	string tempModel = startstr + "_temp.pdb";
 	bool revert, boltzmannAcceptance;
 
-	//-build possible sequence database per position
-	PDBInterface* sthePDB = new PDBInterface(infile);
-	ensemble* stheEnsemble = sthePDB->getEnsemblePointer();
-	molecule* spMol = stheEnsemble->getMoleculePointer(0);
-	protein* sprot = static_cast<protein*>(spMol);
+	//-build possible fold sequence database per position
+	PDBInterface* thePDB = new PDBInterface(infile);
+	ensemble* theEnsemble = thePDB->getEnsemblePointer();
+	molecule* pMol = theEnsemble->getMoleculePointer(0);
+	protein* prot = static_cast<protein*>(pMol);
 	possibleMutants = buildPossibleMutants();
 	if(possibleMutants.size() < activeResidues.size())
 	{
-		createPossibleMutantsDatabase(sprot, activeChains, activeResidues, allowedTypes);
+		createPossibleMutantsDatabase(prot, activeChains, activeResidues, allowedTypes);
 		possibleMutants = buildPossibleMutants();
 	}
-	delete sthePDB;
+	delete thePDB;
 	
-	//--Run multiple independent evolution cycles-----------------------------------------------------
+	//--Run multiple independent fold cycles-----------------------------------------------------
 	while(true)
 	{
-		PDBInterface* thePDB = new PDBInterface(infile);
-		ensemble* theEnsemble = thePDB->getEnsemblePointer();
-		molecule* pMol = theEnsemble->getMoleculePointer(0);
-		protein* prot = static_cast<protein*>(pMol);
+		thePDB = new PDBInterface(infile);
+		theEnsemble = thePDB->getEnsemblePointer();
+		pMol = theEnsemble->getMoleculePointer(0);
+		prot = static_cast<protein*>(pMol);
 		sequencePool = buildSequencePool();
 
-		//--load in initial pdb and mutate in random starting structure on active chains and random residues
+		//--load in initial pdb with a random starting structure on active chains and random residues
 		nobetter = 0;
 		for (UInt i = 0; i < activeChains.size(); i++)
 		{
@@ -113,59 +115,56 @@ int main (int argc, char* argv[])
 				prot->setDihedral(activeChains[i], randomResidues[j],backboneAngles[1],1,0);
 				randomPosition.clear();
 			}
-			chainSequence = getChainSequence(prot, activeChains[i]);
-			proteinSequence.push_back(chainSequence);
 		}
 		prot->protMin(true);
 		pdbWriter(prot, tempModel);
 		Energy = prot->protEnergy();
 		pastEnergy = Energy;
 
-		//--Run through a single evolutionary path (ancestral line) till hitting plateau
+		//--Run through a single folding path till hitting plateau
 		do
 		{
-			//--Mutate current sequence, new mutant and optimize system
-			startNumBackboneClashes = prot->getNumHardBackboneClashes();
+			//--Try new confirmation
 			nobetter++; revert = true;
-			do{
-				mutantPosition.clear();
-				mutantPosition = getMutationPosition(activeChains, activeResidues);
-				sPhi = prot->getPhi(mutantPosition[0],mutantPosition[1]);
-				sPsi = prot->getPsi(mutantPosition[0],mutantPosition[1]);
-				mutant = getProbabilisticMutation(sequencePool, possibleMutants, mutantPosition, activeResidues);
-				backboneAngles = prot->getRandPhiPsifromBackboneSequenceType(mutant);
-				prot->setDihedral(mutantPosition[0],mutantPosition[1],backboneAngles[0],0,0);
-				prot->setDihedral(mutantPosition[0],mutantPosition[1],backboneAngles[1],1,0);
-				numClashes = prot->getNumHardBackboneClashes();
-				if (numClashes <= startNumBackboneClashes){
-					sequencePosition.push_back(mutantPosition[0]);
-					sequencePosition.push_back(mutantPosition[1]);
+			startNumBackboneClashes = prot->getNumHardBackboneClashes();
+			startNumClashes = prot->getNumHardClashes(); mutantPosition.clear();
+			mutantPosition = getMutationPosition(activeChains, activeResidues);
+			mutant = getProbabilisticMutation(sequencePool, possibleMutants, mutantPosition, activeResidues);
+			backboneAngles = prot->getRandPhiPsifromBackboneSequenceType(mutant);
+			prot->setDihedral(mutantPosition[0],mutantPosition[1],backboneAngles[0],0,0);
+			prot->setDihedral(mutantPosition[0],mutantPosition[1],backboneAngles[1],1,0);
+			
+			//--Prior to full optimization perform a clash test for an acceptable confirmation
+			numClashes = prot->getNumHardBackboneClashes();
+			if (numClashes <= startNumBackboneClashes){
+				prot->protRelax(1000);
+				numClashes = prot->getNumHardClashes();
+				if(numClashes <= startNumClashes){
 					revert = false;
 				}
-				if (revert){
-					prot->setDihedral(mutantPosition[0],mutantPosition[1],sPhi,0,0);
-					prot->setDihedral(mutantPosition[0],mutantPosition[1],sPsi,1,0);
-				}
-			}while (revert);
-			prot->protMin(true);
-
-			//--Energy test
-			Energy = prot->protEnergy();
-			deltaEnergy = Energy-pastEnergy;
-			boltzmannAcceptance = prot->boltzmannEnergyCriteria(deltaEnergy,KT);
-			if (boltzmannAcceptance){
-				pdbWriter(prot, tempModel);
-				proteinSequence[sequencePosition[0]][sequencePosition[1]] = mutant;
-				pastEnergy = Energy; nobetter = 0;
 			}
-			else{
+			
+			//--Energy test
+			if(!revert){
+				prot->protOpt(true);
+				Energy = prot->protEnergy();
+				deltaEnergy = Energy-pastEnergy;
+				boltzmannAcceptance = prot->boltzmannEnergyCriteria(deltaEnergy,KT);
+				if (boltzmannAcceptance){
+					pdbWriter(prot, tempModel);
+					pastEnergy = Energy; nobetter = 0;
+				}
+				else{revert = true;}
+			}
+			
+			//--Revert to previously saved structure
+			if (revert){
 				delete thePDB;
 				thePDB = new PDBInterface(tempModel);
 				theEnsemble = thePDB->getEnsemblePointer();
 				pMol = theEnsemble->getMoleculePointer(0);
 				prot = static_cast<protein*>(pMol);
 			}
-			sequencePosition.clear();
 		}while (nobetter < plateau);
 		delete thePDB;
 
@@ -182,10 +181,8 @@ int main (int argc, char* argv[])
 		startEnergy = Energy;
 		
 		//-generate pdb output
-		sec = time(NULL);
-		timeid = sec;
-		stringstream convert;
-		string countstr;
+		sec = time(NULL); timeid = sec;
+		stringstream convert; string countstr;
 		convert << timeid, countstr = convert.str();
 		outFile = countstr + "." + startstr + ".fold.pdb";
 		pdbWriter(model, outFile);
@@ -215,7 +212,7 @@ int main (int argc, char* argv[])
 			}
 		}
 		if (boltzmannAcceptance || count < ::populationBaseline){
-			finalline << "p";
+			finalline << " pool";
 			fs << endl;
 		}
 		fs.close();
@@ -224,8 +221,8 @@ int main (int argc, char* argv[])
 		
 		//-clear variables for next iteration
 		delete theModelPDB;
-		sequencePool.clear(),proteinSequence.clear(), chainSequence.clear(), mutantPosition.clear(), chainSequence.clear(), sequencePosition.clear(), randomPosition.clear();
-		sequencePool.resize(0),proteinSequence.resize(0), chainSequence.resize(0), mutantPosition.resize(0), chainSequence.resize(0), sequencePosition.resize(0), randomPosition.resize(0);
+		sequencePool.clear(), mutantPosition.clear(), chainSequence.clear(), randomPosition.clear();
+		sequencePool.resize(0),  mutantPosition.resize(0), chainSequence.resize(0), randomPosition.resize(0);
 	}
 	return 0;
 }

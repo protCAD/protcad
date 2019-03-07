@@ -15,7 +15,7 @@ HB2
 HB3
 HG
 !defined dihedral angles
-N	CA	CB	OG
+N	CA	CB	OG	HG
 !atom types
 # column 1: atom name
 # column 2: AMBER all atom atomtype
