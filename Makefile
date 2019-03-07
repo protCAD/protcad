@@ -7,23 +7,28 @@ export PROJDIR=$(PROTCADDIR)/projects
 export $(PATH)=$(PATH):$(PROTCADDIR):$(BINDIR)
 
 export CXX = g++
+export F77 = gfortran
 export MAKE = make
 
 SHELL = /bin/sh
 
-TARGETS = protDielectric protEvolver protMerge protDihedrals protShaper protEnergy protOpt protDB protFolder protRandomizer protBindingEnergy triadFinder protMover z_aligner y_aligner protDock protMutator protPointMutator protSequence protInverter protSorter protRotamer protSlipPlane alphaCarbonDihedrals protClashes protMin
+TARGETS = protDielectric protEvolver protMerge protDihedrals protShaper protEnergy protOpt protDB protFolder protRandomizer protBindingEnergy triadFinder protMover z_aligner y_aligner protDock protMutator protPointMutator protSequence protInverter protSorter protRotamer protSlipPlane alphaCarbonDihedrals protClashes protMin protAlign
 
-.SUFFIXES: .cc .o .h .a
+.SUFFIXES: .cc .o .h .a .f
 
 LIB_TARGETS = lib
 
 LIB_CC_OBJECTS = ran1.o ran.o point.o treeNode.o atom.o atomIterator.o residue.o chain.o residueTemplate.o allowedResidue.o secondaryStructure.o chainPosition.o residueIterator.o chainModBuffer.o molecule.o protein.o ensemble.o CMath.o generalio.o pdbData.o pdbReader.o pdbWriter.o amberVDW.o aaBaseline.o amberElec.o rotamer.o rotamerLib.o PDBAtomRecord.o PDBInterface.o ruler.o line.o lineSegment.o unitSphere.o helixPropensity.o parse.o ramachandranMap.o
+
+LIB_F77_OBJECTS = bestfit.o
 
 DEFS = -DHAVE_OPENGL=1 -D__STL_USE_EXCEPTIONS
 
 FLAG_OPTMAX = -Wall -oFast -ffast-math -ftree-vectorize -march=native -mtune=native -pipe -msse3 -Wno-deprecated -std=gnu++11
 
 CFLAGS = $(FLAG_OPTMAX) $(DEFS)
+
+FFLAGS = -Wall -g -Wno-tabs -Wno-unused-dummy-argument -Wno-unused-variable
 
 INC_BASE = -I$(SRCDIR)/ensemble -I$(SRCDIR)/io \
 -I$(SRCDIR)/math -I$(SRCDIR)/database -I$(TNTINCLUDE)
@@ -52,7 +57,7 @@ all : $(LIB_TARGETS) $(TARGETS)
 
 lib : libprotcad.a
 
-libprotcad.a : $(LIB_CC_OBJECTS)
+libprotcad.a : $(LIB_CC_OBJECTS) $(LIB_F77_OBJECTS)
 	cd $(OBJDIR) && ar rv libprotcad.a $?
 	cd $(OBJDIR) && ranlib libprotcad.a
 
@@ -160,8 +165,16 @@ z_aligner : libprotcad.a z_aligner.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
 	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 
+protAlign : libprotcad.a protAlign.cc
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
+
 $(LIB_CC_OBJECTS): %.o: %.cc %.h
 	$(CXX) -c $(CFLAGS) $(INC_BASE) $< -o $@
+	mv $@ $(OBJDIR)
+
+$(LIB_F77_OBJECTS): %.o: %.f
+	$(F77) -c $(FFLAGS) $< -o $@
 	mv $@ $(OBJDIR)
 
 clean: 

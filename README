@@ -13,7 +13,7 @@ protCAD is an implementation of the protein design software library that origina
 
 Ubuntu:
 
-sudo apt-get install g++ git
+sudo apt-get install g++ gfortran git
 
 Mac:
 
