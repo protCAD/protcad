@@ -4,7 +4,7 @@
 //***********************************         protAlign        ******************************************
 //***********************************                          ******************************************
 //*******************************************************************************************************
-//******  -Calculates best fit and RMSD of two pdbs and aligns the second to the first-  ****************
+//******  -Calculates best fit and RMSD of two pdbs and aligns the smaller (or second) protein-  ********
 //*******************************************************************************************************
 
 
@@ -31,8 +31,6 @@ int main (int argc, char* argv[])
 
     vector<dblVec> coord1;
     vector<dblVec> coord2;
-    vector<dblVec> coord1part;
-    vector<dblVec> coord2part;
     atomIterator theIter1(_prot1);
     atomIterator theIter2(_prot2);
     atom* pAtom;
@@ -58,39 +56,27 @@ int main (int argc, char* argv[])
 		if (coord2.size() < coord1.size()){ diff = coord1.size()-coord2.size(); first = true;}
 		else{diff = coord2.size()-coord1.size(); first = false;}
     }
-    int maxsize, newsize, remove;
+    int maxsize;
     if (first){maxsize = coord2.size();}else{maxsize = coord1.size();}
 	double rotmat[9]; double centroid1[3]; double centroid2[3]; double rmsd = 0; int ierr = 0;
-	int list1[maxsize]; int list2[maxsize]; int trials = 1; double bestRMSD= 999999.0; double bestRotMat[9];
+	int list1[maxsize]; int list2[maxsize]; int trials = 1; double bestRMSD= 1E10; double bestRotMat[9];
 	double newCoord1[maxsize*3]; double newCoord2[maxsize*3]; double newCoord3[maxsize*3];
+	double bestcent1[3]; double bestcent2[3];
 	
-	if (diff != 0){trials = 1;}
+	if (diff != 0){trials = diff;}
 	for (int h = 0; h < trials; h++)
 	{
-		coord1part = coord1; coord2part = coord2;
-		for (int i = 0; i < diff; i++){
-			if (first){
-				newsize = coord1part.size();
-				remove = rand() % newsize;
-				coord1part.erase(coord1part.begin() + remove);
-			}
-			else{
-				newsize = coord2part.size();
-				remove = rand() % newsize;
-				coord2part.erase(coord2part.begin() + remove);
-			}
-		}
 		for (int i=0; i<maxsize; i++)
 		{	
 			for (int j=0; j<3; j++)
 			{
 				if(first){
-					newCoord1[ (i*3) + j] = coord1part[i][j];
-					newCoord2[ (i*3) + j] = coord2part[i][j];
+					newCoord1[ (i*3) + j] = coord1[i+h][j];
+					newCoord2[ (i*3) + j] = coord2[i+h][j];
 				}
 				else{
-					newCoord1[ (i*3) + j] = coord2part[i][j];
-					newCoord2[ (i*3) + j] = coord1part[i][j];
+					newCoord1[ (i*3) + j] = coord2[i+h][j];
+					newCoord2[ (i*3) + j] = coord1[i+h][j];
 				}
 			}
 			list1[i] = i+1;
@@ -102,6 +88,8 @@ int main (int argc, char* argv[])
 		if (rmsd < bestRMSD){
 			bestRMSD = rmsd;
 			for (int j = 0; j < 9; j++){bestRotMat[j]=rotmat[j];}
+			for (int j = 0; j < 3; j++){bestcent1[j]=centroid1[j];}
+			for (int j = 0; j < 3; j++){bestcent2[j]=centroid2[j];}
 		}
 	}
 	
@@ -119,16 +107,16 @@ int main (int argc, char* argv[])
     if (!first){
 		for (UInt i = 0; i < _prot2->getNumChains(); i++)
 		{
-			_prot2->translateChain(i,centroid1[0]-centroid2[0],centroid2[1]-centroid2[1],centroid1[2]-centroid2[2]);
 			_prot2->transform(i,rotMat);
+			_prot2->translateChain(i,bestcent1[0]-bestcent2[0],bestcent1[1]-bestcent2[1],bestcent1[2]-bestcent2[2]);
 		}
 		pdbWriter(_prot2,infile2);
 	}
 	else{
 		for (UInt i = 0; i < _prot1->getNumChains(); i++)
 		{
-			_prot1->translateChain(i,centroid2[0]-centroid1[0],centroid2[1]-centroid1[1],centroid2[2]-centroid1[2]);
 			_prot1->transform(i,rotMat);
+			_prot1->translateChain(i,bestcent2[0]-bestcent1[0],bestcent2[1]-bestcent1[1],bestcent2[2]-bestcent1[2]);
 		}
 		pdbWriter(_prot1,infile1);
 	}
