@@ -88,8 +88,7 @@ int main (int argc, char* argv[])
 		if (rmsd < bestRMSD){
 			bestRMSD = rmsd;
 			for (int j = 0; j < 9; j++){bestRotMat[j]=rotmat[j];}
-			for (int j = 0; j < 3; j++){bestcent1[j]=centroid1[j];}
-			for (int j = 0; j < 3; j++){bestcent2[j]=centroid2[j];}
+			for (int j = 0; j < 3; j++){bestcent1[j]=centroid1[j]; bestcent2[j]=centroid2[j];}
 		}
 	}
 	
@@ -98,25 +97,27 @@ int main (int argc, char* argv[])
     for (UInt i=0; i<3; i++)
     {	for (UInt j=0; j<3; j++)
 		{
-			rotMat[i][j] = bestRotMat[i*3 + j];
+			rotMat[i][j] = bestRotMat[(j*3) + i];
 		}
     }
     
     // Transform second or smaller pdb onto first using rotation matrix and centroid translation
     
-    if (!first){
+    if (first){
 		for (UInt i = 0; i < _prot2->getNumChains(); i++)
 		{
+			_prot2->translateChain(i, -bestcent2[0], -bestcent2[1], -bestcent2[2]);
 			_prot2->transform(i,rotMat);
-			_prot2->translateChain(i,bestcent1[0]-bestcent2[0],bestcent1[1]-bestcent2[1],bestcent1[2]-bestcent2[2]);
+			_prot2->translateChain(i,bestcent1[0],bestcent1[1],bestcent1[2]);
 		}
 		pdbWriter(_prot2,infile2);
 	}
 	else{
 		for (UInt i = 0; i < _prot1->getNumChains(); i++)
 		{
+			_prot1->translateChain(i, -bestcent1[0], -bestcent1[1], -bestcent1[2]);
 			_prot1->transform(i,rotMat);
-			_prot1->translateChain(i,bestcent2[0]-bestcent1[0],bestcent2[1]-bestcent1[1],bestcent2[2]-bestcent1[2]);
+			_prot1->translateChain(i,bestcent2[0],bestcent2[1],bestcent2[2]);
 		}
 		pdbWriter(_prot1,infile1);
 	}
