@@ -68,7 +68,7 @@ int main (int argc, char* argv[])
 	srand (seed);
 	double startEnergy = 1E10, pastEnergy, Energy, deltaEnergy, KT = KB*residue::getTemperature();
 	vector <double> backboneAngles(2);
-	UInt timeid, sec, numClashes, startNumBackboneClashes, startNumClashes, mutant = 0, plateau = 100, nobetter = 0;
+	UInt timeid, sec, numClashes, startNumBackboneClashes, mutant = 0, plateau = 750, nobetter = 0;
 	vector < UInt > mutantPosition, chainSequence, randomPosition;
 	vector < vector < UInt > > sequencePool, finalSequence, possibleMutants;
 	stringstream convert;
@@ -126,8 +126,7 @@ int main (int argc, char* argv[])
 		{
 			//--Try new confirmation
 			nobetter++; revert = true;
-			startNumBackboneClashes = prot->getNumHardBackboneClashes();
-			startNumClashes = prot->getNumHardClashes(); mutantPosition.clear();
+			startNumBackboneClashes = prot->getNumHardBackboneClashes(); mutantPosition.clear();
 			mutantPosition = getMutationPosition(activeChains, activeResidues);
 			mutant = getProbabilisticMutation(sequencePool, possibleMutants, mutantPosition, activeResidues);
 			backboneAngles = prot->getRandPhiPsifromBackboneSequenceType(mutant);
@@ -137,16 +136,12 @@ int main (int argc, char* argv[])
 			//--Prior to full optimization perform a clash test for an acceptable confirmation
 			numClashes = prot->getNumHardBackboneClashes();
 			if (numClashes <= startNumBackboneClashes){
-				prot->protRelax(1000);
-				numClashes = prot->getNumHardClashes();
-				if(numClashes <= startNumClashes){
-					revert = false;
-				}
+				revert = false;
 			}
 			
 			//--Energy test
 			if(!revert){
-				prot->protOpt(true);
+				prot->protMin(true);
 				Energy = prot->protEnergy();
 				deltaEnergy = Energy-pastEnergy;
 				boltzmannAcceptance = prot->boltzmannEnergyCriteria(deltaEnergy,KT);
