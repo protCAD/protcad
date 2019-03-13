@@ -2239,7 +2239,6 @@ double protein::getRMSD(protein* _other)
 	return bestRMSD;
 }
 
-
 void protein::translate(const UInt _index, const dblVec& _dblVec)
 {
 	if(_index < itsChains.size())
