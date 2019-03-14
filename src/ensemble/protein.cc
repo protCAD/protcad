@@ -1241,13 +1241,22 @@ double protein::getMedianResidueEnergy(UIntVec _activeChains)
 	return median;
 }
 
-bool protein::boltzmannEnergyCriteria(double _deltaEnergy, double _KT)
+bool protein::boltzmannEnergyCriteria(double _deltaEnergy, double _KT)//calculate boltzmann probability of an energy to determine acceptance criteria
 {
-	bool acceptance;
-	double Entropy = (1000000/((rand() % 1000000)+1))-1; //generate high precision random probability as entropy
-	double PiPj = pow(EU,((_deltaEnergy)/(_KT))); //calculate boltzmann probability to test against entropy
+	bool acceptance = false;
+	double Entropy = 1000000/((rand() % 1000000)+1); //generate high precision random probability as entropy
+	double PiPj = pow(EU,((_deltaEnergy)/(_KT)));
 	if (PiPj < Entropy){acceptance = true;}
-	else{acceptance = false;}
+	return acceptance;
+}
+
+bool protein::boltzmannProbabilityCriteria(double Pi, double Pj, double _KT) //calculate boltzmann Energy from a probability (Pi) compared to a reference (Pj) probability to determine acceptance criteria
+{
+	bool acceptance = false;
+	double Entropy = 1000000/((rand() % 1000000)+1);  //generate high precision random probability as entropy
+	double randomEnergy = -_KT*log(Entropy); 
+	double Energy = -_KT*log(Pi/Pj); 
+	if (Energy < randomEnergy){acceptance = true;}
 	return acceptance;
 }
 
