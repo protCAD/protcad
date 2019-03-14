@@ -240,11 +240,7 @@ void pdbData::pdbPutLine(ofstream& _outFile)
 pdbAtom::pdbAtom()
 {	serial = 0;
 	resSeq = 0;
-#ifdef USE_SVMT
-	atomCoord.resize(3);
-#else
 	atomCoord.newsize(3);
-#endif
 	atomCoord[0] = 0.0;
 	atomCoord[1] = 0.0;
 	atomCoord[2] = 0.0;

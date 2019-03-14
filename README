@@ -1,55 +1,54 @@
 
 protCAD official development tree
 
-protCAD is an implementation of the protein design software library that originated in the Bill Degrado Lab and is currently maintained by The Vikas Nanda Lab.
+protCAD is an implementation of the protein design software library that originated in the Bill Degrado Lab and is currently maintained by The Vikas Nanda Lab https://sites.google.com/site/viknanda
 
--Computational Methods and their Applications for de novo Functional Protein Design and Memebrane Protein Solubilization Summa CM 2002
+Publications so far on protCAD's methods are:
+
+-Computational Methods and their Applications for de novo Functional Protein Design and Memebrane Protein Solubilization, Summa CM Thesis 2002
+-Empirical estimation of local dielectric constants: Toward atomistic design of collagen mimetic peptides, Biopolymers - Peptide Science. 2015; 104(4): 360-70.
+
 
  Installation
 ===========================
--Add protcad to your bash file and link in path as follows (in ubuntu edit .bashrc and add this to the end of file with directory of choosing)
 
-export PROTCADDIR=/home/username/protcad
-export PATH=$PATH:$PROTCADDIR:$PROTCADDIR/bin
+-Install dependencies
 
--protCAD can be installed from the root directory of protcad (protcad/) by entering this statement into the terminal: make lib
+Ubuntu:
+
+sudo apt-get install g++ gfortran git
+
+Mac:
+
+xcode-select --install 
+
+
+-Download source and compile
+
+git clone https://github.com/protCAD/protcad 
+
+cd protcad
+
+make install
+
+source ~/.bashrc
 
 
  Usage
 ===========================
 
--New programs are written in C++ and added to the projects directory for compilation and usage
-
--In protcad/projects is an example program (example.cc) that can be compiled by typing this into the terminal in the protcad root directory: make example 
-
--New programs need to be added to the makefile called 'Makefile' in protcad/ for compilation, like example has been. 
-
--Additional examples are in the protcad/src/examples folder for reference and can be added to the projects directory and MakeFile for compilation.
-
--New programs written are intended to follow the same directory structure and usage as 'example' does.
+-General use programs are compiled via make install and the source is available in the projects directory.  Since make install also adds the bin directory to your path, programs in projects are immediately available to run in any directory.
 
 
  Development process
 ===========================
 
+New programs need to be added to the Makefile in protcad/ for compilation, like programs in projects have been. Additional examples are in the protcad/src/tests folder for reference and can be added to the projects directory and MakeFile for compilation. New programs written are intended to follow the same directory structure and usage as in projects.
+
 Developers work in their own trees, then submit pull requests when
 they think their feature or bug fix is ready.
-
-The patch will be accepted if there is broad consensus that it is a
-good thing. 
 
 The master branch is regularly built and tested.  Tags are regularly created to indicate new
 official, stable release versions of protCAD.
 
-Feature branches are created when there are major new features being
-worked on by one or several people.
-
-From time to time a pull request will become outdated. If this occurs, and
-the pull is no longer automatically mergeable; a comment on the pull will
-be used to issue a warning of closure. The pull will be closed 15 days
-after the warning if action is not taken by the author. Pull requests closed
-in this manner will have their corresponding issue labeled 'stagnant'.
-
-Issues with no commits will be given a similar warning, and closed after
-15 days from their last activity. Issues closed in this manner will be 
-labeled 'stale'.
+The dev branch is a more experimental version being developed.

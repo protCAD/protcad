@@ -1,4 +1,9 @@
-#include "/usr/include/stdio.h" 
+
+#ifdef __APPLE__
+    #include "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.14.sdk/usr/include/stdio.h"
+#else
+    #include "/usr/include/stdio.h"
+#endif
 #include <iostream>
 #include <string>
 #include <vector>
@@ -10,15 +15,16 @@ using namespace std;
 #ifndef TYPEDEF_H
 #define TYPEDEF_H
 
+#define PI 3.1415926535 //Pi (Ratio of a circle's circumference to its diameter)
+#define KB 0.0019872041 //Boltzmann constant (kcal/mol K)
+#define EU 2.7182818284 //Eulers number (base of natural log)
+#define KC 332.0636     //Coulombs constant (kcal/mol)
+
 typedef unsigned int UInt;
 typedef vector<double> DouVec;
 typedef vector<double> DblVec;
 typedef vector<UInt> UIntVec;
 typedef vector<string> StrVec;
-
-//typedef doubleVector dblVec;
-//typedef doubleMatrix dblMat;
-
 typedef TNT::Vector<double> dblVec;
 typedef TNT::Matrix<double> dblMat;
 

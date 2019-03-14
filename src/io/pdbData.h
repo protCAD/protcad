@@ -3,7 +3,6 @@
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
-//#include "svmt.h"
 #include "typedef.h"
 #include "pdbEnums.h"
 #include "generalio.h"

@@ -33,34 +33,26 @@ double atom::itsProbeRadius = 1.4;
 void atom::atomDefaultValues()
 {	itsRadius = 0;
 	itsEpsilon = 0;
-#ifdef USE_SVMT
-	for( UInt i=0;i<itsCoords.extent();i++) itsCoords[i] = 0.0;
-#else
+	itsPolarizability = 0;
+	itsVolume = 0;
 	for( int i=0;i<itsCoords.dim();i++) itsCoords[i] = 0.0;
-#endif
 	itsType = 0; // 0 means "C"
 	itsName = -1; // 0 means "UNK"
-        itsSerialNumber = 0;
+	itsSerialNumber = 0;
 	// indicating not set, valid serial number starts from 1
-        itsOccupancy = -1.0; // indicating not set with real data
+	itsOccupancy = -1.0; // indicating not set with real data
 	itsChainID = ' ';
 	itsLigChainID= "UNK";
-        itsTempFactor = -1.0;// indicating not set with real data
-        itsCharge = 0; // starting with neutral charge
-       itsSolvationEnergy = 0.0;
-	   itsDielectric = 1.0;
-	   itsMaxDielectric = 80.4;
-	   itsMinDielectric = 2.25;
-        itsResType = -1; // 0 means "UNK"
+	itsTempFactor = -1.0;// indicating not set with real data
+	itsCharge = 0; // starting with neutral charge
+	itsSolvationEnergy = 0.0;
+	itsDielectric = 1.0;
+	itsWaters = 0;
+	itsMaxDielectric = 80.4;
+	itsMinDielectric = 2.25;
+	itsResType = -1; // 0 means "UNK"
 	itsAtomEnergyType = -1;
-	
-        //ligand properties...
-        itsAmberAllType=-9999;
-        itsAmberUnitedType=-9999;
-        itsAmberAllCharge=0.0;
-        itsAmberUnitedCharge=0.0;
-        
-        generateNewSpherePoints();
+	generateNewSpherePoints();
 	isSilent = false;
 	fullySpecified = false;
 	hetatmFlag=false;
@@ -80,7 +72,7 @@ atom::atom(const string& _atomType)
              << "atom::atom(const string& _atomType) "
              << endl;
 #endif
-	itsRadius = dataBase[itsType].vdwRadius[0];
+    itsRadius = dataBase[itsType].vdwRadius[0];
 	isSilent = false;
 	itsEpsilon = dataBase[itsType].vdwRadius[1];
 	howMany++;
@@ -94,7 +86,7 @@ atom::atom(const UInt _atomType)
 	     << "atom::atom(const UInt ) "
 	     << endl;
 #endif
-	itsRadius = dataBase[itsType].vdwRadius[0];
+    itsRadius = dataBase[itsType].vdwRadius[0];
 	itsEpsilon = dataBase[itsType].vdwRadius[1];
 	howMany++;
 }
@@ -108,7 +100,7 @@ atom::atom(const pdbAtom& _pdbAtomData)
 	     << endl;
 #endif
 	itsCoords = _pdbAtomData.getAtomCoord();
-	itsRadius = dataBase[itsType].vdwRadius[0];
+    itsRadius = dataBase[itsType].vdwRadius[0];
 	itsEpsilon = dataBase[itsType].vdwRadius[1];
 	itsSerialNumber = _pdbAtomData.getSerial();
 	itsOccupancy = _pdbAtomData.getOccupancy();
@@ -117,17 +109,10 @@ atom::atom(const pdbAtom& _pdbAtomData)
 	itsChainID = _pdbAtomData.getChainID();
 	itsSolvationEnergy = 0.0;
 	itsDielectric = 1.0;
+    itsWaters = 0;
 	itsMaxDielectric = 80.4;
 	itsMinDielectric = 2.25;
-	
-        itsLigChainID="UNK"; // need to make it so pdbAtomData can read ligand chains
-        
-        itsAmberAllType=-9999;  //Default values... set when the atom is added to a ligand
-        itsAmberUnitedType=-9999;
-        itsAmberAllCharge=0.0;
-        itsAmberUnitedCharge=0.0;
-	
-        howMany++;
+	howMany++;
 	hetatmFlag=false;
 	generateNewSpherePoints();
 }
@@ -153,6 +138,7 @@ atom::atom(const PDBAtomRecord& _theRecord, bool _hetflag)
         itsCharge = 0.0;
         itsSolvationEnergy = 0.0;
         itsDielectric = 1.0;
+        itsWaters = 0;
 	   itsMaxDielectric = 80.4;
 	   itsMinDielectric = 2.25;
 	if(hetatmFlag){
@@ -166,12 +152,6 @@ atom::atom(const PDBAtomRecord& _theRecord, bool _hetflag)
        		char theChainID = *pTheChainID;
         	itsChainID = theChainID;
 	}
-
-        itsAmberAllType=-9999;  //Default values... set when the atom is added to a ligand
-        itsAmberUnitedType=-9999;
-        itsAmberAllCharge=0.0;
-        itsAmberUnitedCharge=0.0;
-        
         isSilent = false;
         fullySpecified = false;
         howMany++;
@@ -194,7 +174,7 @@ atom::atom(const PDBAtomRecord& _theRecord)
 	     << endl;
 #endif
 	itsCoords = _theRecord.getAtomCoord();
-	itsRadius = dataBase[itsType].vdwRadius[0];
+    itsRadius = dataBase[itsType].vdwRadius[0];
 	itsEpsilon = dataBase[itsType].vdwRadius[1];
 	itsSerialNumber = _theRecord.getSerial();
 	itsOccupancy = _theRecord.getOccupancy();
@@ -203,18 +183,12 @@ atom::atom(const PDBAtomRecord& _theRecord)
 	itsCharge = 0.0;
 	itsSolvationEnergy = 0.0;
 	itsDielectric = 1.0;
+    itsWaters = 0;
 	itsMaxDielectric = 80.4;
 	itsMinDielectric = 2.25;
 	const char* pTheChainID  = (_theRecord.getChainID()).c_str();
 	char theChainID = *pTheChainID;
 	itsChainID = theChainID;
-        
-        itsAmberAllType=-9999;  //Default values... set when the atom is added to a ligand
-        itsAmberUnitedType=-9999;
-        itsAmberAllCharge=0.0;
-        itsAmberUnitedCharge=0.0;
-        
-        
 	isSilent = false;
 	fullySpecified = false;
 	howMany++;
@@ -245,16 +219,11 @@ atom::atom(const atom& _rhs)
 	itsCharge = _rhs.itsCharge;
 	itsType = _rhs.itsType;
 	itsChainID = _rhs.itsChainID;
-        itsLigChainID=_rhs.itsLigChainID;
-        
-        itsAmberAllType=_rhs.itsAmberAllType;
-        itsAmberUnitedType=_rhs.itsAmberUnitedType;
-        itsAmberAllCharge=_rhs.itsAmberAllCharge;
-        itsAmberUnitedCharge=_rhs.itsAmberUnitedCharge;
-        itsSolvationEnergy = 0.0;
-        itsDielectric = 1.0;
-	   itsMaxDielectric = 80.4;
-	   itsMinDielectric = 2.25;
+	itsSolvationEnergy = 0.0;
+	itsDielectric = 1.0;
+	itsWaters = 0;
+	itsMaxDielectric = 80.4;
+	itsMinDielectric = 2.25;
 	isSilent = _rhs.isSilent;
 	itsAtomEnergyType = _rhs.itsAtomEnergyType;
 	fullySpecified = _rhs.fullySpecified;
@@ -303,7 +272,38 @@ void atom::setDielectric(double _dielectric)
 {	
 	itsDielectric = _dielectric;
 }
-
+void atom::setEnvPol(double _envPol)
+{	
+	EnvPol = _envPol;
+}
+void atom::setEnvVol(double _envVol)
+{	
+	EnvVol = _envVol;
+}
+void atom::setEnvMol(double _envMol)
+{	
+	EnvMol = _envMol;
+}
+void atom::sumEnvPol(double _envPol)
+{	
+	EnvPol += _envPol;
+}
+void atom::sumEnvVol(double _envVol)
+{	
+	EnvVol += _envVol;
+}
+void atom::sumEnvMol(double _envMol)
+{	
+	EnvMol += _envMol;
+}
+void atom::setNumberofWaters(double _waters)
+{
+    itsWaters = _waters;
+}
+void atom::setRPTType(UInt _RPT)
+{	
+	RPT = _RPT;
+}
 void atom::setMaxDielectric(double _maxDielectric)
 {	
 	itsMaxDielectric = _maxDielectric;
@@ -344,7 +344,7 @@ void atom::setCharge(const double _charge)
 void atom::makeAtomSilent()
 {
 	isSilent = true;
-	cout << "chain: " << getChainID() << " " << getName() << " number: " << getSerialNumber() << " silenced." << endl; 
+    //cout << "chain: " << getChainID() << " " << getName() << " number: " << getSerialNumber() << " silenced." << endl;
 }
 
 // ***********************************************************************
@@ -398,12 +398,12 @@ double atom::inCubeWithDist(const atom* _pOtherAtom, double _cutoff)
 	return distance;
 }
 
-double atom::inCubeWithDistSQ(const atom* _pOtherAtom, double _cutoffSquared)
+double atom::inCubeWithDistSQ(const atom* _pOtherAtom, double _cutoff)
 {
 	double distance = 0.0;
-	if (fabs(itsCoords[0] - _pOtherAtom->getX()) > _cutoffSquared) return 999.0;
-	if (fabs(itsCoords[1] - _pOtherAtom->getY()) > _cutoffSquared) return 999.0;
-	if (fabs(itsCoords[2] - _pOtherAtom->getZ()) > _cutoffSquared) return 999.0;
+    if (fabs(itsCoords[0] - _pOtherAtom->getX()) > _cutoff) return 999.0;
+    if (fabs(itsCoords[1] - _pOtherAtom->getY()) > _cutoff) return 999.0;
+    if (fabs(itsCoords[2] - _pOtherAtom->getZ()) > _cutoff) return 999.0;
 	distance = CMath::distanceSquared(itsCoords, _pOtherAtom->getCoords());
 	return distance;
 }

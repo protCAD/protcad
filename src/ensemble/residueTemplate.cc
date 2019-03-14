@@ -1,11 +1,9 @@
 #include "residueTemplate.h"
 
-pmf residueTemplate::itsPMF("PMF_hires_symmetric.dat");
 amberVDW residueTemplate::itsAmberVDW(0);
 amberElec residueTemplate::itsAmberElec(0);
 aaBaseline residueTemplate::itsAABaseline(0);
 UInt residueTemplate::howManyTemplates = 0;
-solvation residueTemplate::itsSolvation;
 helixPropensity residueTemplate::itsHelixPropensity;
 residueTemplate::residueTemplate()
 {
@@ -106,7 +104,7 @@ void residueTemplate::initializeHasPolarHRotamers()
 			hasPolarHRotamers=true;
 			break;
 		case 18: // Tyr
-			hasPolarHRotamers=true;
+			hasPolarHRotamers=false;
 			break;
 		default: hasPolarHRotamers=false;
 	}
@@ -312,18 +310,6 @@ void residueTemplate::convertAtomTypeStringsToIndices(const StrVec& _strVect)
 #ifdef ATOM_TYPE_DEBUG
 		//	cout << " " << _strVect[2] << " : " << amberUnitedAtomInt;
 #endif
-			int summaAtomTypeInt = itsPMF.getIndexFromNameString(_strVect[3],0);
-			tempVector.push_back(summaAtomTypeInt);
-#ifdef ATOM_TYPE_DEBUG
-		//	cout << " " << _strVect[3] << " : " << summaAtomTypeInt;
-#endif
-			int summaAtomEnvTypeInt = itsPMF.getIndexFromNameString(_strVect[4],1);
-			tempVector.push_back(summaAtomEnvTypeInt);
-#ifdef ATOM_TYPE_DEBUG
-		//	cout << " " << _strVect[4] << " : " << summaAtomEnvTypeInt << endl;
-#endif
-			int sixAtomSolvationTypeInt = itsSolvation.getIndexFromNameString(_strVect[5]);
-			tempVector.push_back(sixAtomSolvationTypeInt);
 			itsAtomEnergyTypeDefinitions.push_back(tempVector);
 			return;
 		}
@@ -332,39 +318,6 @@ void residueTemplate::convertAtomTypeStringsToIndices(const StrVec& _strVect)
 	//cout << endl;
 #endif
 }
-
-double residueTemplate::getPMFEnergy(const int _type1, const int _type2, const double _distance)
-{
-	if( _type1 >= 0 && _type2 >= 0)
-		{	//cout << _type1 << " " << _type2 << endl;
-			return itsPMF.getEnergy(UInt(_type1),UInt(_type2), _distance);
-		}
-	return 0.0;
-}
-
-// begin ligand/residue amberElec Code
-
-double residueTemplate::getAmberElecEnergySQ(const int _resType1, const int _atomType1, const double _ligAtomCharge, const double _distanceSquared)
-{
-      if (_resType1 >= 0 && _atomType1 >= 0)
-        {
-            return itsAmberElec.getEnergySQ(UInt(_resType1), UInt(_atomType1), _ligAtomCharge, _distanceSquared);
-        }
-    
-    return 0.0;
-}
-
-double residueTemplate::getAmberElecEnergy(const int _resType1, const int _atomType1, const double _ligAtomCharge, const double _distance)
-{
-    if (_resType1 >= 0 && _atomType1 >= 0)
-    {
-            return itsAmberElec.getEnergy(UInt(_resType1), UInt(_atomType1), _ligAtomCharge, _distance);
-    }
-    
-    return 0.0;
-}
-
-// end ligand/residue amberElec Code
 
 double residueTemplate::getAmberElecEnergy (const int _resType1, const int _atomType1, const int _resType2, const int _atomType2, const double _distance)
 {
@@ -410,6 +363,24 @@ double residueTemplate::getVDWRadius(const int _type1)
 	return 0.0;
 }
 
+double residueTemplate::getPolarizability(const int _type1)
+{
+    if( _type1 >= 0)
+    {
+        return itsAmberVDW.getPolarizability(UInt(_type1));
+    }
+    return 0.0;
+}
+
+double residueTemplate::getVolume(const int _type1)
+{
+    if( _type1 >= 0)
+    {
+        return itsAmberVDW.getVolume(UInt(_type1));
+    }
+    return 0.0;
+}
+
 double residueTemplate::getVDWEnergy(const int _type1, const int _type2, const double _distance)
 {
 	if( _type1 >= 0 && _type2 >= 0)
@@ -422,10 +393,10 @@ double residueTemplate::getVDWEnergy(const int _type1, const int _type2, const d
 bool residueTemplate::isClash(const int _type1, const int _type2, const double _distance)
 {
 	if( _type1 >= 0 && _type2 >= 0)
-                {       //cout << _type1 << " " << _type2 << endl;
-                        return itsAmberVDW.isClash(UInt(_type1),UInt(_type2), _distance);
-                }
-        return false;
+	{
+		return itsAmberVDW.isClash(UInt(_type1),UInt(_type2), _distance);
+	}
+	return false;
 }
 
 
@@ -435,12 +406,36 @@ double residueTemplate::getVDWEnergySQ(const int _type1, const int _type2, const
 	{
 		return itsAmberVDW.getEnergySQ(UInt(_type1), UInt(_type2), _distanceSquared);
 	}
-	return 0.0;
+    else
+    {
+        cout << "VDW types not found in database: " << _type1 << " " << _type2 << endl;
+        return 0.0;
+    }
+
+}
+
+double residueTemplate::getVDWWaterEnergy(const int _type1)
+{
+    if (_type1 >= 0)
+    {
+        return itsAmberVDW.getWaterEnergy(UInt(_type1));
+    }
+    else
+    {
+        cout << "VDW types not found in database: " << _type1 << endl;
+        return 0.0;
+    }
+
 }
 
 double residueTemplate::getAABaselineEnergy(const string& _name)
 {
 	return itsAABaseline.getEnergy(_name);
+}
+
+vector<string> residueTemplate::getAABaselineList()
+{
+	return itsAABaseline.list();
 }
 
 int residueTemplate::getAtomEnergyTypeDefinition(const int _type, const int _field) const
@@ -466,11 +461,6 @@ void residueTemplate::printAtomEnergyTypeDefinitions() const
 		cout << endl;
 	}	
 	cout << endl;
-}
-
-double residueTemplate::getSolvationEnergy(double _surfaceArea, UInt _atomType, UInt _paramSet)
-{
-	return itsSolvation.getSolvationEnergy(_surfaceArea, _atomType, _paramSet);
 }
 
 /************************************************************************/

@@ -1,0 +1,64 @@
+!main chain atoms
+N CA C O
+!sidechain branch points
+CA
+!connectivity
+N	CA	H
+CA	C	CB	HA
+C	O
+O
+CB	CG	HB2	HB3
+CG	CD	HG2	HG3
+CD	OE1	OE2
+OE1	MN1
+OE2	MN2
+MN1	O1	O2	O5
+O1	MN2	CA1
+MN2	O2	O3	O4
+O2	MN4
+MN3	O4
+O3	MN3
+MN4	O5
+O4	CA1
+CA1	O5
+O5
+H
+HA
+HB2
+HB3
+HG2
+HG3
+!defined dihedral angles
+N	CA	CB	CG	CD	OE2
+!atom types
+# column 1: atom name
+# column 2: AMBER all atom atomtype
+# column 3: AMBER united atom atomtype
+# column 4: SUMMA atom type
+# column 5: SUMMA environment type
+# column 6: six-atom solvation type
+N		N		N		N		N		N
+CA		CX		CH		CA		C		C
+C		C		C		C		C		C
+O		O		O		O		O		O
+CB		2C		C2		C2		C		C
+CG		2C		C2		C2'		C		C
+CD		CO		C		CC		C		C
+OE1		O2		O2		O2		O		O-
+OE2		O2		OH		O2		O		O-
+MN1		MN		-		-		-		-
+O1		OW		-		-		-		-
+MN2		MN		-		-		-		-
+O2		OW		-		-		-		-
+MN3		MN		-		-		-		-
+O3		OW		-		-		-		-
+MN4		MN		-		-		-		-
+O4		OW		-		-		-		-
+CA1		C6		-		-		-		-
+O5		OW		-		-		-		-
+H		H		-		-		-		H
+HA		H1		-		-		-		H
+HB2		HC		-		-		-		H
+HB3		HC		-		-		-		H
+HG2		HC		-		-		-		H
+HG3		HC		-		-		-		H

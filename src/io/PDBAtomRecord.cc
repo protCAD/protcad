@@ -95,52 +95,42 @@ void PDBAtomRecord::convert(string& _pdbAtomLine)
 
 	ASSERT(firstAlpha+((lastAlpha - firstAlpha) + 1) <=4);
 	atomName = atomNameString.substr(firstAlpha,(lastAlpha-firstAlpha)+1);
-
+    if (atomName == "FE1")
+    {
+        atomName = "F1";
+    }
+    if (atomName == "FE2")
+    {
+        atomName = "F2";
+    }
+    if (atomName == "FE3")
+    {
+        atomName = "F3";
+    }
+    if (atomName == "FE4")
+    {
+        atomName = "F4";
+    }
 
 	//cout << "atomName= " <<atomName << endl;
 
 	altLoc = _pdbAtomLine.substr(16,1);
 	//cout << "altLoc= " <<altLoc << endl;
 
-	if(hetflag)
-        {
-            string tempName = _pdbAtomLine.substr(17,4);
-            string tempChar="";
-            for(UInt i=0; i<4; i++)
-            {
-                tempChar=tempName.substr(i,1);
-                if(tempChar!=" "){resName+=tempChar;}
-            }
-        }
         
-	else{resName= _pdbAtomLine.substr(17,3);}
-	if (resName == "HIS")
-	{	
-		resName = "HIE";
-	}
+	resName= _pdbAtomLine.substr(17,3);
+    if (resName == "HIS")  // default to primary protonation state
+    {
+        resName = "HIE";
+    }
 	
         //cout << "resName= " <<resName << endl;
 
-	if(hetflag){
-		bool endSpace=false;
-
-		chainID=_pdbAtomLine.substr(21,6);
-		for(UInt i=0; i<chainID.size();)
-		{
-			if (chainID.substr(i,1)==" ")
-			{
-				if(!endSpace){
-					chainID=chainID.substr(i+1,chainID.size()-1);
-				}
-				else{chainID=chainID.substr(0,i);}
-			} 
-			else{endSpace=true; i++;}
-		}
-		//cout << "Ligand chainID=*" << chainID <<"*"<< endl;
+	if(hetflag)
+	{
+		chainID = "X";
 	}
-
 	else{chainID = _pdbAtomLine.substr(21,1);}
-	//cout << "chainID= " << chainID << endl;
 
 	string sResSeq = _pdbAtomLine.substr(22,4);
 	sscanf(sResSeq.c_str(), "%d", &tempint);

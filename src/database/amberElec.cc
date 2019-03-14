@@ -39,60 +39,6 @@ amberElec::~amberElec()
 {
 }
 
-//
-// getEnergy() for the interaction between a residue atom and a ligand atom
-//
-
-double amberElec::getEnergy(const UInt _resType, const UInt _atomType, double _ligAtomCharge, const double _distance) const
-{
-    double energy=0.0;
-    
-    if(_resType < resNames.size())
-    {
-        if(_atomType < atomNames[_resType].size())
-        {
-            energy= 332*(charges[_resType][_atomType]*_ligAtomCharge)/_distance;
-            
-            if (distanceDependance)
-                energy /= 4 * _distance;
-            
-            else if (itsDielectricConstant > 0)
-                energy /= itsDielectricConstant;
-            
-            else
-                cout << "ERROR - dielectric constant must be positive & nonzero" << endl;
-
-            energy *= itsScaleFactor;
-            if (highEnergyCutOff && energy > 10.0) energy = 10.0;
-            return energy;
-        }
-		
-        else cout << "error - (residue) atom indicies out of range: r1: " << _resType << endl;
-    }
-
-    else  cout << "error - residue indicies out of range: r1: " << _resType << endl;
-    
-    return 0.0;
-}
-
-double amberElec::getEnergySQ(const UInt _resType, const UInt _atomType, double _ligAtomCharge, const double _distanceSquared) const
-{
-	if (distanceDependance)
-	{
-		double energy = itsScaleFactor * 332 * (charges[_resType][_atomType] * _ligAtomCharge) / (4 * _distanceSquared);
-		//cout << "Res charge: " <<charges[_resType][_atomType]  << " Lig charge: " <<_ligAtomCharge << " distance squared: " << _distanceSquared << endl;
-		if (highEnergyCutOff && energy > 10.0) energy = 10.0;
-		return energy;
-	}
-	
-        double distance = sqrt(_distanceSquared);
-	
-        return getEnergy(_resType, _atomType, _ligAtomCharge, distance);
-}
-//
-// End Ligand-specific code
-//
-
 double amberElec::getEnergy(const UInt _resType1, const UInt _atomType1, const UInt _resType2, const UInt _atomType2, const double _distance) const
 {
 	double energy = 0.0;
@@ -101,7 +47,7 @@ double amberElec::getEnergy(const UInt _resType1, const UInt _atomType1, const U
 		if (_atomType1 < atomNames[_resType1].size() && _atomType2 < atomNames[_resType2].size())
 		{
 			//cout << "charge 1: " <<charges[_resType1][_atomType1]  << " charge 2: " <<charges[_resType2][_atomType2] << " distance: " << _distance << endl;
-			energy = 332 * (charges[_resType1][_atomType1] * charges[_resType2][_atomType2]) / _distance;
+			energy = KC * (charges[_resType1][_atomType1] * charges[_resType2][_atomType2]) / _distance;
 
 			if (distanceDependance)
 				energy /= 4 * _distance;
@@ -127,7 +73,7 @@ double amberElec::getSoluteEnergy(const UInt _resType1, const UInt _atomType1, c
 	{
 		if (_atomType1 < atomNames[_resType1].size() && _atomType2 < atomNames[_resType2].size())
 		{
-			energy = (332 * (charges[_resType1][_atomType1] * charges[_resType2][_atomType2]) / _distance);
+			energy = (KC * (charges[_resType1][_atomType1] * charges[_resType2][_atomType2]) / _distance);
 
 			if (_dielectric > 0)
 			{
@@ -153,7 +99,7 @@ double amberElec::getSoluteEnergySQ(const UInt _resType1, const UInt _atomType1,
 	{
 		if (_atomType1 < atomNames[_resType1].size() && _atomType2 < atomNames[_resType2].size())
 		{
-			energy = (332 * (charges[_resType1][_atomType1] * charges[_resType2][_atomType2]) / sqrt(_distanceSquared)) / _dielectric;
+			energy = (KC * (charges[_resType1][_atomType1] * charges[_resType2][_atomType2]) / sqrt(_distanceSquared)) / _dielectric;
 			energy *= itsScaleFactor;
 			return energy;
 		}
@@ -168,7 +114,7 @@ double amberElec::getEnergySQ(const UInt _resType1, const UInt _atomType1, const
 {
 	if (distanceDependance)
 	{
-		double energy = itsScaleFactor * 332 * (charges[_resType1][_atomType1] * charges[_resType2][_atomType2]) / (4 * _distanceSquared);
+		double energy = itsScaleFactor * KC * (charges[_resType1][_atomType1] * charges[_resType2][_atomType2]) / (4 * _distanceSquared);
 		//cout << "charge 1: " <<charges[_resType1][_atomType1]  << " charge 2: " <<charges[_resType2][_atomType2] << " distance squared: " << _distanceSquared << endl;
 		if (highEnergyCutOff && energy > 10.0) energy = 10.0;
 		return energy;
@@ -206,29 +152,14 @@ string amberElec::getItsAtomName(const UInt _resType, const UInt _atomType) cons
 	return "UNK";
 }
 
-void amberElec::buildWithHydrogens()
+void amberElec::buildElectrostatics()
 {
-	itsFileName = "all_amino94_mod.in";
+	itsFileName = "amberElec.frc";
 	buildDataBase();
 	//cout << " AMBER all atom electrostatics force field built successfully\n";
 	return;
 }
 
-void amberElec::buildWithOutHydrogens()
-{
-	itsFileName = "uni_mod.in";
-	buildDataBase();
-	//cout << " AMBER united atom electrostatics force field built successfully\n";
-	return;
-}
-
-void amberElec::buildWithPolarHydrogens()
-{
-	itsFileName = "polar_mod.in";
-	buildDataBase();
-	//cout << " AMBER hybrid electrostatics force field build successfully\n";
-	return;
-}
 
 void amberElec::buildDataBase()
 {
@@ -359,14 +290,15 @@ void amberElec::orderDataElements()  // NOTE:  this requires that the residue ty
 					{
 						atomNames[i].push_back(residue::getAtomNameBaseItem(i,k));
 						charges[i].push_back(0.00);
+                        cout << residue::getDataBaseItem(i) << "no charge for atom" << endl;
 					}
 				}
 				if (residue::getAtomNameBaseSize(i) != atomNames[i].size())
 					cout << resNames[i] << " charges not properly built!" << endl;
 			}
 		}
-		if (resFlag != true)
-			cout << residue::getDataBaseItem(i) << " not found in the charge database." << endl;
+        if (resFlag != true)
+            cout << residue::getDataBaseItem(i) << " not found in the charge database." << endl;
 	}
 	if (resNames.size() != residue::dataBase.size())
 		//cout << "Not all residues found during electrostatics database building." << endl;

@@ -1,7 +1,7 @@
 The file "ATOMLIST" lists all the atoms that appear in the biological
 macromoleucles.  
 
-radii taken from J. Phys. Chem., 1996, 100 (18), pp 7384–7391 (all bondi except hydrogen) doug 1/2013
+radii taken amber14
 
 The fields are seperated by single space.  
 

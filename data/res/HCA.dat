@@ -1,0 +1,322 @@
+!main chain atoms
+N CA C O
+!sidechain branch points
+CA
+!connectivity
+N	CA	H
+CA	C	CB	HA
+C	O
+O
+CB	CG	HB2	HB3
+CG	ND1	CD2
+ND1	CE1	HD1
+CD2	NE2	HD2
+CE1	NE2	HE1
+NE2	Mg1
+Mg1	NA	NB	NC	ND	CHA	CHB	CHC	CHD
+CHA	C1A	C4D	CBD
+CHB	C4A	C1B	HHB
+CHC	C4B	C1C	HHC
+CHD	C4C	C1D	HHD
+NA	C1A	C4A
+C1A	C2A	
+C2A	C3A	CAA	H2A
+C3A	C4A	CMA	H3A
+C4A
+CMA	HMA1	HMA2	HMA3
+CAA	CBA	HAA2	HAA3
+CBA	CGA	HBA2	HBA3
+CGA	O1A	O2A
+O1A
+O2A	C1
+NB	C1B	C4B
+C1B	C2B
+C2B	C3B	CMB
+C3B	C4B	CAB
+C4B
+CMB	HMB1	HMB2	HMB3
+CAB	CBB	HAB
+CBB	HBB1	HBB2
+NC	C1C	C4C
+C1C	C2C
+C2C	C3C	CMC
+C3C	C4C	CAC
+C4C
+CMC	HMC1	HMC2	HMC3
+CAC	CBC	HAC2	HAC3
+CBC	HBC1	HBC2	HBC3
+ND	C1D	C4D
+C1D	C2D
+C2D	C3D	CMD
+C3D	C4D	CAD
+C4D
+CMD	HMD1	HMD2	HMD3
+CAD	OBD	CBD
+OBD
+CBD	CGD	HBD
+CGD	O1D	O2D
+O1D
+O2D	CED
+CED	HED1	HED2	HED3
+C1	C2	H12	H13
+C2	C3	H2
+C3	C4	C5
+C4	H41	H42	H43
+C5	C6	H52	H53
+C6	C7	H62	H63
+C7	C8	H72	H73
+C8	C9	C10	H8
+C9	H91	H92	H93
+C10	C11	H102	H103
+C11	C12	H112	H113
+C12	C13	H122	H123
+C13	C14	C15	H131
+C14	H141	H142	H143
+C15	C16	H152	H153
+C16	C17	H162	H163
+C17	C18	H172	H173
+C18	C19	C20	H18
+C19	H191	H192	H193
+C20	H201	H202	H203
+H
+HA
+HB2
+HB3
+HD1
+HD2
+HE1
+HHB
+HHC
+HHD
+H2A
+H3A
+HAA2
+HAA3
+HBA2
+HBA3
+HAB
+HAC2
+HAC3
+HBD
+H12
+H13
+H2
+H52
+H53
+H62
+H63
+H72
+H73
+H8
+H102
+H103
+H112
+H113
+H122
+H123
+H131
+H152
+H153
+H162
+H163
+H172
+H173
+H18	
+HBB1
+HBB2
+HMB1
+HMB2
+HMB3
+H41
+H42
+H43
+HBC1
+HBC2
+HBC3
+HMD1
+HMD2
+HMD3
+H191
+H192
+H193
+H201
+H202
+H203
+H91
+H92
+H93
+HMC1
+HMC2
+HMC3
+HMA1
+HMA2
+HMA3
+HED1
+HED2
+HED3
+H141
+H142
+H143
+!defined dihedral angles
+N	CA	CB	CG	O2A	C4	C13
+!atom types
+# column 1: atom name
+# column 2: AMBER all atom atomtype
+# column 3: AMBER united atom atomtype
+# column 4: SUMMA atom type
+# column 5: SUMMA environment type
+# column 6: six-atom solvation type
+N		N		N		N		N		N
+CA		CX		CH		CA		C		C
+C		C		C		C		C		C
+O		O		O		O		O		O
+CB		CT		C2		C2'		C		C
+CG		CC		CC		CC		C		C
+ND1		NA		NA		N4		N		N
+CD2		CV		CG		CX2		C		C
+CE1		CR		CG		CX2		C		C
+NE2		NB		NB		N4		N		N
+Mg1		MG		-		-		-		-
+CHA		CE		-       -       -       -
+CHB		CE		-       -       -       -
+CHC		CE		-       -       -       -
+CHD		CE		-       -       -       -
+NA		X1		-       -       -       -
+C1A		CE		-       -       -       -
+C2A		C3		-       -       -       -
+C3A		C3		-       -       -       -
+C4A		CF		-       -       -       -
+CMA		C3		-       -       -       -
+CAA		C3		-       -       -       -
+CBA		C3		-       -       -       -
+CGA		C		-       -       -       -
+O1A		O		-       -       -       -
+O2A		OS		-       -       -       -
+NB		X2		-       -       -       -
+C1B		CC		-       -       -       -
+C2B		CC		-       -       -       -
+C3B		CD		-       -       -       -
+C4B		CD		-       -       -       -
+CMB		C3		-       -       -       -
+CAB		CF		-       -       -       -
+CBB		C2		-       -       -       -
+NC		X3		-       -       -       -
+C1C		CC		-       -       -       -
+C2C		CC		-       -       -       -
+C3C		CD		-       -       -       -
+C4C		CD		-       -       -       -
+CMC		C3		-       -       -       -
+CAC		C3		-       -       -       -
+CBC		C3		-       -       -       -
+ND		X4		-       -       -       -
+C1D		CC		-       -       -       -
+C2D		CC		-       -       -       -
+C3D		CD		-       -       -       -
+C4D		CD		-       -       -       -
+CMD		C3		-       -       -       -
+CAD		C		-       -       -       -
+OBD		O		-       -       -       -
+CBD		C3		-       -       -       -
+CGD		C		-       -       -       -
+O1D		O		-       -       -       -
+O2D		OS		-       -       -       -
+CED		C3		-       -       -       -
+C1		C3		-       -       -       -
+C2		C2		-       -       -       -
+C3		C2		-       -       -       -
+C4		C3		-       -       -       -
+C5		C3		-       -       -       -
+C6		C3		-       -       -       -
+C7		C3		-       -       -       -
+C8		C3		-       -       -       -
+C9		C3		-       -       -       -
+C10		C3		-       -       -       -
+C11		C3		-       -       -       -
+C12		C3		-       -       -       -
+C13		C3		-       -       -       -
+C14		C3		-       -       -       -
+C15		C3		-       -       -       -
+C16		C3		-       -       -       -
+C17		C3		-       -       -       -
+C18		C3		-       -       -       -
+C19		C3		-       -       -       -
+C20		C3		-       -       -       -
+H		H		-       -       -       -
+HA		H1		-       -       -       -
+HB2		HC		-       -       -       -
+HB3		HC		-       -       -       -
+HD1		H		-       -       -       -
+HD2		H4		-       -       -       -
+HE1		H5		-       -       -       -
+HHB		HA		-       -       -       -
+HHC		HA		-       -       -       -
+HHD		HA		-       -       -       -
+H2A		HC		-       -       -       -
+H3A		HC		-       -       -       -
+HAA2	HC		-       -       -       -
+HAA3	HC		-       -       -       -
+HBA2	HC		-       -       -       -
+HBA3	HC		-       -       -       -
+HAB		HA		-       -       -       -
+HAC2	HC		-       -       -       -
+HAC3	HC		-       -       -       -
+HBD		HC		-       -       -       -
+H12		H1		-       -       -       -
+H13		H1		-       -       -       -
+H2		HA		-       -       -       -
+H52		HC		-       -       -       -
+H53		HC		-       -       -       -
+H62		HC		-       -       -       -
+H63		HC		-       -       -       -
+H72		HC		-       -       -       -
+H73		HC		-       -       -       -
+H8		HC		-       -       -       -
+H102	HC		-       -       -       -
+H103	HC		-       -       -       -
+H112	HC		-       -       -       -
+H113	HC		-       -       -       -
+H122	HC		-       -       -       -
+H123	HC		-       -       -       -
+H131	HC		-       -       -       -
+H152	HC		-       -       -       -
+H153	HC		-       -       -       -
+H162	HC		-       -       -       -
+H163	HC		-       -       -       -
+H172	HC		-       -       -       -
+H173	HC		-       -       -       -
+H18		HC		-       -       -       -
+HBB1	HA		-       -       -       -
+HBB2	HA		-       -       -       -
+HMB1	HC		-       -       -       -
+HMB2	HC		-       -       -       -
+HMB3	HC		-       -       -       -
+H41		HC		-       -       -       -
+H42		HC		-       -       -       -
+H43		HC		-       -       -       -
+HBC1	HC		-       -       -       -
+HBC2	HC		-       -       -       -
+HBC3	HC		-       -       -       -
+HMD1	HC		-       -       -       -
+HMD2	HC		-       -       -       -
+HMD3	HC		-       -       -       -
+H191	HC		-       -       -       -
+H192	HC		-       -       -       -
+H193	HC		-       -       -       -
+H201	HC		-       -       -       -
+H202	HC		-       -       -       -
+H203	HC		-       -       -       -
+H91		HC		-       -       -       -
+H92		HC		-       -       -       -
+H93		HC		-       -       -       -
+HMC1	HC		-       -       -       -
+HMC2	HC		-       -       -       -
+HMC3	HC		-       -       -       -
+HMA1	HC		-       -       -       -
+HMA2	HC		-       -       -       -
+HMA3	HC		-       -       -       -
+HED1	H1		-       -       -       -
+HED2	H1		-       -       -       -
+HED3	H1		-       -       -       -
+H141	HC		-       -       -       -
+H142	HC		-       -       -       -
+H143	HC		-       -       -       -
