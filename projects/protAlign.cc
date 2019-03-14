@@ -102,7 +102,6 @@ int main (int argc, char* argv[])
     }
     
     // Transform second or smaller pdb onto first using rotation matrix and centroid translation
-    
     if (first){
 		for (UInt i = 0; i < _prot2->getNumChains(); i++)
 		{

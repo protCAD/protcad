@@ -1241,13 +1241,22 @@ double protein::getMedianResidueEnergy(UIntVec _activeChains)
 	return median;
 }
 
-bool protein::boltzmannEnergyCriteria(double _deltaEnergy, double _KT)
+bool protein::boltzmannEnergyCriteria(double _deltaEnergy, double _KT)//calculate boltzmann probability of an energy to determine acceptance criteria
 {
-	bool acceptance;
-	double Entropy = (1000000/((rand() % 1000000)+1))-1; //generate high precision random probability as entropy
-	double PiPj = pow(EU,((_deltaEnergy)/(_KT))); //calculate boltzmann probability to test against entropy
+	bool acceptance = false;
+	double Entropy = 1000000/((rand() % 1000000)+1); //generate high precision random probability as entropy
+	double PiPj = pow(EU,((_deltaEnergy)/(_KT)));
 	if (PiPj < Entropy){acceptance = true;}
-	else{acceptance = false;}
+	return acceptance;
+}
+
+bool protein::boltzmannProbabilityCriteria(double Pi, double Pj, double _KT) //calculate boltzmann Energy from a probability (Pi) compared to a reference (Pj) probability to determine acceptance criteria
+{
+	bool acceptance = false;
+	double Entropy = 1000000/((rand() % 1000000)+1);  //generate high precision random probability as entropy
+	double randomEnergy = -_KT*log(Entropy); 
+	double Energy = -_KT*log(Pi/Pj); 
+	if (Energy < randomEnergy){acceptance = true;}
 	return acceptance;
 }
 
@@ -2173,6 +2182,70 @@ void protein::listAllowedRotamers(UInt _chain, UInt _resIndex)
 {   if (_chain < itsChains.size())
     {   itsChains[_chain]->listAllowedRotamers(_resIndex);
     }
+}
+
+double protein::getRMSD(protein* _other)
+{
+    vector<dblVec> coord1;
+    vector<dblVec> coord2;
+    atomIterator theIter1(this);
+    atomIterator theIter2(_other);
+    atom* pAtom;
+    bool first = true;
+    
+    // Load backbone atoms into vector for fit and alignment
+    for (;!(theIter1.last());theIter1++)
+    {
+       pAtom = theIter1.getAtomPointer(); 
+       if (pAtom->getName() == "CA"){
+            coord1.push_back(pAtom->getCoords());
+       }
+    }
+    for (;!(theIter2.last());theIter2++)
+    {
+       pAtom = theIter2.getAtomPointer(); 
+       if (pAtom->getName() == "CA"){
+            coord2.push_back(pAtom->getCoords());
+       }
+    }
+    int diff = 0;
+    if(coord1.size() != coord2.size()){
+		if (coord2.size() < coord1.size()){ diff = coord1.size()-coord2.size(); first = true;}
+		else{diff = coord2.size()-coord1.size(); first = false;}
+    }
+    int maxsize;
+    if (first){maxsize = coord2.size();}else{maxsize = coord1.size();}
+	double rotmat[9]; double centroid1[3]; double centroid2[3]; double rmsd = 0; int ierr = 0;
+	int list1[maxsize]; int list2[maxsize]; int trials = 1; double bestRMSD= 1E10;
+	double newCoord1[maxsize*3]; double newCoord2[maxsize*3]; double newCoord3[maxsize*3];
+	
+	if (diff != 0){trials = diff;}
+	for (int h = 0; h < trials; h++)
+	{
+		for (int i=0; i<maxsize; i++)
+		{	
+			for (int j=0; j<3; j++)
+			{
+				if(first){
+					newCoord1[ (i*3) + j] = coord1[i+h][j];
+					newCoord2[ (i*3) + j] = coord2[i+h][j];
+				}
+				else{
+					newCoord1[ (i*3) + j] = coord2[i+h][j];
+					newCoord2[ (i*3) + j] = coord1[i+h][j];
+				}
+			}
+			list1[i] = i+1;
+			list2[i] = i+1;
+		}
+		
+		// Calculate best fit of backbone atoms, rotation matrix and rmsd using fortran algorithm based on Machlachlan
+		bestfit_(newCoord1, &maxsize, newCoord2, &maxsize, &maxsize, newCoord3, list1, list2, &rmsd, &ierr, rotmat, centroid1, centroid2);
+		if (rmsd < bestRMSD){
+			bestRMSD = rmsd;
+		}
+	}
+	return bestRMSD;
 }
 
 void protein::translate(const UInt _index, const dblVec& _dblVec)

@@ -158,6 +158,7 @@ public:
 	double getMedianResidueEnergy(UIntVec _activeChains);
 	double getMedianResidueEnergy(UIntVec _activeChains, UIntVec _activeResidues);
 	bool boltzmannEnergyCriteria(double _deltaEnergy, double _KT);
+	bool boltzmannProbabilityCriteria(double Pi, double Pj, double _KT);
 	UInt getNumChis(const UInt _chainIndex, const UInt _resIndex, const UInt _bpt) {return itsChains[_chainIndex]->getNumChis(_resIndex,0); }
 	UInt getNumHardClashes(UInt chainIndex, UInt resIndex);
 	UInt getNumHardClashes();
@@ -216,6 +217,7 @@ public:
 	double getPhi(UInt _chain, UInt _res) {return itsChains[_chain]->getPhi(_res);}
 	double getPsi(UInt _chain, UInt _res) {return itsChains[_chain]->getPsi(_res);}
 	double getAngle(UInt _chain, UInt _res, UInt angleType) {return itsChains[_chain]->getAngle(_res, angleType);}
+	double getRMSD(protein* _other);
 	void translate(const dblVec& _dblVec);
 	void translate(const UInt _index, const dblVec& _dblVec);
 	void translate(const UInt _index, const double _x,const double _y,const double _z);

@@ -1,7 +1,7 @@
 //*******************************************************************************************************
 //*******************************************************************************************************
 //********************************                       ************************************************
-//********************************   database_phipsi 1.0   ************************************************
+//********************************        protDB         ************************************************
 //********************************                       ************************************************
 //*******************************************************************************************************
 //***************   -Stability Selective Protein Evolution in Implicit Solvent-   ***********************
@@ -24,48 +24,37 @@
 int main (int argc, char* argv[])
 {
 	//--Running parameters
-	if (argc !=1)
+	if (argc !=2)
 	{
-		cout << "amberAnalyzer" << endl;
+		cout << "protDB <infile.pdb>" << endl;
 		exit(1);
 	}
-    enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,Csf,Sf4,Hca,Eoc,Oec};
-    string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dCf","dQ","dE","dEh","dHd","dHe","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV","Csf","Sf4","Hca","Eoc","Oec"};
-	residue::setCutoffDistance(8.0);
-	rotamer::setScaleFactor(0.0);
-	amberVDW::setScaleFactor(0.0);
-	amberVDW::setRadiusScaleFactor(0.0);
-	amberVDW::setLinearRepulsionDampeningOff();
-	amberElec::setScaleFactor(0.0);
-	srand (time(NULL));
-
-	double phi, psi;
-	string inFrame;
+	
+	residue::setElectroSolvationScaleFactor(1.0);
+	residue::setHydroSolvationScaleFactor(0.0);
+	amberElec::setScaleFactor(1.0);
+	amberVDW::setScaleFactor(1.0);
+	residue::setPolarizableElec(true);
+	string inFrame, infile = argv[1];
+	
+	PDBInterface* thePDB = new PDBInterface(infile);
+	ensemble* theEnsemble = thePDB->getEnsemblePointer();
+	molecule* Mol = theEnsemble->getMoleculePointer(0);
+	protein* _prot = static_cast<protein*>(Mol);
+	
 	DIR *pdir;
 	struct dirent *pent;
 	pdir=opendir(".");
 	while ((pent=readdir(pdir)))
 	{
 		inFrame = pent->d_name;
-        if (inFrame.find(".trim") != std::string::npos)
+        if (inFrame.find(".fold.pdb") != std::string::npos)
 		{
 			PDBInterface* theFramePDB = new PDBInterface(inFrame);
 			ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
 			molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
 			protein* frame = static_cast<protein*>(frameMol);
-			for (UInt i = 0; i < frame->getNumChains(); i++)
-			{
-                for (UInt j = 1; j < frame->getNumResidues(i)-4; j++)
-				{
-                    if (frame->getNumResidues(i) > 4)
-                    {
-                        if (frame->getTypeFromResNum(i,j) == C && frame->getTypeFromResNum(i,j+3)== C)
-                        {
-                            cout << inFrame << " " << i << " " << aminoAcidString[frame->getTypeFromResNum(i,j+1)] << " " << aminoAcidString[frame->getTypeFromResNum(i,j+2)] << " " << frame->getPhi(i,j) << " " << frame->getPsi(i,j) << " " << frame->getPhi(i,j+1) << " " << frame->getPsi(i,j+1) << " " << frame->getPhi(i,j+2) << " " << frame->getPsi(i,j+2) << " " << frame->getPhi(i,j+3) << " " << frame->getPsi(i,j+3) << endl;
-                        }
-                    }
-                }
-			}
+			cout << inFrame << " " << frame->protEnergy() << " " << _prot->getRMSD(frame) << endl;
 			delete theFramePDB;
 		}
 	}
