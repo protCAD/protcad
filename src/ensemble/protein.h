@@ -237,7 +237,7 @@ public:
 	void eulerRotate(UInt _chain, const double _phi, const double _theta, const double _psi);
 	void undoEulerRotate(UInt _chain, const double _phi, const double _theta, const double _psi);
 	void rotateChain(UInt _chain, const axis _axis, const double _theta);
-	
+	void alignToAxis(const axis _axis);
 
 	//--Rotamer functions
 	void setRotamerNotAllowed(const UInt _chainIndex, const UInt _resIndex, const UInt _resType, const UInt _bpt, const UInt _rotamer);

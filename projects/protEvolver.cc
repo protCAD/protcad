@@ -19,7 +19,7 @@
 
 vector <UInt> getChainSequence(protein* _prot, UInt _chainIndex);
 vector <UInt> getMutationPosition(UIntVec &_activeChains, UIntVec &_activeResidues);
-UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition, UIntVec &_activeResidues);
+UInt getProbabilisticMutation(protein *_prot, vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition, UIntVec &_activeResidues);
 void createPossibleMutantsDatabase(protein* &_prot, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedTypes);
 UInt getSizeofPopulation();
 vector < vector < UInt > > buildSequencePool();
@@ -28,6 +28,7 @@ vector < vector < UInt > > buildPossibleMutants();
 enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,Csf,Sf4,Hca,Eoc,Oec,Hem};
 string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dCf","dQ","dE","dEh","dHd","dHe","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV","Csf","Sf4","Hca","Eoc","Oec","Hem"};
 UInt populationBaseline = 1000;
+double KT = KB*residue::getTemperature();
 
 //--Program setup----------------------------------------------------------------------------------------
 int main (int argc, char* argv[])
@@ -68,7 +69,7 @@ int main (int argc, char* argv[])
 
 	//--set initial variables
 	int seed = (int)getpid()*(int)gethostid(); srand (seed);
-	double startEnergy = 1E10, pastEnergy, Energy, deltaEnergy, KT = KB*residue::getTemperature();
+	double startEnergy = 1E10, pastEnergy, Energy, deltaEnergy;
 	UInt timeid, sec, mutant = 0, plateau = 10, nobetter = 0;
 	vector < UInt > mutantPosition, chainSequence, randomPosition;
 	vector < vector < UInt > > sequencePool, finalSequence, possibleMutants;
@@ -108,7 +109,7 @@ int main (int argc, char* argv[])
 			{
 				randomPosition.push_back(activeChains[i]);
 				randomPosition.push_back(randomResidues[j]);
-				mutant = getProbabilisticMutation(sequencePool, possibleMutants, randomPosition, randomResidues);
+				mutant = getProbabilisticMutation(prot, sequencePool, possibleMutants, randomPosition, randomResidues);
 				prot->mutateWBC(activeChains[i], randomResidues[j], mutant);
 				randomPosition.clear();
 			}
@@ -125,14 +126,14 @@ int main (int argc, char* argv[])
 			nobetter++;
 			mutantPosition.clear();
 			mutantPosition = getMutationPosition(activeChains, activeResidues);
-			mutant = getProbabilisticMutation(sequencePool, possibleMutants, mutantPosition, activeResidues);
+			mutant = getProbabilisticMutation(prot, sequencePool, possibleMutants, mutantPosition, activeResidues);
 			prot->mutateWBC(mutantPosition[0], mutantPosition[1], mutant);
 
 			//--Energy test
 			prot->protMin(backboneRelaxation, frozenResidues, activeChains);
 			Energy = prot->protEnergy();
 			deltaEnergy = Energy-pastEnergy;
-			boltzmannAcceptance = prot->boltzmannEnergyCriteria(deltaEnergy,KT);
+			boltzmannAcceptance = prot->boltzmannEnergyCriteria(deltaEnergy,::KT);
 			if (boltzmannAcceptance){
 				pdbWriter(prot, tempModel);
 				pastEnergy = Energy; nobetter = 0;
@@ -158,7 +159,7 @@ int main (int argc, char* argv[])
 		//-Determine probability of being accepted into pool
 		Energy = model->protEnergy();
 		deltaEnergy = Energy-startEnergy;
-		boltzmannAcceptance = model->boltzmannEnergyCriteria(deltaEnergy,KT);
+		boltzmannAcceptance = model->boltzmannEnergyCriteria(deltaEnergy,::KT);
 		startEnergy = Energy;
 		
 		//-generate pdb output
@@ -237,52 +238,41 @@ vector <UInt> getMutationPosition(UIntVec &_activeChains, UIntVec &_activeResidu
 	return _mutantPosition;
 }
 
-UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition, UIntVec &_activeResidues)
+UInt getProbabilisticMutation(protein* _prot, vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition, UIntVec &_activeResidues)
 {
-	double acceptance, threshold, FreqAccept;
-	double poolSize = _sequencePool.size();
+	bool acceptance;
+	double Pi, Pj, poolSize = _sequencePool.size();
 	vector <UInt> Freqs(57,1);
-	UInt position, entropy, mutant, variance, type;
+	UInt position,mutant, type;
 	UInt count = getSizeofPopulation();
 
 	//--find mutant in vector
 	for (UInt i = 0; i < _possibleMutants.size(); i++)
 	{
-		if (_activeResidues[i] == _mutantPosition[1])
-		{
+		if (_activeResidues[i] == _mutantPosition[1]){
 			position = i;
 		}
 	}
 	UInt positionPossibles = _possibleMutants[position].size();
 
-	//--determine population based chance of mutation acceptance or a random mutation
+	//--determine boltzmann probability based chance of conformation acceptance
 	do
 	{
-		threshold = (rand() % 100) + 1;
-		variance = (rand() % 100) + 1;
 		mutant = _possibleMutants[position][rand() % positionPossibles];
 		if (count >= ::populationBaseline){
-			entropy = 5;  // probabalistically allow 5% random genetic drift once sequence pool is sufficiently large
-		}
-		else{
-			entropy = 100;  // 100% random sequences until sequence pool is built
-		}
-		if (variance > entropy) //control sequence entropy with probabilty
-		{
-			//--get sequence evolution results for position
+			
+			//--get population of position
 			for (UInt i = 0; i < poolSize; i++)
 			{
 				type = _sequencePool[i][_mutantPosition[1]];
-				Freqs[type] = Freqs[type] + 1;
+				Freqs[type] += 1;
 			}
-			FreqAccept = Freqs[mutant];
-			acceptance = (FreqAccept/(poolSize-1))*100;  //chance of accepting given fold at position is proportional to population
+			Pi = Freqs[mutant]/(poolSize-1);
+			Pj = 1/positionPossibles;
+			acceptance = _prot->boltzmannProbabilityCriteria(Pi, Pj, ::KT);
 		}
-		else
-		{
-			acceptance = 100;  //random mutation
-		}
-	}while (threshold > acceptance);
+		else{acceptance = true;}  //random conformation
+	}while (!acceptance);
 	return mutant;
 }
 

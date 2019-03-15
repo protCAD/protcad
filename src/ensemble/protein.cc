@@ -2248,6 +2248,88 @@ double protein::getRMSD(protein* _other)
 	return bestRMSD;
 }
 
+void protein::alignToAxis(const axis _axis)
+{
+    vector<dblVec> coord1;
+    vector<dblVec> coord2;
+    dblVec coords(3);
+    atomIterator theIter(this);
+    atom* pAtom;
+    
+    // Load backbone atoms into vector for alignment to axis
+    for (;!(theIter.last());theIter++)
+    {
+       pAtom = theIter.getAtomPointer(); 
+       if (pAtom->getName() == "N" || pAtom->getName() == "CA" || pAtom->getName() == "C" || pAtom->getName() == "O"){
+            coord2.push_back(pAtom->getCoords());
+       }
+    }
+    
+    // Find longest axis of protein
+    double maxdist = -1E10, dist;
+	for (UInt i = 0; i < coord2.size(); i++)
+	{
+		for (UInt j = i+1; j < coord2.size(); j++)
+		{
+			dist = CMath::distance(coord2[i], coord2[j]);
+			if (dist > maxdist){maxdist = dist;}
+		}
+	}
+	
+	// Create set of points in space equally spaced of the size of the backbone on the axis
+	double increment = maxdist/coord2.size();
+	double coord = (maxdist/2)*-1;
+	for (UInt i = 0; i < coord2.size(); i++)
+	{
+		if (_axis == X_axis){
+			coords[0] = coord; coords[1] = 0.0; coords[2] = 0.0;
+			coord1.push_back(coords);
+		}
+		if (_axis == Y_axis){
+			coords[0] = 0.0; coords[1] = coord; coords[2] = 0.0;
+			coord1.push_back(coords);
+		}
+		if (_axis == Z_axis){
+			coords[0] = 0.0; coords[1] = 0.0; coords[2] = coord;
+			coord1.push_back(coords);
+		}
+		coord += increment;
+	}
+	
+    int maxsize = coord2.size();
+	double rotmat[9]; double centroid1[3]; double centroid2[3]; double rmsd = 0; int ierr = 0;
+	int list1[maxsize]; int list2[maxsize];
+	double newCoord1[maxsize*3]; double newCoord2[maxsize*3]; double newCoord3[maxsize*3];
+	for (int i=0; i<maxsize; i++)
+	{	
+		for (int j=0; j<3; j++)
+		{
+			newCoord1[ (i*3) + j] = coord1[i][j];
+			newCoord2[ (i*3) + j] = coord2[i][j];
+		}
+		list1[i] = i+1;
+		list2[i] = i+1;
+	}
+	bestfit_(newCoord1, &maxsize, newCoord2, &maxsize, &maxsize, newCoord3, list1, list2, &rmsd, &ierr, rotmat, centroid1, centroid2);
+
+	// Load rotation vector into rotation matrix
+	dblMat rotMat(3,3,3);
+    for (UInt i=0; i<3; i++)
+    {	for (UInt j=0; j<3; j++)
+		{
+			rotMat[i][j] = rotmat[(j*3) + i];
+		}
+    }
+    
+    // Translate protein centroid to zero, rotate and translate centroid to final axis
+	for (UInt i = 0; i < getNumChains(); i++)
+	{
+		translateChain(i, -centroid2[0], -centroid2[1], -centroid2[2]);
+		transform(i,rotMat);
+		translateChain(i,centroid1[0], centroid1[1], centroid1[2]);
+	}
+}
+
 void protein::translate(const UInt _index, const dblVec& _dblVec)
 {
 	if(_index < itsChains.size())
