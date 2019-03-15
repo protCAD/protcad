@@ -22,8 +22,8 @@ vector <UInt> getMutationPosition(UIntVec &_activeChains, UIntVec &_activeResidu
 UInt getProbabilisticMutation(protein *_prot, vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition, UIntVec &_activeResidues);
 void createPossibleMutantsDatabase(protein* &_prot, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedTypes);
 UInt getSizeofPopulation();
-vector < vector < UInt > > buildSequencePool();
-vector < vector < UInt > > buildPossibleMutants();
+vector < vector < UInt > > readSequencePool();
+vector < vector < UInt > > readPossibleMutants();
 
 enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,Csf,Sf4,Hca,Eoc,Oec,Hem};
 string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dCf","dQ","dE","dEh","dHd","dHe","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV","Csf","Sf4","Hca","Eoc","Oec","Hem"};
@@ -84,11 +84,11 @@ int main (int argc, char* argv[])
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* prot = static_cast<protein*>(pMol);
-	possibleMutants = buildPossibleMutants();
+	possibleMutants = readPossibleMutants();
 	if(possibleMutants.size() < activeResidues.size())
 	{
 		createPossibleMutantsDatabase(prot, activeChains, activeResidues, allowedTypes);
-		possibleMutants = buildPossibleMutants();
+		possibleMutants = readPossibleMutants();
 	}
 	delete thePDB;
 	
@@ -99,7 +99,7 @@ int main (int argc, char* argv[])
 		theEnsemble = thePDB->getEnsemblePointer();
 		pMol = theEnsemble->getMoleculePointer(0);
 		prot = static_cast<protein*>(pMol);
-		sequencePool = buildSequencePool();
+		sequencePool = readSequencePool();
 
 		//--load in initial pdb and mutate in random starting structure on active chains and random residues
 		nobetter = 0;
@@ -243,40 +243,32 @@ UInt getProbabilisticMutation(protein* _prot, vector < vector < UInt > > &_seque
 	bool acceptance;
 	double Pi, Pj, poolSize = _sequencePool.size();
 	vector <UInt> Freqs(57,1);
-	UInt position,mutant, type;
+	UInt mutant, type;
 	UInt count = getSizeofPopulation();
+	UInt positionPossibles = _possibleMutants[(_mutantPosition[0]+1)*_mutantPosition[1]].size();
 
-	//--find mutant in vector
-	for (UInt i = 0; i < _possibleMutants.size(); i++)
-	{
-		if (_activeResidues[i] == _mutantPosition[1]){
-			position = i;
-		}
-	}
-	UInt positionPossibles = _possibleMutants[position].size();
-
-	//--determine boltzmann probability based chance of conformation acceptance
+	//--determine boltzmann probability based chance of sequence acceptance
 	do
 	{
-		mutant = _possibleMutants[position][rand() % positionPossibles];
+		mutant = _possibleMutants[(_mutantPosition[0]+1)*_mutantPosition[1]][rand() % positionPossibles];
 		if (count >= ::populationBaseline){
 			
 			//--get population of position
 			for (UInt i = 0; i < poolSize; i++)
 			{
-				type = _sequencePool[i][_mutantPosition[1]];
+				type = _sequencePool[i][(_mutantPosition[0]+1)*_mutantPosition[1]];
 				Freqs[type] += 1;
 			}
 			Pi = Freqs[mutant]/(poolSize-1);
 			Pj = 1/positionPossibles;
 			acceptance = _prot->boltzmannProbabilityCriteria(Pi, Pj, ::KT);
 		}
-		else{acceptance = true;}  //random conformation
+		else{acceptance = true;}  //random mutant
 	}while (!acceptance);
 	return mutant;
 }
 
-vector < vector < UInt > > buildSequencePool()
+vector < vector < UInt > > readSequencePool()
 {
 	ifstream file("sequencepool.out");
 	string item, line;
@@ -303,7 +295,7 @@ vector < vector < UInt > > buildSequencePool()
 	return sequencePool;
 }
 
-vector < vector < UInt > > buildPossibleMutants()
+vector < vector < UInt > > readPossibleMutants()
 {
 	ifstream file("possiblemutants.out");
 	string item, line;
@@ -328,22 +320,30 @@ vector < vector < UInt > > buildPossibleMutants()
 
 void createPossibleMutantsDatabase(protein* &_prot, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedTypes)
 {
-	fstream pm; double phi = -100.0;
+	fstream pm; double phi = -100.0; bool active;
 	pm.open ("possiblemutants.out", fstream::in | fstream::out | fstream::app);
 	
 	for (UInt i = 0; i < _activeChains.size(); i++)
 	{
-		for (UInt j = 0; j <_activeResidues.size(); j++)
+		for (UInt j = 0; j <_prot->getNumResidues(i); j++)
 		{
-			for (UInt k = 0; k <_allowedTypes.size(); k++)
+			active = false;
+			for (UInt k = 0; k < _activeResidues.size(); k++)
 			{
-				if(_activeResidues[j] > 0){
-					phi = _prot->getPhi(_activeChains[i], _activeResidues[j]);
-				}
-				if ((phi < 0 && _allowedTypes[k] < 27) || (phi > 0 && _allowedTypes[k] > 25)){
-					pm << _allowedTypes[k] << ",";
+				if(j == _activeResidues[k]){active = true;}
+			}
+			if (active){
+				for (UInt l = 0; l <_allowedTypes.size(); l++)
+				{
+					if(j > 0){
+						phi = _prot->getPhi(_activeChains[i], j);
+					}
+					if ((phi < 0 && _allowedTypes[l] < 27) || (phi > 0 && _allowedTypes[l] > 25)){
+						pm << _allowedTypes[l] << ",";
+					}
 				}
 			}
+			else{pm << _prot->getTypeFromResNum(_activeChains[i],j) << ",";}
 			pm << endl;
 		}
 	}
