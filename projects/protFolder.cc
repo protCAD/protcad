@@ -256,7 +256,7 @@ UInt getProbabilisticMutation(protein* _prot, vector < vector < UInt > > &_seque
 	bool acceptance = false, three = true, Nterm = false, Cterm = false;
 	double prob0, prob1, prob2, Pi, Pj, poolSize = _sequencePool.size();
 	vector <UInt> Freqs(20,1);
-	UInt position,mutant, type0, type1, type2;
+	UInt position, mutant, type0, type1, type2;
 	UInt count = getSizeofPopulation();
 	
 	// determine whether probability will consist of two postitions at terminus or three positions
