@@ -22,8 +22,8 @@ vector <UInt> getMutationPosition(UIntVec &_activeChains, UIntVec &_activeResidu
 UInt getProbabilisticMutation(protein* _prot, vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition, UIntVec &_activeResidues);
 void createPossibleMutantsDatabase(protein* &_prot, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedTypes);
 UInt getSizeofPopulation();
-vector < vector < UInt > > buildSequencePool();
-vector < vector < UInt > > buildPossibleMutants();
+vector < vector < UInt > > readSequencePool();
+vector < vector < UInt > > readPossibleMutants();
 
 enum structure {Z,M,C,L,P,B,E,Y,A,I,G,N,D,Q,R,F,H,W,K,S,T};
 string backboneSeq[] =   {"", "M", "C", "L", "P", "B","E","Y","A","I","G",  "N",  "D",  "Q",  "R",  "F", "H", "W", "K", "S", "T"};
@@ -84,11 +84,11 @@ int main (int argc, char* argv[])
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* prot = static_cast<protein*>(pMol);
-	possibleMutants = buildPossibleMutants();
+	possibleMutants = readPossibleMutants();
 	if(possibleMutants.size() < activeResidues.size())
 	{
 		createPossibleMutantsDatabase(prot, activeChains, activeResidues, allowedTypes);
-		possibleMutants = buildPossibleMutants();
+		possibleMutants = readPossibleMutants();
 	}
 	delete thePDB;
 	
@@ -99,7 +99,7 @@ int main (int argc, char* argv[])
 		theEnsemble = thePDB->getEnsemblePointer();
 		pMol = theEnsemble->getMoleculePointer(0);
 		prot = static_cast<protein*>(pMol);
-		sequencePool = buildSequencePool();
+		sequencePool = readSequencePool();
 
 		//--load in initial pdb with a random starting structure on active chains and random residues
 		nobetter = 0;
@@ -253,86 +253,50 @@ vector <UInt> getMutationPosition(UIntVec &_activeChains, UIntVec &_activeResidu
 
 UInt getProbabilisticMutation(protein* _prot, vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition, UIntVec &_activeResidues)
 {
-	bool acceptance = false, three = true, Nterm = false, Cterm = false;
+	bool acceptance = false, Cterm = false;
 	double prob0, prob1, prob2, Pi, Pj, poolSize = _sequencePool.size();
 	vector <UInt> Freqs(20,1);
-	UInt position, mutant, type0, type1, type2;
+	UInt mutant, type0, type1, type2;
 	UInt count = getSizeofPopulation();
 	
 	// determine whether probability will consist of two postitions at terminus or three positions
-	if (_mutantPosition[1] == 0){three = false; Nterm = true;}
-	else if (_mutantPosition[1] == _prot->getNumResidues(_mutantPosition[0])-1){three = false; Cterm = true;}
-
-	//--find mutant in vector
-	for (UInt i = 0; i < _possibleMutants.size(); i++)
-	{
-		if (_activeResidues[i] == _mutantPosition[1]){
-			position = i;
-		}
-	}
-	UInt positionPossibles = _possibleMutants[position].size();
+	if (_mutantPosition[1] == _prot->getNumResidues(_mutantPosition[0])-1){Cterm = true;}
+	UInt positionPossibles = _possibleMutants[(_mutantPosition[0]+1)*_mutantPosition[1]].size();
 
 	//--determine boltzmann probability based chance of conformation acceptance
 	do
 	{
-		mutant = _possibleMutants[position][rand() % positionPossibles];
+		mutant = _possibleMutants[(_mutantPosition[0]+1)*_mutantPosition[1]][rand() % positionPossibles];
 		if (count >= ::populationBaseline){
 			//--get population conformations for locality of position
 			for (UInt i = 0; i < poolSize; i++)
 			{
-				if (three){
-					type0 = _sequencePool[i][_mutantPosition[1]-1];
-					Freqs[type0] += 1;
-					type1 = _sequencePool[i][_mutantPosition[1]];
+				if (!Cterm){
+					type1 = _sequencePool[i][(_mutantPosition[0]+1)*_mutantPosition[1]];
 					Freqs[type1] += 1;
-					type2 = _sequencePool[i][_mutantPosition[1]+1];
+					type2 = _sequencePool[i][((_mutantPosition[0]+1)*_mutantPosition[1])+1];
 					Freqs[type2] += 1;
 				}
 				else{
-					if (Nterm){
-						type1 = _sequencePool[i][_mutantPosition[1]];
-						Freqs[type1] += 1;
-						type2 = _sequencePool[i][_mutantPosition[1]+1];
-						Freqs[type2] += 1;
-					}
-					if (Cterm){
-						type0 = _sequencePool[i][_mutantPosition[1]-1];
-						Freqs[type0] += 1;
-						type1 = _sequencePool[i][_mutantPosition[1]];
-						Freqs[type1] += 1;
-					}
+					type0 = _sequencePool[i][((_mutantPosition[0]+1)*_mutantPosition[1])-1];
+					Freqs[type0] += 1;
+					type1 = _sequencePool[i][(_mutantPosition[0]+1)*_mutantPosition[1]];
+					Freqs[type1] += 1;
 				}
 			}
-			if (three){
-				prob0 = Freqs[_prot->getBackboneSequenceType(_mutantPosition[0],_mutantPosition[1]-1)]/(poolSize-1);
+			if (!Cterm){
 				prob1 = Freqs[mutant]/(poolSize-1);
 				prob2 = Freqs[_prot->getBackboneSequenceType(_mutantPosition[0],_mutantPosition[1]+1)]/(poolSize-1);
-				Pi = prob0*prob1*prob2;
-				prob0 = 1/8, prob1 = 1/8, prob2 = 1/8;
-				if(_prot->getTypeFromResNum(_mutantPosition[0],_mutantPosition[1]-1) == 26){prob0 = 1/16;}
-				if(_prot->getTypeFromResNum(_mutantPosition[0],_mutantPosition[1]) == 26){prob1 = 1/16;}
-				if(_prot->getTypeFromResNum(_mutantPosition[0],_mutantPosition[1]+1) == 26){prob2 = 1/16;}
-				Pj = prob0*prob1*prob2;
+				Pi = prob1*prob2;
+				prob1 = 1/_possibleMutants[(_mutantPosition[0]+1)*_mutantPosition[1]].size(), prob2 = 1/_possibleMutants[((_mutantPosition[0]+1)*_mutantPosition[1])+1].size();
+				Pj = prob1*prob2;
 			}
 			else{
-				if (Nterm){
-					prob1 = Freqs[mutant]/(poolSize-1);
-					prob2 = Freqs[_prot->getBackboneSequenceType(_mutantPosition[0],_mutantPosition[1]+1)]/(poolSize-1);
-					Pi = prob1*prob2;
-					prob1 = 1/8, prob2 = 1/8;
-					if(_prot->getTypeFromResNum(_mutantPosition[0],_mutantPosition[1]) == 26){prob1 = 1/16;}
-					if(_prot->getTypeFromResNum(_mutantPosition[0],_mutantPosition[1]+1) == 26){prob2 = 1/16;}
-					Pj = prob1*prob2;
-				}
-				if (Cterm){
-					prob0 = Freqs[_prot->getBackboneSequenceType(_mutantPosition[0],_mutantPosition[1]-1)]/(poolSize-1);
-					prob1 = Freqs[mutant]/(poolSize-1);
-					Pi = prob0*prob1;
-					prob0 = 1/8, prob1 = 1/8;
-					if(_prot->getTypeFromResNum(_mutantPosition[0],_mutantPosition[1]-1) == 26){prob0 = 1/16;}
-					if(_prot->getTypeFromResNum(_mutantPosition[0],_mutantPosition[1]) == 26){prob1 = 1/16;}
-					Pj = prob0*prob1;
-				}
+				prob0 = Freqs[_prot->getBackboneSequenceType(_mutantPosition[0],_mutantPosition[1]-1)]/(poolSize-1);
+				prob1 = Freqs[mutant]/(poolSize-1);
+				Pi = prob0*prob1;
+				prob1 = 1/_possibleMutants[(_mutantPosition[0]+1)*_mutantPosition[1]].size(), prob0 = 1/_possibleMutants[((_mutantPosition[0]+1)*_mutantPosition[1])-1].size();
+				Pj = prob0*prob1;
 			}
 			acceptance = _prot->boltzmannProbabilityCriteria(Pi, Pj, ::KT);
 		}
@@ -341,7 +305,7 @@ UInt getProbabilisticMutation(protein* _prot, vector < vector < UInt > > &_seque
 	return mutant;
 }
 
-vector < vector < UInt > > buildSequencePool()
+vector < vector < UInt > > readSequencePool()
 {
 	ifstream file("sequencepool.out");
 	string item, line;
@@ -368,7 +332,7 @@ vector < vector < UInt > > buildSequencePool()
 	return sequencePool;
 }
 
-vector < vector < UInt > > buildPossibleMutants()
+vector < vector < UInt > > readPossibleMutants()
 {
 	ifstream file("possiblemutants.out");
 	string item, line;
@@ -393,19 +357,27 @@ vector < vector < UInt > > buildPossibleMutants()
 
 void createPossibleMutantsDatabase(protein* &_prot, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedTypes)
 {
-	fstream pm;
+	fstream pm; bool active;
 	pm.open ("possiblemutants.out", fstream::in | fstream::out | fstream::app);
 	
 	for (UInt i = 0; i < _activeChains.size(); i++)
 	{
-		for (UInt j = 0; j <_activeResidues.size(); j++)
+		for (UInt j = 0; j <_prot->getNumResidues(i); j++)
 		{
-			for (UInt k = 0; k <_allowedTypes.size(); k++)
+			active = false;
+			for (UInt k = 0; k < _activeResidues.size(); k++)
 			{
-				if (_allowedTypes[k] < 11 || (_allowedTypes[k] > 10 && _prot->getTypeFromResNum(_activeChains[i],_activeResidues[j]) > 25 )){
-					pm << _allowedTypes[k] << ",";
+				if(j == _activeResidues[k]){active = true;}
+			}
+			if (active){
+				for (UInt l = 0; l <_allowedTypes.size(); l++)
+				{
+					if (_allowedTypes[l] < 11 || (_allowedTypes[l] > 10 && _prot->getTypeFromResNum(_activeChains[i],j) > 25 )){
+						pm << _allowedTypes[l] << ",";
+					}
 				}
 			}
+			else{pm << _prot->getBackboneSequenceType(_activeChains[i],j) << ",";}
 			pm << endl;
 		}
 	}
