@@ -2662,7 +2662,7 @@ double residue::intraEnergy()
 double residue::intraSoluteEnergy()
 {	
 	double intraEnergy = 0.0;
-	bool twoBonds;
+	bool threeBonds;
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
 		if (!itsAtoms[i]->getSilentStatus())
@@ -2677,8 +2677,8 @@ double residue::intraSoluteEnergy()
 			{
 				if (!itsAtoms[j]->getSilentStatus())
 				{
-					twoBonds = isSeparatedByFewBonds(i,j);
-					if (!twoBonds)
+					threeBonds = isSeparatedByFewBonds(i,j);
+					if (!threeBonds)
 					{
 						// ** get distance
 						double distanceSquared = itsAtoms[i]->distanceSquared(itsAtoms[j]);
