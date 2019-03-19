@@ -2677,7 +2677,7 @@ double residue::intraSoluteEnergy()
 			{
 				if (!itsAtoms[j]->getSilentStatus())
 				{
-					twoBonds = isSeparatedByOneOrTwoBonds(i,j);
+					twoBonds = isSeparatedByFewBonds(i,j);
 					if (!twoBonds)
 					{
 						// ** get distance
@@ -2718,7 +2718,7 @@ double residue::intraSoluteEnergy()
 double residue::interSoluteEnergy(residue* _other)
 {
 	double interEnergy = 0.0;
-	bool twoBonds;
+	bool threeBonds;
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
 		if (!itsAtoms[i]->getSilentStatus())
@@ -2727,8 +2727,8 @@ double residue::interSoluteEnergy(residue* _other)
 			{
 				if (!_other->itsAtoms[j]->getSilentStatus())
 				{
-					twoBonds = isSeparatedByOneOrTwoBackboneBonds(i,_other,j);
-					if (!twoBonds)
+					threeBonds = isSeparatedByThreeBackboneBonds(i,_other,j);
+					if (!threeBonds)
 					{
 						double distanceSquared = itsAtoms[i]->inCubeWithDistSQ(_other->itsAtoms[j], cutoffDistance);
 						if (distanceSquared <= cutoffDistanceSquared)
@@ -3187,7 +3187,7 @@ bool residue::isClash(UInt _index1, UInt _index2)
 
 bool residue::isClash(UInt _index1, residue* _other, UInt _index2)
 {
-	if (isSeparatedByOneOrTwoBackboneBonds(_index1, _other, _index2)) {return false;}
+	if (isSeparatedByThreeBackboneBonds(_index1, _other, _index2)) {return false;}
 	double minDist = getRadius(_index1)+_other->getRadius(_index2);
 	double cubeLength = minDist/1.414213562; //vdw contact distance / sqrt(2) (withing a square in circle for fast hard clash)
 	if (itsAtoms[_index1]->inCube(_other->itsAtoms[_index2], cubeLength)) {return true;}
@@ -3325,7 +3325,7 @@ UInt residue::getBondSeparation(UInt _index1, UInt _index2)
     return 99;
 }
 
-bool residue::isSeparatedByOneOrTwoBackboneBonds(UInt _index1, residue* _pRes2, UInt _index2)
+bool residue::isSeparatedByThreeBackboneBonds(UInt _index1, residue* _pRes2, UInt _index2)
 {
 	// first, check if they are sequential residues
 	int theOrder = 0;
@@ -3342,28 +3342,31 @@ bool residue::isSeparatedByOneOrTwoBackboneBonds(UInt _index1, residue* _pRes2, 
 	string name1, name2;
 	UInt atom1, atom2;
 	if (theOrder == -1){
-		name1 = itsAtoms[_index1]->getName();
-		name2 = _pRes2->itsAtoms[_index2]->getName();
-		atom1 = _index1;
-		atom2 = _index2;
-	}
-	else{
-		name2 = itsAtoms[_index1]->getName();
-		name1 = _pRes2->itsAtoms[_index2]->getName();
+		name2 = itsAtoms[_index1]->getName(); // c terminal
+		name1 = _pRes2->itsAtoms[_index2]->getName(); //n terminal
 		atom2 = _index1;
 		atom1 = _index2;
 	}
-	
-	if (atom1 == 0 || atom1 == 1 || name1 == "H")
-	{
-		if (atom2 > 0 && atom2 < 4){
-			if ((name1 == "H" || atom1 == 1) && atom2 == 2){return true;}
-			if (atom1 == 0) {return true;}
-			return false;
-		}
-		else{return false;}
+	else{
+		name1 = itsAtoms[_index1]->getName(); // n terminal
+		name2 = _pRes2->itsAtoms[_index2]->getName(); // c terminal
+		atom1 = _index1;
+		atom2 = _index2;
 	}
-	else{return false;}
+	
+	if (atom1 == 0 || atom2 == 0){
+		return true;
+	}
+	if (atom1 == 1 && (atom2 == 0 || atom2 == 1 || name2 == "H")){
+		return true;
+	}
+	if (atom1 == 2 && (atom2 == 0 || atom2 == 1 || atom2 == 2 || name2 == "H" || name2 == "CB" || name2 == "HA" || name2 == "HA2" || name2 == "HA3")){
+		return true;
+	}
+	if (atom1 == 3 && (atom2 == 0 || atom2 == 1 || name2 == "H")){
+		return true;
+	}
+	return false;
 }
 
 
