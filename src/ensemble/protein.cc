@@ -1244,20 +1244,17 @@ double protein::getMedianResidueEnergy(UIntVec _activeChains)
 bool protein::boltzmannEnergyCriteria(double _deltaEnergy, double _KT)//calculate boltzmann probability of an energy to determine acceptance criteria
 {
 	bool acceptance = false;
-	double Entropy = 1000000/((rand() % 1000000)+1); //generate high precision random probability as entropy
-	double PiPj = pow(EU,((_deltaEnergy)/(_KT)));
-	if (PiPj < Entropy){acceptance = true;}
+	double Entropy = (rand() % 1000000000+1)/(rand() % 1000000000+1); //generate high precision random probability as entropy
+	double thermalEnergy = -_KT*log(Entropy); 
+	if (_deltaEnergy < thermalEnergy){acceptance = true;}
 	return acceptance;
 }
 
-bool protein::boltzmannProbabilityCriteria(double Pi, double Pj, double _KT) //calculate boltzmann Energy from a probability (Pi) compared to a reference (Pj) probability to determine acceptance criteria
+double protein::boltzmannProbabilityToEnergy(double Pi, double Pj) //calculate boltzmann Energy from a probability (Pi) compared to a reference (Pj) probability to determine acceptance criteria
 {
-	bool acceptance = false;
-	double Entropy = 1000000/((rand() % 1000000)+1);  //generate high precision random probability as entropy
-	double randomEnergy = -_KT*log(Entropy); 
-	double Energy = -_KT*log(Pi/Pj); 
-	if (Energy < randomEnergy){acceptance = true;}
-	return acceptance;
+	double KT = residue::getTemperature()*KB;
+	double Energy = -KT*log(Pi/Pj);
+	return Energy;
 }
 
 void protein::updateBackboneClashes()
@@ -1380,133 +1377,6 @@ void protein::updateResiduesPerTurnType()
 		itsChains[i]->updateResiduesPerTurnType();
 	}
 }
-/*
-double protein::intraSoluteEnergy(bool _updateDielectrics, UInt _activeChain)
-{
-    double intraEnergy = 0.0;
-    if (_updateDielectrics)
-    {
-        this->updateDielectrics();
-    }
-    intraEnergy += itsChains[_activeChain]->intraSoluteEnergy();
-    for(UInt j=0; j<itsChains.size(); j++)
-    {
-        if (j != _activeChain)
-        {
-            intraEnergy += itsChains[_activeChain]->interSoluteEnergy(itsChains[j]);
-        }
-    }
-    return intraEnergy;
-}
-
-double protein::interSoluteEnergy(bool _updateDielectrics, UInt _chain1, UInt _chain2)
-{
-	if (_updateDielectrics)
-	{
-		this->updateDielectrics();
-	}
-	double interEnergy = itsChains[_chain1]->interSoluteEnergy(itsChains[_chain2]);
-	return interEnergy;
-}
-
-vector <double> protein::calculateChainIndependentDielectric(chain* _chain, residue* _residue, atom* _atom)
-{
-    vector <double> polarization(2);
-    vector <double> _polarization(2);
-    vector <double> dielectric(2);
-    double waterPol = residueTemplate::getPolarizability(52);
-    double waterVol = residueTemplate::getVolume(52);
-    double totalVol = residue::cutoffCubeVolume;
-    polarization[0] = 0.0;
-    polarization[1] = 0.0;
-
-    // get volume and polarizabilities through protein around atom
-     _polarization = _chain->calculateDielectric(_chain, _residue, _atom);
-     polarization[0] += _polarization[0];
-     polarization[1] += _polarization[1];
-
-    // calculate local dielectric for atom
-	double totalWaterVol = totalVol-(polarization[0]/1.89);
-    int waters = totalWaterVol/waterVol;
-    double totalWaterPol = waters*waterPol;
-	double die = 1+4*3.14*((waters)/totalVol)*(totalWaterPol+polarization[1]);
-    if (die < 2) { die = 2.0;}
-    if (die > 78) { die = 78.0;}
-    dielectric[0] = die;
-    dielectric[1] = waters;
-    return dielectric;
-}
-
-void protein::updateChainIndependentDielectrics(UInt _chainIndex)
-{
-	vector <double> dielectric(2);
-	for(UInt i=0; i<itsChains[_chainIndex]->itsResidues.size(); i++)
-	{
-		for(UInt j=0; j<itsChains[_chainIndex]->itsResidues[i]->itsAtoms.size(); j++)
-		{
-			dielectric = this->calculateChainIndependentDielectric(itsChains[_chainIndex], itsChains[_chainIndex]->itsResidues[i], itsChains[_chainIndex]->itsResidues[i]->itsAtoms[j]);
-			itsChains[_chainIndex]->itsResidues[i]->itsAtoms[j]->setDielectric(dielectric[0]);
-			itsChains[_chainIndex]->itsResidues[i]->itsAtoms[j]->setNumberofWaters(dielectric[1]);
-
-		}
-	}
-}
-
-vector <double> protein::calculateResidueIndependentDielectric(residue* _residue, atom* _atom)
-{
-	vector <double> polarization(2);
-	vector <double> _polarization(2);
-	vector <double> dielectric(2);
-	double waterPol = residueTemplate::getPolarizability(52);
-	double waterVol = residueTemplate::getVolume(52);
-	double totalVol = residue::cutoffCubeVolume;
-	polarization[0] = 0.0;
-	polarization[1] = 0.0;
-
-	// get volume and polarizabilities through protein around atom
-	 _polarization = _residue->calculateDielectric(_atom);
-	 polarization[0] += _polarization[0];
-	 polarization[1] += _polarization[1];
-
-	// calculate local dielectric for atom
-	double totalWaterVol = totalVol-(polarization[0]/1.89);
-	int waters = totalWaterVol/waterVol;
-	double totalWaterPol = waters*waterPol;
-	double die = 1+4*3.14*((waters)/totalVol)*(totalWaterPol+polarization[1]);
-	if (die < 2) { die = 2.0;}
-	if (die > 78) { die = 78.0;}
-	dielectric[0] = die;
-	dielectric[1] = waters;
-	return dielectric;
-}
-
-vector <double> protein::chainBindingEnergy()
-{
-    double bindingEnergy, complexEnergy, intraChainEnergy = 0.0;
-    vector <double> Energy;
-    complexEnergy = intraSoluteEnergy();
-    Energy.push_back(complexEnergy);
-    UInt numChains = this->getNumChains();
-    for (UInt j = 0; j < numChains; j++)
-    {
-        this->updateChainIndependentDielectrics(j);
-        intraChainEnergy += itsChains[j]->intraSoluteEnergy();
-    }
-    bindingEnergy = complexEnergy - intraChainEnergy;
-    Energy.push_back(bindingEnergy);
-    return Energy;
-}
-
-void protein::updateResidueIndependentDielectrics(UInt _chainIndex, UInt _resIndex)
-{
-	vector <double> dielectric(2);
-	for(UInt j=0; j<itsChains[_chainIndex]->itsResidues[_resIndex]->itsAtoms.size(); j++)
-	{
-		dielectric = calculateResidueIndependentDielectric(itsChains[_chainIndex]->itsResidues[_resIndex], itsChains[_chainIndex]->itsResidues[_resIndex]->itsAtoms[j]);
-		itsChains[_chainIndex]->itsResidues[_resIndex]->itsAtoms[j]->setDielectric(dielectric[0]);
-		itsChains[_chainIndex]->itsResidues[_resIndex]->itsAtoms[j]->setNumberofWaters(dielectric[1]);
-	}
-}*/
 
 void protein::updateTotalNumResidues()
 {
@@ -2833,7 +2703,7 @@ void protein::protOpt(bool _backbone)
 	UInt clashes, clashesStart, bbClashes, bbClashesStart, chainNum = getNumChains(), plateau = 500;
 	double Energy, pastEnergy = protEnergy(), deltaEnergy, sPhi, sPsi,nobetter = 0.0, KT = KB*Temperature();
 	vector < vector <double>> currentSidechainConf, newSidechainConf; srand (time(NULL)); vector <double> backboneAngles(2);
-	bool boltzmannAcceptance, sidechainTest, backboneTest, revert, energyTest;
+	bool sidechainTest, backboneTest, revert, energyTest;
 	
 	//--Run optimizaiton loop to local minima defined by an RT plateau------------------------
 	do{
@@ -2872,8 +2742,7 @@ void protein::protOpt(bool _backbone)
 		if (energyTest){
 			Energy = protEnergy();
 			deltaEnergy = Energy - pastEnergy;
-			boltzmannAcceptance = boltzmannEnergyCriteria(deltaEnergy, KT);
-			if (boltzmannAcceptance){
+			if (deltaEnergy < KT){
 				pastEnergy = Energy;
 				if (deltaEnergy < -KT){nobetter = 0;}
 			}
@@ -2902,7 +2771,7 @@ void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 	UInt clashes, clashesStart, bbClashes, bbClashesStart, chainNum = _activeChains.size(), plateau = 500;
 	double Energy, pastEnergy = protEnergy(), deltaEnergy, sPhi, sPsi,nobetter = 0.0, KT = KB*Temperature();
 	vector < vector <double>> currentSidechainConf, newSidechainConf; srand (time(NULL)); vector <double> backboneAngles(2);
-	bool boltzmannAcceptance, sidechainTest, backboneTest, revert, energyTest, skip;
+	bool sidechainTest, backboneTest, revert, energyTest, skip;
 	
 	//--Run optimizaiton loop to local minima defined by an RT plateau------------------------
 	do{
@@ -2949,8 +2818,7 @@ void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 		if (energyTest){
 			Energy = protEnergy();
 			deltaEnergy = Energy - pastEnergy;
-			boltzmannAcceptance = boltzmannEnergyCriteria(deltaEnergy, KT);
-			if (boltzmannAcceptance){
+			if (deltaEnergy < KT){
 				pastEnergy = Energy;
 				if (deltaEnergy < -KT){nobetter = 0;}
 			}
@@ -2979,7 +2847,7 @@ void protein::protOpt(bool _backbone, UInt chainIndex, UInt resIndex)
 	UInt clashes, clashesStart, bbClashes, bbClashesStart, plateau = 500;
 	double Energy, pastEnergy = protEnergy(), deltaEnergy, sPhi, sPsi,nobetter = 0.0, KT = KB*Temperature();
 	vector < vector <double>> currentSidechainConf, newSidechainConf; srand (time(NULL)); vector <double> backboneAngles(2);
-	bool boltzmannAcceptance, sidechainTest, backboneTest, revert, energyTest;
+	bool sidechainTest, backboneTest, revert, energyTest;
 	
 	//--Run optimizaiton loop to local minima defined by an RT plateau------------------------
 	do{
@@ -3016,8 +2884,7 @@ void protein::protOpt(bool _backbone, UInt chainIndex, UInt resIndex)
 		if (energyTest){
 			Energy = protEnergy();
 			deltaEnergy = Energy - pastEnergy;
-			boltzmannAcceptance = boltzmannEnergyCriteria(deltaEnergy, KT);
-			if (boltzmannAcceptance){
+			if (deltaEnergy < KT){
 				pastEnergy = Energy;
 				if (deltaEnergy < -KT){nobetter = 0;}
 			}
@@ -3145,6 +3012,72 @@ void protein::protRelax(UIntVec _frozenResidues, UIntVec _activeChains)
 			}
 		} while (nobetter < _plateau);
 	}
+	return;
+}
+
+void protein::protSampling(UInt iterations)
+{
+	//--Initialize variables for loop, calculate starting energy and build energy vectors-----
+	UInt randchain, randres, resnum, changes = 0, backboneOrSidechain = 1;
+	UInt clashes, clashesStart, bbClashes, bbClashesStart, chainNum = getNumChains();
+	double Energy, pastEnergy = protEnergy(), deltaEnergy, sPhi, sPsi,nobetter = 0.0, KT = KB*Temperature();
+	vector < vector <double>> currentSidechainConf, newSidechainConf; srand (time(NULL)); vector <double> backboneAngles(2);
+	bool sidechainTest, backboneTest, revert, energyTest, boltzmannAcceptance;
+	
+	//--Run sampling loop to number of iterations------------------------
+	do
+	{
+		//--choose random residue and set variables
+		randchain = rand() % chainNum, resnum = getNumResidues(randchain), randres = rand() % resnum;
+		clashesStart = getNumHardClashes(); backboneOrSidechain = rand() % 2; nobetter++;
+		backboneTest = false, sidechainTest = false, energyTest = false, revert = true;
+		
+		//--Backbone conformation trial--------------------------------------------------------
+		if (randres > 0 && randres < resnum-2 && backboneOrSidechain == 0){
+			backboneTest = true; bbClashesStart = getNumHardBackboneClashes();
+			sPhi = getPhi(randchain,randres), sPsi = getPsi(randchain,randres);
+			backboneAngles = getRandConformationFromBackboneType(sPhi, sPsi);
+			setDihedral(randchain,randres,backboneAngles[0],0,0); setDihedral(randchain,randres,backboneAngles[1],1,0);
+			bbClashes = getNumHardBackboneClashes();
+			if (bbClashes <= bbClashesStart){
+				clashes = getNumHardClashes();
+				if (clashes <= clashesStart){
+					energyTest = true; revert = false;
+				}
+			}
+		}
+		//--Sidechain conformation trial--------------------------------------------------------
+		else{
+			sidechainTest = true;
+			currentSidechainConf = getSidechainDihedrals(randchain, randres);
+			newSidechainConf = randContinuousSidechainConformation(randchain, randres);
+			setSidechainDihedralAngles(randchain, randres, newSidechainConf);
+			clashes = getNumHardClashes();
+			if (clashes <= clashesStart){
+				energyTest = true; revert = false;
+			}
+		}
+		//--Energy-Test-------------------------------------------------------------------------
+		if (energyTest){
+			Energy = protEnergy();
+			deltaEnergy = Energy - pastEnergy;
+			boltzmannAcceptance = boltzmannEnergyCriteria(deltaEnergy,KT);
+			if (boltzmannAcceptance){
+				pastEnergy = Energy; changes++;
+			}
+			else{revert = true;}
+		}
+		//--Revert conformation-----------------------------------------------------------------
+		if (revert){
+			if(backboneTest){
+				setDihedral(randchain,randres,sPhi,0,0);
+				setDihedral(randchain,randres,sPsi,1,0);
+			}
+			if(sidechainTest){
+				setSidechainDihedralAngles(randchain, randres, currentSidechainConf);
+			}
+		}
+	} while(changes < iterations);
 	return;
 }
 

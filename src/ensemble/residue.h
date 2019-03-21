@@ -417,6 +417,7 @@ private:
 	static double cutoffCubeVolume;
 	static double dielectricWidth;
 	static double dielectricCubeVolume;
+	static double KT;
 };
 
 #endif

@@ -68,7 +68,7 @@ int main (int argc, char* argv[])
 	srand (seed);
 	double startEnergy = 1E10, pastEnergy, Energy, deltaEnergy;
 	vector <double> backboneAngles(2);
-	UInt timeid, sec, numClashes, startNumBackboneClashes, mutant = 0, plateau = 750, nobetter = 0;
+	UInt timeid, sec, numClashes, startNumBackboneClashes, mutant = 0, plateau = 1000, nobetter = 0;
 	vector < UInt > mutantPosition, chainSequence, randomPosition;
 	vector < vector < UInt > > sequencePool, finalSequence, possibleMutants;
 	stringstream convert;

@@ -27,6 +27,7 @@ double residue::cutoffDistanceSquared = residue::cutoffDistance*residue::cutoffD
 double residue::cutoffCubeVolume = pow((residue::cutoffDistance*2),3);
 double residue::dielectricWidth = 9.0;
 double residue::dielectricCubeVolume = pow((residue::dielectricWidth*2),3);
+double residue::KT = KB*residue::getTemperature();
 
 void residue::setupDataBase()
 {	if (!dataBaseBuilt)
@@ -2936,25 +2937,23 @@ void residue::calculateDielectrics()
 double residue::maxwellGarnettApproximation(UInt _atomIndex1, UInt _atomIndex2, double _dielectric, double _distanceSquared)
 {
 	//approximate the polarizability of inclusion in medium due to dipole if charges are opposite sign
+	
 	double dielectric;
 	double charge1 = residueTemplate::itsAmberElec.getItsCharge(itsType, _atomIndex1);
 	double charge2 = residueTemplate::itsAmberElec.getItsCharge(itsType, _atomIndex2);
 	if ((charge1 > 0 && charge2 < 0) || (charge2 > 0 && charge1 < 0)){
-		UInt type1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex1][0];
-		UInt type2 = dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex2][0];
 		charge1 = fabs(charge1); charge2 = fabs(charge2);
-		double pol1 = residueTemplate::getPolarizability(type1);
-		double pol2 = residueTemplate::getPolarizability(type2);
-		double radius = sqrt(_distanceSquared)/2;
-		double dipole = (charge1*radius)+(charge2*radius);
-		double Efield1 = KC*charge1/pow(radius,2);
-		double Efield2 = KC*charge2/pow(radius,2);
-		double Efield = Efield1+Efield2;
-		double pol = (dipole/Efield)+(pol1/radius)+(pol2/radius);
-		double vol = 4/3*PI*pow(radius,3);
+		UInt type1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex1][0], type2 = dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex2][0];
+		double pol1 = residueTemplate::getPolarizability(type1), pol2 = residueTemplate::getPolarizability(type2);
+		double radius = sqrt(_distanceSquared)/2, vol = 4/3*PI*pow(radius,3);
+		double dipoleMoment = (charge1*radius)+(charge2*radius);
+		double Efield1 = KC*charge1/pow(radius,2), Efield2 = KC*charge2/pow(radius,2), Efield = Efield1+Efield2;
+		double staticPolarizability =pol1/vol+pol2/vol;
+		double pol = staticPolarizability+dipoleMoment/Efield;
 		
 		//recalculate the dielectric using the Maxwell Garnett mixing formula to include the polarizability of the dipole inclusion over the volume of inclusion
-		dielectric = _dielectric+4*PI*(pol/vol)/1-(4*PI/3*_dielectric)*(pol/vol);
+		dielectric = _dielectric+4*PI*pol/1-(4*PI/3*_dielectric)*pol;
+		cout << dielectric << " " << _dielectric << " " << sqrt(_distanceSquared) << " " << charge1 << " " << charge2 << endl;
 		if (dielectric < 1){dielectric = 1;}
 	}
 	else{dielectric = _dielectric;}
@@ -2968,21 +2967,18 @@ double residue::maxwellGarnettApproximation(UInt _atomIndex1, UInt _atomIndex2, 
 	double charge1 = residueTemplate::itsAmberElec.getItsCharge(itsType, _atomIndex1);
 	double charge2 = residueTemplate::itsAmberElec.getItsCharge(_other->itsType, _atomIndex2);
 	if ((charge1 > 0 && charge2 < 0) || (charge2 > 0 && charge1 < 0)){
-		UInt type1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex1][0];
-		UInt type2 = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[_atomIndex2][0];
 		charge1 = fabs(charge1); charge2 = fabs(charge2);
-		double pol1 = residueTemplate::getPolarizability(type1);
-		double pol2 = residueTemplate::getPolarizability(type2);
-		double radius = sqrt(_distanceSquared)/2;
-		double dipole = (charge1*radius)+(charge2*radius);
-		double Efield1 = KC*charge1/pow(radius,2);
-		double Efield2 = KC*charge2/pow(radius,2);
-		double Efield = Efield1+Efield2;
-		double pol = (dipole/Efield)+(pol1/radius)+(pol2/radius);
-		double vol = 4/3*PI*pow(radius,3);
+		UInt type1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex1][0], type2 = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[_atomIndex2][0];
+		double pol1 = residueTemplate::getPolarizability(type1), pol2 = residueTemplate::getPolarizability(type2);
+		double radius = sqrt(_distanceSquared)/2, vol = 4/3*PI*pow(radius,3);
+		double dipoleMoment = (charge1*radius)+(charge2*radius);
+		double Efield1 = KC*charge1/pow(radius,2), Efield2 = KC*charge2/pow(radius,2), Efield = Efield1+Efield2;
+		double staticPolarizability =pol1/vol+pol2/vol;
+		double pol = staticPolarizability+dipoleMoment/Efield;
 		
 		//recalculate the dielectric using the Maxwell Garnett mixing formula to include the polarizability of the dipole inclusion over the volume of inclusion
-		dielectric = _dielectric+4*PI*(pol/vol)/1-(4*PI/3*_dielectric)*(pol/vol);
+		dielectric = _dielectric+4*PI*pol/1-(4*PI/3*_dielectric)*pol;
+		cout << dielectric << " " << _dielectric << " " << sqrt(_distanceSquared) << " " << charge1 << " " << charge2 << endl;
 		if (dielectric < 1){dielectric = 1;}
 	}
 	else{dielectric = _dielectric;}

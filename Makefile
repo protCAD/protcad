@@ -12,7 +12,7 @@ export MAKE = make
 
 SHELL = /bin/sh
 
-TARGETS = protDielectric protEvolver protDihedrals protShaper protEnergy protOpt protDB protFolder protMover protMutator protSequence protInverter protClashes protMin protAlign
+TARGETS = protDielectric protEvolver protDihedrals protShaper protEnergy protSampling protDB protFolder protMover protMutator protSequence protInverter protClashes protMin protAlign
 
 .SUFFIXES: .cc .o .h .a .f
 
@@ -85,7 +85,7 @@ protEnergy : libprotcad.a protEnergy.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
 	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 	
-protOpt : libprotcad.a protOpt.cc
+protSampling : libprotcad.a protSampling.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
 	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 	
