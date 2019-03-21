@@ -238,7 +238,7 @@ vector <UInt> getMutationPosition(UIntVec &_activeChains, UIntVec &_activeResidu
 
 UInt getProbabilisticMutation(protein* _prot, vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition, UIntVec &_activeResidues)
 {
-	double Pi, Pj, statPotEnergy = 1E10, thermalEnergy = 1E10; poolSize = _sequencePool.size();
+	double Pi, Pj, statPotEnergy = 1E10, thermalEnergy = 1E10, poolSize = _sequencePool.size();
 	vector <UInt> Freqs(57,1);
 	UInt mutant, type;
 	UInt count = getSizeofPopulation();

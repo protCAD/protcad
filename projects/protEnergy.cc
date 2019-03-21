@@ -25,9 +25,9 @@ int main (int argc, char* argv[])
 	
 	residue::setElectroSolvationScaleFactor(1.0);
 	residue::setHydroSolvationScaleFactor(1.0);
+	residue::setPolarizableElec(true);
 	amberElec::setScaleFactor(1.0);
 	amberVDW::setScaleFactor(1.0);
-	residue::setPolarizableElec(true);
 
 	start = clock();
 	double Energy = bundle->protEnergy();
