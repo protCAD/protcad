@@ -2948,12 +2948,11 @@ double residue::maxwellGarnettApproximation(UInt _atomIndex1, UInt _atomIndex2, 
 		double radius = sqrt(_distanceSquared)/2, vol = 4/3*PI*pow(radius,3);
 		double dipoleMoment = (charge1*radius)+(charge2*radius);
 		double Efield1 = KC*charge1/pow(radius,2), Efield2 = KC*charge2/pow(radius,2), Efield = Efield1+Efield2;
-		double staticPolarizability =pol1/vol+pol2/vol;
+		double staticPolarizability =pol1+pol2;
 		double pol = staticPolarizability+dipoleMoment/Efield;
 		
 		//recalculate the dielectric using the Maxwell Garnett mixing formula to include the polarizability of the dipole inclusion over the volume of inclusion
-		dielectric = _dielectric+4*PI*pol/1-(4*PI/3*_dielectric)*pol;
-		cout << dielectric << " " << _dielectric << " " << sqrt(_distanceSquared) << " " << charge1 << " " << charge2 << endl;
+		dielectric = _dielectric+4*PI*(pol/vol)/1-(4*PI/3*_dielectric)*(pol/vol);
 		if (dielectric < 1){dielectric = 1;}
 	}
 	else{dielectric = _dielectric;}
@@ -2973,12 +2972,11 @@ double residue::maxwellGarnettApproximation(UInt _atomIndex1, UInt _atomIndex2, 
 		double radius = sqrt(_distanceSquared)/2, vol = 4/3*PI*pow(radius,3);
 		double dipoleMoment = (charge1*radius)+(charge2*radius);
 		double Efield1 = KC*charge1/pow(radius,2), Efield2 = KC*charge2/pow(radius,2), Efield = Efield1+Efield2;
-		double staticPolarizability =pol1/vol+pol2/vol;
+		double staticPolarizability =pol1+pol2;
 		double pol = staticPolarizability+dipoleMoment/Efield;
 		
 		//recalculate the dielectric using the Maxwell Garnett mixing formula to include the polarizability of the dipole inclusion over the volume of inclusion
-		dielectric = _dielectric+4*PI*pol/1-(4*PI/3*_dielectric)*pol;
-		cout << dielectric << " " << _dielectric << " " << sqrt(_distanceSquared) << " " << charge1 << " " << charge2 << endl;
+		dielectric = _dielectric+4*PI*(pol/vol)/1-(4*PI/3*_dielectric)*(pol/vol);
 		if (dielectric < 1){dielectric = 1;}
 	}
 	else{dielectric = _dielectric;}
