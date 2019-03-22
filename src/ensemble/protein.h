@@ -157,7 +157,7 @@ public:
 	double getMedianResidueEnergy();
 	double getMedianResidueEnergy(UIntVec _activeChains);
 	double getMedianResidueEnergy(UIntVec _activeChains, UIntVec _activeResidues);
-	bool boltzmannEnergyCriteria(double _deltaEnergy, double _KT);
+	bool boltzmannEnergyCriteria(double _deltaEnergy);
 	double boltzmannProbabilityToEnergy(double Pi, double Pj);
 	UInt getNumChis(const UInt _chainIndex, const UInt _resIndex, const UInt _bpt) {return itsChains[_chainIndex]->getNumChis(_resIndex,0); }
 	UInt getNumHardClashes(UInt chainIndex, UInt resIndex);

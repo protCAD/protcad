@@ -75,7 +75,7 @@ int main (int argc, char* argv[])
 	UInt count, name = rand() % 100000000;
 	convert << name, startstr = convert.str();
 	string tempModel = startstr + "_temp.pdb";
-	bool revert;
+	bool revert, acceptance;
 
 	//-build possible fold sequence database per position
 	PDBInterface* thePDB = new PDBInterface(infile);
@@ -142,7 +142,8 @@ int main (int argc, char* argv[])
 				prot->protMin(true);
 				Energy = prot->protEnergy();
 				deltaEnergy = Energy-pastEnergy;
-				if (deltaEnergy < residue::getKT()){
+				acceptance = prot->boltzmannEnergyCriteria(deltaEnergy);
+				if (acceptance){
 					pdbWriter(prot, tempModel);
 					pastEnergy = Energy;
 					if (deltaEnergy < (residue::getKT()*-1)){nobetter = 0;}
@@ -170,6 +171,7 @@ int main (int argc, char* argv[])
 		//-Determine probability of being accepted into pool
 		Energy = model->protEnergy();
 		deltaEnergy = Energy-startEnergy;
+		acceptance = prot->boltzmannEnergyCriteria(deltaEnergy);
 		startEnergy = Energy;
 		
 		//-generate pdb output
@@ -180,36 +182,29 @@ int main (int argc, char* argv[])
 		pdbWriter(model, outFile);
 		
 		//-write to data files
-		count = getSizeofPopulation();
-		finalSequence.clear(), chainSequence.clear();
+		count = getSizeofPopulation(); finalSequence.clear(), chainSequence.clear();
 		for (UInt i = 0; i < activeChains.size(); i++)
 		{
 			chainSequence = getChainSequence(model, activeChains[i]);
 			finalSequence.push_back(chainSequence);
 		}
-		fstream finalline;
-		finalline.open ("results.out", fstream::in | fstream::out | fstream::app);
+		fstream finalline; finalline.open ("results.out", fstream::in | fstream::out | fstream::app);
 		finalline << timeid << " " << Energy << " ";
-
-		fstream fs;
-		fs.open ("sequencepool.out", fstream::in | fstream::out | fstream::app);
+		fstream fs; fs.open ("sequencepool.out", fstream::in | fstream::out | fstream::app);
 		for (UInt i = 0; i < activeChains.size(); i++)
 		{
 			for (UInt j = 0; j < finalSequence[i].size(); j++)
 			{
 				finalline << backboneSeq[finalSequence[i][j]] << " ";
-				if (deltaEnergy < residue::getKT() || count < ::populationBaseline){
+				if (acceptance || count < ::populationBaseline){
 					fs << finalSequence[i][j] << ",";
 				}
 			}
 		}
-		if (deltaEnergy < residue::getKT() || count < ::populationBaseline){
-			finalline << " pool";
-			fs << endl;
+		if (acceptance || count < ::populationBaseline){
+			finalline << " pool"; fs << endl;
 		}
-		fs.close();
-		finalline << endl;
-		finalline.close();
+		fs.close(); finalline << endl; finalline.close();
 		
 		//-clear variables for next iteration
 		delete theModelPDB;
