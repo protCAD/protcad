@@ -31,7 +31,7 @@ int main (int argc, char* argv[])
 	}
 	
 	residue::setElectroSolvationScaleFactor(1.0);
-	residue::setHydroSolvationScaleFactor(0.0);
+	residue::setHydroSolvationScaleFactor(1.0);
 	amberElec::setScaleFactor(1.0);
 	amberVDW::setScaleFactor(1.0);
 	residue::setPolarizableElec(true);
@@ -48,7 +48,7 @@ int main (int argc, char* argv[])
 	while ((pent=readdir(pdir)))
 	{
 		inFrame = pent->d_name;
-        if (inFrame.find(".fold.pdb") != std::string::npos)
+		if (inFrame.find(".pdb") != std::string::npos)
 		{
 			PDBInterface* theFramePDB = new PDBInterface(inFrame);
 			ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();

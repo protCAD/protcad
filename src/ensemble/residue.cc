@@ -27,6 +27,7 @@ double residue::cutoffDistanceSquared = residue::cutoffDistance*residue::cutoffD
 double residue::cutoffCubeVolume = pow((residue::cutoffDistance*2),3);
 double residue::dielectricWidth = 9.0;
 double residue::dielectricCubeVolume = pow((residue::dielectricWidth*2),3);
+double residue::KT = KB*residue::getTemperature();
 
 void residue::setupDataBase()
 {	if (!dataBaseBuilt)
@@ -2662,7 +2663,7 @@ double residue::intraEnergy()
 double residue::intraSoluteEnergy()
 {	
 	double intraEnergy = 0.0;
-	bool twoBonds;
+	bool threeBonds;
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
 		if (!itsAtoms[i]->getSilentStatus())
@@ -2677,8 +2678,8 @@ double residue::intraSoluteEnergy()
 			{
 				if (!itsAtoms[j]->getSilentStatus())
 				{
-					twoBonds = isSeparatedByOneOrTwoBonds(i,j);
-					if (!twoBonds)
+					threeBonds = isSeparatedByFewBonds(i,j);
+					if (!threeBonds)
 					{
 						// ** get distance
 						double distanceSquared = itsAtoms[i]->distanceSquared(itsAtoms[j]);
@@ -2718,7 +2719,7 @@ double residue::intraSoluteEnergy()
 double residue::interSoluteEnergy(residue* _other)
 {
 	double interEnergy = 0.0;
-	bool twoBonds;
+	bool threeBonds;
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
 		if (!itsAtoms[i]->getSilentStatus())
@@ -2727,8 +2728,8 @@ double residue::interSoluteEnergy(residue* _other)
 			{
 				if (!_other->itsAtoms[j]->getSilentStatus())
 				{
-					twoBonds = isSeparatedByOneOrTwoBackboneBonds(i,_other,j);
-					if (!twoBonds)
+					threeBonds = isSeparatedByThreeBackboneBonds(i,_other,j);
+					if (!threeBonds)
 					{
 						double distanceSquared = itsAtoms[i]->inCubeWithDistSQ(_other->itsAtoms[j], cutoffDistance);
 						if (distanceSquared <= cutoffDistanceSquared)
@@ -2936,22 +2937,19 @@ void residue::calculateDielectrics()
 double residue::maxwellGarnettApproximation(UInt _atomIndex1, UInt _atomIndex2, double _dielectric, double _distanceSquared)
 {
 	//approximate the polarizability of inclusion in medium due to dipole if charges are opposite sign
+	
 	double dielectric;
 	double charge1 = residueTemplate::itsAmberElec.getItsCharge(itsType, _atomIndex1);
 	double charge2 = residueTemplate::itsAmberElec.getItsCharge(itsType, _atomIndex2);
 	if ((charge1 > 0 && charge2 < 0) || (charge2 > 0 && charge1 < 0)){
-		UInt type1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex1][0];
-		UInt type2 = dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex2][0];
 		charge1 = fabs(charge1); charge2 = fabs(charge2);
-		double pol1 = residueTemplate::getPolarizability(type1);
-		double pol2 = residueTemplate::getPolarizability(type2);
-		double radius = sqrt(_distanceSquared)/2;
-		double dipole = (charge1*radius)+(charge2*radius);
-		double Efield1 = KC*charge1/pow(radius,2);
-		double Efield2 = KC*charge2/pow(radius,2);
-		double Efield = Efield1+Efield2;
-		double pol = (dipole/Efield)+(pol1/radius)+(pol2/radius);
-		double vol = 4/3*PI*pow(radius,3);
+		UInt type1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex1][0], type2 = dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex2][0];
+		double pol1 = residueTemplate::getPolarizability(type1), pol2 = residueTemplate::getPolarizability(type2);
+		double radius = sqrt(_distanceSquared)/2, vol = 4/3*PI*pow(radius,3);
+		double dipoleMoment = (charge1*radius)+(charge2*radius);
+		double Efield1 = KC*charge1/pow(radius,2), Efield2 = KC*charge2/pow(radius,2), Efield = Efield1+Efield2;
+		double staticPolarizability =pol1+pol2;
+		double pol = staticPolarizability+dipoleMoment/Efield;
 		
 		//recalculate the dielectric using the Maxwell Garnett mixing formula to include the polarizability of the dipole inclusion over the volume of inclusion
 		dielectric = _dielectric+4*PI*(pol/vol)/1-(4*PI/3*_dielectric)*(pol/vol);
@@ -2968,18 +2966,14 @@ double residue::maxwellGarnettApproximation(UInt _atomIndex1, UInt _atomIndex2, 
 	double charge1 = residueTemplate::itsAmberElec.getItsCharge(itsType, _atomIndex1);
 	double charge2 = residueTemplate::itsAmberElec.getItsCharge(_other->itsType, _atomIndex2);
 	if ((charge1 > 0 && charge2 < 0) || (charge2 > 0 && charge1 < 0)){
-		UInt type1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex1][0];
-		UInt type2 = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[_atomIndex2][0];
 		charge1 = fabs(charge1); charge2 = fabs(charge2);
-		double pol1 = residueTemplate::getPolarizability(type1);
-		double pol2 = residueTemplate::getPolarizability(type2);
-		double radius = sqrt(_distanceSquared)/2;
-		double dipole = (charge1*radius)+(charge2*radius);
-		double Efield1 = KC*charge1/pow(radius,2);
-		double Efield2 = KC*charge2/pow(radius,2);
-		double Efield = Efield1+Efield2;
-		double pol = (dipole/Efield)+(pol1/radius)+(pol2/radius);
-		double vol = 4/3*PI*pow(radius,3);
+		UInt type1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex1][0], type2 = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[_atomIndex2][0];
+		double pol1 = residueTemplate::getPolarizability(type1), pol2 = residueTemplate::getPolarizability(type2);
+		double radius = sqrt(_distanceSquared)/2, vol = 4/3*PI*pow(radius,3);
+		double dipoleMoment = (charge1*radius)+(charge2*radius);
+		double Efield1 = KC*charge1/pow(radius,2), Efield2 = KC*charge2/pow(radius,2), Efield = Efield1+Efield2;
+		double staticPolarizability =pol1+pol2;
+		double pol = staticPolarizability+dipoleMoment/Efield;
 		
 		//recalculate the dielectric using the Maxwell Garnett mixing formula to include the polarizability of the dipole inclusion over the volume of inclusion
 		dielectric = _dielectric+4*PI*(pol/vol)/1-(4*PI/3*_dielectric)*(pol/vol);
@@ -3187,7 +3181,7 @@ bool residue::isClash(UInt _index1, UInt _index2)
 
 bool residue::isClash(UInt _index1, residue* _other, UInt _index2)
 {
-	if (isSeparatedByOneOrTwoBackboneBonds(_index1, _other, _index2)) {return false;}
+	if (isSeparatedByThreeBackboneBonds(_index1, _other, _index2)) {return false;}
 	double minDist = getRadius(_index1)+_other->getRadius(_index2);
 	double cubeLength = minDist/1.414213562; //vdw contact distance / sqrt(2) (withing a square in circle for fast hard clash)
 	if (itsAtoms[_index1]->inCube(_other->itsAtoms[_index2], cubeLength)) {return true;}
@@ -3325,7 +3319,7 @@ UInt residue::getBondSeparation(UInt _index1, UInt _index2)
     return 99;
 }
 
-bool residue::isSeparatedByOneOrTwoBackboneBonds(UInt _index1, residue* _pRes2, UInt _index2)
+bool residue::isSeparatedByThreeBackboneBonds(UInt _index1, residue* _pRes2, UInt _index2)
 {
 	// first, check if they are sequential residues
 	int theOrder = 0;
@@ -3342,28 +3336,31 @@ bool residue::isSeparatedByOneOrTwoBackboneBonds(UInt _index1, residue* _pRes2, 
 	string name1, name2;
 	UInt atom1, atom2;
 	if (theOrder == -1){
-		name1 = itsAtoms[_index1]->getName();
-		name2 = _pRes2->itsAtoms[_index2]->getName();
-		atom1 = _index1;
-		atom2 = _index2;
-	}
-	else{
-		name2 = itsAtoms[_index1]->getName();
-		name1 = _pRes2->itsAtoms[_index2]->getName();
+		name2 = itsAtoms[_index1]->getName(); // c terminal
+		name1 = _pRes2->itsAtoms[_index2]->getName(); //n terminal
 		atom2 = _index1;
 		atom1 = _index2;
 	}
-	
-	if (atom1 == 0 || atom1 == 1 || name1 == "H")
-	{
-		if (atom2 > 0 && atom2 < 4){
-			if ((name1 == "H" || atom1 == 1) && atom2 == 2){return true;}
-			if (atom1 == 0) {return true;}
-			return false;
-		}
-		else{return false;}
+	else{
+		name1 = itsAtoms[_index1]->getName(); // n terminal
+		name2 = _pRes2->itsAtoms[_index2]->getName(); // c terminal
+		atom1 = _index1;
+		atom2 = _index2;
 	}
-	else{return false;}
+	
+	if (atom1 == 0 || atom2 == 0){
+		return true;
+	}
+	if (atom1 == 1 && (atom2 == 0 || atom2 == 1 || name2 == "H")){
+		return true;
+	}
+	if (atom1 == 2 && (atom2 == 0 || atom2 == 1 || atom2 == 2 || name2 == "H" || name2 == "CB" || name2 == "HA" || name2 == "HA2" || name2 == "HA3")){
+		return true;
+	}
+	if (atom1 == 3 && (atom2 == 0 || atom2 == 1 || name2 == "H")){
+		return true;
+	}
+	return false;
 }
 
 

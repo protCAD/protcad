@@ -24,10 +24,10 @@ int main (int argc, char* argv[])
 	double cpu_time_used;
 	
 	residue::setElectroSolvationScaleFactor(1.0);
-	residue::setHydroSolvationScaleFactor(0.0);
+	residue::setHydroSolvationScaleFactor(1.0);
+	residue::setPolarizableElec(true);
 	amberElec::setScaleFactor(1.0);
 	amberVDW::setScaleFactor(1.0);
-	residue::setPolarizableElec(true);
 
 	start = clock();
 	double Energy = bundle->protEnergy();
