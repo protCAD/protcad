@@ -1241,12 +1241,12 @@ double protein::getMedianResidueEnergy(UIntVec _activeChains)
 	return median;
 }
 
-bool protein::boltzmannEnergyCriteria(double _deltaEnergy, double _KT)//calculate boltzmann probability of an energy to determine acceptance criteria
+bool protein::boltzmannEnergyCriteria(double _deltaEnergy) //calculate boltzmann probability of an energy to determine acceptance criteria
 {
 	bool acceptance = false;
-	double Entropy = (rand() % 1000000000+1)/(rand() % 1000000000+1); //generate high precision random probability as entropy
-	double thermalEnergy = -_KT*log(Entropy); 
-	if (_deltaEnergy < thermalEnergy){acceptance = true;}
+	double Entropy = 1000000/((rand() % 1000000)+1); //generate high precision random probability as entropy
+	double PiPj = pow(EU,(_deltaEnergy/residue::getKT()));
+	if (PiPj < Entropy){acceptance = true;}
 	return acceptance;
 }
 
@@ -2703,7 +2703,7 @@ void protein::protOpt(bool _backbone)
 	UInt clashes, clashesStart, bbClashes, bbClashesStart, chainNum = getNumChains(), plateau = 500;
 	double Energy, pastEnergy = protEnergy(), deltaEnergy, sPhi, sPsi,nobetter = 0.0, KT = KB*Temperature();
 	vector < vector <double>> currentSidechainConf, newSidechainConf; srand (time(NULL)); vector <double> backboneAngles(2);
-	bool sidechainTest, backboneTest, revert, energyTest;
+	bool sidechainTest, backboneTest, revert, energyTest, boltzmannAcceptance;
 	
 	//--Run optimizaiton loop to local minima defined by an RT plateau------------------------
 	do{
@@ -2742,7 +2742,8 @@ void protein::protOpt(bool _backbone)
 		if (energyTest){
 			Energy = protEnergy();
 			deltaEnergy = Energy - pastEnergy;
-			if (deltaEnergy < KT){
+			boltzmannAcceptance = boltzmannEnergyCriteria(deltaEnergy);
+			if (boltzmannAcceptance){
 				pastEnergy = Energy;
 				if (deltaEnergy < -KT){nobetter = 0;}
 			}
@@ -2771,7 +2772,7 @@ void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 	UInt clashes, clashesStart, bbClashes, bbClashesStart, chainNum = _activeChains.size(), plateau = 500;
 	double Energy, pastEnergy = protEnergy(), deltaEnergy, sPhi, sPsi,nobetter = 0.0, KT = KB*Temperature();
 	vector < vector <double>> currentSidechainConf, newSidechainConf; srand (time(NULL)); vector <double> backboneAngles(2);
-	bool sidechainTest, backboneTest, revert, energyTest, skip;
+	bool sidechainTest, backboneTest, revert, energyTest, skip, boltzmannAcceptance;
 	
 	//--Run optimizaiton loop to local minima defined by an RT plateau------------------------
 	do{
@@ -2818,7 +2819,8 @@ void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 		if (energyTest){
 			Energy = protEnergy();
 			deltaEnergy = Energy - pastEnergy;
-			if (deltaEnergy < KT){
+			boltzmannAcceptance = boltzmannEnergyCriteria(deltaEnergy);
+			if (boltzmannAcceptance){
 				pastEnergy = Energy;
 				if (deltaEnergy < -KT){nobetter = 0;}
 			}
@@ -2847,7 +2849,7 @@ void protein::protOpt(bool _backbone, UInt chainIndex, UInt resIndex)
 	UInt clashes, clashesStart, bbClashes, bbClashesStart, plateau = 500;
 	double Energy, pastEnergy = protEnergy(), deltaEnergy, sPhi, sPsi,nobetter = 0.0, KT = KB*Temperature();
 	vector < vector <double>> currentSidechainConf, newSidechainConf; srand (time(NULL)); vector <double> backboneAngles(2);
-	bool sidechainTest, backboneTest, revert, energyTest;
+	bool sidechainTest, backboneTest, revert, energyTest, boltzmannAcceptance;
 	
 	//--Run optimizaiton loop to local minima defined by an RT plateau------------------------
 	do{
@@ -2884,7 +2886,8 @@ void protein::protOpt(bool _backbone, UInt chainIndex, UInt resIndex)
 		if (energyTest){
 			Energy = protEnergy();
 			deltaEnergy = Energy - pastEnergy;
-			if (deltaEnergy < KT){
+			boltzmannAcceptance = boltzmannEnergyCriteria(deltaEnergy);
+			if (boltzmannAcceptance){
 				pastEnergy = Energy;
 				if (deltaEnergy < -KT){nobetter = 0;}
 			}
@@ -3020,7 +3023,7 @@ void protein::protSampling(UInt iterations)
 	//--Initialize variables for loop, calculate starting energy and build energy vectors-----
 	UInt randchain, randres, resnum, changes = 0, backboneOrSidechain = 1;
 	UInt clashes, clashesStart, bbClashes, bbClashesStart, chainNum = getNumChains();
-	double Energy, pastEnergy = protEnergy(), deltaEnergy, sPhi, sPsi,nobetter = 0.0, KT = KB*Temperature();
+	double Energy, pastEnergy = protEnergy(), deltaEnergy, sPhi, sPsi;
 	vector < vector <double>> currentSidechainConf, newSidechainConf; srand (time(NULL)); vector <double> backboneAngles(2);
 	bool sidechainTest, backboneTest, revert, energyTest, boltzmannAcceptance;
 	
@@ -3029,7 +3032,7 @@ void protein::protSampling(UInt iterations)
 	{
 		//--choose random residue and set variables
 		randchain = rand() % chainNum, resnum = getNumResidues(randchain), randres = rand() % resnum;
-		clashesStart = getNumHardClashes(); backboneOrSidechain = rand() % 2; nobetter++;
+		clashesStart = getNumHardClashes(); backboneOrSidechain = rand() % 2;
 		backboneTest = false, sidechainTest = false, energyTest = false, revert = true;
 		
 		//--Backbone conformation trial--------------------------------------------------------
@@ -3061,7 +3064,7 @@ void protein::protSampling(UInt iterations)
 		if (energyTest){
 			Energy = protEnergy();
 			deltaEnergy = Energy - pastEnergy;
-			boltzmannAcceptance = boltzmannEnergyCriteria(deltaEnergy,KT);
+			boltzmannAcceptance = boltzmannEnergyCriteria(deltaEnergy);
 			if (boltzmannAcceptance){
 				pastEnergy = Energy; changes++;
 			}
