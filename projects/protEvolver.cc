@@ -19,7 +19,7 @@
 
 vector <UInt> getChainSequence(protein* _prot, UInt _chainIndex);
 vector <UInt> getMutationPosition(UIntVec &_activeChains, UIntVec &_activeResidues);
-UInt getProbabilisticMutation(protein *_prot, vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition, UIntVec &_activeResidues);
+UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition);
 void createPossibleMutantsDatabase(protein* &_prot, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedTypes);
 UInt getSizeofPopulation();
 vector < vector < UInt > > readSequencePool();
@@ -27,8 +27,7 @@ vector < vector < UInt > > readPossibleMutants();
 
 enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,Csf,Sf4,Hca,Eoc,Oec,Hem};
 string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dCf","dQ","dE","dEh","dHd","dHe","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV","Csf","Sf4","Hca","Eoc","Oec","Hem"};
-UInt populationBaseline = 500;
-double KT = KB*residue::getTemperature();
+UInt populationBaseline = 1000;
 
 //--Program setup----------------------------------------------------------------------------------------
 int main (int argc, char* argv[])
@@ -108,7 +107,7 @@ int main (int argc, char* argv[])
 			{
 				randomPosition.push_back(activeChains[i]);
 				randomPosition.push_back(randomResidues[j]);
-				mutant = getProbabilisticMutation(prot, sequencePool, possibleMutants, randomPosition, randomResidues);
+				mutant = getProbabilisticMutation(sequencePool, possibleMutants, randomPosition);
 				prot->mutateWBC(activeChains[i], randomResidues[j], mutant);
 				randomPosition.clear();
 			}
@@ -125,17 +124,17 @@ int main (int argc, char* argv[])
 			nobetter++;
 			mutantPosition.clear();
 			mutantPosition = getMutationPosition(activeChains, activeResidues);
-			mutant = getProbabilisticMutation(prot, sequencePool, possibleMutants, mutantPosition, activeResidues);
+			mutant = getProbabilisticMutation(sequencePool, possibleMutants, mutantPosition);
 			prot->mutateWBC(mutantPosition[0], mutantPosition[1], mutant);
 
 			//--Energy test
 			prot->protMin(backboneRelaxation, frozenResidues, activeChains);
 			Energy = prot->protEnergy();
 			deltaEnergy = Energy-pastEnergy;
-			if (deltaEnergy < ::KT){
+			if (deltaEnergy < residue::getKT()){
 				pdbWriter(prot, tempModel);
 				pastEnergy = Energy; 
-				if (deltaEnergy < -::KT){nobetter = 0;}
+				if (deltaEnergy < (residue::getKT()*-1)){nobetter = 0;}
 			}
 			
 			//--Revert to previously saved structure with previous sequence
@@ -186,12 +185,12 @@ int main (int argc, char* argv[])
 			for (UInt j = 0; j < finalSequence[i].size(); j++)
 			{
 				finalline << aminoAcidString[finalSequence[i][j]] << " ";
-				if (deltaEnergy < ::KT || count < ::populationBaseline){
+				if (deltaEnergy < residue::getKT() || count < ::populationBaseline){
 					fs << finalSequence[i][j] << ",";
 				}
 			}
 		}
-		if (deltaEnergy < ::KT || count < ::populationBaseline){
+		if (deltaEnergy < residue::getKT() || count < ::populationBaseline){
 			finalline << " pool";
 			fs << endl;
 		}
@@ -236,17 +235,18 @@ vector <UInt> getMutationPosition(UIntVec &_activeChains, UIntVec &_activeResidu
 	return _mutantPosition;
 }
 
-UInt getProbabilisticMutation(protein* _prot, vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition, UIntVec &_activeResidues)
+UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition)
 {
-	double Pi, Pj, statPotEnergy = 1E10, thermalEnergy = 1E10, poolSize = _sequencePool.size();
+	double Pi, entropy, poolSize = _sequencePool.size();
 	vector <UInt> Freqs(57,1);
 	UInt mutant, type;
 	UInt count = getSizeofPopulation();
 	UInt positionPossibles = _possibleMutants[(_mutantPosition[0]+1)*_mutantPosition[1]].size();
 
-	//--determine boltzmann probability based chance of sequence acceptance
+	//--determine frequency based chance of mutation acceptance (statistical potential)
 	do
 	{
+		entropy = rand() % 100+1;
 		mutant = _possibleMutants[(_mutantPosition[0]+1)*_mutantPosition[1]][rand() % positionPossibles];
 		if (count >= ::populationBaseline){
 			//--get population of position
@@ -255,13 +255,10 @@ UInt getProbabilisticMutation(protein* _prot, vector < vector < UInt > > &_seque
 				type = _sequencePool[i][(_mutantPosition[0]+1)*_mutantPosition[1]];
 				Freqs[type] += 1;
 			}
-			Pi = Freqs[mutant]/(poolSize-1);
-			Pj = 1/positionPossibles;
-			statPotEnergy = _prot->boltzmannProbabilityToEnergy(Pi, Pj);
-			thermalEnergy = _prot->boltzmannProbabilityToEnergy(rand() % 1000000, rand() % 1000000);
+			Pi = (Freqs[mutant]/(poolSize-1))*100;
 		}
-		else{statPotEnergy = -1E10;}  //random mutant
-	}while (statPotEnergy > thermalEnergy);
+		else{Pi = 100;}  //random mutant
+	}while (entropy > Pi);
 	return mutant;
 }
 

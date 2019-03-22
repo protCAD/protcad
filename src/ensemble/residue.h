@@ -357,6 +357,7 @@ public:
 	static void setCutoffDistance( const double _cutoff ) { cutoffDistance = _cutoff; cutoffDistanceSquared = _cutoff*_cutoff; }
 	static void setTemperature( const double _temp ) { temperature = _temp; }
 	static double getTemperature() { return temperature; }
+	static double getKT() { return KT; }
 	static void setPolarizableElec( bool _polElec ) { polarizableElec = _polElec; }
 	static void setElectroSolvationScaleFactor( const double _Esolv ) { EsolvationFactor = _Esolv; }
 	static double getElectroSolvationScaleFactor() { return EsolvationFactor; }
