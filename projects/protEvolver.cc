@@ -239,8 +239,7 @@ UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector 
 {
 	double Pi, entropy, poolSize = _sequencePool.size();
 	vector <UInt> Freqs(57,1);
-	UInt mutant, type;
-	UInt count = getSizeofPopulation();
+	UInt mutant, type, count = getSizeofPopulation();
 	UInt positionPossibles = _possibleMutants[(_mutantPosition[0]+1)*_mutantPosition[1]].size();
 
 	//--determine frequency based chance of mutation acceptance (statistical potential)
@@ -249,7 +248,6 @@ UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector 
 		entropy = rand() % 100+1;
 		mutant = _possibleMutants[(_mutantPosition[0]+1)*_mutantPosition[1]][rand() % positionPossibles];
 		if (count >= ::populationBaseline){
-			//--get population of position
 			for (UInt i = 0; i < poolSize; i++)
 			{
 				type = _sequencePool[i][(_mutantPosition[0]+1)*_mutantPosition[1]];

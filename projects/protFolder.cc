@@ -19,7 +19,7 @@
 
 vector <UInt> getChainSequence(protein* _prot, UInt _chainIndex);
 vector <UInt> getMutationPosition(UIntVec &_activeChains, UIntVec &_activeResidues);
-UInt getProbabilisticMutation(protein* _prot, vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition, UIntVec &_activeResidues);
+UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition);
 void createPossibleMutantsDatabase(protein* &_prot, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedTypes);
 UInt getSizeofPopulation();
 vector < vector < UInt > > readSequencePool();
@@ -29,7 +29,6 @@ enum structure {Z,M,C,L,P,B,E,Y,A,I,G,N,D,Q,R,F,H,W,K,S,T};
 string backboneSeq[] =   {"", "M", "C", "L", "P", "B","E","Y","A","I","G",  "N",  "D",  "Q",  "R",  "F", "H", "W", "K", "S", "T"};
 string backboneTypes[] = {"","-γ","-π","-α","-ρ","-β","β","ρ","α","π","γ","-γl","-πl","-αl","-ρl","-βl","βl","ρl","αl","πl","γl"};
 UInt populationBaseline = 1000;
-double KT = KB*residue::getTemperature();
 
 //--Program setup----------------------------------------------------------------------------------------
 int main (int argc, char* argv[])
@@ -53,6 +52,7 @@ int main (int argc, char* argv[])
 	residue::setPolarizableElec(true);
 	amberElec::setScaleFactor(1.0);
 	amberVDW::setScaleFactor(1.0);
+	residue::setTemperature(300);
 
 	//convert input arrays to vectors
 	UInt activeChainsSize = sizeof(_activeChains)/sizeof(_activeChains[0]), randomResiduesSize = sizeof(_randomResidues)/sizeof(_randomResidues[0]);
@@ -64,20 +64,18 @@ int main (int argc, char* argv[])
 	for (UInt i = 0; i < randomResiduesSize; i++)	{ randomResidues.push_back(_randomResidues[i]); }
 
 	//--set initial variables
-	int seed = (int)getpid()*(int)gethostid();
-	srand (seed);
+	int seed = (int)getpid()*(int)gethostid(); srand (seed);
 	double startEnergy = 1E10, pastEnergy, Energy, deltaEnergy;
 	vector <double> backboneAngles(2);
 	UInt timeid, sec, numClashes, startNumBackboneClashes, mutant = 0, plateau = 1000, nobetter = 0;
 	vector < UInt > mutantPosition, chainSequence, randomPosition;
 	vector < vector < UInt > > sequencePool, finalSequence, possibleMutants;
 	stringstream convert;
-	string infile = argv[1];
-	string startstr, outFile;
+	string infile = argv[1], startstr, outFile;
 	UInt count, name = rand() % 100000000;
 	convert << name, startstr = convert.str();
 	string tempModel = startstr + "_temp.pdb";
-	bool revert, boltzmannAcceptance;
+	bool revert;
 
 	//-build possible fold sequence database per position
 	PDBInterface* thePDB = new PDBInterface(infile);
@@ -109,7 +107,7 @@ int main (int argc, char* argv[])
 			{
 				randomPosition.push_back(activeChains[i]);
 				randomPosition.push_back(randomResidues[j]);
-				mutant = getProbabilisticMutation(prot, sequencePool, possibleMutants, randomPosition, randomResidues);
+				mutant = getProbabilisticMutation(sequencePool, possibleMutants, randomPosition);
 				backboneAngles = prot->getRandPhiPsifromBackboneSequenceType(mutant);
 				prot->setDihedral(activeChains[i], randomResidues[j],backboneAngles[0],0,0);
 				prot->setDihedral(activeChains[i], randomResidues[j],backboneAngles[1],1,0);
@@ -128,7 +126,7 @@ int main (int argc, char* argv[])
 			nobetter++; revert = true;
 			startNumBackboneClashes = prot->getNumHardBackboneClashes(); mutantPosition.clear();
 			mutantPosition = getMutationPosition(activeChains, activeResidues);
-			mutant = getProbabilisticMutation(prot, sequencePool, possibleMutants, mutantPosition, activeResidues);
+			mutant = getProbabilisticMutation(sequencePool, possibleMutants, mutantPosition);
 			backboneAngles = prot->getRandPhiPsifromBackboneSequenceType(mutant);
 			prot->setDihedral(mutantPosition[0],mutantPosition[1],backboneAngles[0],0,0);
 			prot->setDihedral(mutantPosition[0],mutantPosition[1],backboneAngles[1],1,0);
@@ -144,10 +142,10 @@ int main (int argc, char* argv[])
 				prot->protMin(true);
 				Energy = prot->protEnergy();
 				deltaEnergy = Energy-pastEnergy;
-				boltzmannAcceptance = prot->boltzmannEnergyCriteria(deltaEnergy,::KT);
-				if (boltzmannAcceptance){
+				if (deltaEnergy < residue::getKT()){
 					pdbWriter(prot, tempModel);
-					pastEnergy = Energy; nobetter = 0;
+					pastEnergy = Energy;
+					if (deltaEnergy < (residue::getKT()*-1)){nobetter = 0;}
 				}
 				else{revert = true;}
 			}
@@ -172,7 +170,6 @@ int main (int argc, char* argv[])
 		//-Determine probability of being accepted into pool
 		Energy = model->protEnergy();
 		deltaEnergy = Energy-startEnergy;
-		boltzmannAcceptance = model->boltzmannEnergyCriteria(deltaEnergy,::KT);
 		startEnergy = Energy;
 		
 		//-generate pdb output
@@ -201,12 +198,12 @@ int main (int argc, char* argv[])
 			for (UInt j = 0; j < finalSequence[i].size(); j++)
 			{
 				finalline << backboneSeq[finalSequence[i][j]] << " ";
-				if (boltzmannAcceptance || count < ::populationBaseline){
+				if (deltaEnergy < residue::getKT() || count < ::populationBaseline){
 					fs << finalSequence[i][j] << ",";
 				}
 			}
 		}
-		if (boltzmannAcceptance || count < ::populationBaseline){
+		if (deltaEnergy < residue::getKT() || count < ::populationBaseline){
 			finalline << " pool";
 			fs << endl;
 		}
@@ -251,57 +248,28 @@ vector <UInt> getMutationPosition(UIntVec &_activeChains, UIntVec &_activeResidu
 	return _mutantPosition;
 }
 
-UInt getProbabilisticMutation(protein* _prot, vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition, UIntVec &_activeResidues)
+UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition)
 {
-	bool acceptance = false, Cterm = false;
-	double prob0, prob1, prob2, Pi, Pj, poolSize = _sequencePool.size();
+	double Pi, entropy, poolSize = _sequencePool.size();
 	vector <UInt> Freqs(20,1);
-	UInt mutant, type0, type1, type2;
-	UInt count = getSizeofPopulation();
-	
-	// determine whether probability will consist of two postitions at terminus or three positions
-	if (_mutantPosition[1] == _prot->getNumResidues(_mutantPosition[0])-1){Cterm = true;}
+	UInt mutant, type, count = getSizeofPopulation();
 	UInt positionPossibles = _possibleMutants[(_mutantPosition[0]+1)*_mutantPosition[1]].size();
 
-	//--determine boltzmann probability based chance of conformation acceptance
+	//--determine frequency based chance of mutation acceptance (statistical potential)
 	do
 	{
+		entropy = rand() % 100+1;
 		mutant = _possibleMutants[(_mutantPosition[0]+1)*_mutantPosition[1]][rand() % positionPossibles];
 		if (count >= ::populationBaseline){
-			//--get population conformations for locality of position
 			for (UInt i = 0; i < poolSize; i++)
 			{
-				if (!Cterm){
-					type1 = _sequencePool[i][(_mutantPosition[0]+1)*_mutantPosition[1]];
-					Freqs[type1] += 1;
-					type2 = _sequencePool[i][((_mutantPosition[0]+1)*_mutantPosition[1])+1];
-					Freqs[type2] += 1;
-				}
-				else{
-					type0 = _sequencePool[i][((_mutantPosition[0]+1)*_mutantPosition[1])-1];
-					Freqs[type0] += 1;
-					type1 = _sequencePool[i][(_mutantPosition[0]+1)*_mutantPosition[1]];
-					Freqs[type1] += 1;
-				}
+				type = _sequencePool[i][(_mutantPosition[0]+1)*_mutantPosition[1]];
+				Freqs[type] += 1;
 			}
-			if (!Cterm){
-				prob1 = Freqs[mutant]/(poolSize-1);
-				prob2 = Freqs[_prot->getBackboneSequenceType(_mutantPosition[0],_mutantPosition[1]+1)]/(poolSize-1);
-				Pi = prob1*prob2;
-				prob1 = 1/_possibleMutants[(_mutantPosition[0]+1)*_mutantPosition[1]].size(), prob2 = 1/_possibleMutants[((_mutantPosition[0]+1)*_mutantPosition[1])+1].size();
-				Pj = prob1*prob2;
-			}
-			else{
-				prob0 = Freqs[_prot->getBackboneSequenceType(_mutantPosition[0],_mutantPosition[1]-1)]/(poolSize-1);
-				prob1 = Freqs[mutant]/(poolSize-1);
-				Pi = prob0*prob1;
-				prob1 = 1/_possibleMutants[(_mutantPosition[0]+1)*_mutantPosition[1]].size(), prob0 = 1/_possibleMutants[((_mutantPosition[0]+1)*_mutantPosition[1])-1].size();
-				Pj = prob0*prob1;
-			}
-			acceptance = _prot->boltzmannProbabilityCriteria(Pi, Pj, ::KT);
+			Pi = (Freqs[mutant]/(poolSize-1))*100;
 		}
-		else{acceptance = true;}  //random conformation
-	}while (!acceptance);
+		else{Pi = 100;}  //random mutant
+	}while (entropy > Pi);
 	return mutant;
 }
 
