@@ -67,7 +67,7 @@ int main (int argc, char* argv[])
 	int seed = (int)getpid()*(int)gethostid(); srand (seed);
 	double startEnergy = 1E10, pastEnergy, Energy, deltaEnergy;
 	vector <double> backboneAngles(2);
-	UInt timeid, sec, numClashes, startNumBackboneClashes, mutant = 0, plateau = 1000, nobetter = 0;
+	UInt timeid, sec, numClashes, startNumBackboneClashes, mutant = 0, plateau = 10, nobetter = 0;
 	vector < UInt > mutantPosition, chainSequence, randomPosition;
 	vector < vector < UInt > > sequencePool, finalSequence, possibleMutants;
 	stringstream convert;
@@ -123,7 +123,7 @@ int main (int argc, char* argv[])
 		do
 		{
 			//--Try new confirmation
-			nobetter++; revert = true;
+			revert = true;
 			startNumBackboneClashes = prot->getNumHardBackboneClashes(); mutantPosition.clear();
 			mutantPosition = getMutationPosition(activeChains, activeResidues);
 			mutant = getProbabilisticMutation(sequencePool, possibleMutants, mutantPosition);
@@ -139,6 +139,7 @@ int main (int argc, char* argv[])
 			
 			//--Energy test
 			if(!revert){
+				nobetter++; 
 				prot->protMin(true);
 				Energy = prot->protEnergy();
 				deltaEnergy = Energy-pastEnergy;
