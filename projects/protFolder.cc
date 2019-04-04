@@ -67,11 +67,11 @@ int main (int argc, char* argv[])
 	int seed = (int)getpid()*(int)gethostid(); srand (seed);
 	double startEnergy = 1E10, pastEnergy, Energy, deltaEnergy;
 	vector <double> backboneAngles(2);
-	UInt timeid, sec, numClashes, startNumBackboneClashes, mutant = 0, plateau = 10, nobetter = 0;
+	UInt timeid, sec, numClashes, startNumBackboneClashes;
+	UInt mutant = 0, plateau = 10, revertCap = 1000, reverted = 0, nobetter = 0;
 	vector < UInt > mutantPosition, chainSequence, randomPosition;
 	vector < vector < UInt > > sequencePool, finalSequence, possibleMutants;
-	stringstream convert;
-	string infile = argv[1], startstr, outFile;
+	stringstream convert; string infile = argv[1], startstr, outFile;
 	UInt count, name = rand() % 100000000;
 	convert << name, startstr = convert.str();
 	string tempModel = startstr + "_temp.pdb";
@@ -138,8 +138,8 @@ int main (int argc, char* argv[])
 			}
 			
 			//--Energy test
-			if(!revert){
-				nobetter++; 
+			if(!revert || reverted > revertCap){
+				nobetter++; reverted = 0;
 				prot->protMin(true);
 				Energy = prot->protEnergy();
 				deltaEnergy = Energy-pastEnergy;
@@ -154,7 +154,7 @@ int main (int argc, char* argv[])
 			
 			//--Revert to previously saved structure
 			if (revert){
-				delete thePDB;
+				reverted++; delete thePDB;
 				thePDB = new PDBInterface(tempModel);
 				theEnsemble = thePDB->getEnsemblePointer();
 				pMol = theEnsemble->getMoleculePointer(0);
