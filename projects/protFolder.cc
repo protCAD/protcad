@@ -133,7 +133,7 @@ int main (int argc, char* argv[])
 			
 			//--Prior to full optimization perform a clash test for an acceptable confirmation
 			numClashes = prot->getNumHardBackboneClashes();
-			if (numClashes <= startNumBackboneClashes){
+			if (numClashes <= startNumBackboneClashes+1){
 				revert = false;
 			}
 			
