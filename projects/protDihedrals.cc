@@ -39,9 +39,7 @@ int main (int argc, char* argv[])
         //cout << "NA " << bundle->getPsi(i,0) << " NA" << endl;
         for (UInt j = 1; j < resNum-2; j ++)
         {
-            UInt restype1 = bundle->getTypeFromResNum(0,j);
-            UInt restype2 = bundle->getTypeFromResNum(0,j+1);
-            cout << aminoAcidString[restype1] << aminoAcidString[restype2] << " " << bundle->getBackboneSequenceType(0,j) << bundle->getBackboneSequenceType(0,j+1) << endl;
+            cout << bundle->getBackboneSequenceType(0,j) << endl;
         }
        // cout << bundle->getPhi(i,resNum-1) << " NA " << "NA" << endl;
 	//}

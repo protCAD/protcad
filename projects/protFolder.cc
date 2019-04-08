@@ -25,9 +25,9 @@ UInt getSizeofPopulation();
 vector < vector < UInt > > readSequencePool();
 vector < vector < UInt > > readPossibleMutants();
 
-enum structure {Z,M,C,L,P,B,E,Y,A,I,G,N,D,Q,R,F,H,W,K,S,T};
-string backboneSeq[] =   {"", "M", "C", "L", "P", "B","E","Y","A","I","G",  "N",  "D",  "Q",  "R",  "F", "H", "W", "K", "S", "T"};
-string backboneTypes[] = {"","-γ","-π","-α","-ρ","-β","β","ρ","α","π","γ","-γl","-πl","-αl","-ρl","-βl","βl","ρl","αl","πl","γl"};
+enum structure {Z,M,C,L,P,B,E,Y,A,I,G,D,Q,R,F,H,W,K,S};
+string backboneSeq[] =   {"M", "C", "L", "P", "B","E","Y","A","I","G",  "D",  "Q",  "R",  "F", "H", "W", "K", "S"};
+string backboneTypes[] = {"-γ","-π","-α","-ρ","-β","β","ρ","α","π","γ","-πl","-αl","-ρl","-βl","βl","ρl","αl","πl"};
 UInt populationBaseline = 1000;
 
 //--Program setup----------------------------------------------------------------------------------------
@@ -68,7 +68,7 @@ int main (int argc, char* argv[])
 	double startEnergy = 1E10, pastEnergy, Energy, deltaEnergy;
 	vector <double> backboneAngles(2);
 	UInt timeid, sec, numClashes, startNumBackboneClashes;
-	UInt mutant = 0, plateau = 10, revertCap = 1000, reverted = 0, nobetter = 0;
+	UInt mutant = 0, plateau = 10, nobetter = 0;
 	vector < UInt > mutantPosition, chainSequence, randomPosition;
 	vector < vector < UInt > > sequencePool, finalSequence, possibleMutants;
 	stringstream convert; string infile = argv[1], startstr, outFile;
@@ -133,13 +133,13 @@ int main (int argc, char* argv[])
 			
 			//--Prior to full optimization perform a clash test for an acceptable confirmation
 			numClashes = prot->getNumHardBackboneClashes();
-			if (numClashes <= startNumBackboneClashes+1){
+			if (numClashes <= startNumBackboneClashes){
 				revert = false;
 			}
 			
 			//--Energy test
-			if(!revert || reverted > revertCap){
-				nobetter++; reverted = 0;
+			if(!revert){
+				nobetter++;
 				prot->protMin(true);
 				Energy = prot->protEnergy();
 				deltaEnergy = Energy-pastEnergy;
@@ -154,7 +154,7 @@ int main (int argc, char* argv[])
 			
 			//--Revert to previously saved structure
 			if (revert){
-				reverted++; delete thePDB;
+				delete thePDB;
 				thePDB = new PDBInterface(tempModel);
 				theEnsemble = thePDB->getEnsemblePointer();
 				pMol = theEnsemble->getMoleculePointer(0);
@@ -247,7 +247,7 @@ vector <UInt> getMutationPosition(UIntVec &_activeChains, UIntVec &_activeResidu
 UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition)
 {
 	double Pi, entropy, poolSize = _sequencePool.size();
-	vector <UInt> Freqs(20,1);
+	vector <UInt> Freqs(18,1);
 	UInt mutant, type, count = getSizeofPopulation();
 	UInt positionPossibles = _possibleMutants[(_mutantPosition[0]+1)*_mutantPosition[1]].size();
 
