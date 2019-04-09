@@ -25,9 +25,9 @@ UInt getSizeofPopulation();
 vector < vector < UInt > > readSequencePool();
 vector < vector < UInt > > readPossibleMutants();
 
-enum structure {Z,M,C,L,P,B,E,Y,A,I,G,D,Q,R,F,H,W,K,S};
-string backboneSeq[] =   {"M", "C", "L", "P", "B","E","Y","A","I","G",  "D",  "Q",  "R",  "F", "H", "W", "K", "S"};
-string backboneTypes[] = {"-γ","-π","-α","-ρ","-β","β","ρ","α","π","γ","-πl","-αl","-ρl","-βl","βl","ρl","αl","πl"};
+enum structure {C,L,P,B,E,Y,A,I,D,Q,R,F,H,W,K,S};
+string backboneSeq[] =   { "C", "L", "P", "B","E","Y","A","I",  "D",  "Q",  "R",  "F", "H", "W", "K", "S"};
+string backboneTypes[] = {"-π","-α","-ρ","-β","β","ρ","α","π","-πi","-αi","-ρi","-βi","βi","ρi","αi","πi"};
 UInt populationBaseline = 1000;
 
 //--Program setup----------------------------------------------------------------------------------------
@@ -336,7 +336,7 @@ void createPossibleMutantsDatabase(protein* &_prot, UIntVec &_activeChains, UInt
 			if (active){
 				for (UInt l = 0; l <_allowedTypes.size(); l++)
 				{
-					if (_allowedTypes[l] < 11 || (_allowedTypes[l] > 10 && _prot->getTypeFromResNum(_activeChains[i],j) > 25 )){
+					if (_allowedTypes[l] < 8 || (_allowedTypes[l] > 7 && _prot->getTypeFromResNum(_activeChains[i],j) > 25 )){
 						pm << _allowedTypes[l] << ",";
 					}
 				}
