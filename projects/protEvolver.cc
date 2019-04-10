@@ -326,7 +326,7 @@ void createPossibleMutantsDatabase(protein* &_prot, UIntVec &_activeChains, UInt
 					if(j > 0){
 						phi = _prot->getPhi(_activeChains[i], j);
 					}
-					if ((phi < 0 && _allowedTypes[l] < 27) || (phi > 0 && _allowedTypes[l] > 25)){
+					if ((phi < 0 && _allowedTypes[l] < dA) || (phi > 0 && _allowedTypes[l] > V)){
 						pm << _allowedTypes[l] << ",";
 					}
 				}

@@ -68,7 +68,7 @@ int main (int argc, char* argv[])
 	double startEnergy = 1E10, pastEnergy, Energy, deltaEnergy;
 	vector <double> backboneAngles(2);
 	UInt timeid, sec, numClashes, startNumBackboneClashes;
-	UInt mutant = 0, plateau = 10, nobetter = 0;
+	UInt mutant = 0, plateau = 20, nobetter = 0;
 	vector < UInt > mutantPosition, chainSequence, randomPosition;
 	vector < vector < UInt > > sequencePool, finalSequence, possibleMutants;
 	stringstream convert; string infile = argv[1], startstr, outFile;
@@ -247,7 +247,7 @@ vector <UInt> getMutationPosition(UIntVec &_activeChains, UIntVec &_activeResidu
 UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition)
 {
 	double Pi, entropy, poolSize = _sequencePool.size();
-	vector <UInt> Freqs(18,1);
+	vector <UInt> Freqs(16,1);
 	UInt mutant, type, count = getSizeofPopulation();
 	UInt positionPossibles = _possibleMutants[(_mutantPosition[0]+1)*_mutantPosition[1]].size();
 
