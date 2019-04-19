@@ -25,9 +25,9 @@ UInt getSizeofPopulation();
 vector < vector < UInt > > readSequencePool();
 vector < vector < UInt > > readPossibleMutants();
 
-enum structure {Z,M,C,L,P,B,E,Y,A,I,G,N,D,Q,R,F,H,W,K,S,T};
-string backboneSeq[] =   {"", "M", "C", "L", "P", "B","E","Y","A","I","G",  "N",  "D",  "Q",  "R",  "F", "H", "W", "K", "S", "T"};
-string backboneTypes[] = {"","-γ","-π","-α","-ρ","-β","β","ρ","α","π","γ","-γl","-πl","-αl","-ρl","-βl","βl","ρl","αl","πl","γl"};
+enum structure {C,L,P,T,E,Y,A,I,D,Q,R,F,H,W,K,S};
+string backboneSeq[] =   { "C", "L", "P", "T","E","Y","A","I",  "D",  "Q",  "R",  "F", "H", "W", "K", "S"};
+string backboneTypes[] = {"-π","-α","-ρ","-β","β","ρ","α","π","-πi","-αi","-ρi","-βi","βi","ρi","αi","πi"};
 UInt populationBaseline = 1000;
 
 //--Program setup----------------------------------------------------------------------------------------
@@ -42,7 +42,7 @@ int main (int argc, char* argv[])
 
 	//--input
 	UInt _activeChains[] = {0};                                                         // chains active for mutation
-	UInt _allowedTypes[] = {C,L,P,B,E,Y,A,I,D,Q,R,F,H,W,K,S};                     // backbone types allowable
+	UInt _allowedTypes[] = {C,L,P,T,E,Y,A,I,D,Q,R,F,H,W,K,S};                     // backbone types allowable
 	UInt _activeResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};                                     // positions active for mutation
 	UInt _randomResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};                                     // positions active for a random start sequence initially
 
@@ -67,11 +67,11 @@ int main (int argc, char* argv[])
 	int seed = (int)getpid()*(int)gethostid(); srand (seed);
 	double startEnergy = 1E10, pastEnergy, Energy, deltaEnergy;
 	vector <double> backboneAngles(2);
-	UInt timeid, sec, numClashes, startNumBackboneClashes, mutant = 0, plateau = 1000, nobetter = 0;
+	UInt timeid, sec, numClashes, startNumBackboneClashes;
+	UInt mutant = 0, plateau = 20, nobetter = 0;
 	vector < UInt > mutantPosition, chainSequence, randomPosition;
 	vector < vector < UInt > > sequencePool, finalSequence, possibleMutants;
-	stringstream convert;
-	string infile = argv[1], startstr, outFile;
+	stringstream convert; string infile = argv[1], startstr, outFile;
 	UInt count, name = rand() % 100000000;
 	convert << name, startstr = convert.str();
 	string tempModel = startstr + "_temp.pdb";
@@ -123,7 +123,7 @@ int main (int argc, char* argv[])
 		do
 		{
 			//--Try new confirmation
-			nobetter++; revert = true;
+			revert = true;
 			startNumBackboneClashes = prot->getNumHardBackboneClashes(); mutantPosition.clear();
 			mutantPosition = getMutationPosition(activeChains, activeResidues);
 			mutant = getProbabilisticMutation(sequencePool, possibleMutants, mutantPosition);
@@ -139,6 +139,7 @@ int main (int argc, char* argv[])
 			
 			//--Energy test
 			if(!revert){
+				nobetter++;
 				prot->protMin(true);
 				Energy = prot->protEnergy();
 				deltaEnergy = Energy-pastEnergy;
@@ -246,7 +247,7 @@ vector <UInt> getMutationPosition(UIntVec &_activeChains, UIntVec &_activeResidu
 UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition)
 {
 	double Pi, entropy, poolSize = _sequencePool.size();
-	vector <UInt> Freqs(20,1);
+	vector <UInt> Freqs(16,1);
 	UInt mutant, type, count = getSizeofPopulation();
 	UInt positionPossibles = _possibleMutants[(_mutantPosition[0]+1)*_mutantPosition[1]].size();
 
@@ -335,7 +336,7 @@ void createPossibleMutantsDatabase(protein* &_prot, UIntVec &_activeChains, UInt
 			if (active){
 				for (UInt l = 0; l <_allowedTypes.size(); l++)
 				{
-					if (_allowedTypes[l] < 11 || (_allowedTypes[l] > 10 && _prot->getTypeFromResNum(_activeChains[i],j) > 25 )){
+					if (_allowedTypes[l] < 8 || (_allowedTypes[l] > 7 && _prot->getTypeFromResNum(_activeChains[i],j) > 25 )){
 						pm << _allowedTypes[l] << ",";
 					}
 				}
