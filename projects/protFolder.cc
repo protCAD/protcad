@@ -25,8 +25,8 @@ UInt getSizeofPopulation();
 vector < vector < UInt > > readSequencePool();
 vector < vector < UInt > > readPossibleMutants();
 
-enum structure {C,L,P,B,E,Y,A,I,D,Q,R,F,H,W,K,S};
-string backboneSeq[] =   { "C", "L", "P", "B","E","Y","A","I",  "D",  "Q",  "R",  "F", "H", "W", "K", "S"};
+enum structure {C,L,P,T,E,Y,A,I,D,Q,R,F,H,W,K,S};
+string backboneSeq[] =   { "C", "L", "P", "T","E","Y","A","I",  "D",  "Q",  "R",  "F", "H", "W", "K", "S"};
 string backboneTypes[] = {"-π","-α","-ρ","-β","β","ρ","α","π","-πi","-αi","-ρi","-βi","βi","ρi","αi","πi"};
 UInt populationBaseline = 1000;
 
@@ -42,7 +42,7 @@ int main (int argc, char* argv[])
 
 	//--input
 	UInt _activeChains[] = {0};                                                         // chains active for mutation
-	UInt _allowedTypes[] = {C,L,P,B,E,Y,A,I,D,Q,R,F,H,W,K,S};                     // backbone types allowable
+	UInt _allowedTypes[] = {C,L,P,T,E,Y,A,I,D,Q,R,F,H,W,K,S};                     // backbone types allowable
 	UInt _activeResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};                                     // positions active for mutation
 	UInt _randomResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};                                     // positions active for a random start sequence initially
 

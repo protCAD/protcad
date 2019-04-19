@@ -159,7 +159,7 @@ double amberVDW::getWaterEnergy(const UInt _type1) const
 {
     double energy = 0.0;
     double EPS_pair = 0.0;
-    UInt waterType = 52;
+    UInt waterType = 54;
     if (_type1 < EPS.size())
     {
         if (EPS[_type1] == EPS[waterType])

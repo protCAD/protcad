@@ -179,6 +179,7 @@ private:
 	
 	bool isSeparatedByOneOrTwoBonds(UInt _index1, UInt _index2);
 	bool isSeparatedByOneOrTwoBonds(UInt _index1, residue* _pRes2, UInt _index2);
+	bool isSeparatedByOneOrTwoBackboneBonds(UInt _index1, residue* _pRes2, UInt _index2);
 	bool isSeparatedByThreeBackboneBonds(UInt _index1, residue* _pRes2, UInt _index2);
 	bool isClash(UInt _index1, UInt _index2);
 	bool isClash(UInt _index1, residue* _other, UInt _index2);
@@ -246,7 +247,9 @@ public:
     double getSolvationEnergy();
     double getDielectric();
     double maxwellGarnettApproximation(UInt _atomIndex1, UInt _atomIndex2, double _dielectric, double _distanceSquared);
-    double maxwellGarnettApproximation(UInt _atomIndex1, UInt _atomIndex2, residue* _other, double _dielectric, double _distanceSquared);
+    double maxwellGarnettApproximation(UInt _atomIndex1, residue* _other, UInt _atomIndex2, double _dielectric, double _distanceSquared);
+    double approximateDipoleDipolePolarization(UInt _atomIndex1, UInt _atomIndex2);
+    double approximateDipoleDipolePolarization(UInt _atomIndex1, residue *_other, UInt _atomIndex2);
 	double getIntraEnergy(const UInt atom1, residue* _other, const UInt atom2);
 	double interEnergy(residue* _other);
 	double interSoluteEnergy(residue* _other);
