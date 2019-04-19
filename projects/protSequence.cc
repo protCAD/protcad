@@ -32,9 +32,9 @@ int main (int argc, char* argv[])
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* _prot = static_cast<protein*>(pMol);
 
-    
-    /*for (UInt i = 0; i < numChains; i++)
-	{	cout << ">" << infile << ":" << _prot->getChainID(i) << endl;
+    UInt numChains = _prot->getNumChains();
+    for (UInt i = 0; i < numChains; i++)
+	{	cout << ">" << infile << endl;
         UInt numRes = _prot->getNumResidues(i);
         for (UInt j = 0; j < numRes; j++)
         {
@@ -42,9 +42,8 @@ int main (int argc, char* argv[])
 			cout << aminoAcidString[restype];
         }
         cout << endl;
-    }*/
+    }
 	cout << endl << ">" << infile << ":" << endl;
-	UInt numChains = _prot->getNumChains();
 	for (UInt i = 0; i < numChains; i++)
 	{
         UInt numRes = _prot->getNumResidues(i);
