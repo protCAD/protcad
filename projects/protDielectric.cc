@@ -46,8 +46,8 @@ int main (int argc, char* argv[])
     }
 
 //--Print final energy and write a pdb file--------------------------------------------------------------
-    outFile = infile;
-    pdbWriter(_prot, outFile);
+    //outFile = infile;
+    //pdbWriter(_prot, outFile);
 	return 0;
 }
 

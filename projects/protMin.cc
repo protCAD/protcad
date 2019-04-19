@@ -26,7 +26,7 @@ int main (int argc, char* argv[])
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* _prot = static_cast<protein*>(pMol);
     bool homosymmetric = false;
-    bool backbone = true;
+    bool backbone = false;
     clock_t start, end;
 	double cpu_time_used;
     
@@ -37,8 +37,8 @@ int main (int argc, char* argv[])
 	amberElec::setScaleFactor(1.0);
 	residue::setPolarizableElec(true);
 
-    UInt _frozenResidues[] = {15};
-    UInt _activeChains[] = {0,1,2,3};
+    UInt _frozenResidues[] = {15,81};
+    UInt _activeChains[] = {0};
 	UInt activeChainsSize = sizeof(_activeChains)/sizeof(_activeChains[0]), frozenResiduesSize = sizeof(_frozenResidues)/sizeof(_frozenResidues[0]);
 	UIntVec activeChains, frozenResidues;
 	for (UInt i = 0; i < activeChainsSize; i++)
@@ -57,8 +57,8 @@ int main (int argc, char* argv[])
     cout << "start Energy: " << _prot->protEnergy() << endl;
     start = clock();
     //_prot->protOpt(backbone,0,15);
-    _prot->protOpt(backbone);
-    //_prot->protOpt(backbone, frozenResidues, activeChains);
+    //_prot->protOpt(backbone);
+    _prot->protOpt(backbone, frozenResidues, activeChains);
     end = clock();
     cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
     cout << "end Energy: "  << _prot->protEnergy() << " time: " << cpu_time_used << endl;
