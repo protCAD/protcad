@@ -243,7 +243,7 @@ public:
 	void polarizability(residue* _other);
 	void updateMovedDependence(residue* _other, UInt _EorC);
 	void calculateDielectrics();
-    vector <double> calculateSolvationEnergy(UInt _atomIndex);
+    double calculateSolvationEnergy(UInt _atomIndex);
     double getSolvationEnergy();
     double getDielectric();
     double maxwellGarnettApproximation(UInt _atomIndex1, UInt _atomIndex2, double _dielectric, double _distanceSquared);
@@ -420,7 +420,6 @@ private:
 	static double cutoffDistanceSquared;
 	static double cutoffCubeVolume;
 	static double dielectricWidth;
-	static double dielectricCubeVolume;
 	static double KT;
 };
 

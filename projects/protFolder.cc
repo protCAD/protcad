@@ -43,8 +43,8 @@ int main (int argc, char* argv[])
 	//--input
 	UInt _activeChains[] = {0};                                                         // chains active for mutation
 	UInt _allowedTypes[] = {C,L,P,T,E,Y,A,I,D,Q,R,F,H,W,K,S};                     // backbone types allowable
-	UInt _activeResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};                                     // positions active for mutation
-	UInt _randomResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};                                     // positions active for a random start sequence initially
+	UInt _activeResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11};                                     // positions active for mutation
+	UInt _randomResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11};                                     // positions active for a random start sequence initially
 
 	//--running parameters
 	residue::setElectroSolvationScaleFactor(1.0);
@@ -68,7 +68,7 @@ int main (int argc, char* argv[])
 	double startEnergy = 1E10, pastEnergy, Energy, deltaEnergy;
 	vector <double> backboneAngles(2);
 	UInt timeid, sec, numClashes, startNumBackboneClashes;
-	UInt mutant = 0, plateau = 20, nobetter = 0;
+	UInt mutant = 0, plateau = 50, nobetter = 0;
 	vector < UInt > mutantPosition, chainSequence, randomPosition;
 	vector < vector < UInt > > sequencePool, finalSequence, possibleMutants;
 	stringstream convert; string infile = argv[1], startstr, outFile;
@@ -114,7 +114,7 @@ int main (int argc, char* argv[])
 				randomPosition.clear();
 			}
 		}
-		prot->protMin(true);
+		prot->protRelax(1000);
 		pdbWriter(prot, tempModel);
 		Energy = prot->protEnergy();
 		pastEnergy = Energy;
@@ -140,7 +140,7 @@ int main (int argc, char* argv[])
 			//--Energy test
 			if(!revert){
 				nobetter++;
-				prot->protMin(true);
+				prot->protRelax(1000);
 				Energy = prot->protEnergy();
 				deltaEnergy = Energy-pastEnergy;
 				acceptance = prot->boltzmannEnergyCriteria(deltaEnergy);
@@ -170,6 +170,7 @@ int main (int argc, char* argv[])
 		protein* model = static_cast<protein*>(modelMol);
 		
 		//-Determine probability of being accepted into pool
+		model->protMin(true);
 		Energy = model->protEnergy();
 		deltaEnergy = Energy-startEnergy;
 		acceptance = prot->boltzmannEnergyCriteria(deltaEnergy);
@@ -336,9 +337,7 @@ void createPossibleMutantsDatabase(protein* &_prot, UIntVec &_activeChains, UInt
 			if (active){
 				for (UInt l = 0; l <_allowedTypes.size(); l++)
 				{
-					if (_allowedTypes[l] < 8 || (_allowedTypes[l] > 7 && _prot->getTypeFromResNum(_activeChains[i],j) > 25 )){
-						pm << _allowedTypes[l] << ",";
-					}
+					pm << _allowedTypes[l] << ",";
 				}
 			}
 			else{pm << _prot->getBackboneSequenceType(_activeChains[i],j) << ",";}

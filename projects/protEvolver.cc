@@ -349,4 +349,3 @@ UInt getSizeofPopulation()
 	file.close();
 	return counter;
 }
-

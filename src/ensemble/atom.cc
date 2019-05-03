@@ -48,8 +48,6 @@ void atom::atomDefaultValues()
 	itsSolvationEnergy = 0.0;
 	itsDielectric = 1.0;
 	itsWaters = 0;
-	itsMaxDielectric = 80.4;
-	itsMinDielectric = 2.25;
 	itsResType = -1; // 0 means "UNK"
 	itsAtomEnergyType = -1;
 	generateNewSpherePoints();
@@ -110,8 +108,6 @@ atom::atom(const pdbAtom& _pdbAtomData)
 	itsSolvationEnergy = 0.0;
 	itsDielectric = 1.0;
     itsWaters = 0;
-	itsMaxDielectric = 80.4;
-	itsMinDielectric = 2.25;
 	howMany++;
 	hetatmFlag=false;
 	generateNewSpherePoints();
@@ -139,8 +135,6 @@ atom::atom(const PDBAtomRecord& _theRecord, bool _hetflag)
         itsSolvationEnergy = 0.0;
         itsDielectric = 1.0;
         itsWaters = 0;
-	   itsMaxDielectric = 80.4;
-	   itsMinDielectric = 2.25;
 	if(hetatmFlag){
 		itsLigChainID=_theRecord.getChainID();
 		const char* pTheChainID  = (_theRecord.getChainID()).c_str();
@@ -184,8 +178,6 @@ atom::atom(const PDBAtomRecord& _theRecord)
 	itsSolvationEnergy = 0.0;
 	itsDielectric = 1.0;
     itsWaters = 0;
-	itsMaxDielectric = 80.4;
-	itsMinDielectric = 2.25;
 	const char* pTheChainID  = (_theRecord.getChainID()).c_str();
 	char theChainID = *pTheChainID;
 	itsChainID = theChainID;
@@ -222,8 +214,6 @@ atom::atom(const atom& _rhs)
 	itsSolvationEnergy = 0.0;
 	itsDielectric = 1.0;
 	itsWaters = 0;
-	itsMaxDielectric = 80.4;
-	itsMinDielectric = 2.25;
 	isSilent = _rhs.isSilent;
 	itsAtomEnergyType = _rhs.itsAtomEnergyType;
 	fullySpecified = _rhs.fullySpecified;
@@ -272,29 +262,13 @@ void atom::setDielectric(double _dielectric)
 {	
 	itsDielectric = _dielectric;
 }
-void atom::setEnvPol(double _envPol)
-{	
-	EnvPol = _envPol;
-}
 void atom::setEnvVol(double _envVol)
 {	
 	EnvVol = _envVol;
 }
-void atom::setEnvMol(double _envMol)
-{	
-	EnvMol = _envMol;
-}
-void atom::sumEnvPol(double _envPol)
-{	
-	EnvPol += _envPol;
-}
 void atom::sumEnvVol(double _envVol)
 {	
 	EnvVol += _envVol;
-}
-void atom::sumEnvMol(double _envMol)
-{	
-	EnvMol += _envMol;
 }
 void atom::setNumberofWaters(double _waters)
 {
@@ -304,16 +278,6 @@ void atom::setRPTType(UInt _RPT)
 {	
 	RPT = _RPT;
 }
-void atom::setMaxDielectric(double _maxDielectric)
-{	
-	itsMaxDielectric = _maxDielectric;
-}
-
-void atom::setMinDielectric(double _minDielectric)
-{	
-	itsMinDielectric = _minDielectric;
-}
-
 void atom::setSerialNumber(const UInt _number)
 {
        itsSerialNumber = _number;
