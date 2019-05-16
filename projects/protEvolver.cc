@@ -21,7 +21,6 @@ vector <UInt> getChainSequence(protein* _prot, UInt _chainIndex);
 vector <UInt> getMutationPosition(UIntVec &_activeChains, UIntVec &_activeResidues);
 UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition);
 void createPossibleMutantsDatabase(protein* &_prot, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedTypes);
-UInt getSizeofPopulation();
 vector < vector < UInt > > readSequencePool();
 vector < vector < UInt > > readPossibleMutants();
 
@@ -170,7 +169,7 @@ int main (int argc, char* argv[])
 		pdbWriter(model, outFile);
 		
 		//-write to data files
-		count = getSizeofPopulation(); finalSequence.clear(), chainSequence.clear();
+		finalSequence.clear(), chainSequence.clear();
 		for (UInt i = 0; i < activeChains.size(); i++)
 		{
 			chainSequence = getChainSequence(model, activeChains[i]);
@@ -184,12 +183,12 @@ int main (int argc, char* argv[])
 			for (UInt j = 0; j < finalSequence[i].size(); j++)
 			{
 				finalline << aminoAcidString[finalSequence[i][j]] << " ";
-				if (acceptance || count < ::populationBaseline){
+				if (acceptance){
 					fs << finalSequence[i][j] << ",";
 				}
 			}
 		}
-		if (acceptance || count < ::populationBaseline){
+		if (acceptance){
 			finalline << " pool"; fs << endl;
 		}
 		fs.close(); finalline << endl; finalline.close();
@@ -235,7 +234,7 @@ UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector 
 {
 	double Pi, entropy, poolSize = _sequencePool.size();
 	vector <UInt> Freqs(57,1);
-	UInt mutant, type, count = getSizeofPopulation();
+	UInt mutant, type;
 	UInt positionPossibles = _possibleMutants[(_mutantPosition[0]+1)*_mutantPosition[1]].size();
 
 	//--determine frequency based chance of mutation acceptance (statistical potential)
@@ -243,7 +242,7 @@ UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector 
 	{
 		entropy = rand() % 100+1;
 		mutant = _possibleMutants[(_mutantPosition[0]+1)*_mutantPosition[1]][rand() % positionPossibles];
-		if (count >= ::populationBaseline){
+		if (poolSize >= ::populationBaseline){
 			for (UInt i = 0; i < poolSize; i++)
 			{
 				type = _sequencePool[i][(_mutantPosition[0]+1)*_mutantPosition[1]];
@@ -335,17 +334,4 @@ void createPossibleMutantsDatabase(protein* &_prot, UIntVec &_activeChains, UInt
 			pm << endl;
 		}
 	}
-}
-
-UInt getSizeofPopulation()
-{
-	ifstream file("results.out");
-	string line;
-	UInt counter = 0;
-	while(getline(file,line))
-	{
-		counter++;
-	}
-	file.close();
-	return counter;
 }

@@ -165,7 +165,7 @@ int main (int argc, char* argv[])
 		protein* model = static_cast<protein*>(modelMol);
 		
 		//-Determine probability of being accepted into pool
-		model->protOpt(true);
+		model->protMin(true);
 		RMSD = proti->getRMSD(model);
 		Energy = model->protEnergy();
 		deltaEnergy = Energy-startEnergy;
