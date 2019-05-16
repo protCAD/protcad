@@ -25,8 +25,7 @@ double residue::EsolvationFactor = 1.0;
 double residue::cutoffDistance = 7.0;
 double residue::cutoffDistanceSquared = residue::cutoffDistance*residue::cutoffDistance;
 double residue::cutoffCubeVolume = pow((residue::cutoffDistance*2),3);
-double residue::dielectricWidth = 9.0;
-double residue::dielectricCubeVolume = pow((residue::dielectricWidth*2),3);
+double residue::dielectricWidth = 2.8; // diameter of water
 double residue::KT = KB*residue::getTemperature();
 
 void residue::setupDataBase()
@@ -2660,6 +2659,8 @@ double residue::intraEnergy()
 	return intraEnergy;
 }
 
+// protEnergy functions (new (2019) complete solvation and forcefeild)-----------------------------------------------
+
 double residue::intraSoluteEnergy()
 {	
 	double intraEnergy = 0.0;
@@ -2670,9 +2671,8 @@ double residue::intraSoluteEnergy()
 		{
 			// ** get solvationEnergy
 			if (EsolvationFactor != 0.0 || HsolvationFactor != 0.0){
-				vector <double> tempSolvEnergy = calculateSolvationEnergy(i);
-				intraEnergy += tempSolvEnergy[0];
-				intraEnergy += tempSolvEnergy[1];
+				double tempSolvEnergy = calculateSolvationEnergy(i);
+				intraEnergy += tempSolvEnergy;
 			}
 			for(UInt j=i+1; j<itsAtoms.size(); j++)
 			{
@@ -2766,22 +2766,15 @@ double residue::interSoluteEnergy(residue* _other)
 	return interEnergy;
 }
 
-vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
+double residue::calculateSolvationEnergy(UInt _atomIndex)
 {	// note: Requires update of dielectrics at protein level to be accurate for water count and local dielctric. Meant to be part of protEnergy().
-	vector <double> solvationEnergy;
 	double soluteSolventEnthalpy = 0.0;
 	double soluteSolventEntropy = 0.0;
 
 	// First estimate water occupancy around solute atom in solvent volume shells of total proximal solute atom excluded volume
 	int atomVDWtype = dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex][0];
-	double solvationRadius = residueTemplate::getVDWRadius(52);
-	double solvatedRadius = residueTemplate::getVDWRadius(atomVDWtype)+solvationRadius;
-	double totalVol = dielectricCubeVolume;
-	double waters = itsAtoms[_atomIndex]->getNumberofWaters();
-	double atomShellVol = 4/3*PI*pow((solvatedRadius),3);
-	double atomVol = residueTemplate::getVolume(atomVDWtype);
-	double waterShellVol = atomShellVol-atomVol;
-	int shellWaters = (waterShellVol/totalVol)*waters;
+	double solvatedRadius = residueTemplate::getVDWRadius(atomVDWtype)+1.4; //atom radius + water radius
+	int shellWaters = itsAtoms[_atomIndex]->getNumberofWaters();;
 	if (shellWaters > 0){
 		// Polar solvation
 		if (EsolvationFactor != 0.0)
@@ -2790,8 +2783,7 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
 			// Born Electrostatic solvation Still WC, et al J Am Chem Soc 1990
 			double atomDielectric = itsAtoms[_atomIndex]->getDielectric();
 			double charge = residueTemplate::itsAmberElec.getItsCharge(itsType, _atomIndex);
-			double chargeSquared = charge*charge;
-			soluteSolventEnthalpy += (-(KC/2)*chargeSquared/(solvatedRadius*atomDielectric))*shellWaters*EsolvationFactor;
+			soluteSolventEnthalpy += (-(KC/2)*(charge*charge)/(solvatedRadius*atomDielectric))*shellWaters*EsolvationFactor;
 		}
 	
 		// Non-Polar solvation
@@ -2807,9 +2799,8 @@ vector <double> residue::calculateSolvationEnergy(UInt _atomIndex)
 		}
 	}
 	//Total atom solvation Energy
-	solvationEnergy.push_back(soluteSolventEnthalpy);
-	solvationEnergy.push_back(soluteSolventEntropy);
-	itsAtoms[_atomIndex]->setSolvationEnergy(soluteSolventEntropy+soluteSolventEnthalpy);
+	double solvationEnergy = soluteSolventEntropy+soluteSolventEnthalpy;
+	itsAtoms[_atomIndex]->setSolvationEnergy(solvationEnergy);
 	return solvationEnergy;
 }
 
@@ -2837,30 +2828,28 @@ void residue::polarizability()
 {	
 	bool inCube;
 	int vdwIndexI, vdwIndexJ;
+	double solvatedRadius;
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
 		if (!itsAtoms[i]->getSilentStatus())
 		{
 			//--inlude self volume
 			vdwIndexI = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][0];
-			itsAtoms[i]->sumEnvVol(residueTemplate::getVolume(vdwIndexI));
+			solvatedRadius = residueTemplate::getVDWRadius(vdwIndexI)+dielectricWidth;
+			itsAtoms[i]->sumEnvVol(residueTemplate::getVolume(vdwIndexI)/2);
 			for(UInt j=i+1; j<itsAtoms.size(); j++)
 			{
 				if (!itsAtoms[j]->getSilentStatus())
 				{
-					inCube = itsAtoms[i]->inCube(itsAtoms[j], dielectricWidth);
+					inCube = itsAtoms[i]->inCube(itsAtoms[j], solvatedRadius);
 					if (inCube)
 					{
 						//i sum environment j
 						vdwIndexJ = dataBase[itsType].itsAtomEnergyTypeDefinitions[j][0];
-						itsAtoms[i]->sumEnvPol(residueTemplate::getPolarizability(vdwIndexJ));
-						itsAtoms[i]->sumEnvVol(residueTemplate::getVolume(vdwIndexJ));
-						itsAtoms[i]->sumEnvMol(1/itsAtoms.size());
+						itsAtoms[i]->sumEnvVol(residueTemplate::getVolume(vdwIndexJ)/2);
 						
 						//j sum environment i
-						itsAtoms[j]->sumEnvPol(residueTemplate::getPolarizability(vdwIndexI));
-						itsAtoms[j]->sumEnvVol(residueTemplate::getVolume(vdwIndexI));
-						itsAtoms[j]->sumEnvMol(1/itsAtoms.size());
+						itsAtoms[j]->sumEnvVol(residueTemplate::getVolume(vdwIndexI)/2);
 					}
 				}
 			}
@@ -2872,30 +2861,28 @@ void residue::polarizability(residue* _other)
 {	
 	bool inCube, resI = getMoved(0), resJ = _other->getMoved(0);
 	int vdwIndexI, vdwIndexJ;
+	double solvatedRadius;
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
 		if (!itsAtoms[i]->getSilentStatus())
 		{
 			vdwIndexI = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][0];
+			solvatedRadius = residueTemplate::getVDWRadius(vdwIndexI)+dielectricWidth;
 			for(UInt j=0; j<_other->itsAtoms.size(); j++)
 			{
 				if (!_other->itsAtoms[j]->getSilentStatus())
 				{
-					inCube = itsAtoms[i]->inCube(_other->itsAtoms[j], dielectricWidth);
+					inCube = itsAtoms[i]->inCube(_other->itsAtoms[j], solvatedRadius);
 					if (inCube)
 					{
 						//i sum environment j
 						if (resI){
 							vdwIndexJ = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[j][0];
-							itsAtoms[i]->sumEnvPol(residueTemplate::getPolarizability(vdwIndexJ));
-							itsAtoms[i]->sumEnvVol(residueTemplate::getVolume(vdwIndexJ));
-							itsAtoms[i]->sumEnvMol(1/_other->itsAtoms.size());
+							itsAtoms[i]->sumEnvVol(residueTemplate::getVolume(vdwIndexJ)/2);
 						}
 						//j sum environment i
 						if (resJ){
-							_other->itsAtoms[j]->sumEnvPol(residueTemplate::getPolarizability(vdwIndexI));
-							_other->itsAtoms[j]->sumEnvVol(residueTemplate::getVolume(vdwIndexI));
-							_other->itsAtoms[j]->sumEnvMol(1/itsAtoms.size());
+							_other->itsAtoms[j]->sumEnvVol(residueTemplate::getVolume(vdwIndexI)/2);
 						}
 					}
 				}
@@ -2906,27 +2893,27 @@ void residue::polarizability(residue* _other)
 
 void residue::calculateDielectrics()
 {
-	double envPol, envVol, envMol, totalWaterVol, totalWaterPol, dielectric=1.0, waters=0.0;
+	double envVol, totalWaterVol, dielectric, waters;
 	double waterPol = residueTemplate::getPolarizability(52);
 	double waterVol = residueTemplate::getVolume(52);
-	double totalVol = dielectricCubeVolume;
-	double alpha, N;
+	double pol, vol, solvatedRadius;
+	UInt vdwIndexI;
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
 		if (!itsAtoms[i]->getSilentStatus())
 		{
 			// calculate local dielectric for atom
-			envPol = itsAtoms[i]->getEnvPol();
-			envVol = itsAtoms[i]->getEnvVol()/2; // ~half of atom volume in covalent overlap
-			envMol = itsAtoms[i]->getEnvMol();
-			totalWaterVol = totalVol-envVol;
-			if (totalWaterVol > waterVol){
-				waters = (totalWaterVol/waterVol); totalWaterPol = waters*waterPol;
-				alpha = (totalWaterPol+envPol)/totalVol; N = envMol+waters;
-
-				// Solve for the effective dielectric with the Lorentz local field correction
-				dielectric =1+(8*PI/3)*N*alpha/1-(4*PI/3)*N*alpha;
+			vdwIndexI = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][0];
+			solvatedRadius = residueTemplate::getVDWRadius(vdwIndexI)+dielectricWidth;
+			vol = pow((solvatedRadius*2),3); pol=0.0; waters=0.0;
+			envVol = itsAtoms[i]->getEnvVol();
+			totalWaterVol = vol-envVol;
+			if (totalWaterVol > 0){
+				waters = (totalWaterVol/waterVol); pol = waters*waterPol;
 			}
+
+			// Solve for the effective dielectric with the Lorentz local field correction
+			dielectric =1+(8*PI/3)*(pol)/1-(4*PI/3)*(pol);
 			itsAtoms[i]->setDielectric(dielectric);
 			itsAtoms[i]->setNumberofWaters(waters);
 		}
@@ -2968,7 +2955,7 @@ double residue::maxwellGarnettApproximation(UInt _atomIndex1, residue* _other, U
 }
 
 double residue::approximateDipoleDipolePolarization(UInt _atomIndex1, UInt _atomIndex2)
-{	//Approximate the polarizability of inclusion in medium due to the sum of the static polarizabilities and angles of interacting dipoles
+{	//Approximate the polarizability of inclusion in medium due to the sum of the dipole angle product of the static polarizabilities
 	
 	//Identify Atoms in Dipoles
 	dblVec a1Coords = getCoords(_atomIndex1); dblVec p1Coords;
@@ -3020,6 +3007,8 @@ double residue::approximateDipoleDipolePolarization(UInt _atomIndex1, residue* _
 	double pol2 = CMath::cosTheta90(p1Coords,a1Coords,a2Coords)*statpol2;
 	return pol1+pol2;
 }
+
+// end protEnergy functions ---------------------------------------------------------------------
 
 void residue::updateMovedDependence(residue* _other, UInt _EorC)
 {	
@@ -4242,9 +4231,7 @@ void residue::clearEnvironment()
 {
 	for (UInt i=0; i < itsAtoms.size(); i++)
 	{
-		itsAtoms[i]->setEnvPol(0.0);
 		itsAtoms[i]->setEnvVol(0.0);
-		itsAtoms[i]->setEnvMol(0.0);
 	}
 }
 

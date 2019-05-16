@@ -21,7 +21,6 @@ vector <UInt> getChainSequence(protein* _prot, UInt _chainIndex);
 vector <UInt> getMutationPosition(UIntVec &_activeChains, UIntVec &_activeResidues);
 UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition);
 void createPossibleMutantsDatabase(protein* &_prot, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedTypes);
-UInt getSizeofPopulation();
 vector < vector < UInt > > readSequencePool();
 vector < vector < UInt > > readPossibleMutants();
 
@@ -43,8 +42,8 @@ int main (int argc, char* argv[])
 	//--input
 	UInt _activeChains[] = {0};                                                         // chains active for mutation
 	UInt _allowedTypes[] = {C,L,P,T,E,Y,A,I,D,Q,R,F,H,W,K,S};                     // backbone types allowable
-	UInt _activeResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};                                     // positions active for mutation
-	UInt _randomResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};                                     // positions active for a random start sequence initially
+	UInt _activeResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11};                                     // positions active for mutation
+	UInt _randomResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11};                                     // positions active for a random start sequence initially
 
 	//--running parameters
 	residue::setElectroSolvationScaleFactor(1.0);
@@ -65,38 +64,37 @@ int main (int argc, char* argv[])
 
 	//--set initial variables
 	int seed = (int)getpid()*(int)gethostid(); srand (seed);
-	double startEnergy = 1E10, pastEnergy, Energy, deltaEnergy;
+	double startEnergy = 1E10, pastEnergy, Energy, deltaEnergy, RMSD;
 	vector <double> backboneAngles(2);
 	UInt timeid, sec, numClashes, startNumBackboneClashes;
-	UInt mutant = 0, plateau = 20, nobetter = 0;
+	UInt mutant = 0, plateau = 100, nobetter = 0;
 	vector < UInt > mutantPosition, chainSequence, randomPosition;
 	vector < vector < UInt > > sequencePool, finalSequence, possibleMutants;
 	stringstream convert; string infile = argv[1], startstr, outFile;
-	UInt count, name = rand() % 100000000;
+	UInt name = rand() % 100000000;
 	convert << name, startstr = convert.str();
 	string tempModel = startstr + "_temp.pdb";
 	bool revert, acceptance;
 
 	//-build possible fold sequence database per position
-	PDBInterface* thePDB = new PDBInterface(infile);
-	ensemble* theEnsemble = thePDB->getEnsemblePointer();
-	molecule* pMol = theEnsemble->getMoleculePointer(0);
-	protein* prot = static_cast<protein*>(pMol);
+	PDBInterface* thePDBi = new PDBInterface(infile);
+	ensemble* theEnsemblei = thePDBi->getEnsemblePointer();
+	molecule* pMoli = theEnsemblei->getMoleculePointer(0);
+	protein* proti = static_cast<protein*>(pMoli);
 	possibleMutants = readPossibleMutants();
 	if(possibleMutants.size() < activeResidues.size())
 	{
-		createPossibleMutantsDatabase(prot, activeChains, activeResidues, allowedTypes);
+		createPossibleMutantsDatabase(proti, activeChains, activeResidues, allowedTypes);
 		possibleMutants = readPossibleMutants();
 	}
-	delete thePDB;
 	
 	//--Run multiple independent fold cycles-----------------------------------------------------
 	while(true)
 	{
-		thePDB = new PDBInterface(infile);
-		theEnsemble = thePDB->getEnsemblePointer();
-		pMol = theEnsemble->getMoleculePointer(0);
-		prot = static_cast<protein*>(pMol);
+		PDBInterface* thePDB = new PDBInterface(infile);
+		ensemble* theEnsemble = thePDB->getEnsemblePointer();
+		molecule* pMol = theEnsemble->getMoleculePointer(0);
+		protein* prot = static_cast<protein*>(pMol);
 		sequencePool = readSequencePool();
 
 		//--load in initial pdb with a random starting structure on active chains and random residues
@@ -114,7 +112,7 @@ int main (int argc, char* argv[])
 				randomPosition.clear();
 			}
 		}
-		prot->protMin(true);
+		prot->protRelax(1000);
 		pdbWriter(prot, tempModel);
 		Energy = prot->protEnergy();
 		pastEnergy = Energy;
@@ -124,41 +122,38 @@ int main (int argc, char* argv[])
 		{
 			//--Try new confirmation
 			revert = true;
-			startNumBackboneClashes = prot->getNumHardBackboneClashes(); mutantPosition.clear();
-			mutantPosition = getMutationPosition(activeChains, activeResidues);
+			startNumBackboneClashes = prot->getNumHardBackboneClashes();
+			mutantPosition.clear(); mutantPosition = getMutationPosition(activeChains, activeResidues);
 			mutant = getProbabilisticMutation(sequencePool, possibleMutants, mutantPosition);
 			backboneAngles = prot->getRandPhiPsifromBackboneSequenceType(mutant);
 			prot->setDihedral(mutantPosition[0],mutantPosition[1],backboneAngles[0],0,0);
 			prot->setDihedral(mutantPosition[0],mutantPosition[1],backboneAngles[1],1,0);
 			
-			//--Prior to full optimization perform a clash test for an acceptable confirmation
+			//--backbone clash check
 			numClashes = prot->getNumHardBackboneClashes();
 			if (numClashes <= startNumBackboneClashes){
 				revert = false;
 			}
 			
-			//--Energy test
+			//--Sidechain relaxation and energy calculation
 			if(!revert){
-				nobetter++;
-				prot->protMin(true);
+				prot->protRelax(1000); nobetter++;
 				Energy = prot->protEnergy();
 				deltaEnergy = Energy-pastEnergy;
 				acceptance = prot->boltzmannEnergyCriteria(deltaEnergy);
+				
+				//--Boltzmann energy acceptance of structure and save
 				if (acceptance){
 					pdbWriter(prot, tempModel);
 					pastEnergy = Energy;
 					if (deltaEnergy < (residue::getKT()*-1)){nobetter = 0;}
 				}
-				else{revert = true;}
 			}
 			
-			//--Revert to previously saved structure
+			//--Revert to previous structure state
 			if (revert){
-				delete thePDB;
-				thePDB = new PDBInterface(tempModel);
-				theEnsemble = thePDB->getEnsemblePointer();
-				pMol = theEnsemble->getMoleculePointer(0);
-				prot = static_cast<protein*>(pMol);
+				prot->setDihedral(mutantPosition[0],mutantPosition[1],backboneAngles[0]*-1,0,0);
+				prot->setDihedral(mutantPosition[0],mutantPosition[1],backboneAngles[1]*-1,1,0);
 			}
 		}while (nobetter < plateau);
 		delete thePDB;
@@ -170,6 +165,8 @@ int main (int argc, char* argv[])
 		protein* model = static_cast<protein*>(modelMol);
 		
 		//-Determine probability of being accepted into pool
+		model->protMin(true);
+		RMSD = proti->getRMSD(model);
 		Energy = model->protEnergy();
 		deltaEnergy = Energy-startEnergy;
 		acceptance = prot->boltzmannEnergyCriteria(deltaEnergy);
@@ -183,26 +180,26 @@ int main (int argc, char* argv[])
 		pdbWriter(model, outFile);
 		
 		//-write to data files
-		count = getSizeofPopulation(); finalSequence.clear(), chainSequence.clear();
+		finalSequence.clear(), chainSequence.clear();
 		for (UInt i = 0; i < activeChains.size(); i++)
 		{
 			chainSequence = getChainSequence(model, activeChains[i]);
 			finalSequence.push_back(chainSequence);
 		}
 		fstream finalline; finalline.open ("results.out", fstream::in | fstream::out | fstream::app);
-		finalline << timeid << " " << Energy << " ";
+		finalline << timeid << " " << RMSD << " " << Energy << " ";
 		fstream fs; fs.open ("sequencepool.out", fstream::in | fstream::out | fstream::app);
 		for (UInt i = 0; i < activeChains.size(); i++)
 		{
 			for (UInt j = 0; j < finalSequence[i].size(); j++)
 			{
 				finalline << backboneSeq[finalSequence[i][j]] << " ";
-				if (acceptance || count < ::populationBaseline){
+				if (acceptance){
 					fs << finalSequence[i][j] << ",";
 				}
 			}
 		}
-		if (acceptance || count < ::populationBaseline){
+		if (acceptance){
 			finalline << " pool"; fs << endl;
 		}
 		fs.close(); finalline << endl; finalline.close();
@@ -248,7 +245,7 @@ UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector 
 {
 	double Pi, entropy, poolSize = _sequencePool.size();
 	vector <UInt> Freqs(16,1);
-	UInt mutant, type, count = getSizeofPopulation();
+	UInt mutant, type;
 	UInt positionPossibles = _possibleMutants[(_mutantPosition[0]+1)*_mutantPosition[1]].size();
 
 	//--determine frequency based chance of mutation acceptance (statistical potential)
@@ -256,7 +253,7 @@ UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector 
 	{
 		entropy = rand() % 100+1;
 		mutant = _possibleMutants[(_mutantPosition[0]+1)*_mutantPosition[1]][rand() % positionPossibles];
-		if (count >= ::populationBaseline){
+		if (poolSize >= ::populationBaseline){
 			for (UInt i = 0; i < poolSize; i++)
 			{
 				type = _sequencePool[i][(_mutantPosition[0]+1)*_mutantPosition[1]];
@@ -336,9 +333,7 @@ void createPossibleMutantsDatabase(protein* &_prot, UIntVec &_activeChains, UInt
 			if (active){
 				for (UInt l = 0; l <_allowedTypes.size(); l++)
 				{
-					if (_allowedTypes[l] < 8 || (_allowedTypes[l] > 7 && _prot->getTypeFromResNum(_activeChains[i],j) > 25 )){
-						pm << _allowedTypes[l] << ",";
-					}
+					pm << _allowedTypes[l] << ",";
 				}
 			}
 			else{pm << _prot->getBackboneSequenceType(_activeChains[i],j) << ",";}
@@ -346,17 +341,3 @@ void createPossibleMutantsDatabase(protein* &_prot, UIntVec &_activeChains, UInt
 		}
 	}
 }
-
-UInt getSizeofPopulation()
-{
-	ifstream file("results.out");
-	string line;
-	UInt counter = 0;
-	while(getline(file,line))
-	{
-		counter++;
-	}
-	file.close();
-	return counter;
-}
-

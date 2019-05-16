@@ -2700,7 +2700,7 @@ void protein::protOpt(bool _backbone)
 	
 	//--Initialize variables for loop, calculate starting energy and build energy vectors-----
 	UInt randchain, randres, resnum, backboneOrSidechain = 1;
-	UInt clashes, clashesStart, bbClashes, bbClashesStart, chainNum = getNumChains(), plateau = 500;
+	UInt clashes, clashesStart, bbClashes, bbClashesStart, chainNum = getNumChains(), plateau = 1000;
 	double Energy, pastEnergy = protEnergy(), deltaEnergy, sPhi, sPsi,nobetter = 0.0, KT = KB*Temperature();
 	vector < vector <double>> currentSidechainConf, newSidechainConf; srand (time(NULL)); vector <double> backboneAngles(2);
 	bool sidechainTest, backboneTest, revert, energyTest, boltzmannAcceptance;

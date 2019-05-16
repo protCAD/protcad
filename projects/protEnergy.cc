@@ -28,7 +28,8 @@ int main (int argc, char* argv[])
 	residue::setPolarizableElec(true);
 	amberElec::setScaleFactor(1.0);
 	amberVDW::setScaleFactor(1.0);
-
+	residue::setTemperature(300);
+	
 	start = clock();
 	double Energy = bundle->protEnergy();
 	end = clock();

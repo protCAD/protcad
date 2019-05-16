@@ -106,15 +106,9 @@ public:
 
 public:
 	// Radius Related Operations
-	double getEnvPol() {return EnvPol; }
 	double getEnvVol() {return EnvVol; }
-	double getEnvMol() {return EnvMol; }
-	void setEnvPol(double _envPol);
 	void setEnvVol(double _envVol);
-	void setEnvMol(double _envMol);
-	void sumEnvPol(double _envPol);
 	void sumEnvVol(double _envVol);
-	void sumEnvMol(double _envMol);
 	void setRPTType(UInt _RPT);
 	UInt getRPTType() const {return RPT;}
 	double getRadius() const {return itsRadius; }
@@ -126,13 +120,9 @@ public:
 	double getSolvationEnergy() {return itsSolvationEnergy;}
 	double getDielectric() {return itsDielectric;}
 	double getNumberofWaters() {return itsWaters;}
-	double getMaxDielectric() {return itsMaxDielectric;}
-	double getMinDielectric() {return itsMinDielectric;}
 	void setSolvationEnergy(double _solvationEnergy);
 	void setDielectric(double _dielectric);
 	void setNumberofWaters(double _waters);
-	void setMaxDielectric(double _maxDielectric);
-	void setMinDielectric(double _minDielectric);
 
 	// Charge
 	int   getSerialNumber() const {return itsSerialNumber;}
@@ -211,16 +201,12 @@ public:
 
 protected:
 	// non-static variable declaration
-	double EnvPol = 0.0;
 	double EnvVol = 0.0;
-	double EnvMol = 0;
 	UInt RPT = 0;
 	double itsRadius;
 	double itsSolvationEnergy;
 	double itsDielectric;
     double itsWaters;
-	double itsMaxDielectric;
-	double itsMinDielectric;
 	double itsEpsilon;
     double itsPolarizability;
     double itsVolume;

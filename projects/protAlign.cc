@@ -28,6 +28,12 @@ int main (int argc, char* argv[])
 	ensemble* theEnsemble2 = thePDB2->getEnsemblePointer();
 	molecule* pMol2 = theEnsemble2->getMoleculePointer(0);
 	protein* _prot2 = static_cast<protein*>(pMol2);
+	
+	residue::setElectroSolvationScaleFactor(1.0);
+	residue::setHydroSolvationScaleFactor(1.0);
+	residue::setPolarizableElec(true);
+	amberElec::setScaleFactor(1.0);
+	amberVDW::setScaleFactor(1.0);
 
     vector<dblVec> coord1;
     vector<dblVec> coord2;
@@ -120,6 +126,6 @@ int main (int argc, char* argv[])
 		}
 		pdbWriter(_prot1,infile1);
 	}
-    cout << "RMSD = " << bestRMSD << endl;
+    cout << infile2 << " " << bestRMSD << " " << _prot2->protEnergy() << endl;
 	return 0;
 }

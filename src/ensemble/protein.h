@@ -182,7 +182,7 @@ public:
 	vector <double> chainBindingEnergy();
 	void polarizability();
 	void calculateDielectrics();
-	vector <double> calculateSolvationEnergy(UInt _chainIndex, UInt _residueIndex, UInt _atomIndex) {return itsChains[_chainIndex]->itsResidues[_residueIndex]->calculateSolvationEnergy( _atomIndex);}
+	double calculateSolvationEnergy(UInt _chainIndex, UInt _residueIndex, UInt _atomIndex) {return itsChains[_chainIndex]->itsResidues[_residueIndex]->calculateSolvationEnergy( _atomIndex);}
 	//vector <double> calculateChainIndependentDielectric(chain* _chain, residue* _residue, atom* _atom);
 	//vector <double> calculateResidueIndependentDielectric(residue* _residue, atom* _atom);
 	void updateDielectrics();
