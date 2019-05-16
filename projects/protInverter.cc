@@ -36,6 +36,13 @@ int main (int argc, char* argv[])
         {
             restype = bundle->getTypeFromResNum(i,j);
             currentRot = bundle->getSidechainDihedrals(i,j);
+            for (UInt i = 0; i < currentRot.size(); i++)
+            {
+				for (UInt j = 0; j < currentRot[i].size(); j++)
+				{
+					currentRot[i][j] = currentRot[i][j]*-1;
+				}
+            }
             if (restype < 27)
             {
                 UInt restype = bundle->getTypeFromResNum(i,j);
@@ -46,7 +53,7 @@ int main (int argc, char* argv[])
                 UInt restype = bundle->getTypeFromResNum(i,j);
                 bundle->mutateWBC(i,j,restype-27);
             }
-            bundle->setSidechainDihedralAngles(i, j, currentRot);
+            bundle->setSidechainDihedralAngles(i, j, (currentRot));
             if (j == 0){
                double psi = bundle->getAngle(i,j,1);
                bundle->setDihedral(i,j,psi*-1,1,0);

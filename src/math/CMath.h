@@ -31,11 +31,9 @@ namespace CMath
 	double distance(const dblVec& _dv1, const dblVec& _dv2);
 	double distanceSquared(const dblVec& _dv1, const dblVec& _dv2);
 
-	double dihedral(const dblVec& _one, const dblVec& _two,
-			const dblVec& _three, const dblVec& _four) ;
-	double angle(const dblVec& _one, const dblVec& _two,
-			const dblVec& _three);
-	
+	double dihedral(const dblVec& _one, const dblVec& _two, const dblVec& _three, const dblVec& _four);
+	double angle(const dblVec& _one, const dblVec& _two, const dblVec& _three);
+	double cosTheta90(const dblVec& _one, const dblVec& _two, const dblVec& _three);
 	dblMat rotationMatrix(const dblVec& _dblVec, const double& _theta);
 
 	dblVec centroid(const vector<dblVec>* thePoints, const vector<double>* theWeights); 

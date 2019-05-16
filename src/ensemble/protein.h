@@ -127,7 +127,7 @@ public:
 	double netCharge();
 	
 	//--Optimization functions
-	void protSampling();
+	void protSampling(UInt iterations);
 	 // --Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics-- dpike
 	void protRelax(UInt _plateau);
 	void protRelax(UIntVec _frozenResidues, UIntVec _activeChains);
@@ -157,8 +157,8 @@ public:
 	double getMedianResidueEnergy();
 	double getMedianResidueEnergy(UIntVec _activeChains);
 	double getMedianResidueEnergy(UIntVec _activeChains, UIntVec _activeResidues);
-	bool boltzmannEnergyCriteria(double _deltaEnergy, double _KT);
-	bool boltzmannProbabilityCriteria(double Pi, double Pj, double _KT);
+	bool boltzmannEnergyCriteria(double _deltaEnergy);
+	double boltzmannProbabilityToEnergy(double Pi, double Pj);
 	UInt getNumChis(const UInt _chainIndex, const UInt _resIndex, const UInt _bpt) {return itsChains[_chainIndex]->getNumChis(_resIndex,0); }
 	UInt getNumHardClashes(UInt chainIndex, UInt resIndex);
 	UInt getNumHardClashes();
@@ -182,7 +182,7 @@ public:
 	vector <double> chainBindingEnergy();
 	void polarizability();
 	void calculateDielectrics();
-	vector <double> calculateSolvationEnergy(UInt _chainIndex, UInt _residueIndex, UInt _atomIndex) {return itsChains[_chainIndex]->itsResidues[_residueIndex]->calculateSolvationEnergy( _atomIndex);}
+	double calculateSolvationEnergy(UInt _chainIndex, UInt _residueIndex, UInt _atomIndex) {return itsChains[_chainIndex]->itsResidues[_residueIndex]->calculateSolvationEnergy( _atomIndex);}
 	//vector <double> calculateChainIndependentDielectric(chain* _chain, residue* _residue, atom* _atom);
 	//vector <double> calculateResidueIndependentDielectric(residue* _residue, atom* _atom);
 	void updateDielectrics();

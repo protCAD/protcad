@@ -1,7 +1,7 @@
 //*******************************************************************************************************
 //*******************************************************************************************************
 //*************************************                      ********************************************
-//*************************************       protMin        ********************************************
+//*************************************       protOpt        ********************************************
 //*************************************                      ********************************************
 //*******************************************************************************************************
 //******** -sidechain and backbone optimization with a burial-based scaling of electrostatics- **********
@@ -16,43 +16,53 @@
 int main (int argc, char* argv[])
 {
 	if (argc !=3)
-	{   cout << "protMin <infile.pdb> <temp(K)>" << endl;
+	{   cout << "protOpt <inFile.pdb> <outFile.pdb>" << endl;
 		exit(1); }
 
 	string infile = argv[1];
-	string temp = argv[2];
-	double temperature = atof(temp.c_str());
-	string iterate;
-	double meanEnergy, sumEnergy = 0.0;
-	UInt size = 10;
-	vector <double> Energies(size);
-	residue::setTemperature(temperature);
+	string outFile = argv[2];
+	PDBInterface* thePDB = new PDBInterface(infile);
+	ensemble* theEnsemble = thePDB->getEnsemblePointer();
+	molecule* pMol = theEnsemble->getMoleculePointer(0);
+	protein* _prot = static_cast<protein*>(pMol);
+    bool homosymmetric = false;
+    bool backbone = true;
+    clock_t start, end;
+	double cpu_time_used;
+    
+    residue::setTemperature(300);
+    residue::setElectroSolvationScaleFactor(1.0);
+    residue::setHydroSolvationScaleFactor(1.0);
+	amberVDW::setScaleFactor(1.0);
+	amberElec::setScaleFactor(1.0);
+	residue::setPolarizableElec(true);
 
-	for (UInt i = 0; i < size; i++)
+    UInt _frozenResidues[] = {15,81};
+    UInt _activeChains[] = {0};
+	UInt activeChainsSize = sizeof(_activeChains)/sizeof(_activeChains[0]), frozenResiduesSize = sizeof(_frozenResidues)/sizeof(_frozenResidues[0]);
+	UIntVec activeChains, frozenResidues;
+	for (UInt i = 0; i < activeChainsSize; i++)
 	{
-		PDBInterface* thePDB = new PDBInterface(infile);
-		ensemble* theEnsemble = thePDB->getEnsemblePointer();
-		molecule* pMol = theEnsemble->getMoleculePointer(0);
-		protein* _prot = static_cast<protein*>(pMol);
-		_prot->protMin(true);
-		double Energy = _prot->protEnergy();
-		sumEnergy += Energy;
-		Energies[i] = Energy;
-		stringstream convert;
-		convert << i+1, iterate = convert.str();
-		string minModel = iterate + "_min400.pdb";
-		pdbWriter(_prot, minModel);
-		delete thePDB;
+		activeChains.push_back(_activeChains[i]);
 	}
-	meanEnergy = sumEnergy/size;
-	sumEnergy = 0.0;
-	for (UInt i = 0; i < Energies.size(); i++)
+	for (UInt i = 0; i < frozenResiduesSize; i++)
 	{
-		sumEnergy += pow(Energies[i]-meanEnergy,2);
-	}
-	sumEnergy /= size;
-	double stdev = sqrt(sumEnergy);
-	cout << "Energy: " << meanEnergy << " +/- " << stdev << endl;
+		frozenResidues.push_back(_frozenResidues[i]);
+    }
+    if (homosymmetric)
+    {
+        for (UInt i = 0; i < _prot->getNumChains(); i++)
+        {_prot->symmetryLinkChainAtoB(activeChains[0],i);}
+    }
+    cout << "start Energy: " << _prot->protEnergy() << endl;
+    start = clock();
+    //_prot->protOpt(backbone,0,15);
+    _prot->protOpt(backbone);
+    //_prot->protOpt(backbone, frozenResidues, activeChains);
+    end = clock();
+    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    cout << "end Energy: "  << _prot->protEnergy() << " time: " << cpu_time_used << endl;
+	pdbWriter(_prot, outFile);
 
 	return 0;
 }

@@ -24,37 +24,26 @@
 int main (int argc, char* argv[])
 {
 	//--Running parameters
-	if (argc !=2)
+	if (argc !=1)
 	{
-		cout << "protDB <infile.pdb>" << endl;
+		cout << "protDB" << endl;
 		exit(1);
 	}
 	
-	residue::setElectroSolvationScaleFactor(1.0);
-	residue::setHydroSolvationScaleFactor(0.0);
-	amberElec::setScaleFactor(1.0);
-	amberVDW::setScaleFactor(1.0);
-	residue::setPolarizableElec(true);
-	string inFrame, infile = argv[1];
-	
-	PDBInterface* thePDB = new PDBInterface(infile);
-	ensemble* theEnsemble = thePDB->getEnsemblePointer();
-	molecule* Mol = theEnsemble->getMoleculePointer(0);
-	protein* _prot = static_cast<protein*>(Mol);
-	
-	DIR *pdir;
-	struct dirent *pent;
-	pdir=opendir(".");
+	DIR *pdir = opendir("."); struct dirent *pent; string inFrame;
 	while ((pent=readdir(pdir)))
 	{
 		inFrame = pent->d_name;
-        if (inFrame.find(".fold.pdb") != std::string::npos)
+		if (inFrame.find(".pdb") != std::string::npos)
 		{
 			PDBInterface* theFramePDB = new PDBInterface(inFrame);
 			ensemble* theFrameEnsemble = theFramePDB->getEnsemblePointer();
 			molecule* frameMol = theFrameEnsemble->getMoleculePointer(0);
 			protein* frame = static_cast<protein*>(frameMol);
-			cout << inFrame << " " << frame->protEnergy() << " " << _prot->getRMSD(frame) << endl;
+			for (UInt i = 0; i < frame->getNumResidues(0); i++)
+			{
+				cout << inFrame << " " << i << " " << frame->getBackboneSequenceType(0,i) << endl;
+			}
 			delete theFramePDB;
 		}
 	}

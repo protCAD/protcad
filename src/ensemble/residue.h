@@ -180,6 +180,7 @@ private:
 	bool isSeparatedByOneOrTwoBonds(UInt _index1, UInt _index2);
 	bool isSeparatedByOneOrTwoBonds(UInt _index1, residue* _pRes2, UInt _index2);
 	bool isSeparatedByOneOrTwoBackboneBonds(UInt _index1, residue* _pRes2, UInt _index2);
+	bool isSeparatedByThreeBackboneBonds(UInt _index1, residue* _pRes2, UInt _index2);
 	bool isClash(UInt _index1, UInt _index2);
 	bool isClash(UInt _index1, residue* _other, UInt _index2);
 	UInt getNumHardClashes(residue* _other);
@@ -242,11 +243,13 @@ public:
 	void polarizability(residue* _other);
 	void updateMovedDependence(residue* _other, UInt _EorC);
 	void calculateDielectrics();
-    vector <double> calculateSolvationEnergy(UInt _atomIndex);
+    double calculateSolvationEnergy(UInt _atomIndex);
     double getSolvationEnergy();
     double getDielectric();
     double maxwellGarnettApproximation(UInt _atomIndex1, UInt _atomIndex2, double _dielectric, double _distanceSquared);
-    double maxwellGarnettApproximation(UInt _atomIndex1, UInt _atomIndex2, residue* _other, double _dielectric, double _distanceSquared);
+    double maxwellGarnettApproximation(UInt _atomIndex1, residue* _other, UInt _atomIndex2, double _dielectric, double _distanceSquared);
+    double approximateDipoleDipolePolarization(UInt _atomIndex1, UInt _atomIndex2);
+    double approximateDipoleDipolePolarization(UInt _atomIndex1, residue *_other, UInt _atomIndex2);
 	double getIntraEnergy(const UInt atom1, residue* _other, const UInt atom2);
 	double interEnergy(residue* _other);
 	double interSoluteEnergy(residue* _other);
@@ -357,6 +360,7 @@ public:
 	static void setCutoffDistance( const double _cutoff ) { cutoffDistance = _cutoff; cutoffDistanceSquared = _cutoff*_cutoff; }
 	static void setTemperature( const double _temp ) { temperature = _temp; }
 	static double getTemperature() { return temperature; }
+	static double getKT() { return KT; }
 	static void setPolarizableElec( bool _polElec ) { polarizableElec = _polElec; }
 	static void setElectroSolvationScaleFactor( const double _Esolv ) { EsolvationFactor = _Esolv; }
 	static double getElectroSolvationScaleFactor() { return EsolvationFactor; }
@@ -416,7 +420,7 @@ private:
 	static double cutoffDistanceSquared;
 	static double cutoffCubeVolume;
 	static double dielectricWidth;
-	static double dielectricCubeVolume;
+	static double KT;
 };
 
 #endif
