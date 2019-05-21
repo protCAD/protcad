@@ -68,11 +68,11 @@ int main (int argc, char* argv[])
 	//--set initial variables
 	int seed = (int)getpid()*(int)gethostid(); srand (seed);
 	double startEnergy = 1E10, pastEnergy, Energy, deltaEnergy;
-	UInt timeid, sec, mutant = 0, plateau = 10, nobetter = 0;
+	UInt timeid, sec, mutant = 0, plateau = 20, nobetter = 0;
 	vector < UInt > mutantPosition, chainSequence, randomPosition;
 	vector < vector < UInt > > sequencePool, finalSequence, possibleMutants;
 	stringstream convert; string startstr, outFile, infile = argv[1];
-	UInt count, name = rand() % 100000000;
+	UInt name = rand() % 100000000;
 	convert << name, startstr = convert.str();
 	string tempModel = startstr + "_temp.pdb";
 	bool acceptance;
@@ -112,7 +112,7 @@ int main (int argc, char* argv[])
 				randomPosition.clear();
 			}
 		}
-		prot->protMin(backboneRelaxation, frozenResidues, activeChains);
+		prot->protRelax(frozenResidues, activeChains);
 		pdbWriter(prot, tempModel);
 		Energy = prot->protEnergy();
 		pastEnergy = Energy;
@@ -128,7 +128,7 @@ int main (int argc, char* argv[])
 			prot->mutateWBC(mutantPosition[0], mutantPosition[1], mutant);
 
 			//--Energy test
-			prot->protMin(backboneRelaxation, frozenResidues, activeChains);
+			prot->protRelax(frozenResidues, activeChains);
 			Energy = prot->protEnergy();
 			deltaEnergy = Energy-pastEnergy;
 			acceptance = prot->boltzmannEnergyCriteria(deltaEnergy);
@@ -138,7 +138,7 @@ int main (int argc, char* argv[])
 				if (deltaEnergy < (residue::getKT()*-1)){nobetter = 0;}
 			}
 			
-			//--Revert to previously saved structure with previous sequence
+			//--Revert to previous sequence
 			else{
 				delete thePDB;
 				thePDB = new PDBInterface(tempModel);
@@ -156,6 +156,7 @@ int main (int argc, char* argv[])
 		protein* model = static_cast<protein*>(modelMol);
 		
 		//-Determine probability of being accepted into pool
+		model->protMin(backboneRelaxation, frozenResidues, activeChains);
 		Energy = model->protEnergy();
 		deltaEnergy = Energy-startEnergy;
 		acceptance = prot->boltzmannEnergyCriteria(deltaEnergy);
