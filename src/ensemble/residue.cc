@@ -2924,7 +2924,7 @@ double residue::maxwellGarnettApproximation(UInt _atomIndex1, UInt _atomIndex2, 
 {	//Polarizable electrostatics model via a dipole-dipole polarization effect on the medium
 	//Vadim A. Markel 1244 Vol. 33, No. 7 / July 2016 / J Opt Soc Amer
 	
-	if (itsAtoms[_atomIndex1]->getType() == "H" || itsAtoms[_atomIndex2]->getType() == "H"){
+	if (itsAtoms[_atomIndex1]->getType() == "H" || itsAtoms[_atomIndex2]->getType() == "H" || itsAtoms[_atomIndex1]->getType() == "NI" || itsAtoms[_atomIndex2]->getType() == "NI" || itsAtoms[_atomIndex1]->getType() == "FE" || itsAtoms[_atomIndex2]->getType() == "FE"){
 		//get dipole-dipole polarization
 		double pol = approximateDipoleDipolePolarization(_atomIndex1, _atomIndex2);
 		double vol = 4/3*PI*pow((sqrt(_distanceSquared)/2),3);
