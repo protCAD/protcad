@@ -14,6 +14,7 @@ chainModBuffer::chainModBuffer(const chainModBuffer& _rhs)
 	residueIdentityBuffer = _rhs.residueIdentityBuffer;
 	rotamerIndexBuffer = _rhs.rotamerIndexBuffer;
 	sidechainDihedralAngleBuffer = _rhs.sidechainDihedralAngleBuffer;
+	backboneDihedralAngleBuffer = _rhs.backboneDihedralAngleBuffer;
 	setFlag = _rhs.setFlag;
 }
 
@@ -23,6 +24,7 @@ void chainModBuffer::resetAllBuffers()
 	resetRotamerIndexBuffer();
 	resetResidueIdentityBuffer();
 	resetSidechainDihedralAngleBuffer();
+	resetBackboneDihedralAngleBuffer();
 	setFlag = false;
 }
 
@@ -118,4 +120,20 @@ void chainModBuffer::resetSidechainDihedralAngleBuffer()
 vector< vector< double> > chainModBuffer::getSidechainDihedralAngleBuffer() const
 {
 	return sidechainDihedralAngleBuffer;
+}
+
+void chainModBuffer::setBackboneDihedralAngleBuffer(vector< double > theAngles)
+{
+	backboneDihedralAngleBuffer = theAngles;
+	setFlag = true;
+}
+
+void chainModBuffer::resetBackboneDihedralAngleBuffer()
+{
+	backboneDihedralAngleBuffer.resize(0);
+}
+
+vector< double> chainModBuffer::getBackboneDihedralAngleBuffer() const
+{
+	return backboneDihedralAngleBuffer;
 }

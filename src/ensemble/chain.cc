@@ -1035,6 +1035,11 @@ vector <chainModBuffer> chain::saveCurrentState()
 		itsResidues[i]->calculateSidechainDihedralAngles();
 		tempAngles = itsResidues[i]->getSidechainDihedralAngles();
 		temp.setSidechainDihedralAngleBuffer(tempAngles);
+		vector< double> tempBBAngles(3);
+		tempBBAngles.push_back(itsResidues[i]->getPhi());
+		tempBBAngles.push_back(itsResidues[i]->getPsi());
+		tempBBAngles.push_back(itsResidues[i]->getBetaChi());
+		temp.setBackboneDihedralAngleBuffer(tempBBAngles);
 		stateBuffers.push_back(temp);
 	}
 	return stateBuffers;
@@ -1059,6 +1064,11 @@ vector <chainModBuffer> chain::saveCurrentState(vector <int> _indices)
 			itsResidues[i]->calculateSidechainDihedralAngles();
 			tempAngles = itsResidues[i]->getSidechainDihedralAngles();
 			temp.setSidechainDihedralAngleBuffer(tempAngles);
+			vector< double> tempBBAngles(3);
+			tempBBAngles.push_back(itsResidues[i]->getPhi());
+			tempBBAngles.push_back(itsResidues[i]->getPsi());
+			tempBBAngles.push_back(itsResidues[i]->getBetaChi());
+			temp.setBackboneDihedralAngleBuffer(tempBBAngles);
 			stateBuffers.push_back(temp);
 		}
 	}
@@ -1096,6 +1106,12 @@ void chain::undoState()
 		delete pOldRes;
 
 		itsChainPositions[index]->setCurrentResIndex(itsResidues[index]->getTypeIndex());
+		
+		vector<double> bbAngles = stateBuffers[x].getBackboneDihedralAngleBuffer();
+		itsResidues[index]->setPhi(bbAngles[0]);
+		itsResidues[index]->setPsi(bbAngles[1]);
+		itsResidues[index]->setBetaChi(bbAngles[2]);
+		
 		vector< UInt> rotIndex = stateBuffers[x].getRotamerIndexBuffer();
 		setRotamerWithoutBuffering(index,rotIndex);
 
@@ -1148,6 +1164,12 @@ void chain::copyState(vector <chainModBuffer> _externalRedoBuffer)
 			{	// we need to perform a mutation
 				//cout << "repeating MUT" << endl;
 				mutateWithoutBuffering(index,bufferResType);
+			}
+			vector<double> bufferBBDihedrals = _externalRedoBuffer[x].getBackboneDihedralAngleBuffer();
+			if (bufferBBDihedrals != itsResidues[index]->getBackboneAngles())
+			{
+				itsResidues[index]->setPhi(bufferBBDihedrals[0]);
+				itsResidues[index]->setPsi(bufferBBDihedrals[1]);
 			}
 			vector<UInt> bufferRotamerIndex = _externalRedoBuffer[x].getRotamerIndexBuffer();
 			if (bufferRotamerIndex != itsChainPositions[index]->getCurrentRotamerIndex())

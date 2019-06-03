@@ -50,18 +50,23 @@ int main (int argc, char* argv[])
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* start = static_cast<protein*>(pMol);
-    for (int d = 280; d < 290; d++)
+	start->alignToAxis(Z_axis);
+    for (int d = 0; d < 360; d++)
     {
-        for (int p = 340; p < 350; p++)
+        for (int p = 0; p < 360; p++)
         {
-			for (int r = 0; r < 5; r++)
+			for (int r = 0; r < 10; r++)
 			{
-				for (int c = 170; c < 190; c++)
-				{
+				//for (int c = 170; c < 190; c++)
+				//{
+				
+					backboneAngles = prot->getRandPhiPsifromBackboneSequenceType(mutant);
+					prot->setDihedral(activeChains[i], randomResidues[j],backboneAngles[0],0,0);
+					prot->setDihedral(activeChains[i], randomResidues[j],backboneAngles[1],1,0);
 					count++;
-					radius = 7.5 + (r*0.1);
+					radius = 15.5 + (r*0.1);
 					protein* bundle = new protein(*start);
-					buildSymmetricOligamer (bundle, true, radius, c, p, d, 5);
+					buildSymmetricOligamer (bundle, true, radius, 320, p, d, 2.5);
 					cout << count << " " << radius << " " << d << " " << p << " " << bundle->getNumHardClashes() << endl;
 					stringstream convert;
 					string countstr;
@@ -69,11 +74,11 @@ int main (int argc, char* argv[])
 					outFile = countstr + "hethelix.pdb";
 					pdbWriter(bundle, outFile);
 					delete bundle;
-				}
+				//}
 			}
-            //p=p+9;
+            p=p+9;
         }
-        //d=d+9;
+        d=d+9;
     }
     return 0;
 }
