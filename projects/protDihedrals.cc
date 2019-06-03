@@ -43,6 +43,7 @@ int main (int argc, char* argv[])
         }
        // cout << bundle->getPhi(i,resNum-1) << " NA " << "NA" << endl;
 	//}
+	pdbWriter(bundle, infile);
 	return 0;
 }
 
