@@ -36,14 +36,19 @@ class chainModBuffer
 		void setSidechainDihedralAngleBuffer(vector< vector< double > > theAngles);
 		void resetSidechainDihedralAngleBuffer();
 		vector< vector< double> > getSidechainDihedralAngleBuffer() const;
+		
+		void setBackboneDihedralAngleBuffer(vector< double > theAngles);
+		void resetBackboneDihedralAngleBuffer();
+		vector< double> getBackboneDihedralAngleBuffer() const;
+		
 		void resetAllBuffers();
-
 		bool containsData() { return setFlag;}
 
 	private:
 		int indexInChainBuffer;
 		vector< UInt> rotamerIndexBuffer;
 		vector< vector<double> > sidechainDihedralAngleBuffer;
+		vector<double> backboneDihedralAngleBuffer;
 		int residueIdentityBuffer;
 		bool setFlag;
 };

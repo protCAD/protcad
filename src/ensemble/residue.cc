@@ -1731,7 +1731,7 @@ double residue::getChi(const UInt _index) const
 }
 
 double residue::getBetaChi()
-{	if(pItsPrevRes != 0 && itsAtoms[4]->getType() != "H")
+{	if(pItsPrevRes != 0 && itsAtoms[4]->getType() == "C")
 	{
 		vector< dblVec > quadVect(4);
 		quadVect[0] = pItsPrevRes->getMainChain(2)->getCoords();
@@ -1781,6 +1781,13 @@ double residue::calculateDihedral(vector<atom*>& _quad) const
 	return CMath::dihedral(quadVect[0], quadVect[1], quadVect[2], quadVect[3]);
 }
 
+vector <double> residue::getBackboneAngles()
+{
+	vector <double> angles;
+	angles.push_back(getPhi());
+	angles.push_back(getPsi());
+	return angles;
+}
 		
 double residue::getPhi()
 {
@@ -1878,7 +1885,7 @@ int residue::setPhi(double _phi)
 	}
 	else
 	{
-		cout << "Cannot set PHI for the first amino acid in a chain." << endl;
+		//cout << "Cannot set PHI for the first amino acid in a chain." << endl;
 		return -1;
 	}
 	return 0;
@@ -1897,11 +1904,11 @@ int residue::setPsi(double _psi)
 	}
 	else
 	{
-		double currentPsi = getPsi();
+		/*double currentPsi = getPsi();
 		ASSERT (currentPsi < 1e5 && currentPsi > -1e5);
 		double angle = _psi - currentPsi;
 		UInt i = dataBase[itsType].mainChain.size()-1;
-		rotate(getMainChain(i-2), getMainChain(i-1), 180-angle, false);
+		rotate(getMainChain(i-2), getMainChain(i-1), 180-angle, false);*/
 		return -1;
 	}
 	return 0;

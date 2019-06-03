@@ -24,8 +24,8 @@ void createPossibleMutantsDatabase(protein* &_prot, UIntVec &_activeChains, UInt
 vector < vector < UInt > > readSequencePool();
 vector < vector < UInt > > readPossibleMutants();
 
-enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,Csf,Sf4,Hca,Eoc,Oec,Hem};
-string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dCf","dQ","dE","dEh","dHd","dHe","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV","Csf","Sf4","Hca","Eoc","Oec","Hem"};
+enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,Csf,Sf4,Hca,Eoc,Oec,Saf,Hem,Cyn};
+string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dCf","dQ","dE","dEh","dHd","dHe","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV","Csf","Sf4","Hca","Eoc","Oec","Saf","Hem","Cyn"};
 UInt populationBaseline = 1000;
 
 //--Program setup----------------------------------------------------------------------------------------
@@ -44,9 +44,9 @@ int main (int argc, char* argv[])
 	UInt _activeResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134};                                     // positions active for mutation
 	UInt _randomResidues[] = {0,1,2,3,4,8,9,10,11,16,17,21,22,23,24,25,29,30,31,32,33,34,35,36,37,41,42,43,44,48,49,50,51,55,56,57,58,62,63,64,65,66,67,68,69,70,74,75,76,77,82,83,84,88,89,90,91,95,96,97,98,99,100,101,102,103,107,108,109,110,114,115,116,117,121,122,123,124,128,129,130,131};                                     // positions active for a random start sequence initially
 	UInt _frozenResidues[] = {15,81};
-	bool backboneRelaxation = false;
+	bool backboneRelaxation = true;
 	
-	//--running parameters
+	//--Energy parameters
 	residue::setElectroSolvationScaleFactor(1.0);
 	residue::setHydroSolvationScaleFactor(1.0);
 	residue::setPolarizableElec(true);
@@ -68,7 +68,7 @@ int main (int argc, char* argv[])
 	//--set initial variables
 	int seed = (int)getpid()*(int)gethostid(); srand (seed);
 	double startEnergy = 1E10, pastEnergy, Energy, deltaEnergy;
-	UInt timeid, sec, mutant = 0, plateau = 20, nobetter = 0;
+	UInt timeid, sec, mutant = 0, plateau = 10, nobetter = 0;
 	vector < UInt > mutantPosition, chainSequence, randomPosition;
 	vector < vector < UInt > > sequencePool, finalSequence, possibleMutants;
 	stringstream convert; string startstr, outFile, infile = argv[1];
@@ -97,7 +97,6 @@ int main (int argc, char* argv[])
 		theEnsemble = thePDB->getEnsemblePointer();
 		pMol = theEnsemble->getMoleculePointer(0);
 		prot = static_cast<protein*>(pMol);
-		sequencePool = readSequencePool();
 
 		//--load in initial pdb and mutate in random starting structure on active chains and random residues
 		nobetter = 0;
@@ -120,7 +119,7 @@ int main (int argc, char* argv[])
 		//--Run through a single evolutionary path (ancestral line) till hitting plateau
 		do
 		{
-			//--Make new mutantation
+			//--Make new mutation
 			nobetter++;
 			mutantPosition.clear();
 			mutantPosition = getMutationPosition(activeChains, activeResidues);
@@ -133,31 +132,27 @@ int main (int argc, char* argv[])
 			deltaEnergy = Energy-pastEnergy;
 			acceptance = prot->boltzmannEnergyCriteria(deltaEnergy);
 			if (acceptance){
+				prot->saveCurrentState();
 				pdbWriter(prot, tempModel);
 				pastEnergy = Energy; 
 				if (deltaEnergy < (residue::getKT()*-1)){nobetter = 0;}
 			}
 			
-			//--Revert to previous sequence
-			else{
-				delete thePDB;
-				thePDB = new PDBInterface(tempModel);
-				theEnsemble = thePDB->getEnsemblePointer();
-				pMol = theEnsemble->getMoleculePointer(0);
-				prot = static_cast<protein*>(pMol);
-			}
+			//--Revert to previous state
+			else{prot->undoState();}
+			
 		}while (nobetter < plateau);
 		delete thePDB;
 
 		//--Print final energy and write a pdb file----------------------------------------------------
-		PDBInterface* theModelPDB = new PDBInterface(tempModel);
-		ensemble* theModelEnsemble = theModelPDB->getEnsemblePointer();
-		molecule* modelMol = theModelEnsemble->getMoleculePointer(0);
-		protein* model = static_cast<protein*>(modelMol);
+		thePDB = new PDBInterface(tempModel);
+		theEnsemble = thePDB->getEnsemblePointer();
+		pMol = theEnsemble->getMoleculePointer(0);
+		prot = static_cast<protein*>(pMol);
 		
 		//-Determine probability of being accepted into pool
-		model->protMin(backboneRelaxation, frozenResidues, activeChains);
-		Energy = model->protEnergy();
+		prot->protMin(backboneRelaxation, frozenResidues, activeChains);
+		Energy = prot->protEnergy();
 		deltaEnergy = Energy-startEnergy;
 		acceptance = prot->boltzmannEnergyCriteria(deltaEnergy);
 		startEnergy = Energy;
@@ -167,13 +162,13 @@ int main (int argc, char* argv[])
 		stringstream convert; string countstr;
 		convert << timeid, countstr = convert.str();
 		outFile = countstr + "." + startstr + ".evo.pdb";
-		pdbWriter(model, outFile);
+		pdbWriter(prot, outFile);
 		
 		//-write to data files
 		finalSequence.clear(), chainSequence.clear();
 		for (UInt i = 0; i < activeChains.size(); i++)
 		{
-			chainSequence = getChainSequence(model, activeChains[i]);
+			chainSequence = getChainSequence(prot, activeChains[i]);
 			finalSequence.push_back(chainSequence);
 		}
 		fstream finalline; finalline.open ("results.out", fstream::in | fstream::out | fstream::app);
@@ -195,7 +190,7 @@ int main (int argc, char* argv[])
 		fs.close(); finalline << endl; finalline.close();
 		
 		//-clear variables for next iteration
-		delete theModelPDB;
+		delete thePDB;
 		sequencePool.clear(), mutantPosition.clear(), chainSequence.clear(), randomPosition.clear();
 		sequencePool.resize(0),  mutantPosition.resize(0), chainSequence.resize(0), randomPosition.resize(0);
 	}
