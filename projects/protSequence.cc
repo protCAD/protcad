@@ -43,7 +43,7 @@ int main (int argc, char* argv[])
         }
         cout << endl;
     }
-	cout << endl << ">" << infile << ":" << endl;
+	/*cout << endl << ">" << infile << ":" << endl;
 	for (UInt i = 0; i < numChains; i++)
 	{
         UInt numRes = _prot->getNumResidues(i);
@@ -53,7 +53,7 @@ int main (int argc, char* argv[])
 			cout << backboneSeq[backboneType];
 		}
     }
-	//pdbWriter(_prot,infile);
+	//pdbWriter(_prot,infile);*/
 	return 0;
 }
 
