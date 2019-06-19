@@ -46,14 +46,14 @@ int main (int argc, char* argv[])
     for (;!(theIter1.last());theIter1++)
     {
        pAtom = theIter1.getAtomPointer(); 
-       if (pAtom->getName() == "CA"){
+      if (pAtom->getName() == "N" || pAtom->getName() == "CA" || pAtom->getName() == "C" || pAtom->getName() == "O" || pAtom->getName() == "CB"){
             coord1.push_back(pAtom->getCoords());
        }
     }
     for (;!(theIter2.last());theIter2++)
     {
        pAtom = theIter2.getAtomPointer(); 
-       if (pAtom->getName() == "CA"){
+       if (pAtom->getName() == "N" || pAtom->getName() == "CA" || pAtom->getName() == "C" || pAtom->getName() == "O" || pAtom->getName() == "CB"){
             coord2.push_back(pAtom->getCoords());
        }
     }
@@ -126,6 +126,6 @@ int main (int argc, char* argv[])
 		}
 		pdbWriter(_prot1,infile1);
 	}
-    cout << infile2 << " " << bestRMSD << " " << _prot2->protEnergy() << endl;
+    cout << infile2 << " " << bestRMSD << endl;
 	return 0;
 }

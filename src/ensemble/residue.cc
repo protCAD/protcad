@@ -1731,7 +1731,7 @@ double residue::getChi(const UInt _index) const
 }
 
 double residue::getBetaChi()
-{	if(pItsPrevRes != 0 && itsAtoms[4]->getType() != "H")
+{	if(pItsPrevRes != 0 && itsAtoms[4]->getType() == "C")
 	{
 		vector< dblVec > quadVect(4);
 		quadVect[0] = pItsPrevRes->getMainChain(2)->getCoords();
@@ -1781,6 +1781,13 @@ double residue::calculateDihedral(vector<atom*>& _quad) const
 	return CMath::dihedral(quadVect[0], quadVect[1], quadVect[2], quadVect[3]);
 }
 
+vector <double> residue::getBackboneAngles()
+{
+	vector <double> angles;
+	angles.push_back(getPhi());
+	angles.push_back(getPsi());
+	return angles;
+}
 		
 double residue::getPhi()
 {
@@ -1878,7 +1885,7 @@ int residue::setPhi(double _phi)
 	}
 	else
 	{
-		cout << "Cannot set PHI for the first amino acid in a chain." << endl;
+		//cout << "Cannot set PHI for the first amino acid in a chain." << endl;
 		return -1;
 	}
 	return 0;
@@ -1897,11 +1904,11 @@ int residue::setPsi(double _psi)
 	}
 	else
 	{
-		double currentPsi = getPsi();
+		/*double currentPsi = getPsi();
 		ASSERT (currentPsi < 1e5 && currentPsi > -1e5);
 		double angle = _psi - currentPsi;
 		UInt i = dataBase[itsType].mainChain.size()-1;
-		rotate(getMainChain(i-2), getMainChain(i-1), 180-angle, false);
+		rotate(getMainChain(i-2), getMainChain(i-1), 180-angle, false);*/
 		return -1;
 	}
 	return 0;
@@ -2664,7 +2671,7 @@ double residue::intraEnergy()
 double residue::intraSoluteEnergy()
 {	
 	double intraEnergy = 0.0;
-	bool twoBonds;
+	bool threeBonds;
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
 		if (!itsAtoms[i]->getSilentStatus())
@@ -2678,8 +2685,8 @@ double residue::intraSoluteEnergy()
 			{
 				if (!itsAtoms[j]->getSilentStatus())
 				{
-					twoBonds = isSeparatedByOneOrTwoBonds(i,j);
-					if (!twoBonds)
+					threeBonds = isSeparatedByFewBonds(i,j);
+					if (!threeBonds)
 					{
 						// ** get distance
 						double distanceSquared = itsAtoms[i]->distanceSquared(itsAtoms[j]);
@@ -2719,7 +2726,7 @@ double residue::intraSoluteEnergy()
 double residue::interSoluteEnergy(residue* _other)
 {
 	double interEnergy = 0.0;
-	bool twoBonds;
+	bool threeBonds;
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
 		if (!itsAtoms[i]->getSilentStatus())
@@ -2728,8 +2735,8 @@ double residue::interSoluteEnergy(residue* _other)
 			{
 				if (!_other->itsAtoms[j]->getSilentStatus())
 				{
-					twoBonds = isSeparatedByOneOrTwoBackboneBonds(i,_other,j);
-					if (!twoBonds)
+					threeBonds = isSeparatedByThreeBackboneBonds(i,_other,j);
+					if (!threeBonds)
 					{
 						double distanceSquared = itsAtoms[i]->inCubeWithDistSQ(_other->itsAtoms[j], cutoffDistance);
 						if (distanceSquared <= cutoffDistanceSquared)
@@ -2924,7 +2931,7 @@ double residue::maxwellGarnettApproximation(UInt _atomIndex1, UInt _atomIndex2, 
 {	//Polarizable electrostatics model via a dipole-dipole polarization effect on the medium
 	//Vadim A. Markel 1244 Vol. 33, No. 7 / July 2016 / J Opt Soc Amer
 	
-	if (itsAtoms[_atomIndex1]->getType() == "H" || itsAtoms[_atomIndex2]->getType() == "H"){
+	if (itsAtoms[_atomIndex1]->getType() == "H" || itsAtoms[_atomIndex2]->getType() == "H" || itsAtoms[_atomIndex1]->getType() == "NI" || itsAtoms[_atomIndex2]->getType() == "NI" || itsAtoms[_atomIndex1]->getType() == "FE" || itsAtoms[_atomIndex2]->getType() == "FE"){
 		//get dipole-dipole polarization
 		double pol = approximateDipoleDipolePolarization(_atomIndex1, _atomIndex2);
 		double vol = 4/3*PI*pow((sqrt(_distanceSquared)/2),3);
@@ -3198,18 +3205,18 @@ UInt residue::getNumHardBackboneClashes(residue* _other)
 
 bool residue::isClash(UInt _index1, UInt _index2)
 {
-	if (isSeparatedByOneOrTwoBonds(_index1, _index2)) {return false;}
+	if (isSeparatedByFewBonds(_index1, _index2)) {return false;}
 	double minDist = getRadius(_index1)+getRadius(_index2);
-	double cubeLength = minDist/1.414213562; //vdw contact distance / sqrt(2) (within a square in circle for fast hard clash)
+	double cubeLength = minDist/1.414213562; //vdw contact distance / sqrt(2) (in a square within circle for fast hard clash)
 	if (itsAtoms[_index1]->inCube(itsAtoms[_index2], cubeLength)) {return true;}
 	return false;
 }
 
 bool residue::isClash(UInt _index1, residue* _other, UInt _index2)
 {
-	if (isSeparatedByOneOrTwoBackboneBonds(_index1, _other, _index2)) {return false;}
+	if (isSeparatedByThreeBackboneBonds(_index1, _other, _index2)) {return false;}
 	double minDist = getRadius(_index1)+_other->getRadius(_index2);
-	double cubeLength = minDist/1.414213562; //vdw contact distance / sqrt(2) (withing a square in circle for fast hard clash)
+	double cubeLength = minDist/1.414213562; //vdw contact distance / sqrt(2) (in a square within circle for fast hard clash)
 	if (itsAtoms[_index1]->inCube(_other->itsAtoms[_index2], cubeLength)) {return true;}
 	return false;
 }

@@ -18,8 +18,6 @@ protein::protein() : molecule()
 	cout << itsName << endl;
 #endif
 	itsChains.resize(0);
-    energies.clear();
-    energies.resize(0);
 	setMoleculeType(1);
 	resetAllBuffers();
 	itsLastModifiedChain = -1;
@@ -34,8 +32,6 @@ protein::protein(const string& _name) : molecule(_name)
 #endif
 	itsChains.resize(0);
     itsIndependentChainsMap.resize(0);
-    energies.clear();
-    energies.resize(0);
 	itsChainLinkageMap.resize(0);
 	itsLastModifiedChain = -1;
 	setMoleculeType(1);
@@ -1955,6 +1951,7 @@ void protein::undoState()
 	{
 		itsChains[i]->undoState();
 	}
+	saveCurrentState();
 	return;
 }
 
@@ -2067,14 +2064,14 @@ double protein::getRMSD(protein* _other)
     for (;!(theIter1.last());theIter1++)
     {
        pAtom = theIter1.getAtomPointer(); 
-       if (pAtom->getName() == "CA"){
+       if(pAtom->getName() == "N" || pAtom->getName() == "CA" || pAtom->getName() == "C" || pAtom->getName() == "O"){
             coord1.push_back(pAtom->getCoords());
        }
     }
     for (;!(theIter2.last());theIter2++)
     {
        pAtom = theIter2.getAtomPointer(); 
-       if (pAtom->getName() == "CA"){
+       if(pAtom->getName() == "N" || pAtom->getName() == "CA" || pAtom->getName() == "C" || pAtom->getName() == "O"){
             coord2.push_back(pAtom->getCoords());
        }
     }
@@ -2130,7 +2127,7 @@ void protein::alignToAxis(const axis _axis)
     for (;!(theIter.last());theIter++)
     {
        pAtom = theIter.getAtomPointer(); 
-       if (pAtom->getName() == "N" || pAtom->getName() == "CA" || pAtom->getName() == "C" || pAtom->getName() == "O"){
+       if (pAtom->getName() == "N" || pAtom->getName() == "CA" || pAtom->getName() == "C" || pAtom->getName() == "O" || pAtom->getName() == "CB"){
             coord2.push_back(pAtom->getCoords());
        }
     }
@@ -2769,7 +2766,7 @@ void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 	
 	//--Initialize variables for loop, calculate starting energy and build energy vectors-----
 	UInt randchain, randres, resnum, backboneOrSidechain = 1;
-	UInt clashes, clashesStart, bbClashes, bbClashesStart, chainNum = _activeChains.size(), plateau = 500;
+	UInt clashes, clashesStart, bbClashes, bbClashesStart, chainNum = _activeChains.size(), plateau = 1000;
 	double Energy, pastEnergy = protEnergy(), deltaEnergy, sPhi, sPsi,nobetter = 0.0, KT = KB*Temperature();
 	vector < vector <double>> currentSidechainConf, newSidechainConf; srand (time(NULL)); vector <double> backboneAngles(2);
 	bool sidechainTest, backboneTest, revert, energyTest, skip, boltzmannAcceptance;
@@ -2846,7 +2843,7 @@ void protein::protOpt(bool _backbone, UInt chainIndex, UInt resIndex)
 	
 	//--Initialize variables for loop, calculate starting energy and build energy vectors-----
 	UInt randchain = chainIndex, randres = resIndex, resnum, backboneOrSidechain = 1;
-	UInt clashes, clashesStart, bbClashes, bbClashesStart, plateau = 500;
+	UInt clashes, clashesStart, bbClashes, bbClashesStart, plateau = 1000;
 	double Energy, pastEnergy = protEnergy(), deltaEnergy, sPhi, sPsi,nobetter = 0.0, KT = KB*Temperature();
 	vector < vector <double>> currentSidechainConf, newSidechainConf; srand (time(NULL)); vector <double> backboneAngles(2);
 	bool sidechainTest, backboneTest, revert, energyTest, boltzmannAcceptance;

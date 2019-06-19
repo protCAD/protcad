@@ -4,7 +4,7 @@
 //***********************************      protEvolver 4       ******************************************
 //***********************************                          ******************************************
 //*******************************************************************************************************
-//******  -Sequence Selective Protein Genetic Algorithm Based Evolution in Implicit Solvent -  **********
+//******  -Sequence Selective Machine Learning Evolution Based Algorithm in Implicit Solvent -  **********
 //*******************************************************************************************************
 
 /////// Just specify infile structure, active chains and residues indexes, and it will evolve a fold
@@ -21,32 +21,99 @@ vector <UInt> getChainSequence(protein* _prot, UInt _chainIndex);
 vector <UInt> getMutationPosition(UIntVec &_activeChains, UIntVec &_activeResidues);
 UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition);
 void createPossibleMutantsDatabase(protein* &_prot, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedTypes);
+UInt convertAAStringtoInt(string AA, string aminoAcidString[], UInt size);
 vector < vector < UInt > > readSequencePool();
 vector < vector < UInt > > readPossibleMutants();
 
-enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,Csf,Sf4,Hca,Eoc,Oec,Hem};
-string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dCf","dQ","dE","dEh","dHd","dHe","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV","Csf","Sf4","Hca","Eoc","Oec","Hem"};
+enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,Csf,Sf4,Hca,Eoc,Oec,Saf,Hem,Cyn};
+string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dCf","dQ","dE","dEh","dHd","dHe","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV","Csf","Sf4","Hca","Eoc","Oec","Saf","Hem","Cyn"};
+UInt aaSize = sizeof(aminoAcidString)/sizeof(aminoAcidString[0]);
 UInt populationBaseline = 1000;
 
 //--Program setup----------------------------------------------------------------------------------------
 int main (int argc, char* argv[])
 {
 	//--Running parameters
-	if (argc !=2)
+	if (argc !=1)
 	{
-		cout << "protEvolver <inFile.pdb>" << endl;
+		cout << "protEvolver" << endl;
 		exit(1);
 	}
-
-	//--input
-	UInt _activeChains[] = {0};                                                         // chains active for mutation
-	UInt _allowedTypes[] = {A,R,N,D,Q,E,I,L,K,M,F,P,S,T,V,G};                     // backbone types allowable
-	UInt _activeResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134};                                     // positions active for mutation
-	UInt _randomResidues[] = {0,1,2,3,4,8,9,10,11,16,17,21,22,23,24,25,29,30,31,32,33,34,35,36,37,41,42,43,44,48,49,50,51,55,56,57,58,62,63,64,65,66,67,68,69,70,74,75,76,77,82,83,84,88,89,90,91,95,96,97,98,99,100,101,102,103,107,108,109,110,114,115,116,117,121,122,123,124,128,129,130,131};                                     // positions active for a random start sequence initially
-	UInt _frozenResidues[] = {15,81};
-	bool backboneRelaxation = false;
 	
-	//--running parameters
+	//--read input file
+	UIntVec activeChains, allowedTypes, activeResidues, randomResidues, frozenResidues;
+	bool backboneRelaxation;
+	string infile;
+	ifstream file("evolver.in");
+	if (file){
+		string item, line;
+		UInt delimitercounter, linecounter = 0;
+		while(getline(file,line))
+		{
+			delimitercounter = 0;
+			stringstream stream(line);
+			while(getline(stream,item,','))
+			{
+				if (delimitercounter > 0){
+					if (linecounter == 0){
+						infile = item;
+					}
+					if (linecounter == 1){
+						stringstream inputString(item);
+						UInt index;
+						inputString >> index;
+						activeChains.push_back(index);
+					}
+					if (linecounter == 2){
+						stringstream inputString(item);
+						UInt index;
+						inputString >> index;
+						activeResidues.push_back(index);
+					}
+					if (linecounter == 3){
+						stringstream inputString(item);
+						UInt index;
+						inputString >> index;
+						randomResidues.push_back(index);
+					}
+					if (linecounter == 4){
+						stringstream inputString(item);
+						UInt index;
+						inputString >> index;
+						frozenResidues.push_back(index);
+					}
+					if (linecounter == 5){
+						UInt index = convertAAStringtoInt(item, aminoAcidString, aaSize);
+						allowedTypes.push_back(index);
+					}
+					if (linecounter == 6){
+						if (item.compare("false") == 0){
+							backboneRelaxation = false;
+						}
+						else{backboneRelaxation = true;}
+					}
+				}
+				delimitercounter++;
+			}
+			linecounter++;
+		}
+		file.close();
+	}
+	else{
+		fstream inf;
+		inf.open ("evolver.in", fstream::in | fstream::out | fstream::app);
+		inf << "Input PDB File,xyz.pdb," << endl;
+		inf << "Active Chains,0,1,2," << endl;
+		inf << "Active Positions,0,1,2,3,5,6,7,9,10," << endl;
+		inf << "Random Positions,0,2,5,6,10," << endl;
+		inf << "Frozen Positions,4,8," << endl;
+		inf << "Amino Acids,A,R,N,D,C,Q,E,He,I,L,K,M,F,P,S,T,W,Y,V,G," << endl;
+		inf << "Backbone Relaxation,false," << endl;
+		cout << "Error: Required input file doesn't exist and template has been generated, please fill it out and rerun." << endl;
+		exit(1);
+	}
+	
+	//--Energy parameters
 	residue::setElectroSolvationScaleFactor(1.0);
 	residue::setHydroSolvationScaleFactor(1.0);
 	residue::setPolarizableElec(true);
@@ -54,25 +121,14 @@ int main (int argc, char* argv[])
 	amberVDW::setScaleFactor(1.0);
 	residue::setTemperature(300);
 
-	//convert input arrays to vectors
-	UInt activeChainsSize = sizeof(_activeChains)/sizeof(_activeChains[0]), randomResiduesSize = sizeof(_randomResidues)/sizeof(_randomResidues[0]);
-	UInt allowedTypesSize = sizeof(_allowedTypes)/sizeof(_allowedTypes[0]),activeResiduesSize = sizeof(_activeResidues)/sizeof(_activeResidues[0]);
-	UInt frozenResiduesSize = sizeof(_frozenResidues)/sizeof(_frozenResidues[0]);
-	UIntVec activeChains, allowedTypes, activeResidues, randomResidues, frozenResidues;
-	for (UInt i = 0; i < activeChainsSize; i++)		{ activeChains.push_back(_activeChains[i]); }
-	for (UInt i = 0; i < allowedTypesSize; i++)	{ allowedTypes.push_back(_allowedTypes[i]); }
-	for (UInt i = 0; i < activeResiduesSize; i++)	{ activeResidues.push_back(_activeResidues[i]); }
-	for (UInt i = 0; i < randomResiduesSize; i++)	{ randomResidues.push_back(_randomResidues[i]); }
-	for (UInt i = 0; i < frozenResiduesSize; i++)	{ frozenResidues.push_back(_frozenResidues[i]); }
-
 	//--set initial variables
 	int seed = (int)getpid()*(int)gethostid(); srand (seed);
 	double startEnergy = 1E10, pastEnergy, Energy, deltaEnergy;
-	UInt timeid, sec, mutant = 0, plateau = 10, nobetter = 0;
+	UInt timeid, sec, mutant = 0, plateau = 15, nobetter = 0;
 	vector < UInt > mutantPosition, chainSequence, randomPosition;
 	vector < vector < UInt > > sequencePool, finalSequence, possibleMutants;
-	stringstream convert; string startstr, outFile, infile = argv[1];
-	UInt count, name = rand() % 100000000;
+	stringstream convert; string startstr, outFile;
+	UInt name = rand() % 100000000;
 	convert << name, startstr = convert.str();
 	string tempModel = startstr + "_temp.pdb";
 	bool acceptance;
@@ -97,7 +153,6 @@ int main (int argc, char* argv[])
 		theEnsemble = thePDB->getEnsemblePointer();
 		pMol = theEnsemble->getMoleculePointer(0);
 		prot = static_cast<protein*>(pMol);
-		sequencePool = readSequencePool();
 
 		//--load in initial pdb and mutate in random starting structure on active chains and random residues
 		nobetter = 0;
@@ -112,7 +167,7 @@ int main (int argc, char* argv[])
 				randomPosition.clear();
 			}
 		}
-		prot->protMin(backboneRelaxation, frozenResidues, activeChains);
+		prot->protRelax(frozenResidues, activeChains);
 		pdbWriter(prot, tempModel);
 		Energy = prot->protEnergy();
 		pastEnergy = Energy;
@@ -120,7 +175,7 @@ int main (int argc, char* argv[])
 		//--Run through a single evolutionary path (ancestral line) till hitting plateau
 		do
 		{
-			//--Make new mutantation
+			//--Make new mutation
 			nobetter++;
 			mutantPosition.clear();
 			mutantPosition = getMutationPosition(activeChains, activeResidues);
@@ -128,35 +183,32 @@ int main (int argc, char* argv[])
 			prot->mutateWBC(mutantPosition[0], mutantPosition[1], mutant);
 
 			//--Energy test
-			prot->protMin(backboneRelaxation, frozenResidues, activeChains);
+			prot->protRelax(frozenResidues, activeChains);
 			Energy = prot->protEnergy();
 			deltaEnergy = Energy-pastEnergy;
 			acceptance = prot->boltzmannEnergyCriteria(deltaEnergy);
 			if (acceptance){
+				prot->saveCurrentState();
 				pdbWriter(prot, tempModel);
 				pastEnergy = Energy; 
 				if (deltaEnergy < (residue::getKT()*-1)){nobetter = 0;}
 			}
 			
-			//--Revert to previously saved structure with previous sequence
-			else{
-				delete thePDB;
-				thePDB = new PDBInterface(tempModel);
-				theEnsemble = thePDB->getEnsemblePointer();
-				pMol = theEnsemble->getMoleculePointer(0);
-				prot = static_cast<protein*>(pMol);
-			}
+			//--Revert to previous state
+			else{prot->undoState();}
+			
 		}while (nobetter < plateau);
 		delete thePDB;
 
 		//--Print final energy and write a pdb file----------------------------------------------------
-		PDBInterface* theModelPDB = new PDBInterface(tempModel);
-		ensemble* theModelEnsemble = theModelPDB->getEnsemblePointer();
-		molecule* modelMol = theModelEnsemble->getMoleculePointer(0);
-		protein* model = static_cast<protein*>(modelMol);
+		thePDB = new PDBInterface(tempModel);
+		theEnsemble = thePDB->getEnsemblePointer();
+		pMol = theEnsemble->getMoleculePointer(0);
+		prot = static_cast<protein*>(pMol);
 		
 		//-Determine probability of being accepted into pool
-		Energy = model->protEnergy();
+		prot->protMin(backboneRelaxation, frozenResidues, activeChains);
+		Energy = prot->protEnergy();
 		deltaEnergy = Energy-startEnergy;
 		acceptance = prot->boltzmannEnergyCriteria(deltaEnergy);
 		startEnergy = Energy;
@@ -166,13 +218,13 @@ int main (int argc, char* argv[])
 		stringstream convert; string countstr;
 		convert << timeid, countstr = convert.str();
 		outFile = countstr + "." + startstr + ".evo.pdb";
-		pdbWriter(model, outFile);
+		pdbWriter(prot, outFile);
 		
 		//-write to data files
 		finalSequence.clear(), chainSequence.clear();
 		for (UInt i = 0; i < activeChains.size(); i++)
 		{
-			chainSequence = getChainSequence(model, activeChains[i]);
+			chainSequence = getChainSequence(prot, activeChains[i]);
 			finalSequence.push_back(chainSequence);
 		}
 		fstream finalline; finalline.open ("results.out", fstream::in | fstream::out | fstream::app);
@@ -194,7 +246,7 @@ int main (int argc, char* argv[])
 		fs.close(); finalline << endl; finalline.close();
 		
 		//-clear variables for next iteration
-		delete theModelPDB;
+		delete thePDB;
 		sequencePool.clear(), mutantPosition.clear(), chainSequence.clear(), randomPosition.clear();
 		sequencePool.resize(0),  mutantPosition.resize(0), chainSequence.resize(0), randomPosition.resize(0);
 	}
@@ -334,4 +386,14 @@ void createPossibleMutantsDatabase(protein* &_prot, UIntVec &_activeChains, UInt
 			pm << endl;
 		}
 	}
+}
+
+UInt convertAAStringtoInt(string AA, string aminoAcidString[], UInt size)
+{
+	UInt index;
+	for (UInt i = 0; i < size; i++)
+	{
+		if (AA.compare(aminoAcidString[i]) == 0){index = i;}
+	}
+	return index;
 }

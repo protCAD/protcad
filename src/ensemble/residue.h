@@ -129,6 +129,7 @@ public:
 	vector< vector< double > > randContinuousSidechainConformation();
 	double getPhi();
 	double getPsi();
+	vector <double> getBackboneAngles();
 	double getAngle(UInt angleType);
 	double getOmega();
 	double getAmide();
