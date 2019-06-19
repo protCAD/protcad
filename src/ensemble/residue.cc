@@ -2671,7 +2671,7 @@ double residue::intraEnergy()
 double residue::intraSoluteEnergy()
 {	
 	double intraEnergy = 0.0;
-	bool twoBonds;
+	bool threeBonds;
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
 		if (!itsAtoms[i]->getSilentStatus())
@@ -2685,8 +2685,8 @@ double residue::intraSoluteEnergy()
 			{
 				if (!itsAtoms[j]->getSilentStatus())
 				{
-					twoBonds = isSeparatedByOneOrTwoBonds(i,j);
-					if (!twoBonds)
+					threeBonds = isSeparatedByFewBonds(i,j);
+					if (!threeBonds)
 					{
 						// ** get distance
 						double distanceSquared = itsAtoms[i]->distanceSquared(itsAtoms[j]);
@@ -2726,7 +2726,7 @@ double residue::intraSoluteEnergy()
 double residue::interSoluteEnergy(residue* _other)
 {
 	double interEnergy = 0.0;
-	bool twoBonds;
+	bool threeBonds;
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
 		if (!itsAtoms[i]->getSilentStatus())
@@ -2735,8 +2735,8 @@ double residue::interSoluteEnergy(residue* _other)
 			{
 				if (!_other->itsAtoms[j]->getSilentStatus())
 				{
-					twoBonds = isSeparatedByOneOrTwoBackboneBonds(i,_other,j);
-					if (!twoBonds)
+					threeBonds = isSeparatedByThreeBackboneBonds(i,_other,j);
+					if (!threeBonds)
 					{
 						double distanceSquared = itsAtoms[i]->inCubeWithDistSQ(_other->itsAtoms[j], cutoffDistance);
 						if (distanceSquared <= cutoffDistanceSquared)
@@ -3205,18 +3205,18 @@ UInt residue::getNumHardBackboneClashes(residue* _other)
 
 bool residue::isClash(UInt _index1, UInt _index2)
 {
-	if (isSeparatedByOneOrTwoBonds(_index1, _index2)) {return false;}
+	if (isSeparatedByFewBonds(_index1, _index2)) {return false;}
 	double minDist = getRadius(_index1)+getRadius(_index2);
-	double cubeLength = minDist/1.414213562; //vdw contact distance / sqrt(2) (within a square in circle for fast hard clash)
+	double cubeLength = minDist/1.414213562; //vdw contact distance / sqrt(2) (in a square within circle for fast hard clash)
 	if (itsAtoms[_index1]->inCube(itsAtoms[_index2], cubeLength)) {return true;}
 	return false;
 }
 
 bool residue::isClash(UInt _index1, residue* _other, UInt _index2)
 {
-	if (isSeparatedByOneOrTwoBackboneBonds(_index1, _other, _index2)) {return false;}
+	if (isSeparatedByThreeBackboneBonds(_index1, _other, _index2)) {return false;}
 	double minDist = getRadius(_index1)+_other->getRadius(_index2);
-	double cubeLength = minDist/1.414213562; //vdw contact distance / sqrt(2) (withing a square in circle for fast hard clash)
+	double cubeLength = minDist/1.414213562; //vdw contact distance / sqrt(2) (in a square within circle for fast hard clash)
 	if (itsAtoms[_index1]->inCube(_other->itsAtoms[_index2], cubeLength)) {return true;}
 	return false;
 }

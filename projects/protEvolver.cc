@@ -4,7 +4,7 @@
 //***********************************      protEvolver 4       ******************************************
 //***********************************                          ******************************************
 //*******************************************************************************************************
-//******  -Sequence Selective Protein Genetic Algorithm Based Evolution in Implicit Solvent -  **********
+//******  -Sequence Selective Machine Learning Evolution Based Algorithm in Implicit Solvent -  **********
 //*******************************************************************************************************
 
 /////// Just specify infile structure, active chains and residues indexes, and it will evolve a fold
@@ -43,59 +43,75 @@ int main (int argc, char* argv[])
 	//--read input file
 	UIntVec activeChains, allowedTypes, activeResidues, randomResidues, frozenResidues;
 	bool backboneRelaxation;
-	ifstream file("input.in");
-	string item, line, infile;
-	UInt delimitercounter, linecounter = 0;
-	while(getline(file,line))
-	{
-		delimitercounter = 0;
-		stringstream stream(line);
-		while(getline(stream,item,','))
+	string infile;
+	ifstream file("evolver.in");
+	if (file){
+		string item, line;
+		UInt delimitercounter, linecounter = 0;
+		while(getline(file,line))
 		{
-			if (delimitercounter > 0){
-				if (linecounter == 0){
-					infile = item;
-				}
-				if (linecounter == 1){
-					stringstream inputString(item);
-					UInt index;
-					inputString >> index;
-					activeChains.push_back(index);
-				}
-				if (linecounter == 2){
-					stringstream inputString(item);
-					UInt index;
-					inputString >> index;
-					activeResidues.push_back(index);
-				}
-				if (linecounter == 3){
-					stringstream inputString(item);
-					UInt index;
-					inputString >> index;
-					randomResidues.push_back(index);
-				}
-				if (linecounter == 4){
-					stringstream inputString(item);
-					UInt index;
-					inputString >> index;
-					frozenResidues.push_back(index);
-				}
-				if (linecounter == 5){
-					UInt index = convertAAStringtoInt(item, aminoAcidString, aaSize);
-					allowedTypes.push_back(index);
-				}
-				if (linecounter == 6){
-					if (item.compare("false") == 0){
-						backboneRelaxation = false;
+			delimitercounter = 0;
+			stringstream stream(line);
+			while(getline(stream,item,','))
+			{
+				if (delimitercounter > 0){
+					if (linecounter == 0){
+						infile = item;
 					}
-					else{backboneRelaxation = true;}
+					if (linecounter == 1){
+						stringstream inputString(item);
+						UInt index;
+						inputString >> index;
+						activeChains.push_back(index);
+					}
+					if (linecounter == 2){
+						stringstream inputString(item);
+						UInt index;
+						inputString >> index;
+						activeResidues.push_back(index);
+					}
+					if (linecounter == 3){
+						stringstream inputString(item);
+						UInt index;
+						inputString >> index;
+						randomResidues.push_back(index);
+					}
+					if (linecounter == 4){
+						stringstream inputString(item);
+						UInt index;
+						inputString >> index;
+						frozenResidues.push_back(index);
+					}
+					if (linecounter == 5){
+						UInt index = convertAAStringtoInt(item, aminoAcidString, aaSize);
+						allowedTypes.push_back(index);
+					}
+					if (linecounter == 6){
+						if (item.compare("false") == 0){
+							backboneRelaxation = false;
+						}
+						else{backboneRelaxation = true;}
+					}
 				}
+				delimitercounter++;
 			}
-			delimitercounter++;
+			linecounter++;
 		}
-		linecounter++;
+		file.close();
 	}
-	file.close();
+	else{
+		fstream inf;
+		inf.open ("evolver.in", fstream::in | fstream::out | fstream::app);
+		inf << "Input PDB File,xyz.pdb," << endl;
+		inf << "Active Chains,0,1,2," << endl;
+		inf << "Active Positions,0,1,2,3,5,6,7,9,10," << endl;
+		inf << "Random Positions,0,2,5,6,10," << endl;
+		inf << "Frozen Positions,4,8," << endl;
+		inf << "Amino Acids,A,R,N,D,C,Q,E,He,I,L,K,M,F,P,S,T,W,Y,V,G," << endl;
+		inf << "Backbone Relaxation,false," << endl;
+		cout << "Error: Required input file doesn't exist and template has been generated, please fill it out and rerun." << endl;
+		exit(1);
+	}
 	
 	//--Energy parameters
 	residue::setElectroSolvationScaleFactor(1.0);
