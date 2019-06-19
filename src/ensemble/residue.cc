@@ -3214,7 +3214,7 @@ bool residue::isClash(UInt _index1, UInt _index2)
 
 bool residue::isClash(UInt _index1, residue* _other, UInt _index2)
 {
-	if (isSeparatedByFewBonds(this, _index1, _other, _index2)) {return false;}
+	if (isSeparatedByThreeBackboneBonds(_index1, _other, _index2)) {return false;}
 	double minDist = getRadius(_index1)+_other->getRadius(_index2);
 	double cubeLength = minDist/1.414213562; //vdw contact distance / sqrt(2) (in a square within circle for fast hard clash)
 	if (itsAtoms[_index1]->inCube(_other->itsAtoms[_index2], cubeLength)) {return true;}
