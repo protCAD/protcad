@@ -14,10 +14,10 @@
 #include "PDBInterface.h"
 int main (int argc, char* argv[])
 {
-    if (argc !=2)
+	if (argc !=2)
 	{
-    cout << "protDihedrals <inFile.pdb>" << endl;
-	exit(1);
+		cout << "protDihedrals <inFile.pdb>" << endl;
+		exit(1);
 	}
 	
 	string backboneTypes[] = {"-π","-α","-ρ","-β","β","ρ","α","π","-πi","-αi","-ρi","-βi","βi","ρi","αi","πi"};
