@@ -13,7 +13,7 @@
 #include "PDBInterface.h"
 #include <sstream>
 
-enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hn,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dQ,dE,dEh,dHd,dHe,dHn,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dAT,dW,dY,dV,Hce,Pch,Csf};
+enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,Csf,Sf4,Hca,Eoc,Oec,Saf,Hem,Cyn};
 
 int main (int argc, char* argv[])
 {
@@ -43,15 +43,15 @@ int main (int argc, char* argv[])
 					currentRot[i][j] = currentRot[i][j]*-1;
 				}
             }
-            if (restype < 27)
+            if (restype < G)
             {
                 UInt restype = bundle->getTypeFromResNum(i,j);
-                bundle->mutateWBC(i,j,restype+27);
+                bundle->mutateWBC(i,j,restype+(G+1));
             }
-            if (restype > 27 && restype < 55)
+            if (restype > G && restype < Csf)
             {
                 UInt restype = bundle->getTypeFromResNum(i,j);
-                bundle->mutateWBC(i,j,restype-27);
+                bundle->mutateWBC(i,j,restype-(G+1));
             }
             bundle->setSidechainDihedralAngles(i, j, (currentRot));
             if (j == 0){

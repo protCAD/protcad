@@ -2696,6 +2696,7 @@ void protein::protOpt(bool _backbone)
 	// Sidechain and backslide optimization with a local dielectric scaling of electrostatics and corresponding Born/Gill implicit solvation energy
 	
 	//--Initialize variables for loop, calculate starting energy and build energy vectors-----
+	saveCurrentState();
 	UInt randchain, randres, resnum, backboneOrSidechain = 1;
 	UInt clashes, clashesStart, bbClashes, bbClashesStart, chainNum = getNumChains(), plateau = 1000;
 	double Energy, pastEnergy = protEnergy(), deltaEnergy, sPhi, sPsi,nobetter = 0.0, KT = KB*Temperature();
@@ -2765,6 +2766,7 @@ void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 	// Sidechain and backslide optimization with a local dielectric scaling of electrostatics and corresponding Born/Gill implicit solvation energy
 	
 	//--Initialize variables for loop, calculate starting energy and build energy vectors-----
+	saveCurrentState();
 	UInt randchain, randres, resnum, backboneOrSidechain = 1;
 	UInt clashes, clashesStart, bbClashes, bbClashesStart, chainNum = _activeChains.size(), plateau = 1000;
 	double Energy, pastEnergy = protEnergy(), deltaEnergy, sPhi, sPsi,nobetter = 0.0, KT = KB*Temperature();
@@ -2842,6 +2844,7 @@ void protein::protOpt(bool _backbone, UInt chainIndex, UInt resIndex)
 	// Sidechain and backslide optimization with a local dielectric scaling of electrostatics and corresponding Born/Gill implicit solvation energy
 	
 	//--Initialize variables for loop, calculate starting energy and build energy vectors-----
+	saveCurrentState();
 	UInt randchain = chainIndex, randres = resIndex, resnum, backboneOrSidechain = 1;
 	UInt clashes, clashesStart, bbClashes, bbClashesStart, plateau = 1000;
 	double Energy, pastEnergy = protEnergy(), deltaEnergy, sPhi, sPsi,nobetter = 0.0, KT = KB*Temperature();
@@ -2908,6 +2911,7 @@ void protein::protRelax(UInt _plateau)
 {   // Sidechain and backrub optimization with a local dielectric scaling of electrostatics and corresponding Born/Gill implicit solvation energy
 	//_plateau: the number of consecutive optimization cycles without an energy decrease (default: 150 for general purpose optimization)
 	
+	saveCurrentState();
 	UInt pastProtClashes = getNumHardClashes();
 	if (pastProtClashes > 0)
 	{	
@@ -2959,7 +2963,7 @@ void protein::protRelax(UInt _plateau)
 void protein::protRelax(UIntVec _frozenResidues, UIntVec _activeChains)
 {   // Sidechain and backrub optimization with a local dielectric scaling of electrostatics and corresponding Born/Gill implicit solvation energy
 	//_plateau: the number of consecutive optimization cycles without an energy decrease (default: 150 for general purpose optimization)
-	
+	saveCurrentState();
 	UInt pastProtClashes = getNumHardClashes();
 	if (pastProtClashes > 0)
 	{	
@@ -3018,6 +3022,7 @@ void protein::protRelax(UIntVec _frozenResidues, UIntVec _activeChains)
 void protein::protSampling(UInt iterations)
 {
 	//--Initialize variables for loop, calculate starting energy and build energy vectors-----
+	saveCurrentState();
 	UInt randchain, randres, resnum, changes = 0, backboneOrSidechain = 1;
 	UInt clashes, clashesStart, bbClashes, bbClashesStart, chainNum = getNumChains();
 	double Energy, pastEnergy = protEnergy(), deltaEnergy, sPhi, sPsi;

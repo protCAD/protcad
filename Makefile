@@ -12,7 +12,7 @@ export MAKE = make
 
 SHELL = /bin/sh
 
-TARGETS = protDielectric protEvolver protDihedrals protShaper protEnergy protSampling protDB protFolder protMover protMutator protSequence protInverter protClashes protMin protAlign
+TARGETS = protDielectric protEvolver protDihedrals protOligamer protEnergy protFolder protMover protMutator protSequence protInverter protMin protAlign
 
 .SUFFIXES: .cc .o .h .a .f
 
@@ -61,19 +61,7 @@ libprotcad.a : $(LIB_CC_OBJECTS) $(LIB_F77_OBJECTS)
 	cd $(OBJDIR) && ar rv libprotcad.a $?
 	cd $(OBJDIR) && ranlib libprotcad.a
 
-protMutator : libprotcad.a protMutator.cc
-	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
-
-protInverter : libprotcad.a protInverter.cc
-	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
-
-protSequence : libprotcad.a protSequence.cc
-	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
-
-protDB : libprotcad.a protDB.cc
+protAlign : libprotcad.a protAlign.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
 	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 
@@ -81,27 +69,11 @@ protDielectric : libprotcad.a protDielectric.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
 	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 
+protDihedrals : libprotcad.a protDihedrals.cc
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
+
 protEnergy : libprotcad.a protEnergy.cc
-	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
-	
-protSampling : libprotcad.a protSampling.cc
-	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
-	
-protFolder : libprotcad.a protFolder.cc
-	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
-
-protShaper : libprotcad.a protShaper.cc
-	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
-
-protMover : libprotcad.a protMover.cc
-	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
-
-protClashes : libprotcad.a protClashes.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
 	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 
@@ -109,15 +81,31 @@ protEvolver : libprotcad.a protEvolver.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
 	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 
+protFolder : libprotcad.a protFolder.cc
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
+
+protInverter : libprotcad.a protInverter.cc
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
+
 protMin : libprotcad.a protMin.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
 	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 
-protDihedrals : libprotcad.a protDihedrals.cc
+protMover : libprotcad.a protMover.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
 	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 
-protAlign : libprotcad.a protAlign.cc
+protMutator : libprotcad.a protMutator.cc
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
+
+protOligamer : libprotcad.a protOligamer.cc
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
+
+protSequence : libprotcad.a protSequence.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
 	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 

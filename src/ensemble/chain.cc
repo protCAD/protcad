@@ -1032,7 +1032,6 @@ vector <chainModBuffer> chain::saveCurrentState()
 		tempRotamer = itsChainPositions[i]->getCurrentRotamerIndex();
 		temp.setRotamerIndexBuffer(tempRotamer);
 		vector< vector< double> > tempAngles;
-		itsResidues[i]->calculateSidechainDihedralAngles();
 		tempAngles = itsResidues[i]->getSidechainDihedralAngles();
 		temp.setSidechainDihedralAngleBuffer(tempAngles);
 		vector< double> tempBBAngles(3);
@@ -1061,7 +1060,6 @@ vector <chainModBuffer> chain::saveCurrentState(vector <int> _indices)
 			tempRotamer = itsChainPositions[i]->getCurrentRotamerIndex();
 			temp.setRotamerIndexBuffer(tempRotamer);
 			vector< vector< double> > tempAngles;
-			itsResidues[i]->calculateSidechainDihedralAngles();
 			tempAngles = itsResidues[i]->getSidechainDihedralAngles();
 			temp.setSidechainDihedralAngleBuffer(tempAngles);
 			vector< double> tempBBAngles(3);
@@ -1115,7 +1113,6 @@ void chain::undoState()
 		vector< UInt> rotIndex = stateBuffers[x].getRotamerIndexBuffer();
 		setRotamerWithoutBuffering(index,rotIndex);
 
-		itsResidues[index]->calculateSidechainDihedralAngles();
 		vector<vector<double> > angles = stateBuffers[x].getSidechainDihedralAngleBuffer();
 
 		UInt bpt = angles.size();
@@ -2124,7 +2121,6 @@ void chain::bufferResidueIntoUndoBuffer(UInt _index)
 	tempRotamer = itsChainPositions[_index]->getCurrentRotamerIndex();
 	itsBuffers[0].setRotamerIndexBuffer(tempRotamer);
 	vector< vector< double> > tempAngles;
-	itsResidues[0]->calculateSidechainDihedralAngles();
 	tempAngles = itsResidues[_index]->getSidechainDihedralAngles();
 	itsBuffers[0].setSidechainDihedralAngleBuffer(tempAngles);
 	//cout << "contents of undo buffer" << endl;
@@ -2146,7 +2142,6 @@ void chain::bufferResidueIntoRedoBuffer(UInt _index)
 	tempRotamer = itsChainPositions[_index]->getCurrentRotamerIndex();
 	itsBuffers[1].setRotamerIndexBuffer(tempRotamer);
 	vector< vector< double> > tempAngles;
-	itsResidues[1]->calculateSidechainDihedralAngles();
 	tempAngles = itsResidues[_index]->getSidechainDihedralAngles();
 	itsBuffers[1].setSidechainDihedralAngleBuffer(tempAngles);
 	//cout << "contents of redo buffer" << endl;
