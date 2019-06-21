@@ -35,15 +35,23 @@ UInt populationBaseline = 1000;
 int main (int argc, char* argv[])
 {
 	//--Running parameters
-	if (argc !=1)
+	if (argc !=2)
 	{
-		cout << "protFolder" << endl;
+		cout << "Error: Required input file not given, should be run with input file." << endl;
+		cout << "Command: protFolder <inputfile>" << endl;
+		cout << "Input file format as listed below:" << endl;
+		cout << "Input PDB File,xyz.pdb," << endl;
+		cout << "Active Chains,0,1,2," << endl;
+		cout << "Active Positions,0,1,2,3,5,6,7,9,10," << endl;
+		cout << "Random Positions,0,2,5,6,10," << endl;
+		cout << "Backbone Types,C,L,P,T,E,Y,A,I,D,Q,R,F,H,W,K,S," << endl;
 		exit(1);
 	}
 	
 	UIntVec activeChains, allowedTypes, activeResidues, randomResidues;
+	string inputfile = argv[1];
 	string infile;
-	ifstream file("folder.in");
+	ifstream file(inputfile);
 	if (file){
 		string item, line;
 		UInt delimitercounter, linecounter = 0;
@@ -93,7 +101,7 @@ int main (int argc, char* argv[])
 		inf << "Active Chains,0,1,2," << endl;
 		inf << "Active Positions,0,1,2,3,5,6,7,9,10," << endl;
 		inf << "Random Positions,0,2,5,6,10," << endl;
-		inf << "Backbone Types,C,L,P,T,E,Y,A,I,D,Q,R,F,H,W,K,S" << endl;
+		inf << "Backbone Types,C,L,P,T,E,Y,A,I,D,Q,R,F,H,W,K,S," << endl;
 		cout << "Error: Required input file doesn't exist." << endl << "Template input file has been generated, please fill it out and rerun." << endl;
 		exit(1);
 	}

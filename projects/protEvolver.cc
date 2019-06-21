@@ -34,17 +34,27 @@ UInt populationBaseline = 1000;
 int main (int argc, char* argv[])
 {
 	//--Running parameters
-	if (argc !=1)
+	if (argc !=2)
 	{
-		cout << "protEvolver" << endl;
+		cout << "Error: Required input file not given, should be run with input file." << endl;
+		cout << "Command: protEvolver <inputfile>" << endl;
+		cout << "Input file format as listed below:" << endl;
+		cout << "Input PDB File,xyz.pdb," << endl;
+		cout << "Active Chains,0,1,2," << endl;
+		cout << "Active Positions,0,1,2,3,5,6,7,9,10," << endl;
+		cout << "Random Positions,0,2,5,6,10," << endl;
+		cout << "Frozen Positions,4,8," << endl;
+		cout << "Amino Acids,A,R,N,D,C,Q,E,He,I,L,K,M,F,P,S,T,W,Y,V,G," << endl;
+		cout << "Backbone Relaxation,false," << endl;
 		exit(1);
 	}
 	
 	//--read input file
 	UIntVec activeChains, allowedTypes, activeResidues, randomResidues, frozenResidues;
 	bool backboneRelaxation;
+	string inputfile = argv[1];
 	string infile;
-	ifstream file("evolver.in");
+	ifstream file(inputfile);
 	if (file){
 		string item, line;
 		UInt delimitercounter, linecounter = 0;

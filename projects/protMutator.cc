@@ -22,17 +22,23 @@ UInt aaSize = sizeof(aminoAcidString)/sizeof(aminoAcidString[0]);
 int main (int argc, char* argv[])
 {
 	//--Program setup
-	if (argc !=1)
+	if (argc !=2)
 	{
-		cout << "protMutator" << endl;
+		cout << "Error: Required input file not given, should be run with input file." << endl;
+		cout << "Command: protMutator <inputfile>" << endl;
+		cout << "Input file format as listed below:" << endl;
+		cout << "Input PDB File,xyz.pdb," << endl;
+		cout << "A,K,D,L,K,D,R,R," << endl;
+		cout << "A,K,E,L,K,E,R,R," << endl;
 		exit(1);
 	}
+	string inputfile = argv[1];
 	string infile;
 	vector<vector<UInt> > seqs;
 	vector <UInt> seq;
 	
 	//--read input file
-	ifstream file("mutator.in");
+	ifstream file(inputfile);
 	if (file){
 		string item, line;
 		UInt delimitercounter, linecounter = 0;
