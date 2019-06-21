@@ -21,30 +21,83 @@ vector <UInt> getChainSequence(protein* _prot, UInt _chainIndex);
 vector <UInt> getMutationPosition(UIntVec &_activeChains, UIntVec &_activeResidues);
 UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition);
 void createPossibleMutantsDatabase(protein* &_prot, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedTypes);
+UInt convertSeqStringtoInt(string Seq, string backboneSeq[], UInt size);
 vector < vector < UInt > > readSequencePool();
 vector < vector < UInt > > readPossibleMutants();
 
 enum structure {C,L,P,T,E,Y,A,I,D,Q,R,F,H,W,K,S};
 string backboneSeq[] =   { "C", "L", "P", "T","E","Y","A","I",  "D",  "Q",  "R",  "F", "H", "W", "K", "S"};
 string backboneTypes[] = {"-π","-α","-ρ","-β","β","ρ","α","π","-πi","-αi","-ρi","-βi","βi","ρi","αi","πi"};
+UInt seqSize = sizeof(backboneSeq)/sizeof(backboneSeq[0]);
 UInt populationBaseline = 1000;
 
 //--Program setup----------------------------------------------------------------------------------------
 int main (int argc, char* argv[])
 {
 	//--Running parameters
-	if (argc !=2)
+	if (argc !=1)
 	{
-		cout << "protFolder <inFile.pdb>" << endl;
+		cout << "protFolder" << endl;
 		exit(1);
 	}
-
-	//--input
-	UInt _activeChains[] = {0};                                                         // chains active for mutation
-	UInt _allowedTypes[] = {C,L,P,T,E,Y,A,I,D,Q,R,F,H,W,K,S};                     // backbone types allowable
-	UInt _activeResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11};                                     // positions active for mutation
-	UInt _randomResidues[] = {0,1,2,3,4,5,6,7,8,9,10,11};                                     // positions active for a random start sequence initially
-
+	
+	UIntVec activeChains, allowedTypes, activeResidues, randomResidues;
+	string infile;
+	ifstream file("folder.in");
+	if (file){
+		string item, line;
+		UInt delimitercounter, linecounter = 0;
+		while(getline(file,line))
+		{
+			delimitercounter = 0;
+			stringstream stream(line);
+			while(getline(stream,item,','))
+			{
+				if (delimitercounter > 0){
+					if (linecounter == 0){
+						infile = item;
+					}
+					if (linecounter == 1){
+						stringstream inputString(item);
+						UInt index;
+						inputString >> index;
+						activeChains.push_back(index);
+					}
+					if (linecounter == 2){
+						stringstream inputString(item);
+						UInt index;
+						inputString >> index;
+						activeResidues.push_back(index);
+					}
+					if (linecounter == 3){
+						stringstream inputString(item);
+						UInt index;
+						inputString >> index;
+						randomResidues.push_back(index);
+					}
+					if (linecounter == 4){
+						UInt index = convertSeqStringtoInt(item, backboneTypes, seqSize);
+						allowedTypes.push_back(index);
+					}
+				}
+				delimitercounter++;
+			}
+			linecounter++;
+		}
+		file.close();
+	}
+	else{
+		fstream inf;
+		inf.open ("folder.in", fstream::in | fstream::out | fstream::app);
+		inf << "Input PDB File,xyz.pdb," << endl;
+		inf << "Active Chains,0,1,2," << endl;
+		inf << "Active Positions,0,1,2,3,5,6,7,9,10," << endl;
+		inf << "Random Positions,0,2,5,6,10," << endl;
+		inf << "Backbone Types,C,L,P,T,E,Y,A,I,D,Q,R,F,H,W,K,S" << endl;
+		cout << "Error: Required input file doesn't exist." << endl << "Template input file has been generated, please fill it out and rerun." << endl;
+		exit(1);
+	}
+	
 	//--running parameters
 	residue::setElectroSolvationScaleFactor(1.0);
 	residue::setHydroSolvationScaleFactor(1.0);
@@ -52,15 +105,6 @@ int main (int argc, char* argv[])
 	amberElec::setScaleFactor(1.0);
 	amberVDW::setScaleFactor(1.0);
 	residue::setTemperature(300);
-
-	//convert input arrays to vectors
-	UInt activeChainsSize = sizeof(_activeChains)/sizeof(_activeChains[0]), randomResiduesSize = sizeof(_randomResidues)/sizeof(_randomResidues[0]);
-	UInt allowedTypesSize = sizeof(_allowedTypes)/sizeof(_allowedTypes[0]),activeResiduesSize = sizeof(_activeResidues)/sizeof(_activeResidues[0]);
-	UIntVec activeChains, allowedTypes, activeResidues, randomResidues;
-	for (UInt i = 0; i < activeChainsSize; i++)		{ activeChains.push_back(_activeChains[i]); }
-	for (UInt i = 0; i < allowedTypesSize; i++)	{ allowedTypes.push_back(_allowedTypes[i]); }
-	for (UInt i = 0; i < activeResiduesSize; i++)	{ activeResidues.push_back(_activeResidues[i]); }
-	for (UInt i = 0; i < randomResiduesSize; i++)	{ randomResidues.push_back(_randomResidues[i]); }
 
 	//--set initial variables
 	int seed = (int)getpid()*(int)gethostid(); srand (seed);
@@ -70,7 +114,7 @@ int main (int argc, char* argv[])
 	UInt mutant = 0, plateau = 100, nobetter = 0;
 	vector < UInt > mutantPosition, chainSequence, randomPosition;
 	vector < vector < UInt > > sequencePool, finalSequence, possibleMutants;
-	stringstream convert; string infile = argv[1], startstr, outFile;
+	stringstream convert; string startstr, outFile;
 	UInt name = rand() % 100000000;
 	convert << name, startstr = convert.str();
 	string tempModel = startstr + "_temp.pdb";
@@ -144,17 +188,14 @@ int main (int argc, char* argv[])
 				
 				//--Boltzmann energy acceptance of structure and save
 				if (acceptance){
+					prot->saveCurrentState();
 					pdbWriter(prot, tempModel);
 					pastEnergy = Energy;
 					if (deltaEnergy < (residue::getKT()*-1)){nobetter = 0;}
 				}
 			}
-			
 			//--Revert to previous structure state
-			if (revert){
-				prot->setDihedral(mutantPosition[0],mutantPosition[1],backboneAngles[0]*-1,0,0);
-				prot->setDihedral(mutantPosition[0],mutantPosition[1],backboneAngles[1]*-1,1,0);
-			}
+			if (revert){prot->undoState();}
 		}while (nobetter < plateau);
 		delete thePDB;
 
@@ -340,4 +381,14 @@ void createPossibleMutantsDatabase(protein* &_prot, UIntVec &_activeChains, UInt
 			pm << endl;
 		}
 	}
+}
+
+UInt convertSeqStringtoInt(string Seq, string backboneSeq[], UInt size)
+{
+	UInt index;
+	for (UInt i = 0; i < size; i++)
+	{
+		if (Seq.compare(backboneSeq[i]) == 0){index = i;}
+	}
+	return index;
 }

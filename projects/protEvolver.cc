@@ -109,7 +109,7 @@ int main (int argc, char* argv[])
 		inf << "Frozen Positions,4,8," << endl;
 		inf << "Amino Acids,A,R,N,D,C,Q,E,He,I,L,K,M,F,P,S,T,W,Y,V,G," << endl;
 		inf << "Backbone Relaxation,false," << endl;
-		cout << "Error: Required input file doesn't exist and template has been generated, please fill it out and rerun." << endl;
+		cout << "Error: Required input file doesn't exist." << endl << "Template input file has been generated, please fill it out and rerun." << endl;
 		exit(1);
 	}
 	
@@ -124,7 +124,7 @@ int main (int argc, char* argv[])
 	//--set initial variables
 	int seed = (int)getpid()*(int)gethostid(); srand (seed);
 	double startEnergy = 1E10, pastEnergy, Energy, deltaEnergy;
-	UInt timeid, sec, mutant = 0, plateau = 15, nobetter = 0;
+	UInt timeid, sec, mutant = 0, plateau = 20, nobetter = 0;
 	vector < UInt > mutantPosition, chainSequence, randomPosition;
 	vector < vector < UInt > > sequencePool, finalSequence, possibleMutants;
 	stringstream convert; string startstr, outFile;
@@ -153,6 +153,7 @@ int main (int argc, char* argv[])
 		theEnsemble = thePDB->getEnsemblePointer();
 		pMol = theEnsemble->getMoleculePointer(0);
 		prot = static_cast<protein*>(pMol);
+		sequencePool = readSequencePool();
 
 		//--load in initial pdb and mutate in random starting structure on active chains and random residues
 		nobetter = 0;

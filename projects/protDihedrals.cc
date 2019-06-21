@@ -19,31 +19,26 @@ int main (int argc, char* argv[])
     cout << "protDihedrals <inFile.pdb>" << endl;
 	exit(1);
 	}
-
-	enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,Csf,Sf4,Hca,Eoc,Oec,Hem};
-	string aminoAcidString[] = {"A","R","N","D","D","C","C","C","Q","E","E","H","H","H","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dD","dC","dC","dC","dQ","dE","dE","dH","dH","dH","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV","Csf","Sf4","Hca","Eoc","Oec","Hem"};
+	
+	string backboneTypes[] = {"-π","-α","-ρ","-β","β","ρ","α","π","-πi","-αi","-ρi","-βi","βi","ρi","αi","πi"};
 	string infile = argv[1];
 	PDBInterface* thePDB = new PDBInterface(infile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
     protein* bundle = static_cast<protein*>(pMol);
 
-	//cout << endl << "phi psi RPT" << endl;
+	cout << endl << "phi psi backbonetype" << endl;
 
-
-	//--Search sequence of inFile for phis >= 0 --------------------------------------------------------
-	//UInt chainNum = bundle->getNumChains();	
-	//for (UInt i = 0; i < chainNum; i ++)
-	//{
-		UInt resNum = bundle->getNumResidues(0);
-        //cout << "NA " << bundle->getPsi(i,0) << " NA" << endl;
-        for (UInt j = 1; j < resNum-2; j ++)
-        {
-            cout << bundle->getBackboneSequenceType(0,j) << endl;
-        }
-       // cout << bundle->getPhi(i,resNum-1) << " NA " << "NA" << endl;
-	//}
-	pdbWriter(bundle, infile);
+	UInt chainNum = bundle->getNumChains();
+	for (UInt i = 0; i < chainNum; i ++)
+	{
+		UInt resNum = bundle->getNumResidues(i);
+		for (UInt j = 1; j < resNum-2; j ++)
+		{
+			UInt backboneType = bundle->getBackboneSequenceType(i,j);
+			cout << i << " " << j << " " << bundle->getPhi(i,j) << " " << bundle->getPsi(i,j) << " " << backboneTypes[backboneType] << endl;
+		}
+	}
 	return 0;
 }
 

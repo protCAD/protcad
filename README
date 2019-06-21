@@ -1,9 +1,9 @@
 
 protCAD official development tree
 
-protCAD is an implementation of the protein design software library that originated in the Bill Degrado Lab and is currently maintained by The Vikas Nanda Lab https://sites.google.com/site/viknanda
+protCAD is an implementation of the protein design software library that originated in the Bill Degrado Protein Design Lab and is currently maintained by The Vikas Nanda Lab (https://sites.google.com/site/viknanda) the source is maintained here: https://github.com/protCAD/protcad
 
-Publications so far on protCAD's methods are:
+Publications to date on protCAD's methods and implementaions are:
 
 -Computational Methods and their Applications for de novo Functional Protein Design and Memebrane Protein Solubilization, Summa CM Thesis 2002
 -Empirical estimation of local dielectric constants: Toward atomistic design of collagen mimetic peptides, Biopolymers - Peptide Science. 2015; 104(4): 360-70.
@@ -12,18 +12,28 @@ Publications so far on protCAD's methods are:
  Installation
 ===========================
 
--Install dependencies
+|||||| Install dependencies
 
-Ubuntu:
+---Windows 10
 
+First you will need to follow instructions to install the windows ubuntu sub-system as there is no native support for windows libraries: https://docs.microsoft.com/en-us/windows/wsl/install-win10
+Then you can follow the Ubuntu Linux install dependency instructions below in the sub-system terminal.
+
+---Ubuntu Linux:
+
+In terminal:
 sudo apt-get install g++ gfortran git
 
-Mac:
+---Mac:
 
-xcode-select --install 
+In terminal:
+xcode-select --install
 
+Next you will need to install gfortran for your version of Mac found here: https://github.com/fxcoudert/gfortran-for-macOS/releases
 
--Download source and compile
+|||||| Install
+
+For all systems download source and compile via these terminal commands:
 
 git clone https://github.com/protCAD/protcad 
 
@@ -37,13 +47,20 @@ source ~/.bashrc
  Usage
 ===========================
 
--General use programs are compiled via make install and the source is available in the projects directory.  Since make install also adds the bin directory to your path, programs in projects are immediately available to run in any directory.
+General use programs are compiled via make install and the source is available in the projects directory.
+Since make install also adds the bin directory to your path, programs in projects are immediately available to run in any directory.
+An overview of the general use programs are described below:
+
+
 
 
  Development process
 ===========================
 
-New programs need to be added to the Makefile in protcad/ for compilation, like programs in projects have been. Additional examples are in the protcad/src/tests folder for reference and can be added to the projects directory and MakeFile for compilation. New programs written are intended to follow the same directory structure and usage as in projects.
+New programs need to be added to the Makefile in protcad/ for compilation and added to projects directory which then can be compiled via 'make programx'. 
+Additional examples are in the protcad/src/tests folder for reference and usage which can be added to the projects directory and MakeFile for compilation. 
+Some tests may not compile as they were developed on much earlier version protcad but most will compile without issue. 
+New programs written are intended to follow the same directory structure and usage as in projects.
 
 Developers work in their own trees, then submit pull requests when
 they think their feature or bug fix is ready.
@@ -51,4 +68,6 @@ they think their feature or bug fix is ready.
 The master branch is regularly built and tested.  Tags are regularly created to indicate new
 official, stable release versions of protCAD.
 
-The dev branch is a more experimental version being developed.
+The dev branch is a more frequently updated branch with a more experimental version being developed, but generally ready for usage.  To switch to the dev branch in the protad directory use the command:
+git checkout dev
+Then standard installation methods can be used
