@@ -13,34 +13,71 @@
 #include "ensemble.h"
 #include "PDBInterface.h"
 #include <sstream>
-#include <iterator>
-#include <vector>
 
-
-void randomizeSideChain(protein* _prot, UInt _chainIndex, UInt _resIndex);
+UInt convertAAStringtoInt(string AA, string aminoAcidString[], UInt size);
+enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,Csf,Sf4,Hca,Eoc,Oec,Saf,Hem,Cyn};
+string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dCf","dQ","dE","dEh","dHd","dHe","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV","Csf","Sf4","Hca","Eoc","Oec","Saf","Hem","Cyn"};
+UInt aaSize = sizeof(aminoAcidString)/sizeof(aminoAcidString[0]);
 
 int main (int argc, char* argv[])
 {
 	//--Program setup
-    if (argc !=2)
+	if (argc !=2)
 	{
-    cout << "protMutator <inFile.pdb>" << endl;
-	exit(1);
+		cout << "Error: Required input file not given, should be run with input file." << endl;
+		cout << "Command: protMutator <inputfile>" << endl;
+		cout << "Input file format as listed below:" << endl;
+		cout << "Input PDB File,xyz.pdb," << endl;
+		cout << "A,K,D,L,K,D,R,R," << endl;
+		cout << "A,K,E,L,K,E,R,R," << endl;
+		exit(1);
 	}
-	enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,Csf,Sf4,Hca,Eoc,Oec};
-	string infile = argv[1];
-    vector<vector<UInt> > resIDs;
-    vector <UInt> v;
-
-    UInt resID1[] = {A,dCf,A,dA,Cf,dA,A,dCf,A,dA,Cf,dA,A,dCf,A,dA,Cf,dA,A,dCf,A,dA,Cf,dA,A,dCf,A,dA,Cf,dA,A,dCf,A,dA,Cf,dA};// -design1a
-    v.insert (v.begin(), resID1, resID1 + sizeof(resID1)/sizeof(resID1[0]));
-    resIDs.push_back(v);
-    v.clear();
-
-   
-    //--Mutate chains
-    for (UInt h = 0; h < resIDs.size(); h++)
-    {
+	string inputfile = argv[1];
+	string infile;
+	vector<vector<UInt> > seqs;
+	vector <UInt> seq;
+	
+	//--read input file
+	ifstream file(inputfile);
+	if (file){
+		string item, line;
+		UInt delimitercounter, linecounter = 0;
+		while(getline(file,line))
+		{
+			delimitercounter = 0;
+			stringstream stream(line);
+			while(getline(stream,item,','))
+			{
+				if (linecounter == 0){
+					if (delimitercounter > 0){
+						infile = item;
+					}
+				}
+				else{
+					UInt index = convertAAStringtoInt(item, aminoAcidString, aaSize);
+					seq.push_back(index);
+				}
+				delimitercounter++;
+			}
+			linecounter++;
+			seqs.push_back(seq);
+			seq.clear();
+		}
+		file.close();
+	}
+	else{
+		fstream inf;
+		inf.open ("mutator.in", fstream::in | fstream::out | fstream::app);
+		inf << "Input PDB File,xyz.pdb," << endl;
+		inf << "A,K,D,L,K,D,R,R," << endl;
+		inf << "A,K,E,L,K,E,R,R," << endl;
+		cout << "Error: Required input file doesn't exist." << endl << "Template input file has been generated, please fill it out and rerun." << endl;
+		exit(1);
+	}
+	
+	//--Mutate same sequence on each chain and generate a model for each sequence
+	for (UInt h = 0; h < seqs.size(); h++)
+	{
 		PDBInterface* thePDB = new PDBInterface(infile);
 		ensemble* theEnsemble = thePDB->getEnsemblePointer();
 		molecule* pMol = theEnsemble->getMoleculePointer(0);
@@ -51,39 +88,28 @@ int main (int argc, char* argv[])
 			UInt resNum = bundle->getNumResidues(i);
 			for (UInt j = 0; j < resNum; j++)
 			{
-				if (j >= resIDs[i].size())
-				{
-					bundle->removeResidue(i,j);
-				}
-				else
-				{
-					bundle->activateForRepacking(i, j);
-					bundle->mutateWBC(i, j, resID1[j]);
-					//randomizeSideChain(bundle, i, j);
-				}
+				bundle->activateForRepacking(i, j);
+				bundle->mutateWBC(i, j, seqs[h][j]);
 			}
 		}
+		bundle->protMin(true);
 		stringstream convert;
 		string countStr, outFile;
 		convert << h+1, countStr = convert.str();
 		outFile = countStr + ".mut.pdb";
 		pdbWriter(bundle, outFile);
 		delete thePDB;
-    }
+	}
 	return 0;
 }
 
-void randomizeSideChain(protein* _prot, UInt _chainIndex, UInt _resIndex)
+UInt convertAAStringtoInt(string AA, string aminoAcidString[], UInt size)
 {
-    UInt allowedRotsSize, randrot, restype;
-    UIntVec allowedRots;
-    restype = _prot->getTypeFromResNum(_chainIndex, _resIndex);
-    allowedRots = _prot->getAllowedRotamers(_chainIndex, _resIndex, restype, 0);
-    allowedRotsSize = allowedRots.size();
-    if (allowedRotsSize > 2)
-    {
-        randrot = rand() % allowedRotsSize;
-        _prot->setRotamerWBC(_chainIndex, _resIndex, 0, allowedRots[randrot]);
-    }
-    return;
+	UInt index;
+	for (UInt i = 0; i < size; i++)
+	{
+		if (AA.compare(aminoAcidString[i]) == 0){index = i;}
+	}
+	return index;
 }
+

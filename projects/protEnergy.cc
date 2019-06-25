@@ -15,6 +15,12 @@
 //--Program setup-------------------------------------------------------------
 int main (int argc, char* argv[])
 {	
+
+	if (argc !=2)
+	{
+		cout << "protEnergy <inFile.pdb>" << endl;
+		exit(1);
+	}
 	string infile = argv[1];
 	PDBInterface* thePDB = new PDBInterface(infile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
