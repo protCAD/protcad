@@ -12,6 +12,8 @@ export MAKE = make
 
 SHELL = /bin/sh
 
+UNAME := $(shell uname -s)
+
 TARGETS = protDielectric protEvolver protDihedrals protOligamer protEnergy protFolder protMover protMutator protSequence protInverter protMin protAlign
 
 .SUFFIXES: .cc .o .h .a .f
@@ -50,8 +52,14 @@ vpath %.a $(OBJDIR)
 vpath %.o $(OBJDIR)
 
 install : $(LIB_TARGETS) $(TARGETS)
+ifeq ($(UNAME),Linux)
 	@echo export PROTCADDIR=$(PROTCADDIR) >> ~/.bashrc
 	@echo export PATH=$(PATH):$(PROTCADDIR):$(PROTCADDIR)/bin >> ~/.bashrc
+endif
+ifeq ($(UNAME),Darwin)	
+	@echo export PROTCADDIR=$(PROTCADDIR) >> ~/.bash_profile
+	@echo export PATH=$(PATH):$(PROTCADDIR):$(PROTCADDIR)/bin >> ~/.bash_profile
+endif
 
 all : $(LIB_TARGETS) $(TARGETS)
 
