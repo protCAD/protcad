@@ -195,7 +195,7 @@ A,K,E,L,K,E,R,R,
 Output result: Minimized mutated model pdbs, one for each sequence in the input file
 
 
-protOligamer
+--protOligamer
 
 Description: Creates symmetric oligamers of input pdb with same coordinates for each chain.
 
@@ -203,7 +203,7 @@ Input command: protOligamer <inFile.pdb>
 Output result: pdbs of symmetric oligamers (sampling parameters will need to be manually adjusted)
 
 
-protSequence
+--protSequence
 
 Description: Reports amino acid sequence and backbone type sequence for a protein structure.
 
