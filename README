@@ -1,37 +1,66 @@
+***************************************************************************************************
+*****************                                                                 *****************
+*****************   oy++s+  :h++os`  `so++so  :+od++- -so+os-    /m-    ss++oo`   *****************
+*****************   y+   N. /h   h+  d:    +y   .N   -d`        .d.d`   h/   :d   *****************
+*****************   yh++oo  /mhyo/  `M     .N   .N   os         d: +y   h/   `M   *****************
+*****************   y+      /h`+y:   yo    yo   .N   .d:   `.  oy+++d:  h/   os   *****************
+*****************   /:      -+  `+:   :oooo-    `s    `/o++o. `s    .o  /o+++-    *****************
+*****************                                                                 *****************
+*****************                .--..    `...`    `.``     ````        `-:-.`    *****************
+*****************     `:--::`   :dysoo/  odysso/ .ydhsso/ :hdhsss/  `:::.`        *****************
+*****************          `+` .ohho/:::/yhhs+:-:ohhho+/:/shhyo+/::./             *****************
+*****************           .+-ssyh/sssssohs-sssssyh/`ssssshy``sssso              *****************
+*****************           `/+++:` `+ooo+/` .+ooo+-  -oosso.  -ssys.             *****************
+*****************                                                                 *****************
+*****************                  Protein Computer-Aided Design                  *****************
+*****************                            1999-2019                            *****************
+*****************                                                                 *****************
+***************************************************************************************************
+
 
 protCAD official development tree
+===================================================================================================
 
-protCAD is an implementation of the protein design software library that originated in the Bill Degrado Protein Design Lab and is currently maintained by The Vikas Nanda Lab (https://sites.google.com/site/viknanda) the source is maintained here: https://github.com/protCAD/protcad
+protCAD is an implementation of the protein design software library that originated in the 
+Bill Degrado Protein Design Lab.
+
+It is currently maintained by The Vikas Nanda Lab: https://sites.google.com/site/viknanda
+The source is maintained at: https://github.com/protCAD/protcad
 
 Publications to date on protCAD's methods and implementaions are:
 
--Computational Methods and their Applications for de novo Functional Protein Design and Memebrane Protein Solubilization, Summa CM Thesis 2002
--Empirical estimation of local dielectric constants: Toward atomistic design of collagen mimetic peptides, Biopolymers - Peptide Science. 2015; 104(4): 360-70.
+-Computational Methods and their Applications for de novo Functional Protein Design and Memebrane 
+ Protein Solubilization, Summa CM Thesis 2002
+
+-Empirical estimation of local dielectric constants: Toward atomistic design of collagen mimetic 
+ peptides, Biopolymers - Peptide Science. Pike & Nanda 2015; 104(4): 360-70.
 
 
  Installation
-===========================
+===================================================================================================
 
-|||||| Install dependencies
+=== Install dependencies
 
----Windows 10
+--Windows 10
 
-First you will need to follow instructions to install the windows ubuntu sub-system as there is no native support for windows libraries: https://docs.microsoft.com/en-us/windows/wsl/install-win10
-Then you can follow the Ubuntu Linux install dependency instructions below in the sub-system terminal.
+First you will need to follow instructions to install the windows ubuntu sub-system as there is no
+native support for windows libraries: https://docs.microsoft.com/en-us/windows/wsl/install-win10
+Then follow the Ubuntu Linux install dependency instructions below in the sub-system terminal.
 
----Ubuntu Linux:
+--Ubuntu Linux:
 
 In terminal:
 sudo apt-get install g++ gfortran git
 
----Mac:
+--Mac:
 
 In terminal:
 xcode-select --install
 
-Next you will need to install gfortran for your version of Mac found here: https://github.com/fxcoudert/gfortran-for-macOS/releases
+Next you will need to install gfortran for your version of Mac found here: 
+https://github.com/fxcoudert/gfortran-for-macOS/releases
 
-|||||| Install
+=== Install
 
 For all systems download source and compile via these terminal commands:
 
@@ -45,29 +74,172 @@ source ~/.bashrc
 
 
  Usage
-===========================
+===================================================================================================
 
-General use programs are compiled via make install and the source is available in the projects directory.
-Since make install also adds the bin directory to your path, programs in projects are immediately available to run in any directory.
+General use programs are compiled via make install and the source is available in protcad/projects.
+
+Since make install also adds the bin directory to your path, programs in projects are immediately 
+available to run in any directory.
+
 An overview of the general use programs are described below:
 
 
+--protAlign
+
+Description: Calculates best fit and RMSD of two pdbs using SVD and aligns the second or smaller
+pdb onto the first.
+
+Input command: protAlign <inFile1.pdb> <inFile2.pdb>
+Output result:  RMSD, aligned pdbs
+
+
+--protDielectric
+
+Description: Calculates the local average dielectric and solvation energy for each residue.
+
+Input command: protDielectric <inFile.pdb>
+Output result: List of local dielectrics and solvation energy for each residue
+
+
+--protDihedrals
+
+Description: Calculates backbone phi psi and backbone classification type for each residue.
+Backbone Classification Type: -π -α -ρ -β β ρ α π -πi -αi -ρi -βi βi ρi αi πi
+Backbone Classification Index: 0  1  2  3 4 5 6 7  8   9   10  11 12 13 14 15
+
+Input command: protDihedrals <inFile.pdb>
+Output result: List of phi psi and classification type for each residue
+
+
+--protEnergy
+
+Description: Calculates the total energy of the protein in kcal/mol.
+
+Input command: protEnergy <inFile.pdb>
+Output result: Total Energy of the protein, total clashes and total backbone-backbone clashes
+
+
+--protEvolver
+
+Description: Sequence Selective Machine Learning Evolution Based Algorithm in Implicit Solvent
+
+Input command: protEvolver <inputfile>
+
+Input file format:
+Input PDB File,xyz.pdb,
+Active Chains,0,1,2,
+Active Positions,0,1,2,3,5,6,7,9,10,
+Random Positions,0,2,5,6,10,
+Frozen Positions,4,8,
+Amino Acids,A,R,N,D,C,Q,E,He,I,L,K,M,F,P,S,T,W,Y,V,G,
+Backbone Relaxation,false,
+
+Output result: Evolved model pdbs, sequences and energies written to results.out file
+
+
+--protFolder
+
+Description: Fold Selective Machine Learning Evolution Based Algorithm in Implicit Solvent
+
+Input command: protFolder <inputfile>
+
+Input file format:
+Input PDB File,xyz.pdb,
+Active Chains,0,1,2,
+Active Positions,0,1,2,3,5,6,7,9,10,
+Random Positions,0,2,5,6,10,
+Backbone Types,C,L,P,T,E,Y,A,I,D,Q,R,F,H,W,K,S,
+
+Backbone Classification Type: -π -α -ρ -β β ρ α π -πi -αi -ρi -βi βi ρi αi πi
+Backbone Classification Key:   C  L  P  T E Y A I  D   Q   R   F  H  W  K  S
+
+Output result: Folded model pdbs, backbone type sequences and energies written to results.out file
+
+
+--protInverter
+
+Description: Generates mirror image of input pdb conformation
+
+Input command: protInverter <inFile.pdb> <outFile.pdb>
+Output result: Output pdb where pdb is mirror image of input pdb including sidechain chirality
+
+
+--protMin
+
+Description: Minimizes the energy of the structure with sidechain and local backbone motion
+
+Input command: protMin <inFile.pdb> <outFile.pdb>
+Output result: Outputs energy minimized pdb and returns start and end energy
+
+
+--protMover
+
+Description: Moves a protein structure in XYZ space via rotation and translation.
+
+Input command:
+protMover <in.pdb> <translateX> <translateY> <translateZ> <rotateX> <rotateY> <rotateZ> <out.pdb>
+Output result: Output pdb rotated in degrees and translated in Angstroms
+
+
+--protMutator
+
+Description: Mutates new sequence on input protein structure, minimizes and returns model
+
+Input command: protMutator <inputfile>
+
+Input file format:
+Input PDB File,xyz.pdb,
+A,K,D,L,K,D,R,R,
+A,K,E,L,K,E,R,R,
+
+Output result: Minimized mutated model pdbs, one for each sequence in the input file
+
+
+--protOligamer
+
+Description: Creates symmetric oligamers of input pdb with same coordinates for each chain.
+
+Input command: protOligamer <inFile.pdb>
+Output result: pdbs of symmetric oligamers (sampling parameters will need to be manually adjusted)
+
+
+--protSequence
+
+Description: Reports amino acid sequence and backbone type sequence for a protein structure.
+
+Input command: protSequence <inFile.pdb>
+Output result: Returns amino acid sequence and backbone type sequence in fasta format
+
+Backbone Classification Type: -π -α -ρ -β β ρ α π -πi -αi -ρi -βi βi ρi αi πi
+Backbone Classification Key:   C  L  P  T E Y A I  D   Q   R   F  H  W  K  S
 
 
  Development process
-===========================
+===================================================================================================
 
-New programs need to be added to the Makefile in protcad/ for compilation and added to projects directory which then can be compiled via 'make programx'. 
-Additional examples are in the protcad/src/tests folder for reference and usage which can be added to the projects directory and MakeFile for compilation. 
-Some tests may not compile as they were developed on much earlier version protcad but most will compile without issue. 
-New programs written are intended to follow the same directory structure and usage as in projects.
+New programs need to be added to the Makefile in protcad/ for compilation and added to projects 
+directory which then can be compiled via 'make programx'.
 
-Developers work in their own trees, then submit pull requests when
-they think their feature or bug fix is ready.
+Additional examples are in the protcad/src/tests folder for reference and usage, which can be added
+to the projects directory and MakeFile for compilation.  Some tests may not compile as they were 
+developed on a much earlier version of protcad but most will compile without issue.
 
-The master branch is regularly built and tested.  Tags are regularly created to indicate new
+New programs written are intended to follow the same directory structure and compilation as 
+in projects.  Developers work in their own trees, then submit pull requests when they think 
+their feature or bug fix is ready.
+
+The master branch is regularly built and tested. Tags are regularly created to indicate new
 official, stable release versions of protCAD.
 
-The dev branch is a more frequently updated branch with a more experimental version being developed, but generally ready for usage.  To switch to the dev branch in the protad directory use the command:
+The dev branch is a more frequently updated branch with a more experimental version being developed
+but generally ready for usage. To switch to the dev branch in the protad directory use the command:
+
 git checkout dev
-Then standard installation methods can be used
+make install
+
+
+ Issues
+===================================================================================================
+Bugs and Issues can be submitted into the issues section of github.com/protcad/protcad repo or a
+description of the issue and result can be emailed to Douglas Pike at doughp1@cabm.rutgers.edu
+
