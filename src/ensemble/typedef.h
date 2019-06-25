@@ -1,9 +1,4 @@
-
-#ifdef __APPLE__
-    #include "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.14.sdk/usr/include/stdio.h"
-#else
-    #include "/usr/include/stdio.h"
-#endif
+#include "/usr/include/stdio.h"
 #include <iostream>
 #include <string>
 #include <vector>

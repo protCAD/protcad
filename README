@@ -56,6 +56,10 @@ sudo apt-get install g++ gfortran git
 
 In terminal:
 xcode-select --install
+sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /
+
+For the second comand you will need to enter your password to install the compiler headers and may need to
+change the '14' in 'macOS_10.14' to your version of the operating system.
 
 Next you will need to install gfortran for your version of Mac found here: 
 https://github.com/fxcoudert/gfortran-for-macOS/releases
