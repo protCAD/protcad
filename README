@@ -58,7 +58,7 @@ In terminal:
 xcode-select --install
 sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /
 
-For the second comand you will need to enter your password to install the compiler headers and may need to
+For the second command you will need to enter your password to install the compiler headers and may need to
 change the '14' in 'macOS_10.14' to your version of the operating system.
 
 Next you will need to install gfortran for your version of Mac found here: 
@@ -74,7 +74,7 @@ cd protcad
 
 make install
 
-source ~/.bashrc
+Then close and re-open the terminal
 
 
  Usage
@@ -244,6 +244,6 @@ make install
 
  Issues
 ===================================================================================================
-Bugs and Issues can be submitted into the issues section of github.com/protcad/protcad repo or a
+Bugs and issues can be submitted into the issues section of http://www.github.com/protcad/protcad repo or a
 description of the issue and result can be emailed to Douglas Pike at doughp1@cabm.rutgers.edu
 
