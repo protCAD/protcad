@@ -4,15 +4,21 @@ export TNTINCLUDE=$(SRCDIR)
 export BINDIR=$(PROTCADDIR)/bin
 export OBJDIR=$(PROTCADDIR)/obj
 export PROJDIR=$(PROTCADDIR)/projects
+
+UNAME := $(shell uname -s)
+ifeq ($(UNAME),Linux)
 export $(PATH)=$(PATH):$(PROTCADDIR):$(BINDIR)
+endif
+ifeq ($(UNAME),Darwin)	
+export $(PATH)=$(PATH):$(PROTCADDIR):$(BINDIR):/usr/local/gfortran
+endif
+
 
 export CXX = g++
 export F77 = gfortran
 export MAKE = make
 
 SHELL = /bin/sh
-
-UNAME := $(shell uname -s)
 
 TARGETS = protDielectric protEvolver protDihedrals protOligamer protEnergy protFolder protMover protMutator protSequence protInverter protMin protAlign
 
