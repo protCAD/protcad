@@ -7,10 +7,10 @@ export PROJDIR=$(PROTCADDIR)/projects
 
 UNAME := $(shell uname -s)
 ifeq ($(UNAME),Linux)
-export $(PATH)=$(PATH):$(PROTCADDIR):$(BINDIR)
+	export $(PATH)=$(PATH):$(PROTCADDIR):$(BINDIR)
 endif
 ifeq ($(UNAME),Darwin)	
-export $(PATH)=$(PATH):$(PROTCADDIR):$(BINDIR):/usr/local/gfortran
+	export $(PATH)=$(PATH):$(PROTCADDIR):$(BINDIR):/usr/local/gfortran
 endif
 
 
