@@ -70,12 +70,10 @@ int main (int argc, char* argv[])
 				}
 				else{
 					UInt index = convertAAStringtoInt(item, aminoAcidString, aaSize);
-					cout << index << " ";
 					seq.push_back(index);
 				}
 				delimitercounter++;
 			}
-			cout << endl;
 			linecounter++;
 		}
 		file.close();
