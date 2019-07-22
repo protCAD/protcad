@@ -192,10 +192,11 @@ Input command: protMutator <inputfile>
 
 Input file format:
 Input PDB File,xyz.pdb,
-A,K,D,L,K,D,R,R,
-A,K,E,L,K,E,R,R,
+Active Chains,0,1,2,
+Active Positions,0,1,2,3,5,6,7,9,10,
+A,K,D,L,K,D,R,R,R,
 
-Output result: Minimized mutated model pdbs, one for each sequence in the input file
+Output result: Minimized mutated model pdb of amino acid muations at positions in in input file
 
 
 --protOligamer
