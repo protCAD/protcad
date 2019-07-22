@@ -15,11 +15,8 @@ unsigned int pdbWriter(protein* _pProtein, const string& _pdbFile)
 		_pProtein->updateResiduesPerTurnType();
 		renumberAtoms(_pProtein);
         atomIterator theIterator(_pProtein);
-        UInt test = 0;
 	for (; !(theIterator.last()); theIterator++)
 	{
-		test++;
-		cout << test << endl;
 		atom* pCurrentAtom = theIterator.getAtomPointer();
 		residue* pCurrentResidue = theIterator.getResiduePointer();
 		chain* pCurrentChain = theIterator.getChainPointer();
