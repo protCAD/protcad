@@ -1519,10 +1519,12 @@ void chain::rotate(const point& _point,const dblVec& _R_axis, const double _thet
 
 void chain::updateResiduesPerTurnType()
 {
-	for(UInt i=0; i<itsResidues.size(); i++)
-	{	
-		UInt RPT = getBackboneSequenceType(i);
-		itsResidues[i]->setResiduesPerTurnType(RPT);
+	if (itsResidues.size() > 1){
+		for(UInt i=0; i<itsResidues.size(); i++)
+		{	
+			UInt RPT = getBackboneSequenceType(i);
+			itsResidues[i]->setResiduesPerTurnType(RPT);
+		}
 	}
 }
 
