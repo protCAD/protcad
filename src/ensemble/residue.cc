@@ -1035,9 +1035,9 @@ void residue::buildRotamerLib()
 	string evname = "PROTCADDIR";
 	string path = getEnvironmentVariable(evname);
 	
-	string aaLib = "/data/rotamerLib";
+	string aaLib = "/data/rotamerLib/";
 
-	path += "/data/rotamerLib/";
+	path += aaLib;
 	// cout << " right handed alpha helix minimum rotamer library used \n";
 	rotamerLib* temp;
 	string filename;

@@ -154,7 +154,7 @@ string amberElec::getItsAtomName(const UInt _resType, const UInt _atomType) cons
 
 void amberElec::buildElectrostatics()
 {
-	itsFileName = "amberElec.frc";
+	itsFileName = "amber.in";
 	buildDataBase();
 	//cout << " AMBER all atom electrostatics force field built successfully\n";
 	return;
@@ -180,14 +180,11 @@ void amberElec::buildDataBase()
 		cout << iFile << endl;
 		exit (1);
 	}
-	while (getline (inFile, currentLine, '\n'))
+	while (getline (inFile, currentLine))
 	{
-		if (currentLine[0] != '>') // skip comment lines
-		{
-			parsedStrings=Parse::parse(currentLine);
-			convertToDataElements(parsedStrings);
-			parsedStrings.resize(0);
-		}
+		parsedStrings=Parse::parse(currentLine);
+		convertToDataElements(parsedStrings);
+		parsedStrings.resize(0);
 	}
 	//cout << "file read in\n";
 	inFile.close();
@@ -199,38 +196,44 @@ void amberElec::buildDataBase()
 void amberElec::convertToDataElements(const StrVec& _parsedStrings)
 {
 	double tmpDbl;
-	if (_parsedStrings[0][0] == '#') // #Xaa is the mark of a new residue in the list
-	{
-		string tmpStr;
-		string tmpChar;
-		tmpChar.resize(1);
-		tmpStr.resize(0);
-		for (UInt i = 1; i < _parsedStrings[0].size(); i++) // loop starts after the # mark
-		{
-			tmpChar = _parsedStrings[0][i];
-			tmpStr.append(tmpChar);
+	if (_parsedStrings.size() > 1){
+		if (_parsedStrings[1].size() == 3){
+			if (_parsedStrings[1][0] == 'I' && _parsedStrings[1][1] == 'N' && _parsedStrings[1][2] == 'T') // #Xaa is the mark of a new residue in the list
+			{
+				string tmpStr;
+				string tmpChar;
+				tmpChar.resize(1);
+				tmpStr.resize(0);
+				for (UInt i = 0; i < _parsedStrings[0].size(); i++) // loop starts after the # mark
+				{
+					tmpChar = _parsedStrings[0][i];
+					tmpStr.append(tmpChar);
+				}
+				resNames.push_back(tmpStr);
+			}
 		}
-		resNames.push_back(tmpStr);
 	}
-	else if (resNames.size() != 0) // not junk at the beginning of the file
+	if (_parsedStrings.size() == 11)
 	{
-		UInt i = _parsedStrings.size() - 1; // take last column for the charge
-		tmpDbl = 0.0;
-		sscanf(_parsedStrings[i].c_str(), "%lf", &tmpDbl);
-		if (resNames.size() != atomNames.size()) // if there are fewer atom vectors than their are residues
-		{
-			vector <string> atomList;
-			vector <double> chargeList;
-			atomList.push_back(_parsedStrings[1]);
-			atomNames.push_back(atomList);
-			chargeList.push_back(tmpDbl);
-			charges.push_back(chargeList);
-		}
-		else
-		{
-			UInt size = atomNames.size();
-			atomNames[size - 1].push_back(_parsedStrings[1]);
-			charges[size - 1].push_back(tmpDbl);
+		if (_parsedStrings[2][0] != 'D'){
+			UInt i = _parsedStrings.size() - 1; // take last column for the charge
+			tmpDbl = 0.0;
+			sscanf(_parsedStrings[i].c_str(), "%lf", &tmpDbl);
+			if (resNames.size() != atomNames.size()) // if there are fewer atom vectors than their are residues
+			{
+				vector <string> atomList;
+				vector <double> chargeList;
+				atomList.push_back(_parsedStrings[1]);
+				atomNames.push_back(atomList);
+				chargeList.push_back(tmpDbl);
+				charges.push_back(chargeList);
+			}
+			else
+			{
+				UInt size = atomNames.size();
+				atomNames[size - 1].push_back(_parsedStrings[1]);
+				charges[size - 1].push_back(tmpDbl);
+			}
 		}
 	}
 	return;
@@ -290,15 +293,15 @@ void amberElec::orderDataElements()  // NOTE:  this requires that the residue ty
 					{
 						atomNames[i].push_back(residue::getAtomNameBaseItem(i,k));
 						charges[i].push_back(0.00);
-                        cout << residue::getDataBaseItem(i) << "no charge for atom" << endl;
+						cout << residue::getDataBaseItem(i) << "no charge for atom" << endl;
 					}
 				}
 				if (residue::getAtomNameBaseSize(i) != atomNames[i].size())
 					cout << resNames[i] << " charges not properly built!" << endl;
 			}
 		}
-        if (resFlag != true)
-            cout << residue::getDataBaseItem(i) << " not found in the charge database." << endl;
+		if (resFlag != true)
+			cout << residue::getDataBaseItem(i) << " not found in the charge database." << endl;
 	}
 	if (resNames.size() != residue::dataBase.size())
 		//cout << "Not all residues found during electrostatics database building." << endl;

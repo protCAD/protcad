@@ -25,10 +25,10 @@ residueTemplate::residueTemplate(const residueTemplate& _rhs)
 		branchPoints = _rhs.branchPoints;
 		isMainChain = _rhs.isMainChain;
 		atomList = _rhs.atomList;
-		itsAtomEnergyTypeIndex = _rhs.itsAtomEnergyTypeIndex;	
+		itsAtomEnergyTypeIndex = _rhs.itsAtomEnergyTypeIndex;
 		itsRotamerLibs = _rhs.itsRotamerLibs;
 		chiDefinitions = _rhs.chiDefinitions;
-                hasPolarHRotamers = _rhs.hasPolarHRotamers;		
+		hasPolarHRotamers = _rhs.hasPolarHRotamers;
 		howManyTemplates++;
 }
 
