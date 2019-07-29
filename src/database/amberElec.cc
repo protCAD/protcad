@@ -154,7 +154,7 @@ string amberElec::getItsAtomName(const UInt _resType, const UInt _atomType) cons
 
 void amberElec::buildElectrostatics()
 {
-	itsFileName = "amber.in";
+	itsFileName = "amber.prep";
 	buildDataBase();
 	//cout << " AMBER all atom electrostatics force field built successfully\n";
 	return;

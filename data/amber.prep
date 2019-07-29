@@ -1947,7 +1947,7 @@ CORRECT  OMIT DU   BEG
   90  O1D   O2    E   89  86  83     1.260   117.200    90.000   0.1000 
   91  O2D   O2    E   89  86  83     1.260   117.200   270.000   0.3000 
 
-LOOP  EXPLICIT
+LOOP
  NA   C4A 
  FE   NB  
  FE   NC  

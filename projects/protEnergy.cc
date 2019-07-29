@@ -29,11 +29,11 @@ int main (int argc, char* argv[])
 	clock_t start, end;
 	double cpu_time_used;
 	
-	residue::setElectroSolvationScaleFactor(1.0);
+	residue::setElectroSolvationScaleFactor(0.0);
 	residue::setHydroSolvationScaleFactor(0.0);
 	residue::setPolarizableElec(true);
-	amberElec::setScaleFactor(1.0);
-	amberVDW::setScaleFactor(0.0);
+	amberElec::setScaleFactor(0.0);
+	amberVDW::setScaleFactor(1.0);
 	residue::setTemperature(300);
 	
 	start = clock();
@@ -42,7 +42,7 @@ int main (int argc, char* argv[])
 	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
 	cout << "Energy: " << Energy << " kcal/mol time: " << cpu_time_used << endl;
 	string outFile = infile;
-	//pdbWriter(bundle, outFile);
+	pdbWriter(bundle, outFile);
 	
 	start = clock();
 	UInt clashes = bundle->getNumHardClashes();

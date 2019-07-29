@@ -294,10 +294,9 @@ public:
 
 private:
 	void buildDataBase();
-	void buildDataBaseAA();
 	void buildResidueDataBaseAminoAcids();
-	//void buildDataBaseAE();
-	void buildDataBaseCC();
+	void buildDihedralDataBase();
+	void buildDataBaseFromPrep();
 	void buildRotamerLib();
 	void interpretBondingPattern();
 

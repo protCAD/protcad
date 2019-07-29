@@ -74,8 +74,13 @@ int residueTemplate::getAtomIndexOf(const string& _name) const
 		}
 	}
 	// no fit
-	cout << "Invalid Atom Name Found: " << _name << endl;
+	//cout << "Invalid Atom Name Found: " << _name << endl;
 	return -1;
+}
+
+string residueTemplate::getAtomNameOf(UInt index) const
+{	
+	return atomNameList[index];
 }
 	
 void residueTemplate::initializeChiDefinitions()

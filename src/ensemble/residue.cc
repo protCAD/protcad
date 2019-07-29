@@ -683,24 +683,12 @@ void residue::setPolarHydrogensOn(const bool _polarHydrogensOn)
 void residue::buildDataBase()
 {
 	dataBase.resize(0);
-//	cout << "building database with ";
-	//if (hydrogensOn) //cout << "hydrogens ON" << endl;
-	//else //cout << "hydrogens OFF" << endl;
 	// first, build the residueTemplates
 	buildResidueDataBaseAminoAcids();
-	//buildDataBaseAA();
-	// second build atom energy type assignment
-	//buildDataBaseAE();
-	//buildDataBaseAE();
-
-	// third build connectivities, chi angles etc
-	buildDataBaseCC();
+	buildDihedralDataBase();
+	buildDataBaseFromPrep();
 	interpretBondingPattern();
-	// fourth build rotamerLib
 	buildRotamerLib();
-	// indicate the type base is built
-	//for(UInt i=0;i<dataBase.size();i++)
-	//{	dataBase[i].initializeHasPolarHRotamers();  }
 	dataBaseBuilt = true;
 
 	// now that database has been constructed, build electrostatics forcefields
@@ -775,88 +763,13 @@ void residue::buildResidueDataBaseAminoAcids()
 	}
 }
 
-
-void residue::buildDataBaseAA()
-{	// initialize the dataBase
-	//cout << "Initializing the residue type database...." << endl;
-
-	string evname = "PROTCADDIR";
-	string path = getEnvironmentVariable(evname);
-
-	string aaLib = "/data/res.lib";
-	string iFile;
-	ifstream inFile;
-
-	// first build the amino acids
-	iFile = path + aaLib;
-	inFile.open(iFile.c_str());
-
-	if(!inFile)
-	{	cout << "Error: unable to open input file: "
-			 << iFile << endl;
-		exit (1);
-	}
-
-	pdbAtom tempPdb;
-	// Used to assign the type index
-	int resTypeIndex = 0;
-	// used to assign the atom name within each residue
-	int atomNameIndex = 0;
-	
-	residueTemplate tempTemplate;
-	// a strange string
-	const string strange = "*^{POLHGYHG><MDEZF!";
-	string currentResName = strange;
-	
-	for(;;)
-	{	if(tempPdb.pdbGetLine(inFile))
-		{	if(currentResName != tempPdb.getItem(resName))
-	 		{	if(currentResName != strange)
-				{	dataBase.push_back(tempTemplate);
-					resTypeIndex++;
-					tempTemplate.reset();
-				}
-				currentResName = tempPdb.getItem(resName);
-				tempTemplate.typeIndex = resTypeIndex;
-				tempTemplate.typeString = currentResName;
-				atomNameIndex = 0;
-				//cout << currentResName << " " << resTypeIndex << endl;
-			}
-
-			atom tempAtom(tempPdb);
-			tempAtom.itsResType = resTypeIndex;
-			tempTemplate.atomNameList.push_back(tempPdb.getItem(pdbAtomName));
-			// set the corresponding index atom name
-			tempAtom.itsName = atomNameIndex;
-			atomNameIndex++;
-			tempTemplate.atomList.push_back(tempAtom);
-			// initialize the isMainChain database
-			tempTemplate.isMainChain.push_back(false);
-		}
-		else
-		{	if(currentResName != strange)
-			{	dataBase.push_back(tempTemplate);
-			}
-			break; //get out of the loop at the end of the file
-		}
-	}
-}
-
-/*
-void residue::buildDataBaseAE()
-{	for(UInt i=0; i<dataBase.size(); i++)
-	{	dataBase[i].assignAtomEnergyTypes();
-	}
-}
-*/
-
 // *****************************************************************************
 // *****************************************************************************
 //  buildDataBaseCC is ONLY for buildDataBase
 // *****************************************************************************
 // *****************************************************************************
 
-void residue::buildDataBaseCC()
+void residue::buildDihedralDataBase()
 {	
 	string evname = "PROTCADDIR";
 	string path = getEnvironmentVariable(evname);
@@ -884,9 +797,7 @@ void residue::buildDataBaseCC()
 		// the available headers without spaces in between
 		string mcn = "mainchainatoms";
 		string bpt = "sidechainbranchpoints";
-		string con = "connectivity";
 		string chi = "defineddihedralangles";
-		string aet = "atomtypes";
 		
 		char ch;
 		// used to convert a char to a string
@@ -957,36 +868,6 @@ void residue::buildDataBaseCC()
 					}
 				}
 			}
-			else if(header == con)
-			{	if(ch !=' ' && ch != '\t' && ch != '\n')
-				{	strCh[0] = ch;
-					strBuf.append(strCh);
-				}
-				else
-				{	if(strBuf.size() != 0)
-					{	tempInt = pCurrentResTemplate->getAtomIndexOf(strBuf);
-						if(tempInt != -1)
-						{	if(pCurrentResTemplate->connectivity.size() == 0)
-							{	// connectivity starts with a 0
-								pCurrentResTemplate->connectivity.push_back(0);
-							}
-							// connectivity used 0 as delimiter
-							// so all the index is shifted up by 1
-							// 0->1 and 1->2 ...
-							pCurrentResTemplate->connectivity.push_back(tempInt+1);
-						}
-						strBuf.resize(0);
-					}
-					if(ch == '\n')
-					{	// new line starts different connectivity sets
-						// ignore blank lines
-					
-						if(pCurrentResTemplate->connectivity[pCurrentResTemplate->connectivity.size()-1] != 0)
-						{	pCurrentResTemplate->connectivity.push_back(0);
-						}
-					}
-				}
-			}
 			else if(header == chi)
 			{	if(ch != ' ' && ch !='\t' && ch !='\n')
 				{	strCh[0] = ch;
@@ -1005,28 +886,201 @@ void residue::buildDataBaseCC()
 					}
 				}
 			}
-			else if (header == aet)
-			{	if(ch != ' ' && ch !='\t' && ch !='\n')
-				{	strCh[0] = ch;
-					strBuf.append(strCh);
-				}
-				else
-				{	if (strBuf.size() !=0)
-					{	strVect.push_back(strBuf);
-						if (ch == '\n')
-						{	
-							// this is the call to set the Atom Types for energycalculations
-							pCurrentResTemplate->addAtomTypeDefinitions(strVect);
-							//reset the strVect after processing
-							strVect.resize(0);
-						}
-						strBuf.resize(0);
-					}
-				}
-			}
 		}
 		inFile.close();
 		inFile.clear();
+	}
+}
+
+void residue::buildDataBaseFromPrep()
+{	
+	string itsFileName = "amber.prep";
+	string evname = "PROTCADDIR";
+	string path = getEnvironmentVariable(evname);
+	path += "/data/";
+	string iFile = path + itsFileName;
+	ifstream inFile;
+	string currentLine;
+	StrVec parsedStrings;
+	vector< vector< string > > atomNames;
+	vector< vector< string > > loopedAtoms;
+	vector< vector< int > > bondIndices;
+	vector< vector< int > > bondedIndices;
+	vector< vector< string > > vdwTypes;
+	vector< string > resNames;
+	int bondIndex, bondedIndex;
+	parsedStrings.resize(0);
+
+	inFile.open(iFile.c_str());
+	if (!inFile)
+	{
+		cout << "Error: unable to open input file: " ;
+		cout << iFile << endl;
+		exit (1);
+	}
+	bool loop = false;
+	while (getline (inFile, currentLine))
+	{
+		parsedStrings=Parse::parse(currentLine);
+		if (loop && parsedStrings.size() == 0){loop = false;}
+		if (parsedStrings.size() > 1){
+			if (loop){
+				loopedAtoms[loopedAtoms.size()-1].push_back(parsedStrings[0]);
+				loopedAtoms[loopedAtoms.size()-1].push_back(parsedStrings[1]);
+			}
+			if (parsedStrings[1].size() == 3){
+				if (parsedStrings[1].compare("INT") == 0){
+					string tmpStr;
+					string tmpChar;
+					tmpChar.resize(1);
+					tmpStr.resize(0);
+					for (UInt i = 0; i < parsedStrings[0].size(); i++) // loop starts after the # mark
+					{
+						tmpChar = parsedStrings[0][i];
+						tmpStr.append(tmpChar);
+					}
+					resNames.push_back(tmpStr);
+					StrVec tempVec;
+					loopedAtoms.push_back(tempVec);
+				}
+			}
+		}
+		else if (parsedStrings.size() == 1){
+			if (parsedStrings[0].compare("LOOP") == 0){loop = true;}
+		}
+		if (parsedStrings.size() == 11)
+		{
+			if (parsedStrings[2][0] != 'D'){
+			
+				// Get bonding index
+				bondIndex = 0;
+				sscanf(parsedStrings[0].c_str(), "%d", &bondIndex);
+				
+				// Get bonded index
+				bondedIndex = 0;
+				sscanf(parsedStrings[4].c_str(), "%d", &bondedIndex);
+				
+				if (resNames.size() != atomNames.size()) // if there are fewer atom vectors than their are residues
+				{
+					vector <string> atomList;
+					atomList.push_back(parsedStrings[1]);
+					atomNames.push_back(atomList);
+					vector <string> vdwList;
+					vdwList.push_back(parsedStrings[2]);
+					vdwTypes.push_back(vdwList);
+					vector <int> bondList;
+					bondList.push_back(bondIndex);
+					bondIndices.push_back(bondList);
+					vector <int> bondedList;
+					bondedList.push_back(bondedIndex);
+					bondedIndices.push_back(bondedList);
+				}
+				else
+				{
+					UInt size = atomNames.size();
+					atomNames[size - 1].push_back(parsedStrings[1]);
+					vdwTypes[size - 1].push_back(parsedStrings[2]);
+					bondIndices[size - 1].push_back(bondIndex);
+					bondedIndices[size - 1].push_back(bondedIndex);
+				}
+			}
+		}
+		parsedStrings.resize(0);
+	}
+	inFile.close();
+	inFile.clear();
+
+	// Pointer is used to make the process efficient
+	// But any modification should be conducted very carefully!!!
+	residueTemplate* pCurrentResTemplate = 0;
+
+	for(UInt i=0; i<dataBase.size(); i++)
+	{	pCurrentResTemplate = &dataBase[i];
+		string res = pCurrentResTemplate->typeString;
+		int resIndex;
+		for (UInt j = 0; j < resNames.size(); j++)
+		{
+			if (res.compare(resNames[j]) == 0){resIndex = j; break;}
+		}
+		
+		// string buffer
+		string strBuf;
+		strBuf.resize(0);
+		// atom index buffer
+		int tempInt;
+		// strings buffer
+		StrVec typeVect;
+		typeVect.resize(0);
+
+		// build mainchain atoms as backbone atoms or first four atoms in res.lib
+		if (pCurrentResTemplate->mainChain.size() == 0){
+			tempInt = pCurrentResTemplate->getAtomIndexOf("N");
+			if(tempInt != -1){pCurrentResTemplate->mainChain.push_back(tempInt);}
+			else{pCurrentResTemplate->mainChain.push_back(0);}
+			tempInt = pCurrentResTemplate->getAtomIndexOf("CA");
+			if(tempInt != -1){pCurrentResTemplate->mainChain.push_back(tempInt);}
+			else{pCurrentResTemplate->mainChain.push_back(1);}
+			tempInt = pCurrentResTemplate->getAtomIndexOf("C");
+			if(tempInt != -1){pCurrentResTemplate->mainChain.push_back(tempInt);}
+			else{pCurrentResTemplate->mainChain.push_back(2);}
+			tempInt = pCurrentResTemplate->getAtomIndexOf("O");
+			if(tempInt != -1){pCurrentResTemplate->mainChain.push_back(tempInt);}
+			else{pCurrentResTemplate->mainChain.push_back(3);}
+		}
+		
+		// build vdw type, connectivity from amber prep file
+		for (UInt j = 0; j < atomNames[resIndex].size(); j++)
+		{
+			int atomIndex;
+			string atomName = pCurrentResTemplate->getAtomNameOf(j);
+			for (UInt k = 0; k < atomNames[resIndex].size(); k++)
+			{
+				if (atomName.compare(atomNames[resIndex][k]) == 0){atomIndex = k; break;}
+			}
+			
+			// Load vdw type into atom
+			typeVect.push_back(atomName);
+			typeVect.push_back(vdwTypes[resIndex][atomIndex]);
+			typeVect.push_back(vdwTypes[resIndex][atomIndex]);
+			pCurrentResTemplate->addAtomTypeDefinitions(typeVect);
+			typeVect.resize(0);
+			
+			// add to connectivity vector for each atom
+			pCurrentResTemplate->connectivity.push_back(0);
+			tempInt = pCurrentResTemplate->getAtomIndexOf(atomName);
+			if(tempInt != -1){
+				pCurrentResTemplate->connectivity.push_back(tempInt+1);
+			}
+			for (UInt k = 0; k < bondedIndices[resIndex].size(); k++)
+			{
+				int otherAtomIndex;
+				string otherAtomName = pCurrentResTemplate->getAtomNameOf(k);
+				for (UInt l = 0; l < atomNames[resIndex].size(); l++)
+				{
+					if (otherAtomName.compare(atomNames[resIndex][l]) == 0){otherAtomIndex = l; break;}
+				}
+				if (bondIndices[resIndex][atomIndex] == bondedIndices[resIndex][otherAtomIndex])
+				{
+					tempInt = pCurrentResTemplate->getAtomIndexOf(atomNames[resIndex][otherAtomIndex]);
+					if(tempInt != -1){
+						pCurrentResTemplate->connectivity.push_back(tempInt+1);
+					}
+				}
+			}
+			if (loopedAtoms[resIndex].size() > 1){
+				for (UInt k = 1; k < loopedAtoms[resIndex].size(); k++)
+				{
+					if (atomName.compare(loopedAtoms[resIndex][k]) == 0)
+					{
+						tempInt = pCurrentResTemplate->getAtomIndexOf(loopedAtoms[resIndex][k-1]);
+						if(tempInt != -1){
+							pCurrentResTemplate->connectivity.push_back(tempInt+1);
+						}
+					}
+					k++;
+				}
+			}
+		}
 	}
 }
 
