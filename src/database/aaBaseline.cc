@@ -6,7 +6,7 @@ double aaBaseline::itsScaleFactor = 1.0;
 aaBaseline::aaBaseline()
 {	// default constructor
 	// read the file until the end.....
-	itsFileName = "resBaseline.frc";
+	itsFileName = "molBaseline.frc";
 	baselineData.resize(0);
 	residueNameStrings.resize(0);
 	buildDataBase();
@@ -22,7 +22,7 @@ aaBaseline::aaBaseline()
 aaBaseline::aaBaseline(int _dummy)
 {	// default constructor
 	// read the file until the end.....
-	itsFileName = "resBaseline.frc";
+	itsFileName = "molBaseline.frc";
 	baselineData.resize(0);
 	residueNameStrings.resize(0);
 	buildDataBase();
@@ -79,11 +79,11 @@ void aaBaseline::buildDataBase()
 	parsedStrings.resize(0);
 	
 	inFile.open(iFile.c_str());
-	if (!inFile)
-	{	cout << "Error: unable to open input file: ";
-		cout << iFile << endl;
-		exit (1);
-	}
+	//if (!inFile)
+	//{	cout << "Error: unable to open input file: ";
+	//	cout << iFile << endl;
+	//	exit (1);
+	//}
 
 	while (getline(inFile, currentLine, '\n'))
 	{	// ignore the comment line

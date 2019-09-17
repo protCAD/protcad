@@ -27,16 +27,16 @@ int main (int argc, char* argv[])
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
     protein* bundle = static_cast<protein*>(pMol);
 
-	cout << endl << "phi psi backbonetype" << endl;
+	cout << endl << "chain res phi psi RPT backbonetype" << endl;
 
 	UInt chainNum = bundle->getNumChains();
 	for (UInt i = 0; i < chainNum; i ++)
 	{
 		UInt resNum = bundle->getNumResidues(i);
-		for (UInt j = 1; j < resNum-2; j ++)
+		for (UInt j = 1; j < resNum-1; j ++)
 		{
 			UInt backboneType = bundle->getBackboneSequenceType(i,j);
-			cout << i << " " << j << " " << bundle->getPhi(i,j) << " " << bundle->getPsi(i,j) << " " << backboneTypes[backboneType] << endl;
+			cout << i << " " << j << " " << bundle->getPhi(i,j) << " " << bundle->getPsi(i,j) << " " << bundle->getResiduesPerTurn(i,j) << " " << backboneTypes[backboneType] << endl;
 		}
 	}
 	return 0;

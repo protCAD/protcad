@@ -710,7 +710,7 @@ void residue::buildResidueDataBaseAminoAcids()
 	string evname = "PROTCADDIR";
 	string path = getEnvironmentVariable(evname);
 	
-	string aaLib = "/data/res.lib";
+	string aaLib = "/data/mol.lib";
 	string iFile;
 	ifstream inFile;
 
@@ -774,7 +774,7 @@ void residue::buildDihedralDataBase()
 	string evname = "PROTCADDIR";
 	string path = getEnvironmentVariable(evname);
 	
-	string aaDat = "/data/res/";
+	string aaDat = "/data/mol/";
 
 	path += aaDat;
 	string iFile;
@@ -788,11 +788,11 @@ void residue::buildDihedralDataBase()
 	{	pCurrentResTemplate = &dataBase[i];
 		iFile = path + pCurrentResTemplate->typeString + ".dat";
 		inFile.open(iFile.c_str());
-		if(!inFile)
-		{	cout << "Error: unable to open input file: "
-			     << iFile << endl;
-			exit (1);
-		}
+		//if(!inFile)
+		//{	cout << "Error: unable to open input file: "
+		//	     << iFile << endl;
+		//	exit (1);
+		//}
 		
 		// the available headers without spaces in between
 		string mcn = "mainchainatoms";
@@ -1012,7 +1012,7 @@ void residue::buildDataBaseFromPrep()
 		StrVec typeVect;
 		typeVect.resize(0);
 
-		// build mainchain atoms as backbone atoms or first four atoms in res.lib
+		// build mainchain atoms as backbone atoms or first four atoms in mol.lib
 		if (pCurrentResTemplate->mainChain.size() == 0){
 			tempInt = pCurrentResTemplate->getAtomIndexOf("N");
 			if(tempInt != -1){pCurrentResTemplate->mainChain.push_back(tempInt);}
@@ -1026,6 +1026,13 @@ void residue::buildDataBaseFromPrep()
 			tempInt = pCurrentResTemplate->getAtomIndexOf("O");
 			if(tempInt != -1){pCurrentResTemplate->mainChain.push_back(tempInt);}
 			else{pCurrentResTemplate->mainChain.push_back(3);}
+		}
+		
+		// build branchpoint atom as alpha carbon or second atom in mol.lib
+		if (pCurrentResTemplate->branchPoints.size() == 0){
+			tempInt = pCurrentResTemplate->getAtomIndexOf("CA");
+			if(tempInt != -1){pCurrentResTemplate->branchPoints.push_back(tempInt);}
+			else{pCurrentResTemplate->branchPoints.push_back(1);}
 		}
 		
 		// build vdw type, connectivity from amber prep file
@@ -1083,6 +1090,29 @@ void residue::buildDataBaseFromPrep()
 		}
 	}
 }
+
+/*void residue::buildAutoRotamerLib()
+{
+	
+	rotamerLib* temp;
+	UIntVec angles;
+	for(UInt i=0; i<dataBase.size(); i++)
+	{	// if chis are defined
+		if( dataBase[i].chiDefinitionsNonempty() )
+		{
+			temp = new rotamerLib(dataBase[i].branchPoints.size());
+			// since it is a pointer, the changes below done to
+			// temp is the same as the ones done to rotamerlib
+			ASSERT(temp != 0);
+			dataBase[i].itsRotamerLibs.push_back(temp);
+			for (UInt j = 0; j < dataBase[i].branchPoints.size(); j++)
+			{
+				for () 
+						temp->addRotamer(j, angles);
+						angles.resize(0);
+		}
+	}			
+}*/
 
 void residue::buildRotamerLib()
 {
@@ -1458,22 +1488,27 @@ residue* residue::mutate(const UInt _newTypeIndex)
 	}
 	newAA->setResNum(itsResNum);
 
+	
+
 	// When mutating the same residue in place of old
 	// make sure same amino acid has near identical Calpha-Cbeta angle
 	// and Cbeta position relative to backbone
 	if (betapivot)
 	{
-		newAA->getAtom(4)->setCoords(itsAtoms[4]->getCoords());
-		newAA->setBetaChi(getBetaChi());
+		if (itsAtoms.size() > 4){
+			if (itsAtoms[4]->getName() == "CB" || itsAtoms[4]->getName() == "CD"){
+				//newAA->getAtom(4)->setCoords(itsAtoms[4]->getCoords());
+				newAA->setBetaChi(getBetaChi()-(newAA->getBetaChi()-getBetaChi()));
+			}
+		}
 	}
-
+	
 	// ensure that we have not modified the main chain
 	// coordinates in any way
 	for (UInt i=0;i<dataBase[itsType].mainChain.size(); i++)
 	{
 		newAA->getMainChain(i)->setCoords( getMainChain(i)->getCoords());
 	}
-
 	// now, since we're changing the backbone coordinates, make
 	// sure that the amide hydrogen H is in the right place...
 	// all other hydrogens should have been taken care of by the
@@ -1707,7 +1742,8 @@ void residue::setBetaChi(const double _angle)
 		double currentBetaChi = getBetaChi();
 		ASSERT(currentBetaChi < 1e5 && currentBetaChi > -1e5);
 		double diff = _angle - currentBetaChi;
-		rotate(0,1, diff);
+		if (itsType == 19){rotate(0,4, diff);}//proline
+		else{rotate(0,1, diff);}
 		setMoved();
 	}
 }
@@ -1785,18 +1821,31 @@ double residue::getChi(const UInt _index) const
 }
 
 double residue::getBetaChi()
-{	if(pItsPrevRes != 0 && itsAtoms[4]->getType() == "C")
+{	
+	if(itsAtoms.size() > 4)
 	{
-		vector< dblVec > quadVect(4);
-		quadVect[0] = pItsPrevRes->getMainChain(2)->getCoords();
-		quadVect[1] = getMainChain(0)->getCoords();
-		quadVect[2] = getMainChain(1)->getCoords();
-		quadVect[3] = itsAtoms[4]->getCoords();
-		return CMath::dihedral(quadVect[0], quadVect[1], quadVect[2], quadVect[3]);
+		if(pItsPrevRes != 0 && (itsAtoms[4]->getName() == "CB" || itsAtoms[4]->getName() == "CD"))
+		{
+			if (itsType == 19) // proline
+			{
+				vector< dblVec > quadVect(4);
+				quadVect[0] = pItsPrevRes->getMainChain(2)->getCoords();
+				quadVect[1] = itsAtoms[0]->getCoords();
+				quadVect[2] = itsAtoms[4]->getCoords();
+				quadVect[3] = itsAtoms[5]->getCoords();
+				return CMath::dihedral(quadVect[0], quadVect[1], quadVect[2], quadVect[3]);
+			}
+			else{
+				vector< dblVec > quadVect(4);
+				quadVect[0] = pItsPrevRes->getMainChain(2)->getCoords();
+				quadVect[1] = getMainChain(0)->getCoords();
+				quadVect[2] = getMainChain(1)->getCoords();
+				quadVect[3] = itsAtoms[4]->getCoords();
+				return CMath::dihedral(quadVect[0], quadVect[1], quadVect[2], quadVect[3]);
+			}
+		}	
 	}
-	else{
-		return 1000.0;
-	}
+	return 1000.0;
 }
 
 double residue::calculateDihedral(const vector<UInt>& _quad) const

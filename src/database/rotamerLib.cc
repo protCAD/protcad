@@ -86,6 +86,12 @@ void rotamerLib::addRotamer(const StrVec& _strVec)
 	itsRotamers[bpt].push_back(tempRot);
 }
 
+void rotamerLib::addRotamer(int _bpt, UIntVec _angles)
+{	
+	rotamer tempRot(_angles,0.0);
+	itsRotamers[_bpt].push_back(tempRot);
+}
+
 void rotamerLib::print() const
 {	for(UInt i=0; i<itsRotamers.size(); i++)
 	{	cout << " bpt = " << i << endl;
