@@ -3293,15 +3293,18 @@ UInt residue::getNumHardClashes(residue* _other)
 UInt residue::getNumHardBackboneClashes(residue* _other)
 {
 	UInt numClashes = 0;
-	UInt atomsI =4, atomsJ =4;
-	if (itsAtoms[4]->getName() == "CB"){atomsI = 5;}
-	if (_other->itsAtoms[4]->getName() == "CB"){atomsJ = 5;}
-	for (UInt i = 0; i < atomsI; i ++)
-	{
-		for (UInt j = 0; j < atomsJ; j ++)
+	if (itsAtoms.size() > 3 && _other->itsAtoms.size()> 3){
+		UInt atomsI =4, atomsJ =4;
+		if (itsAtoms[4]->getName() == "CB"){atomsI = 5;}
+
+		if (_other->itsAtoms[4]->getName() == "CB"){atomsJ = 5;}
+		for (UInt i = 0; i < atomsI; i ++)
 		{
-			if (isClash(i, _other, j)) numClashes++;
-		} 
+			for (UInt j = 0; j < atomsJ; j ++)
+			{
+				if (isClash(i, _other, j)) numClashes++;
+			} 
+		}
 	}
 	return numClashes;
 }

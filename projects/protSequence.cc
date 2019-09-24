@@ -37,10 +37,10 @@ int main (int argc, char* argv[])
 	aa.open ("aa.faa", fstream::in | fstream::out | fstream::app);
 	aa << endl << ">" << infile << " aaseq:" << endl;
 	UInt numRes = _prot->getNumResidues(0);
-	for (UInt j = 1; j < numRes-1; j++)
+	for (UInt j = 0; j < numRes; j++)
 	{
 		UInt restype = _prot->getTypeFromResNum(0,j);
-		aa << aminoAcidString[restype];
+		aa << aminoAcidString[restype] << " ";
 	}
 	aa.close();
 	//}
@@ -50,10 +50,17 @@ int main (int argc, char* argv[])
 	bb.open ("bb.faa", fstream::in | fstream::out | fstream::app);
 	bb << endl << ">" << infile << " bbseq:" << endl;
 	numRes = _prot->getNumResidues(0);
-	for (UInt j = 1; j < numRes-1; j++)
+	for (UInt j = 0; j < numRes; j++)
 	{
 		UInt backboneType = _prot->getBackboneSequenceType(0,j);
-		bb << backboneSeq[backboneType];
+		bb << backboneSeq[backboneType] << " ";
+		
+	}
+	bb << endl;
+	for (UInt j = 0; j < numRes; j++)
+	{
+		UInt backboneType = _prot->getBackboneSequenceType(0,j);;
+		bb << backboneTypes[backboneType] << " ";
 	}
 	bb.close();
 	//}
