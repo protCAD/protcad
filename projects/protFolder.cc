@@ -25,8 +25,8 @@ UInt convertSeqStringtoInt(string Seq, string backboneSeq[], UInt size);
 vector < vector < UInt > > readSequencePool();
 vector < vector < UInt > > readPossibleMutants();
 
-enum structure {C,L,P,T,E,Y,A,I,D,Q,R,F,H,W,K,S};
-string backboneSeq[] =   { "C", "L", "P", "T","E","Y","A","I",  "D",  "Q",  "R",  "F", "H", "W", "K", "S"};
+enum structure {O,L,P,B,E,X,A,I,U,J,Z,F,H,W,K,S};
+string backboneSeq[] =   { "O", "L", "P", "B","E","X","A","I",  "U",  "J",  "Z",  "F", "H", "W", "K", "S"};
 string backboneTypes[] = {"-π","-α","-ρ","-β","β","ρ","α","π","-πi","-αi","-ρi","-βi","βi","ρi","αi","πi"};
 UInt seqSize = sizeof(backboneSeq)/sizeof(backboneSeq[0]);
 UInt populationBaseline = 1000;

@@ -53,23 +53,23 @@ int main (int argc, char* argv[])
 	{
 		for (int p = 0; p < 360; p++)
 		{
-			for (int r = 5; r < 12; r++)
-			{
+			//for (int r = 5; r < 12; r++)
+			//{
 				count++;
-				radius = r;
+				radius = 12;
 				protein* bundle = new protein(*start);
-				buildSymmetricOligamer (bundle, true, radius, 180, d, p, -3.0);
-				cout << count << " " << radius << " " << d << " " << p << " " << bundle->protEnergy() << endl;
+				buildSymmetricOligamer (bundle, true, radius, 0.0, d, p, 0);
+				cout << count << " " << d << " " << p << " " << endl;
 				stringstream convert;
 				string countstr;
 				convert << count, countstr = convert.str();
 				outFile = countstr + "_oligamer.pdb";
 				pdbWriter(bundle, outFile);
 				delete bundle;
-			}
-			p=p+9;
+			//}
+			p=p+29;
 		}
-		d=d+9;
+		d=d+29;
 	}
 	return 0;
 }

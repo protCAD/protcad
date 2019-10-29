@@ -3101,22 +3101,26 @@ double protein::getResiduesPerTurn(double phi, double psi)
 
 UInt protein::getBackboneSequenceType(double RPT, double phi)
 {
-	if (RPT <= -4.1 && phi <= 0)				{return 0;}
-	if (RPT > -4.1  && RPT <= -3.4 && phi <= 0)	{return 1;}
-	if (RPT > -3.4  && RPT <= -2.7 && phi <= 0)	{return 2;}
-	if (RPT > -2.7  && RPT <= -2.0 && phi <= 0)	{return 3;}
-	if (RPT >  2.0  && RPT <=  2.7 && phi <= 0)	{return 4;}
-	if (RPT >  2.7  && RPT <=  3.4 && phi <= 0)	{return 5;}
-	if (RPT >  3.4  && RPT <=  4.1 && phi <= 0)	{return 6;}
-	if (RPT >  4.1 && phi <= 0)					{return 7;}
-	if (RPT <= -4.1 && phi > 0)					{return 8;}
-	if (RPT > -4.1  && RPT <= -3.4 && phi > 0)	{return 9;}
-	if (RPT > -3.4  && RPT <= -2.7 && phi > 0)	{return 10;}
-	if (RPT > -2.7  && RPT <= -2.0 && phi > 0)	{return 11;}
-	if (RPT >  2.0  && RPT <=  2.7 && phi > 0)	{return 12;}
-	if (RPT >  2.7  && RPT <=  3.4 && phi > 0)	{return 13;}
-	if (RPT >  3.4  && RPT <=  4.1 && phi > 0)	{return 14;}
-	if (RPT >  4.1 && phi > 0)					{return 15;}
+	if (RPT <= -4.48 && phi <= 0)					{return 0;}
+	if (RPT > -4.48  && RPT <= -3.86 && phi <= 0)	{return 1;}
+	if (RPT > -3.86  && RPT <= -3.24 && phi <= 0)	{return 2;}
+	if (RPT > -3.24  && RPT <= -2.62 && phi <= 0)	{return 3;}
+	if (RPT > -2.62  && RPT <= -2.00 && phi <= 0)	{return 4;}
+	if (RPT >  2.00  && RPT <=  2.62 && phi <= 0)	{return 5;}
+	if (RPT >  2.62  && RPT <=  3.24 && phi <= 0)	{return 6;}
+	if (RPT >  3.24  && RPT <=  3.86 && phi <= 0)	{return 7;}
+	if (RPT >  3.86  && RPT <=  4.48 && phi <= 0)	{return 8;}
+	if (RPT >  4.48 && phi <= 0)					{return 9;}
+	if (RPT <= -4.48 && phi > 0)					{return 10;}
+	if (RPT > -4.48  && RPT <= -3.86 && phi > 0)	{return 11;}
+	if (RPT > -3.86  && RPT <= -3.24 && phi > 0)	{return 12;}
+	if (RPT > -3.24  && RPT <= -2.62 && phi > 0)	{return 13;}
+	if (RPT > -2.62  && RPT <= -2.00 && phi > 0)	{return 14;}
+	if (RPT >  2.00  && RPT <=  2.62 && phi > 0)	{return 15;}
+	if (RPT >  2.62  && RPT <=  3.24 && phi > 0)	{return 16;}
+	if (RPT >  3.24  && RPT <=  3.86 && phi > 0)	{return 17;}
+	if (RPT >  3.86  && RPT <=  4.48 && phi > 0)	{return 18;}
+	if (RPT >  4.48 && phi > 0)						{return 19;}
 	return 0;
 }
 

@@ -1,0 +1,5 @@
+!sidechain branch points
+CA CZ
+!defined dihedral angles
+1	N	CA	CB	CG	CD1
+2	CE2	CZ	OH	HH

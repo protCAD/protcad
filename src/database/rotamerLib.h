@@ -20,6 +20,7 @@ public:
 	~rotamerLib();
 
 	void addRotamer(const StrVec& _strVec);
+	void addRotamer(int _bpt, UIntVec _angles);
 	
 	bool rotamersExist(const UInt _bpt, const UInt _rotamer) const;
 	DouVec getAngles(const UInt _bpt, const UInt _rotamer) const;
