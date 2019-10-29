@@ -3034,7 +3034,13 @@ double residue::maxwellGarnettApproximation(UInt _atomIndex1, UInt _atomIndex2, 
 {	//Polarizable electrostatics model via a dipole-dipole polarization effect on the medium
 	//Vadim A. Markel 1244 Vol. 33, No. 7 / July 2016 / J Opt Soc Amer
 	
-	if (itsAtoms[_atomIndex1]->getType() == "H" || itsAtoms[_atomIndex2]->getType() == "H" || itsAtoms[_atomIndex1]->getType() == "NI" || itsAtoms[_atomIndex2]->getType() == "NI" || itsAtoms[_atomIndex1]->getType() == "FE" || itsAtoms[_atomIndex2]->getType() == "FE"){
+	// Check for hbonds and metal ligation where polarization is significant and worth calculating
+	if( ((itsAtoms[_atomIndex1]->getType() == "H" || itsAtoms[_atomIndex1]->getType() == "FE" || itsAtoms[_atomIndex1]->getType() == "NI") &&
+	     (itsAtoms[_atomIndex2]->getType() == "O" || itsAtoms[_atomIndex2]->getType() == "S"  || itsAtoms[_atomIndex2]->getType() == "N")) ||
+		((itsAtoms[_atomIndex2]->getType() == "H" || itsAtoms[_atomIndex2]->getType() == "FE" || itsAtoms[_atomIndex2]->getType() == "NI") &&
+	     (itsAtoms[_atomIndex1]->getType() == "O" || itsAtoms[_atomIndex1]->getType() == "S"  || itsAtoms[_atomIndex1]->getType() == "N"))
+	  )
+	{
 		//get dipole-dipole polarization
 		double pol = approximateDipoleDipolePolarization(_atomIndex1, _atomIndex2);
 		double vol = 4/3*PI*pow((sqrt(_distanceSquared)/2),3);
@@ -3051,8 +3057,13 @@ double residue::maxwellGarnettApproximation(UInt _atomIndex1, residue* _other, U
 {	//Polarizable electrostatics model via a dipole-dipole polarization effect on the medium
 	//Vadim A. Markel 1244 Vol. 33, No. 7 / July 2016 / J Opt Soc Amer
 	
-	if (itsAtoms[_atomIndex1]->getType() == "H" || _other->itsAtoms[_atomIndex2]->getType() == "H"){
-		//get dipole-dipole polarization
+	// Check for hbonds and metal ligation where polarization is significant and worth calculating
+	if( ((itsAtoms[_atomIndex1]->getType() == "H" || itsAtoms[_atomIndex1]->getType() == "FE" || itsAtoms[_atomIndex1]->getType() == "NI") &&
+	     (_other->itsAtoms[_atomIndex2]->getType() == "O" || _other->itsAtoms[_atomIndex2]->getType() == "S"  || _other->itsAtoms[_atomIndex2]->getType() == "N")) ||
+		((_other->itsAtoms[_atomIndex2]->getType() == "H" || _other->itsAtoms[_atomIndex2]->getType() == "FE" || _other->itsAtoms[_atomIndex2]->getType() == "NI") &&
+	     (itsAtoms[_atomIndex1]->getType() == "O" || itsAtoms[_atomIndex1]->getType() == "S"  || itsAtoms[_atomIndex1]->getType() == "N"))
+	  )
+	{	//get dipole-dipole polarization
 		double pol = approximateDipoleDipolePolarization(_atomIndex1, _other, _atomIndex2);
 		double vol = 4/3*PI*pow((sqrt(_distanceSquared)/2),3);
 		
@@ -3069,52 +3080,62 @@ double residue::approximateDipoleDipolePolarization(UInt _atomIndex1, UInt _atom
 	
 	//Identify Atoms in Dipoles
 	dblVec a1Coords = getCoords(_atomIndex1); dblVec p1Coords;
+	bool dipole1 = false;
 	for (UInt i = 0; i < itsAtoms.size(); i++)
 	{
 		if (isBonded(_atomIndex1, i)){
 			p1Coords = getCoords(i);
+			dipole1 = true;
 			break;
 		}
 	}
 	dblVec a2Coords = getCoords(_atomIndex2); dblVec p2Coords;
+	bool dipole2 = false;
 	for (UInt i = 0; i < itsAtoms.size(); i++)
 	{
 		if (isBonded(_atomIndex2, i)){
 			p2Coords = getCoords(i);
+			dipole2 = true;
 			break;
 		}
 	}
 	double statpol1 = residueTemplate::getPolarizability(dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex1][0]); 
 	double statpol2 = residueTemplate::getPolarizability(dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex2][0]);
-	double pol1 = CMath::cosTheta90(p1Coords,a1Coords,a2Coords)*statpol1;
-	double pol2 = CMath::cosTheta90(p2Coords,a2Coords,a1Coords)*statpol2;
+	double pol1, pol2;
+	if(dipole1){pol1 = fabs(cos(CMath::angle(p1Coords,a1Coords,a2Coords)*PI/180.0))*statpol1;} else{pol1 = statpol1;}
+	if(dipole2){pol2 = fabs(cos(CMath::angle(p2Coords,a2Coords,a1Coords)*PI/180.0))*statpol2;} else{pol2 = statpol2;}
 	return pol1+pol2;
 }
 
 double residue::approximateDipoleDipolePolarization(UInt _atomIndex1, residue* _other, UInt _atomIndex2)
-{	//Approximate the polarizability of inclusion in medium due to the sum of the static polarizabilities and angles of interacting dipoles
+{	//Approximate the polarizability of inclusion in medium due to the sum of the dipole angle product of the static polarizabilities
 	
 	//Identify Atoms in Dipoles
 	dblVec a1Coords = getCoords(_atomIndex1); dblVec p1Coords;
+	bool dipole1 = false;
 	for (UInt i = 0; i < itsAtoms.size(); i++)
 	{
 		if (isBonded(_atomIndex1, i)){
 			p1Coords = getCoords(i);
+			dipole1 = true;
 			break;
 		}
 	}
 	dblVec a2Coords = _other->getCoords(_atomIndex2); dblVec p2Coords;
+	bool dipole2 = false;
 	for (UInt i = 0; i < _other->itsAtoms.size(); i++)
 	{
 		if (_other->isBonded(_atomIndex2, i)){
 			p2Coords = _other->getCoords(i);
+			dipole2 = true;
 			break;
 		}
 	}
 	double statpol1 = residueTemplate::getPolarizability(dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex1][0]); 
 	double statpol2 = residueTemplate::getPolarizability(dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[_atomIndex2][0]);
-	double pol1 = CMath::cosTheta90(p1Coords,a1Coords,a2Coords)*statpol1;
-	double pol2 = CMath::cosTheta90(p1Coords,a1Coords,a2Coords)*statpol2;
+	double pol1, pol2;
+	if(dipole1){pol1 = fabs(cos(CMath::angle(p1Coords,a1Coords,a2Coords)*PI/180.0))*statpol1;} else{pol1 = statpol1;}
+	if(dipole2){pol2 = fabs(cos(CMath::angle(p2Coords,a2Coords,a1Coords)*PI/180.0))*statpol2;} else{pol2 = statpol2;}
 	return pol1+pol2;
 }
 
