@@ -250,39 +250,6 @@ double CMath::angle(const dblVec& _one, const dblVec& _two, const dblVec& _three
 	return angle;
 }
 
-double CMath::cosTheta90(const dblVec& _one, const dblVec& _two, const dblVec& _three)
-{
-	dblVec first = _one - _two;
-	dblVec second = _three - _two;
-
-	double dotProd;
-	double norm1=0.0;
-	double norm2=0.0;
-
-	dotProd = dotProduct(first,second);
-	norm1 = sqrt(dotProduct(first,first));
-	norm2 = sqrt(dotProduct(second,second));
-
-	double angle;
-	double angleCos;
-
-
-	if ( fabs(norm1) >= 0.01 && fabs(norm2) >= 0.01 )
-	{
-		angleCos = dotProd / (norm1 * norm2);
-	}
-	else
-	{
-		angle = 1000.00;
-		cout << "Angle undefined" << endl;
-		return angle;
-	}
-	if (fabs(angleCos) >= 1.0) angleCos = 1.0 * (angleCos/fabs(angleCos));
-	if (angleCos > 0){angleCos = 0.0;}
-	else{angleCos *= -1;}
-	return fabs(angleCos);
-}
-
 dblMat CMath::rotationMatrix(const dblVec& _dv,const double& _theta)
 {	dblMat R(3,3,0.0);
 
