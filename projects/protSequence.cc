@@ -40,7 +40,7 @@ int main (int argc, char* argv[])
 	for (UInt j = 0; j < numRes; j++)
 	{
 		UInt restype = _prot->getTypeFromResNum(0,j);
-		aa << aminoAcidString[restype] << " ";
+		aa << aminoAcidString[restype];
 	}
 	aa.close();
 	//}
@@ -53,16 +53,15 @@ int main (int argc, char* argv[])
 	for (UInt j = 0; j < numRes; j++)
 	{
 		UInt backboneType = _prot->getBackboneSequenceType(0,j);
-		bb << backboneSeq[backboneType] << " ";
-		
+		bb << backboneSeq[backboneType];
 	}
 	bb << endl;
-	for (UInt j = 0; j < numRes; j++)
+	/*for (UInt j = 0; j < numRes; j++)
 	{
 		UInt backboneType = _prot->getBackboneSequenceType(0,j);;
 		bb << backboneTypes[backboneType] << " ";
 	}
-	bb.close();
+	bb.close();*/
 	//}
 	return 0;
 }
