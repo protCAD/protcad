@@ -23,7 +23,7 @@ UInt bbSize = sizeof(backboneSeq)/sizeof(backboneSeq[0]);
 int main (int argc, char* argv[])
 {
 	//--Program setup
-	if (argc !=2)
+	/*if (argc !=2)
 	{
 		cout << "Error: Required input file not given, should be run with input file." << endl;
 		cout << "Command: protShaper <inputfile>" << endl;
@@ -100,6 +100,30 @@ int main (int argc, char* argv[])
 		cout << outFile << " " << prot->protEnergy() << endl;
 		pdbWriter(prot, outFile);
 		delete thePDB;
+	}*/
+	UInt count = 0;
+	string outFile, infile = argv[1];
+	for (UInt phi = 0; phi < 360; phi++)
+	{
+		for (UInt psi = 0; psi < 360; psi++)
+		{
+			count++;
+			PDBInterface* thePDB = new PDBInterface(infile);
+			ensemble* theEnsemble = thePDB->getEnsemblePointer();
+			molecule* pMol = theEnsemble->getMoleculePointer(0);
+			protein* prot = static_cast<protein*>(pMol);
+			for (UInt i = 1; i < 6; i ++)
+			{
+					prot->setDihedral(0, i, phi,0,0);
+					prot->setDihedral(0, i, psi,1,0);
+			}
+			stringstream convert; string countstr;
+			convert << count, countstr = convert.str();
+			outFile = countstr + ".rama.pdb";
+			cout << count << " " << phi << " " << psi << " " << prot->getNumHardBackboneClashes()<< " " << prot->getNumHardClashes() << endl;
+			pdbWriter(prot, outFile);
+			delete thePDB;
+		}
 	}
 	return 0;
 }
