@@ -1496,7 +1496,7 @@ residue* residue::mutate(const UInt _newTypeIndex)
 	if (betapivot)
 	{
 		if (itsAtoms.size() > 4){
-			if (itsAtoms[4]->getName() == "CB" || itsAtoms[4]->getName() == "CD"){
+			if (itsAtoms[4]->getName() == "CB"){
 				//newAA->getAtom(4)->setCoords(itsAtoms[4]->getCoords());
 				newAA->setBetaChi(getBetaChi()-(newAA->getBetaChi()-getBetaChi()));
 			}
