@@ -182,6 +182,7 @@ int main (int argc, char* argv[])
 		pdbWriter(prot, tempModel);
 		Energy = prot->protEnergy();
 		pastEnergy = Energy;
+		cout << "test1" << endl;
 
 		//--Run through a single evolutionary path (ancestral line) till hitting plateau
 		do
@@ -191,6 +192,7 @@ int main (int argc, char* argv[])
 			mutantPosition.clear();
 			mutantPosition = getMutationPosition(activeChains, activeResidues);
 			mutant = getProbabilisticMutation(sequencePool, possibleMutants, mutantPosition);
+			cout << mutant << " " << mutantPosition[1] << endl;
 			prot->mutateWBC(mutantPosition[0], mutantPosition[1], mutant);
 
 			//--Energy test

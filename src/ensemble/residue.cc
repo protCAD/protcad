@@ -1488,7 +1488,12 @@ residue* residue::mutate(const UInt _newTypeIndex)
 	}
 	newAA->setResNum(itsResNum);
 
-	
+	// ensure that we have not modified the main chain
+	// coordinates in any way
+	for (UInt i=0;i<dataBase[itsType].mainChain.size(); i++)
+	{
+		newAA->getMainChain(i)->setCoords( getMainChain(i)->getCoords());
+	}
 
 	// When mutating the same residue in place of old
 	// make sure same amino acid has near identical Calpha-Cbeta angle
@@ -1498,17 +1503,12 @@ residue* residue::mutate(const UInt _newTypeIndex)
 		if (itsAtoms.size() > 4){
 			if (itsAtoms[4]->getName() == "CB"){
 				//newAA->getAtom(4)->setCoords(itsAtoms[4]->getCoords());
-				newAA->setBetaChi(getBetaChi()-(newAA->getBetaChi()-getBetaChi()));
+				newAA->setBetaChi(getBetaChi());
 			}
 		}
 	}
 	
-	// ensure that we have not modified the main chain
-	// coordinates in any way
-	for (UInt i=0;i<dataBase[itsType].mainChain.size(); i++)
-	{
-		newAA->getMainChain(i)->setCoords( getMainChain(i)->getCoords());
-	}
+	
 	// now, since we're changing the backbone coordinates, make
 	// sure that the amide hydrogen H is in the right place...
 	// all other hydrogens should have been taken care of by the
@@ -3139,8 +3139,6 @@ double residue::approximateDipoleDipolePolarization(UInt _atomIndex1, residue* _
 	return pol1+pol2;
 }
 
-// end protEnergy functions ---------------------------------------------------------------------
-
 void residue::updateMovedDependence(residue* _other, UInt _EorC)
 {	
 	bool inCube;
@@ -3164,6 +3162,8 @@ void residue::updateMovedDependence(residue* _other, UInt _EorC)
 		}
 	}
 }
+
+// end protEnergy functions ---------------------------------------------------------------------
 
 void residue::listConnectivity()
 {

@@ -2681,13 +2681,13 @@ double protein::getResPairEnergy(const UInt _chain1, const UInt _res1, const UIn
 
 void protein::protMin(bool _backboneRelaxation)
 {
-	protRelax(1000);
+	//protRelax(1000);
 	protOpt(_backboneRelaxation);
 }
 
 void protein::protMin(bool _backboneRelaxation, UIntVec _frozenResidues, UIntVec _activeChains)
 {
-	protRelax(_frozenResidues, _activeChains);
+	//protRelax(_frozenResidues, _activeChains);
 	protOpt(_backboneRelaxation, _frozenResidues, _activeChains);
 }
 
@@ -2699,7 +2699,7 @@ void protein::protOpt(bool _backbone)
 	saveCurrentState();
 	UInt randchain, randres, resnum, backboneOrSidechain = 1;
 	UInt clashes, clashesStart, bbClashes, bbClashesStart, chainNum = getNumChains(), plateau = 1000;
-	double Energy, pastEnergy = protEnergy(), deltaEnergy, sPhi, sPsi,nobetter = 0.0, KT = KB*Temperature();
+	double Energy, pastEnergy = protEnergy(), deltaEnergy, sPhi, sPsi, nobetter = 0.0, KT = KB*Temperature();
 	vector < vector <double>> currentSidechainConf, newSidechainConf; srand (time(NULL)); vector <double> backboneAngles(2);
 	bool sidechainTest, backboneTest, revert, energyTest, boltzmannAcceptance;
 	
@@ -3069,6 +3069,7 @@ void protein::protSampling(UInt iterations)
 			boltzmannAcceptance = boltzmannEnergyCriteria(deltaEnergy);
 			if (boltzmannAcceptance){
 				pastEnergy = Energy; changes++;
+				cout << changes << " " << Energy << endl;
 			}
 			else{revert = true;}
 		}

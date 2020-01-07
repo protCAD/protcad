@@ -36,12 +36,25 @@ int main (int argc, char* argv[])
 	amberVDW::setScaleFactor(1.0);
 	residue::setTemperature(300);
 
-	cout << "start Energy: " << _prot->protEnergy() << endl;
+	double startE = _prot->protEnergy();
+	cout << "Starting Energy: " << startE << " kcal/mol" << endl;
+	UInt startclashes = _prot->getNumHardClashes();
 	start = clock();
-	_prot->protRelax(1000);
+	_prot->protMin(false);
 	end = clock();
+	UInt endclashes = _prot->getNumHardClashes();
+	double endE = _prot->protEnergy();
+	_prot->setMoved(true,0);
+	_prot->setMoved(true,1);
+	UInt endclashes1 = _prot->getNumHardClashes();
+	double endE1 = _prot->protEnergy();
 	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-	cout << "end Energy: "  << _prot->protEnergy() << " time: " << cpu_time_used << endl;
+	cout << "Ending Energy: "  << endE << " kcal/mol" << endl;
+	cout << "Ending Energy: "  << endE1 << " kcal/mol" << endl;
+	cout << "delta Energy: " << endE-startE << " kcal/mol" << endl;
+	cout << "Clashes cleared: " << (int)startclashes-(int)endclashes << endl;
+	cout << "Clashes cleared: " << (int)startclashes-(int)endclashes1 << endl;
+	cout << "time: " << cpu_time_used << endl;
 	pdbWriter(_prot, outFile);
 
 	return 0;
