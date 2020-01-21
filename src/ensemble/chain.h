@@ -191,6 +191,7 @@ public:
 	dblVec getBackBoneCentroid();
 
 	void rotate(const axis _axis,const double _theta);
+	void rotateRelative(const axis _axis,const double _theta);
 	void rotate(const point& _point, const dblVec& _R_axis, const double _theta);
 	double getResiduesPerTurn(const UInt _resIndex);
 	UInt getBackboneSequenceType(const UInt _resIndex);

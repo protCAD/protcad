@@ -56,11 +56,13 @@ public:
 		{ return itsChains[_chainIndex]->getNumAtoms(_resIndex); }
 	void setCoords(UInt _chainIndex, UInt _resIndex, UInt _atomIndex, dblVec _coords)
 		{ return itsChains[_chainIndex]->setCoords(_resIndex, _atomIndex, _coords);}
+	void setAllCoords( UInt chainIndex, UInt resIndex, vector<dblVec> allCoords);
 	void makeAtomSilent(const UInt _chainIndex, const UInt _residueIndex, const UInt _atomIndex);
 	void makeResidueSilent(const UInt _chainIndex, const UInt _residueIndex);
 	vector <chainPosition*> getChainPositionVector(const UInt _chain);
 	UIntVec getItsIndependentChainsMap() { return itsIndependentChainsMap; }
 	vector <vector <int> > getItsChainLinkageMap() { return itsChainLinkageMap; }
+	vector <dblVec> saveCoords( UInt chainIndex, UInt resIndex);
 	void finishProteinBuild();
 	void listSecondaryStructure();
 	void listDihedrals();
@@ -238,6 +240,7 @@ public:
 	void eulerRotate(UInt _chain, const double _phi, const double _theta, const double _psi);
 	void undoEulerRotate(UInt _chain, const double _phi, const double _theta, const double _psi);
 	void rotateChain(UInt _chain, const axis _axis, const double _theta);
+	void rotateChainRelative(UInt _chain, const axis _axis, const double _theta);
 	void alignToAxis(const axis _axis);
 
 	//--Rotamer functions

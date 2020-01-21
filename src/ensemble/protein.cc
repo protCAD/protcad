@@ -1480,6 +1480,20 @@ void protein::rotateChain(UInt _chain, const axis _axis, const double _theta)
 	return;
 }
 
+void protein::rotateChainRelative(UInt _chain, const axis _axis, const double _theta)
+{
+	if (_chain >= 0 && _chain < itsChains.size())
+	{
+		itsChains[_chain]->rotateRelative(_axis, _theta);
+	}
+	else
+	{
+		cout << "ERROR in protein::rotateChainRelative(...)\n\tchain index is out of bounds ..." << endl;
+		return;
+	}
+	return;
+}
+
 void protein::translateChain(UInt _chain, const double _x, const double _y, const double _z)
 {
 	if (_chain >= 0 && _chain < itsChains.size())
@@ -2692,6 +2706,27 @@ double protein::getResPairEnergy(const UInt _chain1, const UInt _res1, const UIn
 	}
 }
 
+vector <dblVec> protein::saveCoords( UInt chainIndex, UInt resIndex)
+{
+	UInt nAtoms = getNumAtoms(chainIndex, resIndex);
+	vector <dblVec> allCoords;
+	for (UInt i=0; i<nAtoms; i++)
+	{
+		dblVec coords = getCoords(chainIndex, resIndex, i);
+		allCoords.push_back(coords);
+	}
+	return allCoords;
+}
+
+void protein::setAllCoords( UInt chainIndex, UInt resIndex, vector<dblVec> allCoords)
+{
+	UInt nAtoms = getNumAtoms(chainIndex, resIndex);
+	for (UInt i=0; i<nAtoms; i++)
+	{
+		setCoords(chainIndex, resIndex, i, allCoords[i]);
+	}
+}
+
 void protein::protMin(bool _backboneRelaxation)
 {
 	//protRelax(1000);
@@ -2716,7 +2751,7 @@ void protein::protOpt(bool _backbone)
 	double rotX, rotY, rotZ, transX, transY, transZ;
 	vector < vector <double>> currentSidechainConf, newSidechainConf; srand (time(NULL)); vector <double> backboneAngles(2);
 	bool sidechainTest, backboneTest, cofactorTest, revert, energyTest, boltzmannAcceptance;
-	
+	vector <dblVec> currentCoords;
 	//--Run optimizaiton loop to local minima defined by an RT plateau------------------------
 	do{
 		//--choose random residue and set variables
@@ -2727,9 +2762,11 @@ void protein::protOpt(bool _backbone)
 		{
 			//--Rock and Roll cofactor in site
 			cofactorTest = true;
-			rotX = rand() % 10, rotY = rand() % 10, rotZ = rand() % 10;
-			transX = (rand() % 5)/10, transY = (rand() % 5)/10, transZ = (rand() % 5)/10;
-			rotateChain(randchain,X_axis,rotX), rotateChain(randchain,Y_axis,rotY), rotateChain(randchain,Z_axis,rotZ);
+			currentCoords.clear();
+			currentCoords = saveCoords(randchain, randres);
+			rotX = rand() % 2, rotY = rand() % 2, rotZ = rand() % 2;
+			transX = (rand() % 30)/100, transY = (rand() % 30)/100, transZ = (rand() % 30)/100;
+			rotateChainRelative(randchain,X_axis,rotX), rotateChainRelative(randchain,Y_axis,rotY), rotateChainRelative(randchain,Z_axis,rotZ);
 			translateChain(randchain, transX, transY, transZ);
 			clashes = getNumHardClashes();
 			if (clashes <= clashesStart){
@@ -2779,8 +2816,7 @@ void protein::protOpt(bool _backbone)
 		if (revert){
 			if(cofactorTest)
 			{
-				translateChain(randchain, transX*-1, transY*-1, transZ*-1);
-				rotateChain(randchain,Z_axis,rotZ*-1), rotateChain(randchain,Y_axis,rotY*-1), rotateChain(randchain,X_axis,rotX*-1);
+				setAllCoords(randchain, randres, currentCoords);
 			}
 			if(backboneTest){
 				setDihedral(randchain,randres,sPhi,0,0);
