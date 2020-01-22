@@ -1510,6 +1510,48 @@ void chain::rotate(const axis _axis,const double _theta)
 	}
 	rotate(origin, vec, _theta);
 }
+
+void chain::rotateRelative(const axis _axis,const double _theta)
+{	
+	dblVec COMcoords(3);
+	COMcoords[0] = 0.0, COMcoords[1] = 0.0, COMcoords[2] = 0.0;
+	UInt totalAtoms = 0;
+	for (UInt i=0; i<itsResidues.size(); i++)
+	{	
+		UInt nAtoms = itsResidues[i]->getNumAtoms();
+		dblVec coords(3);
+		for (UInt j=0; j<nAtoms; j++)
+		{
+			dblVec coords = itsResidues[i]->getCoords(j);
+			COMcoords[0] = COMcoords[0]+coords[0], COMcoords[1] = COMcoords[1]+coords[1], COMcoords[2] = COMcoords[2]+coords[2];
+			totalAtoms++;
+		}
+	}
+	COMcoords[0] = COMcoords[0]/totalAtoms, COMcoords[1] = COMcoords[1]/totalAtoms, COMcoords[2] = COMcoords[2]/totalAtoms;
+	point origin;
+	origin.setCoords(COMcoords[0],COMcoords[1],COMcoords[2]);
+
+	dblVec vec(3);
+#ifdef USE_SVMT
+	for (UInt i=0; i<vec.extent(); i++)
+	{	vec[i] = 0.0;
+	}
+#else
+	for (int i=0; i<vec.dim(); i++)
+	{	vec[i] = 0.0;
+	}
+#endif
+	if (_axis == X_axis)
+	{	vec[0] = 1.0;
+	}
+	else if (_axis == Y_axis)
+	{	vec[1] = 1.0;
+	}
+	else if (_axis == Z_axis)
+	{	vec[2]	= 1.0;
+	}
+	rotate(origin, vec, _theta);
+}
 	
 void chain::rotate(const point& _point,const dblVec& _R_axis, const double _theta)
 {	for (UInt i=0; i<itsResidues.size(); i++)

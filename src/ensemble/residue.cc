@@ -1488,7 +1488,12 @@ residue* residue::mutate(const UInt _newTypeIndex)
 	}
 	newAA->setResNum(itsResNum);
 
-	
+	// ensure that we have not modified the main chain
+	// coordinates in any way
+	for (UInt i=0;i<dataBase[itsType].mainChain.size(); i++)
+	{
+		newAA->getMainChain(i)->setCoords( getMainChain(i)->getCoords());
+	}
 
 	// When mutating the same residue in place of old
 	// make sure same amino acid has near identical Calpha-Cbeta angle
@@ -1498,17 +1503,12 @@ residue* residue::mutate(const UInt _newTypeIndex)
 		if (itsAtoms.size() > 4){
 			if (itsAtoms[4]->getName() == "CB"){
 				//newAA->getAtom(4)->setCoords(itsAtoms[4]->getCoords());
-				newAA->setBetaChi(getBetaChi()-(newAA->getBetaChi()-getBetaChi()));
+				newAA->setBetaChi(getBetaChi());
 			}
 		}
 	}
 	
-	// ensure that we have not modified the main chain
-	// coordinates in any way
-	for (UInt i=0;i<dataBase[itsType].mainChain.size(); i++)
-	{
-		newAA->getMainChain(i)->setCoords( getMainChain(i)->getCoords());
-	}
+	
 	// now, since we're changing the backbone coordinates, make
 	// sure that the amide hydrogen H is in the right place...
 	// all other hydrogens should have been taken care of by the
@@ -2234,7 +2234,7 @@ void residue::rotate(UInt _first, UInt _second, double _theta)
 	{	backboneRotation = true;
 	}
 	rotate(pAtom1, pAtom2, _theta, backboneRotation);
-
+	setMoved();
 }
 
 void residue::rotateDihedral(atom* _pAtom1, atom* _pAtom2, double _deltaTheta,  UInt _angleType, UInt _direction)
@@ -2298,6 +2298,7 @@ void residue::rotateDihedral(atom* _pAtom1, atom* _pAtom2, double _deltaTheta,  
 	}
 	if(_angleType == 0 && _direction == 1)
 	{alignAmideProtonToBackbone();}
+	setMoved();
 }
 
 void residue::rotate(atom* _pAtom1, atom* _pAtom2, double _theta,
@@ -2375,7 +2376,7 @@ void residue::rotate(atom* _pAtom1, atom* _pAtom2, double _theta,
 	cout << _pAtom2->getName() << " " << _pAtom2->getCoords() << endl;
 	_pAtom2->queryChildrensCoords();
 #endif
-
+	setMoved();
 }
 
 void residue::rotate(const point& _point, const dblMat& _RMatrix )
@@ -2409,7 +2410,7 @@ void residue::rotate(const point& _point, const dblMat& _RMatrix )
 	cout << _pAtom->getName() << " " << _pAtom->getCoords() << endl;
 	pAtom->queryChildrensCoords();
 #endif
-
+	setMoved();
 }
 
 void residue::rotate_new(atom* _pivotAtom, const dblMat& _RMatrix)
@@ -2424,7 +2425,7 @@ void residue::rotate_new(atom* _pivotAtom, const dblMat& _RMatrix)
 
 	_pivotAtom->translate(backHome);
 	_pivotAtom->translateChildren(backHome);
-
+	setMoved();
 }
 
 void residue::rotate_new(atom* _pivotAtom, atom* _firstAtom, const dblMat& _RMatrix)
@@ -2439,7 +2440,7 @@ void residue::rotate_new(atom* _pivotAtom, atom* _firstAtom, const dblMat& _RMat
 
 	_firstAtom->translate(backHome);
 	_firstAtom->translateChildren(backHome);
-
+	setMoved();
 }
 
 
@@ -2483,7 +2484,7 @@ void residue::rotate(const point& _point, const dblVec& _R_axis,const double _th
 	cout << _pAtom->getName() << " " << _pAtom->getCoords() << endl;
 	pAtom->queryChildrensCoords();                               
 #endif                                                                
-
+	setMoved();
 }                                       
 
 void residue::rotate(atom* _pAtom, const dblVec& _R_axis, const double _theta)
@@ -2531,7 +2532,7 @@ void residue::rotate(atom* _pAtom, const dblVec& _R_axis, const double _theta)
 	cout << _pAtom->getName() << " " << _pAtom->getCoords() << endl;
 	_pAtom->queryChildrensCoords();
 #endif                                                                
-
+	setMoved();
 } 
                                                     
 void residue::translate(const dblVec& _dblVec)
@@ -2539,7 +2540,7 @@ void residue::translate(const dblVec& _dblVec)
     for (UInt i=0; i < itsAtoms.size(); i++)
 	{	itsAtoms[i]->translate(_dblVec);
 	}
-
+	setMoved();
 }
 
 
@@ -2586,6 +2587,7 @@ void residue::recursiveTransformR(dblMat& _dblMat)
 	if (pItsPrevRes)
 	{	pItsPrevRes->recursiveTransformR(_dblMat);
 	}
+	setMoved();
 }
 
 void residue::transform(const dblMat& _dblMat)
@@ -3139,8 +3141,6 @@ double residue::approximateDipoleDipolePolarization(UInt _atomIndex1, residue* _
 	return pol1+pol2;
 }
 
-// end protEnergy functions ---------------------------------------------------------------------
-
 void residue::updateMovedDependence(residue* _other, UInt _EorC)
 {	
 	bool inCube;
@@ -3164,6 +3164,8 @@ void residue::updateMovedDependence(residue* _other, UInt _EorC)
 		}
 	}
 }
+
+// end protEnergy functions ---------------------------------------------------------------------
 
 void residue::listConnectivity()
 {
