@@ -13,11 +13,14 @@
 #include "PDBInterface.h"
 #include <sstream>
 #include <time.h>
+#include <unistd.h>
 int main (int argc, char* argv[])
 {
 	if (argc !=3)
 	{   cout << "protMin <inFile.pdb> <outFile.pdb>" << endl;
 		exit(1); }
+
+
 
 	string infile = argv[1];
 	string outFile = argv[2];
@@ -25,9 +28,10 @@ int main (int argc, char* argv[])
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* _prot = static_cast<protein*>(pMol);
-	bool backbone = false;
+	bool backbone = true;
 	clock_t start, end;
 	double cpu_time_used;
+	int seed = (int)getpid()*(int)gethostid(); srand (seed);
 
 	residue::setElectroSolvationScaleFactor(1.0);
 	residue::setHydroSolvationScaleFactor(1.0);
@@ -40,20 +44,14 @@ int main (int argc, char* argv[])
 	cout << "Starting Energy: " << startE << " kcal/mol" << endl;
 	UInt startclashes = _prot->getNumHardClashes();
 	start = clock();
-	_prot->protMin(false);
+	_prot->protMin(backbone);
 	end = clock();
 	UInt endclashes = _prot->getNumHardClashes();
 	double endE = _prot->protEnergy();
-	_prot->setMoved(true,0);
-	_prot->setMoved(true,1);
-	UInt endclashes1 = _prot->getNumHardClashes();
-	double endE1 = _prot->protEnergy();
 	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
 	cout << "Ending Energy: "  << endE << " kcal/mol" << endl;
-	cout << "Ending Energy: "  << endE1 << " kcal/mol" << endl;
 	cout << "delta Energy: " << endE-startE << " kcal/mol" << endl;
 	cout << "Clashes cleared: " << (int)startclashes-(int)endclashes << endl;
-	cout << "Clashes cleared: " << (int)startclashes-(int)endclashes1 << endl;
 	cout << "time: " << cpu_time_used << endl;
 	pdbWriter(_prot, outFile);
 
