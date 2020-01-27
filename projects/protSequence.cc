@@ -46,7 +46,7 @@ int main (int argc, char* argv[])
 	//}
 	//for (UInt i = 0; i < numChains; i++)
 	//{
-	fstream bb;
+	/*fstream bb;
 	bb.open ("bb.faa", fstream::in | fstream::out | fstream::app);
 	bb << endl << ">" << infile << " bbseq:" << endl;
 	numRes = _prot->getNumResidues(0);

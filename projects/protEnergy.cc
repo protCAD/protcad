@@ -42,7 +42,7 @@ int main (int argc, char* argv[])
 	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
 	cout << infile << " " << Energy << " kcal/mol time: " << cpu_time_used << endl;
 	string outFile = infile;
-	pdbWriter(bundle, outFile);
+	//pdbWriter(bundle, outFile);
 	
 	start = clock();
 	UInt clashes = bundle->getNumHardClashes();

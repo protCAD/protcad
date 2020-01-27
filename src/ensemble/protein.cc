@@ -2674,19 +2674,6 @@ dblVec protein::getBackBoneCentroid()
 	return centroid;
 }
 
-bool protein::isNotAminoAcid(UInt chainIndex, UInt resIndex)
-{
-	UInt resnum = getNumResidues(chainIndex);
-	if (resnum == 1){
-		string atomType = getTypeStringFromAtomNum(chainIndex, resIndex, 0);
-		if (atomType != "N")
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
 typedef UIntVec::iterator iterUIntVec;
 
 double protein::getResPairEnergy(const UInt _chain1, const UInt _res1, const UInt _chain2, const UInt _res2)
@@ -2704,6 +2691,19 @@ double protein::getResPairEnergy(const UInt _chain1, const UInt _res1, const UIn
 		cout << "ERROR:  chain indices out of range in getResPairEnergy" << endl;
 		exit(1);
 	}
+}
+
+bool protein::isNotAminoAcid(UInt chainIndex, UInt resIndex)
+{
+	UInt resnum = getNumResidues(chainIndex);
+	if (resnum == 1){
+		string atomType = getTypeStringFromAtomNum(chainIndex, resIndex, 0);
+		if (atomType != "N")
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 vector <dblVec> protein::saveCoords( UInt chainIndex, UInt resIndex)

@@ -81,6 +81,8 @@ public:
 	void randomizeSystem(ran& _ran);
 	void makeAllAlanine();
     void removeResidue(UInt _resNum);
+	bool isNotAminoAcid(UInt resIndex);
+
 
 	// single modification buffers
 	vector<chainModBuffer> performRandomMutation(ran& _ran);
@@ -114,6 +116,8 @@ public:
 	void listChiDefinitions() const;
 	UInt getNumChis(const UInt _resIndex, const UInt _bpt);
 	double netCharge();
+	vector <dblVec> saveCoords(UInt resIndex);
+	void setAllCoords(UInt resIndex, vector<dblVec> allCoords);
 	
 	void setMoved (UInt resIndex, bool _moved, UInt _EorC) {itsResidues[resIndex]->setMoved(_moved, _EorC);}
 	void setMoved (bool _moved, UInt _EorC);
