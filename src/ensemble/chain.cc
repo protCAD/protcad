@@ -1019,41 +1019,47 @@ void chain::undoLastRotamerRotation()
 #endif
 }
 
+bool chain::isNotAminoAcid(UInt resIndex)
+{
+	UInt resnum = getNumResidues();
+	if (resnum == 1){
+		string atomType = getTypeStringFromAtomNum(resIndex, 0);
+		if (atomType != "N")
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+vector <dblVec> chain::saveCoords(UInt resIndex)
+{
+	UInt nAtoms = getNumAtoms(resIndex);
+	vector <dblVec> allCoords;
+	for (UInt i=0; i<nAtoms; i++)
+	{
+		dblVec coords = getCoords(resIndex, i);
+		allCoords.push_back(coords);
+	}
+	return allCoords;
+}
+
+void chain::setAllCoords(UInt resIndex, vector<dblVec> allCoords)
+{
+	UInt nAtoms = getNumAtoms(resIndex);
+	for (UInt i=0; i<nAtoms; i++)
+	{
+		setCoords(resIndex, i, allCoords[i]);
+	}
+}
+
 vector <chainModBuffer> chain::saveCurrentState()
 {
 	stateBuffers.resize(0);
 	for (UInt i = 0; i < itsResidues.size(); i ++)
 	{
-		chainModBuffer temp;
-
-		temp.setIndexInChainBuffer(i);
-		temp.setResidueIdentityBuffer(itsResidues[i]->getTypeIndex());
-		vector<UInt> tempRotamer;
-		tempRotamer = itsChainPositions[i]->getCurrentRotamerIndex();
-		temp.setRotamerIndexBuffer(tempRotamer);
-		vector< vector< double> > tempAngles;
-		tempAngles = itsResidues[i]->getSidechainDihedralAngles();
-		temp.setSidechainDihedralAngleBuffer(tempAngles);
-		vector< double> tempBBAngles(3);
-		tempBBAngles.push_back(itsResidues[i]->getPhi());
-		tempBBAngles.push_back(itsResidues[i]->getPsi());
-		tempBBAngles.push_back(itsResidues[i]->getBetaChi());
-		temp.setBackboneDihedralAngleBuffer(tempBBAngles);
-		stateBuffers.push_back(temp);
-	}
-	return stateBuffers;
-}
-
-vector <chainModBuffer> chain::saveCurrentState(vector <int> _indices)
-{
-	stateBuffers.resize(0);
-	for (UInt x = 0; x < _indices.size(); x ++)
-	{
-		int i = _indices[x];
-		if (i >= 0 && (UInt)i < itsResidues.size())
-		{
+		if (!isNotAminoAcid(i)){
 			chainModBuffer temp;
-
 			temp.setIndexInChainBuffer(i);
 			temp.setResidueIdentityBuffer(itsResidues[i]->getTypeIndex());
 			vector<UInt> tempRotamer;
@@ -1068,6 +1074,36 @@ vector <chainModBuffer> chain::saveCurrentState(vector <int> _indices)
 			tempBBAngles.push_back(itsResidues[i]->getBetaChi());
 			temp.setBackboneDihedralAngleBuffer(tempBBAngles);
 			stateBuffers.push_back(temp);
+		}
+	}	
+	return stateBuffers;
+}
+
+vector <chainModBuffer> chain::saveCurrentState(vector <int> _indices)
+{
+	stateBuffers.resize(0);
+	for (UInt x = 0; x < _indices.size(); x ++)
+	{
+		int i = _indices[x];
+		if (i >= 0 && (UInt)i < itsResidues.size())
+		{
+			if (!isNotAminoAcid(i)){
+				chainModBuffer temp;
+				temp.setIndexInChainBuffer(i);
+				temp.setResidueIdentityBuffer(itsResidues[i]->getTypeIndex());
+				vector<UInt> tempRotamer;
+				tempRotamer = itsChainPositions[i]->getCurrentRotamerIndex();
+				temp.setRotamerIndexBuffer(tempRotamer);
+				vector< vector< double> > tempAngles;
+				tempAngles = itsResidues[i]->getSidechainDihedralAngles();
+				temp.setSidechainDihedralAngleBuffer(tempAngles);
+				vector< double> tempBBAngles(3);
+				tempBBAngles.push_back(itsResidues[i]->getPhi());
+				tempBBAngles.push_back(itsResidues[i]->getPsi());
+				tempBBAngles.push_back(itsResidues[i]->getBetaChi());
+				temp.setBackboneDihedralAngleBuffer(tempBBAngles);
+				stateBuffers.push_back(temp);
+			}
 		}
 	}
 	return stateBuffers;
