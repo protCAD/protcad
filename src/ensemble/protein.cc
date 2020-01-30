@@ -4214,4 +4214,20 @@ double protein::getHBondEnergy(const UInt _chain1, const UInt _res1, const UInt 
     }
     return energy;
 }
+//this function will calculate the hammingdistance between two sequences obtained from two pdb files
+double protein::getHammingDistance(vector<string>seq1,vector<string>seq2) 
+{ 
+	double count = 0.0;double percent=0.0;double countsim=0.0;
+	for (UInt i=0;i<seq1.size();i++){
+        	if(seq1[i]==seq2[i]){
+                	if (seq1[i]!="-" || seq2[i]!="X"){
+                        	 count++;
+                }
+         }
+        }
+	countsim=seq1.size()-count;
+	percent=((countsim/double(seq1.size()))*100);
+   	return percent;
+}  
+
 
