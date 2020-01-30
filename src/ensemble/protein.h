@@ -289,6 +289,8 @@ public:
 	double getItsSolvationParam();
 	void setItsSolvationParam(UInt _param);
 
+	//Sequence analysis
+	double getHammingDistance(vector<string>seq1,vector<string>seq2);
 //--Defined functions------------------------------------------------------------------------------------
 private:
 	bool isValidHelixRotamer ( UInt _resType, UInt _bpt, UInt _allowedRotamer ); // contains our definitions for canonical helix rotamers
@@ -311,5 +313,6 @@ private:
 	int itsLastModifiedChain;
 	int itsLastModificationMethod;
 	ran itsRan;
+
 };
 #endif
