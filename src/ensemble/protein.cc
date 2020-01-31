@@ -104,7 +104,21 @@ void protein::initializeModificationMethods()
 	itsModificationMethods[3] = 0;
 	itsModificationMethods[4] = 0;
 }
-
+void protein::removeChain(UInt _chainIndex)
+{
+	
+	for (UInt i = 0; i < itsChains.size(); i++)
+	{
+		if (i > _chainIndex)
+		{
+			cout << "map " << itsIndependentChainsMap[i] << endl;
+			itsIndependentChainsMap[i] = itsIndependentChainsMap[i]-1;
+		}
+	}
+	delete itsChains[_chainIndex];
+	itsChains.resize(itsChains.size()-1);
+	
+}
 //******************testing junk****************
 void protein::accessChainZeroResZero()
 {
@@ -1122,7 +1136,9 @@ double protein::protEnergy()
 void protein::updateEnergy()
 {
 	updateMovedDependence(0);
+	cout << "test1" << endl;
 	updateDielectrics();
+	cout << "test2 " << itsChains.size() << endl;
 	for(UInt i=0; i<itsChains.size(); i++)
 	{
 		itsChains[i]->updateEnergy();
@@ -1159,7 +1175,9 @@ void protein::updateMovedDependence(UInt _EorC)
 {
 	for(UInt i=0; i<itsChains.size(); i++)
 	{
+		cout << itsChains.size() << endl;
 		itsChains[i]->updateMovedDependence(_EorC);
+		cout << "test3" << endl;
 		for(UInt j=i+1; j<itsChains.size(); j++)
 		{
 			itsChains[i]->updateMovedDependence(itsChains[j], _EorC);
