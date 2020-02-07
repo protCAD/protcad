@@ -58,7 +58,7 @@ vpath %.a $(OBJDIR)
 
 vpath %.o $(OBJDIR)
 
-install : $(LIB_TARGETS) $(TARGETS)
+install : $(LIB_TARGETS) $(TARGETS) gui
 ifeq ($(UNAME),Linux)
 	@echo export PROTCADDIR=$(PROTCADDIR) >> ~/.bashrc
 	@echo export PATH=$(PATH):$(PROTCADDIR):$(PROTCADDIR)/bin >> ~/.bashrc
@@ -68,7 +68,7 @@ ifeq ($(UNAME),Darwin)
 	@echo export PATH=$(PATH):$(PROTCADDIR):$(PROTCADDIR)/bin >> ~/.bash_profile
 endif
 
-all : $(LIB_TARGETS) $(TARGETS)
+all : $(LIB_TARGETS) $(TARGETS) gui
 
 lib : libprotcad.a
 
