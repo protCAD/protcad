@@ -2,6 +2,7 @@ export PROTCADDIR=$(PWD)
 export SRCDIR=$(PROTCADDIR)/src
 export TNTINCLUDE=$(SRCDIR)
 export BINDIR=$(PROTCADDIR)/bin
+export UIDIR=$(PROTCADDIR)/ui
 export OBJDIR=$(PROTCADDIR)/obj
 export PROJDIR=$(PROTCADDIR)/projects
 
@@ -143,7 +144,12 @@ $(LIB_F77_OBJECTS): %.o: %.f
 	$(F77) -c $(FFLAGS) $< -o $@
 	mv $@ $(OBJDIR)
 
+gui:
+	cd $(UIDIR) && qmake UI.pro && make
+
 clean: 
 	rm -f $(OBJDIR)/*.o 
 	rm -f $(OBJDIR)/*.a
 	cd $(BINDIR) && rm -f $(TARGETS)
+	cd $(UIDIR) && if [ -f Makefile ]; then make distclean; fi;
+	
