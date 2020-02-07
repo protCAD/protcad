@@ -6,10 +6,12 @@
 # include <sstream>
 # include <string>
 # include <thread>
+# include <vector>
 # include <unistd.h>
 # include <boost/filesystem.hpp>
 # include <QtWidgets>
 # include <QProcess>
+
 # include "ui.h"
 
 using namespace std;
@@ -21,18 +23,14 @@ pUI::pUI(QWidget *parent) : QWidget(parent)
 	protAlign_pdbFile1="";
 	protAlign_pdbFile2="";
 	
-	// Bold Font
 	QFont font;
 	font.setBold(true);
-
-	// Define Tab
 	QTabWidget* theTab=new QTabWidget;
-	// Define Page on Tab
-	// protALIGN (page 1)
+
+	//-----protALIGN (tab1)
 	QWidget *tPg1 = new QWidget;
 	// Labels
 	QLabel* pg1Label=new QLabel(tr("Align PDB file #1 to PDB file #2\n")); pg1Label->setAlignment(Qt::AlignLeft);
-	//pg1Label->setFixedWidth(width);
 	pg1Label->setWordWrap(true);
 	protAlignPDBLabel1=new QLabel;
 	protAlignPDBLabel1->setText("<b><span style=\"color:red;\">Select PDB file #1</span>:</b>");
@@ -63,9 +61,9 @@ pUI::pUI(QWidget *parent) : QWidget(parent)
 	// Set Layout
 	tPg1->setLayout(pg1box);
 	// Update Tab Widget
-	theTab->addTab(tPg1,tr("Align"));
+	theTab->addTab(tPg1,tr("protAlign"));
 
-	// protDIELECTRIC (page 2)
+	//----protDIELECTRIC (tab2)
 	QWidget *tPg2 = new QWidget;
 	// Labels
 	QLabel* pg2Label=new QLabel(tr("Description Label\n")); pg2Label->setAlignment(Qt::AlignLeft);
@@ -82,9 +80,9 @@ pUI::pUI(QWidget *parent) : QWidget(parent)
 	// Set Layout
 	tPg2->setLayout(pg2box);
 	// Update Tab Widget
-	theTab->addTab(tPg2,tr("Dielectric"));
+	theTab->addTab(tPg2,tr("protDielectric"));
 
-	// protEVOLVER (page 3)
+	//-----protEVOLVER (tab3)
 	QWidget *tPg3 = new QWidget;
 	// Labels
 	QLabel* pg3Label=new QLabel(tr("Evolve a fold in a PDB file\n")); pg3Label->setAlignment(Qt::AlignLeft);
@@ -154,14 +152,16 @@ pUI::pUI(QWidget *parent) : QWidget(parent)
 	// Buttons
 	QPushButton* viewButton=new QPushButton(tr("View"));
 	connect(viewButton,SIGNAL(clicked()),this,SLOT(view()));
-	QPushButton* protEvolverPDBButton=new QPushButton(tr("..."));	
+	protEvolverPDBButton=new QPushButton(tr("..."));	
 	protEvolverPDBButton->setToolTip(tr("Tooltip"));
-	protEvolverPDBButton->setFixedWidth(40);
+	protEvolverPDBButton->setFixedWidth(80);
 	protEvolverPDBButton->setFont(font);
 	connect(protEvolverPDBButton,SIGNAL(clicked()),this,SLOT(open_protEvolverPDBFile()));
-	QPushButton* xButton3=new QPushButton(tr("EXECUTE"));
+	xButton3=new QPushButton(tr("RUN"));	
 	xButton3->setFixedWidth(200);
 	xButton3->setFont(font);
+	xButton3->setCheckable(true);
+	xButton3->setChecked(false);
 	connect(xButton3,SIGNAL(clicked()),this,SLOT(runProtEvolver()));
 	// Design Tab Page Layout
 	QGridLayout *pg3box = new QGridLayout;
@@ -179,35 +179,12 @@ pUI::pUI(QWidget *parent) : QWidget(parent)
 	// Set Layout
 	tPg3->setLayout(pg3box);
 	// Update Tab Widget
-	theTab->addTab(tPg3,tr("Evolver"));
+	theTab->addTab(tPg3,tr("protEvolver"));
 
-	//QPushButton *calcButton=new QPushButton(tr("\nCALCULATE\nζ\n"));
-	//QPushButton *calcButton1=new QPushButton(tr("PROTCAD"));
-	QPushButton *calcButton2=new QPushButton(tr("Make gif"));
-	QPushButton *calcButton3=new QPushButton(tr("ZPRED"));
-	//calcButton1->setFont(font);
-	calcButton2->setFont(font);
-	calcButton3->setFont(font);
-	
-	connect(calcButton2,SIGNAL(clicked()),this,SLOT(runMakeGif()));
-	connect(calcButton3,SIGNAL(clicked()),this,SLOT(runZPRED()));
-
-	QGroupBox* botRight=new QGroupBox;
-	QGridLayout *brlayout=new QGridLayout;
-	//brlayout->setSizeConstraint(QLayout::SetFixedSize);
-	//brlayout->addWidget(calcButton1,0,0,1,1);	
-	brlayout->addWidget(calcButton2,1,0,1,1);	
-	brlayout->addWidget(calcButton3,2,0,1,1);
-	botRight->setLayout(brlayout);
-
+	//---main layout
 	QGridLayout *mainLayout = new QGridLayout;
 	mainLayout->setSizeConstraint(QLayout::SetFixedSize);
-	//mainLayout->addWidget(gBox,0,0,1,2);
-	//mainLayout->addWidget(exeBox,0,2,1,1);
-	//mainLayout->addWidget(botLeft,1,0,1,1);
-	//mainLayout->addWidget(botCenter,1,1,1,1);
 	mainLayout->addWidget(theTab,0,0);
-	mainLayout->addWidget(botRight,0,1);
 	setLayout(mainLayout);
 	setWindowTitle(tr("ProtCAD"));
 	resize(QDesktopWidget().availableGeometry(this).size());
@@ -244,9 +221,19 @@ void pUI::open_protEvolverPDBFile()
 	QStringList filenames = QFileDialog::getOpenFileNames(this,tr("files"),tr(sFldr.c_str()),tr("All files (*)") );
 	string tmp;
 	if(filenames.count()!=0)
-		{tmp=filenames.at(0).toLocal8Bit().constData();
+	{
+		tmp=filenames.at(0).toLocal8Bit().constData();
 		protEvolver_pdbFile=tmp;
-		protEvolverPDBLabel->setText("<b><span style=\"color:black;\">Select PDB file</span>:</b>");}
+		string name, path="";
+		vector<string> v = split (tmp, '/');
+		for (unsigned int i = 0; i < v.size(); i++) 
+		{
+			name=v[i]; if (i< v.size()-1){path+=v[i];path+="/";}
+		}
+		protEvolver_path = path;
+		protEvolverPDBButton->setText(QString::fromStdString(name));
+		protEvolverPDBLabel->setText("<b><span style=\"color:black;\">Select PDB file</span>:</b>");
+	}
 }
 
 void pUI::protEvolverActiveChainInput_defined(){protEvolverActiveChainLabel->setText("<b><span style=\"color:black;\">Specify active chain(s)</span>:</b>");}
@@ -261,50 +248,59 @@ void pUI::protEvolverAminoAcidInput_defined(){protEvolverAminoAcidLabel->setText
 
 void pUI::runProtEvolver()
 {	
-	//write input file from UI feilds
-	string data="";
-	data+="PDB file,";
-	data+=protEvolver_pdbFile;
-	data+=",\n";
-	data+="Active Chains,";
-	data+=protEvolverActiveChainInput->text().toStdString();
-	data+=",\n";
-	data+="Active Positions,";
-	data+=protEvolverActivePositionInput->text().toStdString();
-	data+=",\n";
-	data+="Random Positions,";
-	data+=protEvolverRandomPositionInput->text().toStdString();
-	data+=",\n";
-	data+="Frozen Positions,";
-	data+=protEvolverFrozenPositionInput->text().toStdString();
-	data+=",\n";
-	data+="Amino Acids,";
-	data+=protEvolverAminoAcidInput->text().toStdString();
-	data+=",\n";
-	data+="Backbone Relaxation,";
-	if(protEvolverRelaxationBox->isChecked()){data+="true";}
-	else{data+="false";}
-	data+=",\n";
-	
-	QString Fldr=QDir::currentPath();
-	string sFldr=Fldr.toStdString()+"/";
-	string inputFile=sFldr+"input.in";
-	ofstream fOut;
-	fOut.open(inputFile.c_str());
-	if(fOut.fail()){}
-	fOut<<data;fOut.close();
-
-	string tmp=maxThreadsLine->text().toStdString();
-	int nT=atoi(tmp.c_str());
-
-	string cmd="nohup protEvolver "+inputFile+" &";	
-	for(int i=0;i<nT;i++)
+	if (xButton3->isChecked())
 	{
-		int statusCode=system(cmd.c_str());
-		if (statusCode == -1)
-		{fprintf(stderr, "program failed to run, errno = %d\n", errno);}
+		xButton3->setChecked(true);
+		xButton3->setText("STOP");
+		//write input file from UI feilds
+		string data="";
+		data+="PDB file,";
+		data+=protEvolver_pdbFile;
+		data+=",\n";
+		data+="Active Chains,";
+		data+=protEvolverActiveChainInput->text().toStdString();
+		data+=",\n";
+		data+="Active Positions,";
+		data+=protEvolverActivePositionInput->text().toStdString();
+		data+=",\n";
+		data+="Random Positions,";
+		data+=protEvolverRandomPositionInput->text().toStdString();
+		data+=",\n";
+		data+="Frozen Positions,";
+		data+=protEvolverFrozenPositionInput->text().toStdString();
+		data+=",\n";
+		data+="Amino Acids,";
+		data+=protEvolverAminoAcidInput->text().toStdString();
+		data+=",\n";
+		data+="Backbone Relaxation,";
+		if(protEvolverRelaxationBox->isChecked()){data+="true";}
+		else{data+="false";}
+		data+=",\n";
+		
+		string sFldr=protEvolver_path;
+		string inputFile=sFldr+"input.in";
+		ofstream fOut;
+		fOut.open(inputFile.c_str());
+		if(fOut.fail()){}
+		fOut<<data;fOut.close();
+
+		string tmp=maxThreadsLine->text().toStdString();
+		int nT=atoi(tmp.c_str());
+		string cmd="cd "+protEvolver_path+" && nohup protEvolver "+inputFile+" &";	
+		for(int i=0;i<nT;i++)
+		{
+			int statusCode=system(cmd.c_str());
+			if (statusCode == -1)
+			{fprintf(stderr, "program failed to run, errno = %d\n", errno);}
+		}
 	}
-	
+	else
+	{
+		xButton3->setChecked(false);xButton3->setText("RUN");
+		string cmd="killall protEvolver";
+		int statusCode=system(cmd.c_str());
+		if (statusCode == -1){fprintf(stderr, "program failed to run, errno = %d\n", errno);}
+	}
 }
 
 void pUI::write_protEvolver_pymolFunction_File(string pyFnNm,string outFile)
@@ -348,6 +344,7 @@ void pUI::view()
 	write_protEvolver_pymolFunction_File(pythonFunctionName,pythonFunctionFile);		
 	
 	int statusCode=system(cmd.c_str());
+	remove(pythonFunctionFile.c_str());
 	if (statusCode == -1)
 		{fprintf(stderr, "pymol failed to run, errno = %d\n", errno);}
 }
@@ -442,6 +439,19 @@ string setStringWidth(string In,int width)
 			Counter++;}
 		}
 	return Output;
+}
+
+vector<string> split (const string &s, char delim) 
+{
+    vector<string> result;
+    stringstream ss (s);
+    string item;
+
+    while (getline (ss, item, delim)) {
+        result.push_back (item);
+    }
+
+    return result;
 }
 
 static inline bool is_base64(unsigned char c){return (isalnum(c) || (c == '+') || (c == '/'));}

@@ -26,5 +26,5 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 # Input
 HEADERS += ui.h
-SOURCES += ui.cpp main.cpp 
+SOURCES += ui.cpp main.cpp
 
