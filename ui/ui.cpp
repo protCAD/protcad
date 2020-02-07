@@ -298,9 +298,13 @@ void pUI::runProtEvolver()
 	int nT=atoi(tmp.c_str());
 
 	string cmd="nohup protEvolver "+inputFile+" &";	
-	int statusCode;
 	for(int i=0;i<nT;i++)
-		{statusCode=system(cmd.c_str());}
+	{
+		int statusCode=system(cmd.c_str());
+		if (statusCode == -1)
+		{fprintf(stderr, "program failed to run, errno = %d\n", errno);}
+	}
+	
 }
 
 void pUI::write_protEvolver_pymolFunction_File(string pyFnNm,string outFile)
@@ -344,6 +348,8 @@ void pUI::view()
 	write_protEvolver_pymolFunction_File(pythonFunctionName,pythonFunctionFile);		
 	
 	int statusCode=system(cmd.c_str());
+	if (statusCode == -1)
+		{fprintf(stderr, "pymol failed to run, errno = %d\n", errno);}
 }
 
 string cnvrtNumToStrng(int Num,int numberAfterDecimalpoint)
