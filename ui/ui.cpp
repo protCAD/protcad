@@ -5,33 +5,19 @@
 # include <iostream>
 # include <sstream>
 # include <string>
-# include <fcntl.h>					// Defines O_CREAT flag
-# include <csignal>
 # include <thread>
-# include <sys/reg.h>
-# include <sys/syscall.h>			// Defines OS System Calls
-# include <sys/ptrace.h>
-# include <sys/types.h>
-# include <sys/user.h>
-# include <sys/wait.h>
-# include <sys/stat.h>				// Defines chmod function
-# include <openssl/conf.h>
-# include <openssl/evp.h>				// ciphers and message digests
-# include <openssl/err.h>
-# include <openssl/ssl.h>				// for libssl
 # include <unistd.h>
-# include <boost/filesystem.hpp>		// create_directory
-
+# include <boost/filesystem.hpp>
 # include <QtWidgets>
 # include <QProcess>
-
 # include "ui.h"
 
 using namespace std;
 
 // protCAD UI
 pUI::pUI(QWidget *parent) : QWidget(parent)
-	{// Initialize Variables to Track when User Changes their value
+{
+	// Initialize Variables to Track when User Changes their value
 	protAlign_pdbFile1="";
 	protAlign_pdbFile2="";
 	
@@ -228,7 +214,8 @@ pUI::pUI(QWidget *parent) : QWidget(parent)
 }
 
 void pUI::open_protAlignPDBFile1()
-	{QString Fldr=QDir::currentPath();
+{
+	QString Fldr=QDir::currentPath();
 	string sFldr=Fldr.toStdString()+"/";
 	QStringList filenames = QFileDialog::getOpenFileNames(this,tr("files"),tr(sFldr.c_str()),tr("All files (*)") );
 	string tmp;
@@ -236,10 +223,11 @@ void pUI::open_protAlignPDBFile1()
 		{tmp=filenames.at(0).toLocal8Bit().constData();
 		protAlign_pdbFile1=tmp;
 		protAlignPDBLabel1->setText("<b><span style=\"color:black;\">Select PDB file #1</span>:</b>");}
-	}
+}
 
 void pUI::open_protAlignPDBFile2()
-	{QString Fldr=QDir::currentPath();
+{
+	QString Fldr=QDir::currentPath();
 	string sFldr=Fldr.toStdString()+"/";
 	QStringList filenames = QFileDialog::getOpenFileNames(this,tr("files"),tr(sFldr.c_str()),tr("All files (*)") );
 	string tmp;
@@ -247,10 +235,11 @@ void pUI::open_protAlignPDBFile2()
 		{tmp=filenames.at(0).toLocal8Bit().constData();
 		protAlign_pdbFile2=tmp;
 		protAlignPDBLabel2->setText("<b><span style=\"color:black;\">Select PDB file #2</span>:</b>");}
-	}
+}
 
 void pUI::open_protEvolverPDBFile()
-	{QString Fldr=QDir::currentPath();
+{
+	QString Fldr=QDir::currentPath();
 	string sFldr=Fldr.toStdString()+"/";
 	QStringList filenames = QFileDialog::getOpenFileNames(this,tr("files"),tr(sFldr.c_str()),tr("All files (*)") );
 	string tmp;
@@ -258,7 +247,7 @@ void pUI::open_protEvolverPDBFile()
 		{tmp=filenames.at(0).toLocal8Bit().constData();
 		protEvolver_pdbFile=tmp;
 		protEvolverPDBLabel->setText("<b><span style=\"color:black;\">Select PDB file</span>:</b>");}
-	}
+}
 
 void pUI::protEvolverActiveChainInput_defined(){protEvolverActiveChainLabel->setText("<b><span style=\"color:black;\">Specify active chain(s)</span>:</b>");}
 
@@ -270,55 +259,53 @@ void pUI::protEvolverFrozenPositionInput_defined(){protEvolverFrozenPositionLabe
 
 void pUI::protEvolverAminoAcidInput_defined(){protEvolverAminoAcidLabel->setText("<b><span style=\"color:black;\">Specify Amino Acids</span>:</b>");}
 
-/*void pUI::runMakeGif()
-	{GIF=new gUI;
-	GIF->show();}*/
-
 void pUI::runProtEvolver()
-	{	//write input file from UI feilds
-		string data="";
-		data+="PDB file,";
-		data+=protEvolver_pdbFile;
-		data+=",\n";
-		data+="Active Chains,";
-		data+=protEvolverActiveChainInput->text().toStdString();
-		data+=",\n";
-		data+="Active Positions,";
-		data+=protEvolverActivePositionInput->text().toStdString();
-		data+=",\n";
-		data+="Random Positions,";
-		data+=protEvolverRandomPositionInput->text().toStdString();
-		data+=",\n";
-		data+="Frozen Positions,";
-		data+=protEvolverFrozenPositionInput->text().toStdString();
-		data+=",\n";
-		data+="Amino Acids,";
-		data+=protEvolverAminoAcidInput->text().toStdString();
-		data+=",\n";
-		data+="Backbone Relaxation,";
-		if(protEvolverRelaxationBox->isChecked()){data+="true";}
-		else{data+="false";}
-		data+=",\n";
-		
-		QString Fldr=QDir::currentPath();
-		string sFldr=Fldr.toStdString()+"/";
-		string inputFile=sFldr+"input.in";
-		ofstream fOut;
-		fOut.open(inputFile.c_str());
-		if(fOut.fail()){}
-		fOut<<data;fOut.close();
+{	
+	//write input file from UI feilds
+	string data="";
+	data+="PDB file,";
+	data+=protEvolver_pdbFile;
+	data+=",\n";
+	data+="Active Chains,";
+	data+=protEvolverActiveChainInput->text().toStdString();
+	data+=",\n";
+	data+="Active Positions,";
+	data+=protEvolverActivePositionInput->text().toStdString();
+	data+=",\n";
+	data+="Random Positions,";
+	data+=protEvolverRandomPositionInput->text().toStdString();
+	data+=",\n";
+	data+="Frozen Positions,";
+	data+=protEvolverFrozenPositionInput->text().toStdString();
+	data+=",\n";
+	data+="Amino Acids,";
+	data+=protEvolverAminoAcidInput->text().toStdString();
+	data+=",\n";
+	data+="Backbone Relaxation,";
+	if(protEvolverRelaxationBox->isChecked()){data+="true";}
+	else{data+="false";}
+	data+=",\n";
+	
+	QString Fldr=QDir::currentPath();
+	string sFldr=Fldr.toStdString()+"/";
+	string inputFile=sFldr+"input.in";
+	ofstream fOut;
+	fOut.open(inputFile.c_str());
+	if(fOut.fail()){}
+	fOut<<data;fOut.close();
 
-		string tmp=maxThreadsLine->text().toStdString();
-		int nT=atoi(tmp.c_str());
+	string tmp=maxThreadsLine->text().toStdString();
+	int nT=atoi(tmp.c_str());
 
-		string cmd="nohup protEvolver "+inputFile+" &";	
-		int statusCode;
-		for(int i=0;i<nT;i++)
-			{statusCode=system(cmd.c_str());}
-	}
+	string cmd="nohup protEvolver "+inputFile+" &";	
+	int statusCode;
+	for(int i=0;i<nT;i++)
+		{statusCode=system(cmd.c_str());}
+}
 
 void pUI::write_protEvolver_pymolFunction_File(string pyFnNm,string outFile)
-	{QString theCurFldr=QDir::currentPath();
+{
+	QString theCurFldr=QDir::currentPath();
 	string sFldr=theCurFldr.toStdString()+"/PyMol_Images/";
 	string Output="";
 	// Write PyMol Function File
@@ -343,187 +330,43 @@ void pUI::write_protEvolver_pymolFunction_File(string pyFnNm,string outFile)
 	if(fOut.fail()){cerr<<"Error in write_pymolFunction_File!\nCould not open file ("<<outFile<<")\n";}//exit(EXIT_FAILURE);}
 	else
 		{fOut<<Output;fOut.close();}
-	}
+}
 
 void pUI::view()
-	{QString theCurFldr=QDir::currentPath();
+{
+	QString theCurFldr=QDir::currentPath();
 	string sFldr=theCurFldr.toStdString()+"/";
 
 	string pythonFunctionName="Test";
 	string pythonFunctionFile=sFldr+"Test.py";
 	string cmd="pymol -d run "+pythonFunctionFile+" -d "+pythonFunctionName;
 	
-	//writeZPREDInputFile(zInputFile);
 	write_protEvolver_pymolFunction_File(pythonFunctionName,pythonFunctionFile);		
 	
 	int statusCode=system(cmd.c_str());
-	}
-
-// makeGif UI
-/*gUI::gUI(QWidget *parent) : QWidget(parent)
-	{// Bold Font
-	QFont font;
-	font.setBold(true);
-
-	QGroupBox* theBox=new QGroupBox;
-	//gBox->setStyleSheet("QGroupBox { font-size:12pt; font-weight:bold; color:blue; } ");//gBox->setStyleSheet("QGroupBox { font-weight:bold; } ");	
-	theBox->setFont(font);
-	theBox->setAlignment(Qt::AlignRight);
-	// Label
-	pdbLabel=new QLabel;
-	pdbLabel->setText("<b><span style=\"color:red;\">Select PDB file(s)</span>:</b>");
-	pdbLabel->setAlignment(Qt::AlignLeft);
-	// CheckBoxes
-	xRotationBox=new QCheckBox(tr("Rotate Along X-Axis?")); xRotationBox->setChecked(false); xRotationBox->setFont(font);
-	yRotationBox=new QCheckBox(tr("Rotate Along Y-Axis?")); yRotationBox->setChecked(true); yRotationBox->setFont(font);
-	zRotationBox=new QCheckBox(tr("Rotate Along Z-Axis?")); zRotationBox->setChecked(false); zRotationBox->setFont(font);
-	// Button
-	QPushButton* pdbButton=new QPushButton(tr("..."));	
-	pdbButton->setToolTip(tr("Tooltip"));
-	pdbButton->setFixedWidth(40);
-	pdbButton->setFont(font);
-	connect(pdbButton,SIGNAL(clicked()),this,SLOT(open_pdbFiles()));
-
-	QGridLayout *layout = new QGridLayout;
-	layout->setSizeConstraint(QLayout::SetFixedSize);
-	layout->addWidget(pdbLabel,0,0,1,1);layout->addWidget(pdbButton,0,1,1,1);
-	layout->addWidget(xRotationBox,1,0,1,2);
-	layout->addWidget(yRotationBox,2,0,1,2);
-	layout->addWidget(zRotationBox,3,0,1,2);
-	theBox->setLayout(layout);
-
-	QPushButton *xButton=new QPushButton(tr("Make Gif"));
-	xButton->setFont(font);
-	
-	connect(xButton,SIGNAL(clicked()),this,SLOT(makeGif()));
-
-	QGroupBox* botRight=new QGroupBox;
-	QGridLayout *brlayout=new QGridLayout;
-	//brlayout->setSizeConstraint(QLayout::SetFixedSize);
-	brlayout->addWidget(xButton,2,0,1,1);
-	botRight->setLayout(brlayout);
-
-	QGridLayout *mainLayout = new QGridLayout;
-	mainLayout->setSizeConstraint(QLayout::SetFixedSize);
-	mainLayout->addWidget(theBox,0,0);
-	mainLayout->addWidget(botRight,0,1);
-	setLayout(mainLayout);
-	setWindowTitle(tr("Make Gif"));
-	resize(QDesktopWidget().availableGeometry(this).size());
 }
 
-void gUI::makeGif()
-	{QString theCurFldr=QDir::currentPath();
-	string sFldr=theCurFldr.toStdString()+"/PyMol_Images/";
-	// Make PyMol Images Folder
-	boost::filesystem::path dir(sFldr.c_str());
-	boost::filesystem::create_directory(dir);
-
-	string pythonFunctionName="Test";
-	string pythonFunctionFile=sFldr+"Telcst.py";
-	string cmd="pymol -d run "+pythonFunctionFile+" -d "+pythonFunctionName;
-	//string cmd2="cd "+sFldr+"PyMol_Images/";
-	string cmd2="convert PyMol_Images.png Output.gif";
-	int statusCode,status;
-	bool xROT,yROT,zROT;
-	if(xRotationBox->isChecked()){xROT=true;}
-	else{xROT=false;}
-	if(yRotationBox->isChecked()){yROT=true;}
-	else{yROT=false;}
-	if(zRotationBox->isChecked()){zROT=true;}
-	else{zROT=false;}
-	//writeZPREDInputFile(zInputFile);
-	write_pymolFunction_File(xROT,yROT,zROT,pythonFunctionName,pythonFunctionFile);		
-	cerr<<"Creating stack of png files with PyMol...";
-	statusCode=system(cmd.c_str());
-	cerr<<"Done\nCreating gif file (Output.gif)...";
-	statusCode=system(cmd2.c_str());
-	cerr<<"Done\n";
-	//cerr<<"Status: "<<statusCode<<endl;
-	// Delete folder and contained files
-	boost::filesystem::remove_all(sFldr);
-	}
-
-void gUI::open_pdbFiles()
-	{QString Fldr=QDir::currentPath();
-	string sFldr=Fldr.toStdString()+"/";
-	QStringList filenames = QFileDialog::getOpenFileNames(this,tr("files"),tr(sFldr.c_str()),tr("All files (*)") );
-	string tmp;
-	if(filenames.count()!=0)
-		{numPDBs=filenames.count();
-		pdbFiles=new string[numPDBs];
-		for(int i=0;i<numPDBs;i++)
-			{tmp=filenames.at(0).toLocal8Bit().constData();
-			pdbFiles[i]=tmp;}
-		pdbLabel->setText("<b><span style=\"color:black;\">Select PDB file(s)</span>:</b>");}
-	}
-
-void gUI::write_pymolFunction_File(bool xROT,bool yROT,bool zROT,string pyFnNm,string outFile)
-	{QString theCurFldr=QDir::currentPath();
-	string sFldr=theCurFldr.toStdString()+"/PyMol_Images/";
-	string Output="";
-	// Write PyMol Function File
-	Output+="#!/usr/bin/python\nfrom pymol import stored\nfrom time import sleep\n\n# Function Definition\n\n";
-	Output+="def "+pyFnNm+"():\n\n";
-	// Define PDB File(s)	
-	for(int i=0;i<numPDBs;i++)
-		{Output+="\tpFile"+cnvrtNumToStrng(i+1,0)+"=\""+pdbFiles[i]+"\"\n";}
-	Output+="\n";
-	// Load PDB File(s)
-	for(int i=0;i<numPDBs;i++)
-		{Output+="\tcmd.load(pFile"+cnvrtNumToStrng(i+1,0)+")\n";}
-	Output+="\n";
-	// More Functions
-	Output+="\tcmd.do(\"util.cbag\")\n";
-	Output+="\tcmd.zoom(\"all\",10)\n";
-	
-	Output+="\tfor a in range(0,360,1):\n";
-	if(xROT){Output+="\t\tcmd.turn(\"x\",1)\n";}
-	if(yROT){Output+="\t\tcmd.turn(\"y\",1)\n";}
-	if(zROT){Output+="\t\tcmd.turn(\"z\",1)\n";}
-	Output+="\t\tif a < 10:\n";
-	Output+="\t\t\tpngFile=\""+sFldr+"\"+\"0000\"+str(a)+\".png\"\n";
-	Output+="\t\telif a > 9 and a < 100:\n";
-	Output+="\t\t\tpngFile=\""+sFldr+"\"+\"000\"+str(a)+\".png\"\n";
-	Output+="\t\telif a > 99 and a < 1000:\n";
-	Output+="\t\t\tpngFile=\""+sFldr+"\"+\"00\"+str(a)+\".png\"\n";
-	Output+="\t\telif a > 999 and a < 10000:\n";
-	Output+="\t\t\tpngFile=\""+sFldr+"\"+\"0\"+str(a)+\".png\"\n";
-	Output+="\t\telse:\n";
-	Output+="\t\t\tpngFile=\""+sFldr+"\"+str(a)+\".png\"\n";
-
-	Output+="\t\tcmd.ray()\n";
-	Output+="\t\tcmd.png(pngFile)\n";
-	Output+="\n";
-	Output+="\tcmd.quit()\n";
-	Output+="\n";
-	// End File
-	Output+="\treturn\n\ncmd.extend(\""+pyFnNm+"\","+pyFnNm+")";
-
-	ofstream fOut;
-	fOut.open(outFile.c_str());
-	if(fOut.fail()){cerr<<"Error in write_pymolFunction_File!\nCould not open file ("<<outFile<<")\n";}//exit(EXIT_FAILURE);}
-	else
-		{fOut<<Output;fOut.close();}
-	}*/
-
 string cnvrtNumToStrng(int Num,int numberAfterDecimalpoint)
-	{stringstream ss;
+{	
+	stringstream ss;
 	ss.setf(ios::fixed);
 	if(numberAfterDecimalpoint>0)
 		{ss.setf(ios::showpoint);}
 	ss.precision(numberAfterDecimalpoint);
 	ss<<Num;
-	return ss.str();}
+	return ss.str();
+}
 
 string cnvrtNumToStrng(unsigned int Num,int numberAfterDecimalpoint)
-	{stringstream ss;
+{	
+	stringstream ss;
 	ss.setf(ios::fixed);
 	if(numberAfterDecimalpoint>0)
 		{ss.setf(ios::showpoint);}
 	ss.precision(numberAfterDecimalpoint);
 	ss<<Num;
-	return ss.str();}
+	return ss.str();
+}
 
 string cnvrtNumToStrng(double Num,int numberAfterDecimalpoint){stringstream ss;ss.setf(ios::fixed);if(numberAfterDecimalpoint>0){ss.setf(ios::showpoint);}ss.precision(numberAfterDecimalpoint);ss<<Num;return ss.str();}
 
@@ -538,7 +381,8 @@ int* fill_int_array(string Data,int numPnts,string delimiter){int* Output=new in
 string* fill_string_array(string Data,int numPnts,string delimiter){string* Output=new string[numPnts];string bld="",tmp="";int Counter=0;for(uint i=0;i<Data.length();i++){tmp=Data[i];if(tmp.compare(delimiter)==0 && Counter<numPnts){Output[Counter]=bld;Counter++;bld="";}else{bld+=Data[i];}}return Output;}
 
 string fixSubscriptNumbers(string s)
-	{string Out;
+{
+	string Out;
 	if(s.compare("0")==0){Out="₀";}	
 	else if(s.compare("1")==0){Out="₁";}
 	else if(s.compare("2")==0){Out="₂";}
@@ -550,22 +394,36 @@ string fixSubscriptNumbers(string s)
 	else if(s.compare("8")==0){Out="₈";}
 	else if(s.compare("9")==0){Out="₉";}
 	else{Out=s;}
-	return Out;}
+	return Out;
+}
 
 string getBaseFolder(string f)
-	{int pos=f.rfind("/",f.length()-1);
-	return f.substr(0,pos)+"/";}
+{
+	int pos=f.rfind("/",f.length()-1);
+	return f.substr(0,pos)+"/";
+}
 
-string makeUpperCase(string X){string Output="";char letter;for(uint i=0;i<X.length();i++){letter=X[i];Output+=toupper(letter);}return Output;}
+string makeUpperCase(string X)
+{
+	string Output="";char letter;
+	for(uint i=0;i<X.length();i++)
+	{
+		letter=X[i];Output+=toupper(letter);
+	}
+	return Output;
+}
 
 string checkFinalBackSlash(string s)
-	{string tmp=s.substr(s.length()-1,1);
+{
+	string tmp=s.substr(s.length()-1,1);
 	if(tmp.compare("/")!=0){tmp=s+"/";}
 	else{tmp=s;}
-	return tmp;}
+	return tmp;
+}
 
 string setStringWidth(string In,int width)
-	{int Counter=0;
+{
+	int Counter=0;
 	string Output="";
 	for(uint i=0;i<In.length();i++)
 		{if(Counter>=width)
@@ -577,22 +435,7 @@ string setStringWidth(string In,int width)
 			{Output+=In[i];
 			Counter++;}
 		}
-	return Output;}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//void handleErrors(void){ERR_print_errors_fp(stderr);abort();}
+	return Output;
+}
 
 static inline bool is_base64(unsigned char c){return (isalnum(c) || (c == '+') || (c == '/'));}
-

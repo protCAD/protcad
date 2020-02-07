@@ -58,7 +58,7 @@ vpath %.a $(OBJDIR)
 
 vpath %.o $(OBJDIR)
 
-install : $(LIB_TARGETS) $(TARGETS) gui
+install : $(LIB_TARGETS) $(TARGETS) protcad
 ifeq ($(UNAME),Linux)
 	@echo export PROTCADDIR=$(PROTCADDIR) >> ~/.bashrc
 	@echo export PATH=$(PATH):$(PROTCADDIR):$(PROTCADDIR)/bin >> ~/.bashrc
@@ -68,7 +68,7 @@ ifeq ($(UNAME),Darwin)
 	@echo export PATH=$(PATH):$(PROTCADDIR):$(PROTCADDIR)/bin >> ~/.bash_profile
 endif
 
-all : $(LIB_TARGETS) $(TARGETS) gui
+all : $(LIB_TARGETS) $(TARGETS) protcad
 
 lib : libprotcad.a
 
@@ -144,12 +144,12 @@ $(LIB_F77_OBJECTS): %.o: %.f
 	$(F77) -c $(FFLAGS) $< -o $@
 	mv $@ $(OBJDIR)
 
-gui:
-	cd $(UIDIR) && qmake UI.pro && make
+protcad:
+	cd $(UIDIR) && qmake protcad.pro && make && strip $@ && mv $@ $(BINDIR)
 
 clean: 
 	rm -f $(OBJDIR)/*.o 
 	rm -f $(OBJDIR)/*.a
-	cd $(BINDIR) && rm -f $(TARGETS)
+	cd $(BINDIR) && rm -f $(TARGETS) && rm -f protcad
 	cd $(UIDIR) && if [ -f Makefile ]; then make distclean; fi;
 	
