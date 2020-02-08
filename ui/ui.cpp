@@ -8,7 +8,6 @@
 # include <thread>
 # include <vector>
 # include <unistd.h>
-# include <boost/filesystem.hpp>
 # include <QtWidgets>
 # include <QProcess>
 

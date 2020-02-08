@@ -21,7 +21,6 @@ TEMPLATE = app
 TARGET = protcad
 INCLUDEPATH += .
 QT += core gui widgets
-LIBS += -lboost_system -lboost_filesystem
 DEFINES += QT_DEPRECATED_WARNINGS
 
 # Input
