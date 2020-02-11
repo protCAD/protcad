@@ -85,11 +85,6 @@ public slots:
 	void open_protAlignPDBFile1();
 	void open_protAlignPDBFile2();
 	void open_protEvolverPDBFile();
-	void protEvolverActiveChainInput_defined();
-	void protEvolverActivePositionInput_defined();
-	void protEvolverRandomPositionInput_defined();
-	void protEvolverFrozenPositionInput_defined();
-	void protEvolverAminoAcidInput_defined();
 	void runProtEvolver();
 	void view();
 private:

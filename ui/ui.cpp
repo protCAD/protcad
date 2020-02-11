@@ -84,55 +84,55 @@ pUI::pUI(QWidget *parent) : QWidget(parent)
 	//-----protEVOLVER (tab3)
 	QWidget *tPg3 = new QWidget;
 	// Labels
-	QLabel* pg3Label=new QLabel(tr("Evolve a fold in a PDB file\n")); pg3Label->setAlignment(Qt::AlignLeft);
+	QLabel* pg3Label=new QLabel(tr("Evolve a sequence for a fold\n")); pg3Label->setAlignment(Qt::AlignLeft);
 	pg3Label->setWordWrap(true);
 	protEvolverPDBLabel=new QLabel;
-	protEvolverPDBLabel->setText("<b><span style=\"color:red;\">Select PDB file</span>:</b>");
+	protEvolverPDBLabel->setText("<b><span style=\"color:black;\">Select PDB file</span>:</b>");
 	protEvolverPDBLabel->setAlignment(Qt::AlignLeft);
 	protEvolverActiveChainLabel=new QLabel;
-	protEvolverActiveChainLabel->setText("<b><span style=\"color:red;\">Specify active chain(s)</span>:</b>");
+	protEvolverActiveChainLabel->setText("<b><span style=\"color:black;\">Specify active chain(s)</span>:</b>");
 	protEvolverActiveChainLabel->setAlignment(Qt::AlignLeft);
 	protEvolverActivePositionLabel=new QLabel;
-	protEvolverActivePositionLabel->setText("<b><span style=\"color:red;\">Specify active position(s)</span>:</b>");
+	protEvolverActivePositionLabel->setText("<b><span style=\"color:black;\">Specify active position(s)</span>:</b>");
 	protEvolverActivePositionLabel->setAlignment(Qt::AlignLeft);
 	protEvolverRandomPositionLabel=new QLabel;
-	protEvolverRandomPositionLabel->setText("<b><span style=\"color:red;\">Specify random position(s)</span>:</b>");
+	protEvolverRandomPositionLabel->setText("<b><span style=\"color:black;\">Specify random position(s)</span>:</b>");
 	protEvolverRandomPositionLabel->setAlignment(Qt::AlignLeft);
 	protEvolverFrozenPositionLabel=new QLabel;
-	protEvolverFrozenPositionLabel->setText("<b><span style=\"color:red;\">Specify frozen position(s)</span>:</b>");
+	protEvolverFrozenPositionLabel->setText("<b><span style=\"color:black;\">Specify frozen position(s)</span>:</b>");
 	protEvolverFrozenPositionLabel->setAlignment(Qt::AlignLeft);
 	protEvolverAminoAcidLabel=new QLabel;
-	protEvolverAminoAcidLabel->setText("<b><span style=\"color:red;\">Specify Amino Acids</span>:</b>");
+	protEvolverAminoAcidLabel->setText("<b><span style=\"color:black;\">Specify Amino Acids</span>:</b>");
 	protEvolverAminoAcidLabel->setAlignment(Qt::AlignLeft);
 	maxThreadsLabel=new QLabel;
-	maxThreadsLabel->setText("<b><span style=\"color:red;\">Specify Number of Threads</span>:</b>");
+	maxThreadsLabel->setText("<b><span style=\"color:black;\">Specify Number of Threads</span>:</b>");
 	maxThreadsLabel->setAlignment(Qt::AlignLeft);
 	// Line Input
 	protEvolverActiveChainInput=new QLineEdit;
 	protEvolverActiveChainInput->setAlignment(Qt::AlignCenter);
-	protEvolverActiveChainInput->setText(tr(NO_VALUE));
+	//protEvolverActiveChainInput->setText(tr(NO_VALUE));
 	protEvolverActiveChainInput->setFixedWidth(250);
-	connect(protEvolverActiveChainInput,SIGNAL(returnPressed()),this,SLOT(protEvolverActiveChainInput_defined()));
+	//connect(protEvolverActiveChainInput,SIGNAL(returnPressed()),this,SLOT(protEvolverActiveChainInput_defined()));
 	protEvolverActivePositionInput=new QLineEdit;
 	protEvolverActivePositionInput->setAlignment(Qt::AlignCenter);
-	protEvolverActivePositionInput->setText(tr(NO_VALUE));
+	//protEvolverActivePositionInput->setText(tr(NO_VALUE));
 	protEvolverActivePositionInput->setFixedWidth(250);
-	connect(protEvolverActivePositionInput,SIGNAL(returnPressed()),this,SLOT(protEvolverActivePositionInput_defined()));
+	//connect(protEvolverActivePositionInput,SIGNAL(returnPressed()),this,SLOT(protEvolverActivePositionInput_defined()));
 	protEvolverRandomPositionInput=new QLineEdit;
 	protEvolverRandomPositionInput->setAlignment(Qt::AlignCenter);
-	protEvolverRandomPositionInput->setText(tr(NO_VALUE));
+	//protEvolverRandomPositionInput->setText(tr(NO_VALUE));
 	protEvolverRandomPositionInput->setFixedWidth(250);
-	connect(protEvolverRandomPositionInput,SIGNAL(returnPressed()),this,SLOT(protEvolverRandomPositionInput_defined()));
+	//connect(protEvolverRandomPositionInput,SIGNAL(returnPressed()),this,SLOT(protEvolverRandomPositionInput_defined()));
 	protEvolverFrozenPositionInput=new QLineEdit;
 	protEvolverFrozenPositionInput->setAlignment(Qt::AlignCenter);
-	protEvolverFrozenPositionInput->setText(tr(NO_VALUE));
+	//protEvolverFrozenPositionInput->setText(tr(NO_VALUE));
 	protEvolverFrozenPositionInput->setFixedWidth(250);
-	connect(protEvolverFrozenPositionInput,SIGNAL(returnPressed()),this,SLOT(protEvolverFrozenPositionInput_defined()));
+	//connect(protEvolverFrozenPositionInput,SIGNAL(returnPressed()),this,SLOT(protEvolverFrozenPositionInput_defined()));
 	protEvolverAminoAcidInput=new QLineEdit;
 	protEvolverAminoAcidInput->setAlignment(Qt::AlignCenter);
-	protEvolverAminoAcidInput->setText(tr(NO_VALUE));
+	//protEvolverAminoAcidInput->setText(tr(NO_VALUE));
 	protEvolverAminoAcidInput->setFixedWidth(250);
-	connect(protEvolverAminoAcidInput,SIGNAL(returnPressed()),this,SLOT(protEvolverAminoAcidInput_defined()));
+	//connect(protEvolverAminoAcidInput,SIGNAL(returnPressed()),this,SLOT(protEvolverAminoAcidInput_defined()));
 	// Check Boxes
 	protEvolverRelaxationBox=new QCheckBox(tr("Allow Backbone Relaxation?")); protEvolverRelaxationBox->setChecked(false); protEvolverRelaxationBox->setFont(font);
 	// Number of THreads LineEdit/INput
@@ -185,7 +185,7 @@ pUI::pUI(QWidget *parent) : QWidget(parent)
 	mainLayout->setSizeConstraint(QLayout::SetFixedSize);
 	mainLayout->addWidget(theTab,0,0);
 	setLayout(mainLayout);
-	setWindowTitle(tr("ProtCAD"));
+	setWindowTitle(tr("protCAD"));
 	resize(QDesktopWidget().availableGeometry(this).size());
 }
 
@@ -235,16 +235,6 @@ void pUI::open_protEvolverPDBFile()
 	}
 }
 
-void pUI::protEvolverActiveChainInput_defined(){protEvolverActiveChainLabel->setText("<b><span style=\"color:black;\">Specify active chain(s)</span>:</b>");}
-
-void pUI::protEvolverActivePositionInput_defined(){protEvolverActivePositionLabel->setText("<b><span style=\"color:black;\">Specify active position(s)</span>:</b>");}
-
-void pUI::protEvolverRandomPositionInput_defined(){protEvolverRandomPositionLabel->setText("<b><span style=\"color:black;\">Specify random position(s)</span>:</b>");}
-
-void pUI::protEvolverFrozenPositionInput_defined(){protEvolverFrozenPositionLabel->setText("<b><span style=\"color:black;\">Specify frozen position(s)</span>:</b>");}
-
-void pUI::protEvolverAminoAcidInput_defined(){protEvolverAminoAcidLabel->setText("<b><span style=\"color:black;\">Specify Amino Acids</span>:</b>");}
-
 void pUI::runProtEvolver()
 {	
 	if (xButton3->isChecked())
@@ -258,19 +248,19 @@ void pUI::runProtEvolver()
 		data+=",\n";
 		data+="Active Chains,";
 		data+=protEvolverActiveChainInput->text().toStdString();
-		data+=",\n";
+		data+="\n";
 		data+="Active Positions,";
 		data+=protEvolverActivePositionInput->text().toStdString();
-		data+=",\n";
+		data+="\n";
 		data+="Random Positions,";
 		data+=protEvolverRandomPositionInput->text().toStdString();
-		data+=",\n";
+		data+="\n";
 		data+="Frozen Positions,";
 		data+=protEvolverFrozenPositionInput->text().toStdString();
-		data+=",\n";
+		data+="\n";
 		data+="Amino Acids,";
 		data+=protEvolverAminoAcidInput->text().toStdString();
-		data+=",\n";
+		data+="\n";
 		data+="Backbone Relaxation,";
 		if(protEvolverRelaxationBox->isChecked()){data+="true";}
 		else{data+="false";}
@@ -288,6 +278,7 @@ void pUI::runProtEvolver()
 		string cmd="cd "+protEvolver_path+" && nohup protEvolver "+inputFile+" &";	
 		for(int i=0;i<nT;i++)
 		{
+			if (i == 1){usleep(500000);}
 			int statusCode=system(cmd.c_str());
 			if (statusCode == -1)
 			{fprintf(stderr, "program failed to run, errno = %d\n", errno);}

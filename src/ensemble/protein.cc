@@ -1136,9 +1136,7 @@ double protein::protEnergy()
 void protein::updateEnergy()
 {
 	updateMovedDependence(0);
-	cout << "test1" << endl;
 	updateDielectrics();
-	cout << "test2 " << itsChains.size() << endl;
 	for(UInt i=0; i<itsChains.size(); i++)
 	{
 		itsChains[i]->updateEnergy();
@@ -1175,9 +1173,7 @@ void protein::updateMovedDependence(UInt _EorC)
 {
 	for(UInt i=0; i<itsChains.size(); i++)
 	{
-		cout << itsChains.size() << endl;
 		itsChains[i]->updateMovedDependence(_EorC);
-		cout << "test3" << endl;
 		for(UInt j=i+1; j<itsChains.size(); j++)
 		{
 			itsChains[i]->updateMovedDependence(itsChains[j], _EorC);
