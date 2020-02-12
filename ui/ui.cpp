@@ -267,7 +267,7 @@ void pUI::runProtEvolver()
 		data+=",\n";
 		
 		string sFldr=protEvolver_path;
-		string inputFile=sFldr+"input.in";
+		string inputFile=sFldr+"evolver.in";
 		ofstream fOut;
 		fOut.open(inputFile.c_str());
 		if(fOut.fail()){}
@@ -275,7 +275,7 @@ void pUI::runProtEvolver()
 
 		string tmp=maxThreadsLine->text().toStdString();
 		int nT=atoi(tmp.c_str());
-		string cmd="cd "+protEvolver_path+" && nohup protEvolver "+inputFile+" &";	
+		string cmd="cd "+protEvolver_path+" && protEvolver "+inputFile+" &> evolver.log &";	
 		for(int i=0;i<nT;i++)
 		{
 			if (i == 1){usleep(500000);}
