@@ -89,6 +89,8 @@ public:
 	string getTypeStringFromAtomNum(UInt _chainIndex, UInt _resNum, UInt _atomNum) { return itsChains[_chainIndex]->getTypeStringFromAtomNum(_resNum, _atomNum);}
 	string getTypeStringFromResNum(UInt _chainIndex, UInt _resNum) {return itsChains[_chainIndex]->getTypeStringFromResNum(_resNum);}
 	void removeResidue(UInt _chainIndex, UInt _resNum) {return itsChains[_chainIndex]->removeResidue(_resNum);}
+	void removeChain(UInt _chainIndex);
+
 
 	//--Mutations functions
 	void stripToGlycine();
@@ -302,7 +304,6 @@ private:
 	static bool calcSelfEnergy;
 	static UInt howMany;
 	UInt itsNumResidues;
-	vector < vector < vector  <double> > > energies;
 	static UInt itsSolvationParam;
 	vector <chain*> itsChains;
 	vector <UInt> itsIndependentChainsMap;

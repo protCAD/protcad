@@ -104,7 +104,21 @@ void protein::initializeModificationMethods()
 	itsModificationMethods[3] = 0;
 	itsModificationMethods[4] = 0;
 }
-
+void protein::removeChain(UInt _chainIndex)
+{
+	
+	for (UInt i = 0; i < itsChains.size(); i++)
+	{
+		if (i > _chainIndex)
+		{
+			cout << "map " << itsIndependentChainsMap[i] << endl;
+			itsIndependentChainsMap[i] = itsIndependentChainsMap[i]-1;
+		}
+	}
+	delete itsChains[_chainIndex];
+	itsChains.resize(itsChains.size()-1);
+	
+}
 //******************testing junk****************
 void protein::accessChainZeroResZero()
 {

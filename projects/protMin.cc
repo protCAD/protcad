@@ -28,7 +28,7 @@ int main (int argc, char* argv[])
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* _prot = static_cast<protein*>(pMol);
-	bool backbone = true;
+	bool backbone = false;
 	clock_t start, end;
 	double cpu_time_used;
 	int seed = (int)getpid()*(int)gethostid(); srand (seed);

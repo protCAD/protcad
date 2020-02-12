@@ -45,12 +45,12 @@ Publications to date on protCAD's methods and implementaions are:
 
 First you will need to follow instructions to install the windows ubuntu sub-system as there is no
 native support for windows libraries: https://docs.microsoft.com/en-us/windows/wsl/install-win10
-Then follow the Ubuntu Linux install dependency instructions below in the sub-system terminal.
+Then follow the Ubuntu Linux install dependency instructions and install below in the sub-system terminal.
 
 --Ubuntu Linux:
 
 In terminal:
-sudo apt-get install g++ gfortran git
+sudo apt-get install g++ gfortran git pymol build-essential qt5-default;
 
 --Mac:
 

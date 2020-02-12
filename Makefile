@@ -2,6 +2,7 @@ export PROTCADDIR=$(PWD)
 export SRCDIR=$(PROTCADDIR)/src
 export TNTINCLUDE=$(SRCDIR)
 export BINDIR=$(PROTCADDIR)/bin
+export UIDIR=$(PROTCADDIR)/ui
 export OBJDIR=$(PROTCADDIR)/obj
 export PROJDIR=$(PROTCADDIR)/projects
 
@@ -20,7 +21,7 @@ export MAKE = make
 
 SHELL = /bin/sh
 
-TARGETS = protDielectric protEvolver protDihedrals protOligamer protEnergy protFolder protMover protMutator protSequence protInverter protMin protAlign protShaper hammingdist
+TARGETS = protDielectric protEvolver protDihedrals protOligamer protEnergy protFolder protMover protMutator protSequence protInverter protMin protAlign protShaper protBindingEnergy hammingdist
 
 .SUFFIXES: .cc .o .h .a .f
 
@@ -57,7 +58,7 @@ vpath %.a $(OBJDIR)
 
 vpath %.o $(OBJDIR)
 
-install : $(LIB_TARGETS) $(TARGETS)
+install : $(LIB_TARGETS) $(TARGETS) protcad
 ifeq ($(UNAME),Linux)
 	@echo export PROTCADDIR=$(PROTCADDIR) >> ~/.bashrc
 	@echo export PATH=$(PATH):$(PROTCADDIR):$(PROTCADDIR)/bin >> ~/.bashrc
@@ -67,7 +68,7 @@ ifeq ($(UNAME),Darwin)
 	@echo export PATH=$(PATH):$(PROTCADDIR):$(PROTCADDIR)/bin >> ~/.bash_profile
 endif
 
-all : $(LIB_TARGETS) $(TARGETS)
+all : $(LIB_TARGETS) $(TARGETS) protcad
 
 lib : libprotcad.a
 
@@ -127,6 +128,10 @@ protShaper : libprotcad.a protShaper.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
 	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 
+protBindingEnergy : libprotcad.a protBindingEnergy.cc
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
+
 hammingdist : libprotcad.a hammingdist.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
 	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
@@ -139,7 +144,12 @@ $(LIB_F77_OBJECTS): %.o: %.f
 	$(F77) -c $(FFLAGS) $< -o $@
 	mv $@ $(OBJDIR)
 
+protcad:
+	cd $(UIDIR) && qmake protcad.pro && make && strip $@ && mv $@ $(BINDIR)
+
 clean: 
 	rm -f $(OBJDIR)/*.o 
 	rm -f $(OBJDIR)/*.a
-	cd $(BINDIR) && rm -f $(TARGETS)
+	cd $(BINDIR) && rm -f $(TARGETS) && rm -f protcad
+	cd $(UIDIR) && if [ -f Makefile ]; then make distclean; fi;
+	
