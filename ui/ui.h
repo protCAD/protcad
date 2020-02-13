@@ -86,6 +86,7 @@ public slots:
 	void open_protAlignPDBFile2();
 	void open_protEvolverPDBFile();
 	void runProtEvolver();
+	void run(string command);
 	void view();
 private:
 

@@ -110,34 +110,22 @@ pUI::pUI(QWidget *parent) : QWidget(parent)
 	// Line Input
 	protEvolverActiveChainInput=new QLineEdit;
 	protEvolverActiveChainInput->setAlignment(Qt::AlignCenter);
-	//protEvolverActiveChainInput->setText(tr(NO_VALUE));
 	protEvolverActiveChainInput->setFixedWidth(250);
-	//connect(protEvolverActiveChainInput,SIGNAL(returnPressed()),this,SLOT(protEvolverActiveChainInput_defined()));
 	protEvolverActivePositionInput=new QLineEdit;
 	protEvolverActivePositionInput->setAlignment(Qt::AlignCenter);
-	//protEvolverActivePositionInput->setText(tr(NO_VALUE));
 	protEvolverActivePositionInput->setFixedWidth(250);
-	//connect(protEvolverActivePositionInput,SIGNAL(returnPressed()),this,SLOT(protEvolverActivePositionInput_defined()));
 	protEvolverRandomPositionInput=new QLineEdit;
 	protEvolverRandomPositionInput->setAlignment(Qt::AlignCenter);
-	//protEvolverRandomPositionInput->setText(tr(NO_VALUE));
 	protEvolverRandomPositionInput->setFixedWidth(250);
-	//connect(protEvolverRandomPositionInput,SIGNAL(returnPressed()),this,SLOT(protEvolverRandomPositionInput_defined()));
 	protEvolverFrozenPositionInput=new QLineEdit;
 	protEvolverFrozenPositionInput->setAlignment(Qt::AlignCenter);
-	//protEvolverFrozenPositionInput->setText(tr(NO_VALUE));
 	protEvolverFrozenPositionInput->setFixedWidth(250);
-	//connect(protEvolverFrozenPositionInput,SIGNAL(returnPressed()),this,SLOT(protEvolverFrozenPositionInput_defined()));
 	protEvolverAminoAcidInput=new QLineEdit;
 	protEvolverAminoAcidInput->setAlignment(Qt::AlignCenter);
-	//protEvolverAminoAcidInput->setText(tr(NO_VALUE));
 	protEvolverAminoAcidInput->setFixedWidth(250);
-	//connect(protEvolverAminoAcidInput,SIGNAL(returnPressed()),this,SLOT(protEvolverAminoAcidInput_defined()));
 	// Check Boxes
 	protEvolverRelaxationBox=new QCheckBox(tr("Allow Backbone Relaxation?")); protEvolverRelaxationBox->setChecked(false); protEvolverRelaxationBox->setFont(font);
-	// Number of THreads LineEdit/INput
 	unsigned int number_of_threads = thread::hardware_concurrency();
-	//std::cout << n << " concurrent threads are supported.\n";
 	string numThreadValue;
 	if(number_of_threads!=0)
 		{numThreadValue=cnvrtNumToStrng(number_of_threads,0);}
@@ -278,10 +266,11 @@ void pUI::runProtEvolver()
 		string cmd="cd "+protEvolver_path+" && protEvolver "+inputFile+" &> evolver.log &";	
 		for(int i=0;i<nT;i++)
 		{
-			if (i == 1){usleep(500000);}
+			run(cmd);
+			/*if (i == 1){usleep(500000);}
 			int statusCode=system(cmd.c_str());
 			if (statusCode == -1)
-			{fprintf(stderr, "program failed to run, errno = %d\n", errno);}
+			{fprintf(stderr, "program failed to run, errno = %d\n", errno);}*/
 		}
 	}
 	else
@@ -338,6 +327,18 @@ void pUI::view()
 	if (statusCode == -1)
 		{fprintf(stderr, "pymol failed to run, errno = %d\n", errno);}
 }
+
+void run(string command){
+	    QStringList path;
+		QString cmd = QString::fromStdString(command);
+#ifdef Q_OS_MACX
+		path << "PATH=/Applications/protcad.app/Contents/MacOS";
+#endif
+	      //QProcess *exec = new QProcess(this);
+	      //exec->setEnvironment(path);
+	      QProcess::execute(command);
+}
+
 
 string cnvrtNumToStrng(int Num,int numberAfterDecimalpoint)
 {	
@@ -443,5 +444,3 @@ vector<string> split (const string &s, char delim)
 
     return result;
 }
-
-static inline bool is_base64(unsigned char c){return (isalnum(c) || (c == '+') || (c == '/'));}
