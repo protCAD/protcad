@@ -268,7 +268,7 @@ void pUI::runProtEvolver()
 		QStringList args = {"evolver.in"};	
 		for(int i=0;i<nT;i++)
 		{
-			run(workdir, cmd, args);
+			run(cmd, args, workdir);
 			if (i == 1){usleep(500000);}
 		}
 	}
@@ -327,10 +327,10 @@ void pUI::view()
 		{fprintf(stderr, "pymol failed to run, errno = %d\n", errno);}
 }
 
-void run(QString workdir, QString command, QStringList args){
+void run(QString command, QStringList args, QString workdir){
+	qint64 pid;
 	QProcess * process = new QProcess;
-	process->setWorkingDirectory(workdir);
-	process->start(command, args);
+	process->startDetached(command, args, workdir, &pid);
 }
 
 

@@ -132,7 +132,7 @@ int main (int argc, char* argv[])
 	residue::setTemperature(300);
 
 	//--set initial variables
-	int seed = (int)getpid()*(int)gethostid(); srand (seed);
+	int seed = (int)getpid(); srand (seed);
 	double startEnergy = 1E10, pastEnergy, Energy, deltaEnergy;
 	UInt timeid, sec, mutant = 0, plateau = 15, nobetter = 0;
 	vector < UInt > mutantPosition, chainSequence, randomPosition;
