@@ -263,14 +263,13 @@ void pUI::runProtEvolver()
 
 		string tmp=maxThreadsLine->text().toStdString();
 		int nT=atoi(tmp.c_str());
-		string cmd="cd "+protEvolver_path+" && protEvolver "+inputFile+" &> evolver.log &";	
+		QString workdir = QString::fromStdString(sFldr);
+		auto cmd = QCoreApplication::applicationDirPath() +"/"+QString("protEvolver");
+		QStringList args = {"evolver.in"};	
 		for(int i=0;i<nT;i++)
 		{
-			run(cmd);
-			/*if (i == 1){usleep(500000);}
-			int statusCode=system(cmd.c_str());
-			if (statusCode == -1)
-			{fprintf(stderr, "program failed to run, errno = %d\n", errno);}*/
+			run(workdir, cmd, args);
+			if (i == 1){usleep(500000);}
 		}
 	}
 	else
@@ -328,15 +327,10 @@ void pUI::view()
 		{fprintf(stderr, "pymol failed to run, errno = %d\n", errno);}
 }
 
-void run(string command){
-	    QStringList path;
-		QString cmd = QString::fromStdString(command);
-#ifdef Q_OS_MACX
-		path << "PATH=/Applications/protcad.app/Contents/MacOS";
-#endif
-	      //QProcess *exec = new QProcess(this);
-	      //exec->setEnvironment(path);
-	      QProcess::execute(command);
+void run(QString workdir, QString command, QStringList args){
+	QProcess * process = new QProcess;
+	process->setWorkingDirectory(workdir);
+	process->start(command, args);
 }
 
 

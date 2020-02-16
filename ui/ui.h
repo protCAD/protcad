@@ -86,7 +86,6 @@ public slots:
 	void open_protAlignPDBFile2();
 	void open_protEvolverPDBFile();
 	void runProtEvolver();
-	void run(string command);
 	void view();
 private:
 
@@ -112,5 +111,6 @@ double getSoluteAqueousSolubility(string solute,double T);
 string base64_decode(string const& encoded_string);
 void decryptString(string encStr,const string salt,const string pass,string outFile);
 void handleErrors(void);
+void run(QString workdir, QString command, QStringList args);
 
 # endif
