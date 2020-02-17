@@ -1,4 +1,13 @@
+# include <fstream>
+# include <unistd.h>
+# include <iostream>
+# include <sstream>
 # include <string>
+# include <vector>
+# include <QWidget>
+# include <QProcess>
+# include <QtWidgets>
+# include <QDialog>
 
 // Computational Constants
 # define LINE_INPUT_SIZE 100
@@ -9,13 +18,11 @@ using namespace std;
 # ifndef UI_H
 # define UI_H
 
-# include <QWidget>
-
 QT_BEGIN_NAMESPACE
 class QLineEdit;
 QT_END_NAMESPACE
 class Button;
-# include <QDialog>
+
 
 QT_BEGIN_NAMESPACE
 class QCheckBox;
@@ -75,6 +82,7 @@ public:
 	string protEvolver_path;
 	QPushButton* protEvolverPDBButton;
 	QPushButton* xButton2;
+	QProcess * process = new QProcess;
 public slots:
 	void open_protEvolverPDBFile();
 	void runProtEvolver();

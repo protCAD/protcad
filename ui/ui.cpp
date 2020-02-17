@@ -1,16 +1,3 @@
-# include <cmath>
-# include <cstdio>
-# include <cstring>
-# include <fstream>
-# include <iostream>
-# include <sstream>
-# include <string>
-# include <thread>
-# include <vector>
-# include <unistd.h>
-# include <QtWidgets>
-# include <QProcess>
-
 # include "ui.h"
 
 using namespace std;
@@ -199,7 +186,8 @@ void pUI::runProtEvolver()
 		QStringList args = {"evolver.in"};	
 		for(int i=0;i<nT;i++)
 		{
-			run(cmd, args, workdir);
+			qint64 pid;
+			process->startDetached(cmd, args, workdir, &pid);
 			if (i == 1){usleep(500000);}
 		}
 	}
