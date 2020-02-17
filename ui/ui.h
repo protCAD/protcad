@@ -100,17 +100,8 @@ string* fill_string_array(string Data,int numPnts,string delimiter);
 vector<string> split (const string &s, char delim);
 int* fill_int_array(string Data,int numPnts,string delimiter);
 double* fill_double_array(string Data,int numPnts,string delimiter);
-string fixSubscriptNumbers(string s);
-string getBaseFolder(string f);
 string makeUpperCase(string X);
 string checkFinalBackSlash(string s);
 string setStringWidth(string In,int width);
-void updateParameterFile(string Name,string Value);
-double interpolate(double x,double x1,double x2,double y1,double y2);
-double getSoluteAqueousSolubility(string solute,double T);
-string base64_decode(string const& encoded_string);
-void decryptString(string encStr,const string salt,const string pass,string outFile);
-void handleErrors(void);
-void run(QString command, QStringList args, QString workdir);
 
 # endif

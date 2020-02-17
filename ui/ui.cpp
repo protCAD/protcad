@@ -29,25 +29,25 @@ pUI::pUI(QWidget *parent) : QWidget(parent)
 	QLabel* pg2Label=new QLabel(tr("Evolve a sequence for a fold\n")); pg2Label->setAlignment(Qt::AlignLeft);
 	pg2Label->setWordWrap(true);
 	protEvolverPDBLabel=new QLabel;
-	protEvolverPDBLabel->setText("<b>Select PDB file</span>:</b>");
+	protEvolverPDBLabel->setText("Select PDB file:");
 	protEvolverPDBLabel->setAlignment(Qt::AlignLeft);
 	protEvolverActiveChainLabel=new QLabel;
-	protEvolverActiveChainLabel->setText("<b>Specify active chain(s)</span>:</b>");
+	protEvolverActiveChainLabel->setText("Specify active chain(s):");
 	protEvolverActiveChainLabel->setAlignment(Qt::AlignLeft);
 	protEvolverActivePositionLabel=new QLabel;
-	protEvolverActivePositionLabel->setText("<b>Specify active position(s)</span>:</b>");
+	protEvolverActivePositionLabel->setText("Specify active position(s):");
 	protEvolverActivePositionLabel->setAlignment(Qt::AlignLeft);
 	protEvolverRandomPositionLabel=new QLabel;
-	protEvolverRandomPositionLabel->setText("<b>Specify random position(s)</span>:</b>");
+	protEvolverRandomPositionLabel->setText("Specify random position(s):");
 	protEvolverRandomPositionLabel->setAlignment(Qt::AlignLeft);
 	protEvolverFrozenPositionLabel=new QLabel;
-	protEvolverFrozenPositionLabel->setText("<b>Specify frozen position(s)</span>:</b>");
+	protEvolverFrozenPositionLabel->setText("Specify frozen position(s):");
 	protEvolverFrozenPositionLabel->setAlignment(Qt::AlignLeft);
 	protEvolverAminoAcidLabel=new QLabel;
-	protEvolverAminoAcidLabel->setText("<b>Specify Amino Acids</span>:</b>");
+	protEvolverAminoAcidLabel->setText("Specify Amino Acids:");
 	protEvolverAminoAcidLabel->setAlignment(Qt::AlignLeft);
 	maxThreadsLabel=new QLabel;
-	maxThreadsLabel->setText("<b>Specify Number of Threads</span>:</b>");
+	maxThreadsLabel->setText("Specify Number of Threads:");
 	maxThreadsLabel->setAlignment(Qt::AlignLeft);
 	// Line Input
 	protEvolverActiveChainInput=new QLineEdit;
@@ -72,7 +72,7 @@ pUI::pUI(QWidget *parent) : QWidget(parent)
 	if(number_of_threads!=0)
 		{numThreadValue=cnvrtNumToStrng(number_of_threads,0);}
 	else
-		{numThreadValue="4";}
+		{numThreadValue="1";}
 	maxThreadsLine=new QLineEdit();
 	maxThreadsLine->setAlignment(Qt::AlignCenter);
 	maxThreadsLine->setText(tr(numThreadValue.c_str()));
@@ -194,9 +194,8 @@ void pUI::runProtEvolver()
 	else
 	{
 		xButton2->setChecked(false);xButton2->setText("RUN");
-		string cmd="killall protEvolver";
-		int statusCode=system(cmd.c_str());
-		if (statusCode == -1){fprintf(stderr, "program failed to run, errno = %d\n", errno);}
+		QString stop = "killall protEvolver";
+		process->start(stop);
 	}
 }
 
@@ -246,13 +245,6 @@ void pUI::view()
 		{fprintf(stderr, "pymol failed to run, errno = %d\n", errno);}
 }
 
-void run(QString command, QStringList args, QString workdir){
-	qint64 pid;
-	QProcess * process = new QProcess;
-	process->startDetached(command, args, workdir, &pid);
-}
-
-
 string cnvrtNumToStrng(int Num,int numberAfterDecimalpoint)
 {	
 	stringstream ss;
@@ -286,29 +278,6 @@ double* fill_double_array(string Data,int numPnts,string delimiter){double* Outp
 int* fill_int_array(string Data,int numPnts,string delimiter){int* Output=new int[numPnts];string bld="",tmp="";int Counter=0;for(uint i=0;i<Data.length();i++){tmp=Data[i];if(tmp.compare(delimiter)==0 && Counter<numPnts){Output[Counter]=atoi(bld.c_str());Counter++;bld="";}else{bld+=Data[i];}}return Output;}
 
 string* fill_string_array(string Data,int numPnts,string delimiter){string* Output=new string[numPnts];string bld="",tmp="";int Counter=0;for(uint i=0;i<Data.length();i++){tmp=Data[i];if(tmp.compare(delimiter)==0 && Counter<numPnts){Output[Counter]=bld;Counter++;bld="";}else{bld+=Data[i];}}return Output;}
-
-string fixSubscriptNumbers(string s)
-{
-	string Out;
-	if(s.compare("0")==0){Out="₀";}	
-	else if(s.compare("1")==0){Out="₁";}
-	else if(s.compare("2")==0){Out="₂";}
-	else if(s.compare("3")==0){Out="₃";}
-	else if(s.compare("4")==0){Out="₄";}
-	else if(s.compare("5")==0){Out="₅";}
-	else if(s.compare("6")==0){Out="₆";}
-	else if(s.compare("7")==0){Out="₇";}
-	else if(s.compare("8")==0){Out="₈";}
-	else if(s.compare("9")==0){Out="₉";}
-	else{Out=s;}
-	return Out;
-}
-
-string getBaseFolder(string f)
-{
-	int pos=f.rfind("/",f.length()-1);
-	return f.substr(0,pos)+"/";
-}
 
 string makeUpperCase(string X)
 {
