@@ -4,6 +4,7 @@
 # include <sstream>
 # include <string>
 # include <vector>
+# include <thread>
 # include <QWidget>
 # include <QProcess>
 # include <QtWidgets>
