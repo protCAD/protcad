@@ -151,7 +151,6 @@ endif
 ifeq ($(UNAME),Darwin)
 	cd $(UIDIR) && qmake protcad.pro && make && cp $(BINDIR)/protEvolver protcad.app/Contents/MacOS/
 endif
-	
 
 clean: 
 	rm -f $(OBJDIR)/*.o 

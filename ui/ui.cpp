@@ -17,95 +17,50 @@ using namespace std;
 
 // protCAD UI
 pUI::pUI(QWidget *parent) : QWidget(parent)
-{
-	// Initialize Variables to Track when User Changes their value
-	protAlign_pdbFile1="";
-	protAlign_pdbFile2="";
-	
+{	
 	QFont font;
 	font.setBold(true);
 	QTabWidget* theTab=new QTabWidget;
 
-	//-----protALIGN (tab1)
+	//----Getting Started (tab1)
 	QWidget *tPg1 = new QWidget;
 	// Labels
-	QLabel* pg1Label=new QLabel(tr("Align PDB file #1 to PDB file #2\n")); pg1Label->setAlignment(Qt::AlignLeft);
+	QLabel* pg1Label=new QLabel(tr("Description Label\n")); pg1Label->setAlignment(Qt::AlignLeft);
 	pg1Label->setWordWrap(true);
-	protAlignPDBLabel1=new QLabel;
-	protAlignPDBLabel1->setText("<b><span style=\"color:red;\">Select PDB file #1</span>:</b>");
-	protAlignPDBLabel1->setAlignment(Qt::AlignLeft);
-	protAlignPDBLabel2=new QLabel;
-	protAlignPDBLabel2->setText("<b><span style=\"color:red;\">Select PDB file #2</span>:</b>");
-	protAlignPDBLabel2->setAlignment(Qt::AlignLeft);
-	// Buttons
-	QPushButton* protAlignPDBButton1=new QPushButton(tr("..."));	
-	protAlignPDBButton1->setToolTip(tr("Tooltip"));
-	protAlignPDBButton1->setFixedWidth(40);
-	protAlignPDBButton1->setFont(font);
-	connect(protAlignPDBButton1,SIGNAL(clicked()),this,SLOT(open_protAlignPDBFile1()));
-	QPushButton* protAlignPDBButton2=new QPushButton(tr("..."));
-	protAlignPDBButton2->setToolTip(tr("Tooltip"));
-	protAlignPDBButton2->setFixedWidth(40);
-	protAlignPDBButton2->setFont(font);
-	connect(protAlignPDBButton2,SIGNAL(clicked()),this,SLOT(open_protAlignPDBFile2()));
-	QPushButton* xButton1=new QPushButton(tr("EXECUTE"));
-	xButton1->setFixedWidth(200);
-	xButton1->setFont(font);
-	// Design Tab Page
+	// Design Tab Page Layout
 	QGridLayout *pg1box = new QGridLayout;
 	pg1box->setSizeConstraint(QLayout::SetFixedSize);
-	pg1box->addWidget(pg1Label,0,0,1,5);
-	pg1box->addWidget(protAlignPDBLabel1,1,0,1,1);pg1box->addWidget(protAlignPDBButton1,1,1,1,1);pg1box->addWidget(protAlignPDBLabel2,1,3,1,1);pg1box->addWidget(protAlignPDBButton2,1,4,1,1);
-	pg1box->addWidget(xButton1,2,0,1,5);
+	pg1box->addWidget(pg1Label,0,0,1,2);
 	// Set Layout
 	tPg1->setLayout(pg1box);
 	// Update Tab Widget
-	theTab->addTab(tPg1,tr("protAlign"));
+	theTab->addTab(tPg1,tr("Getting Started"));
 
-	//----protDIELECTRIC (tab2)
+	//-----protEVOLVER (tab2)
 	QWidget *tPg2 = new QWidget;
 	// Labels
-	QLabel* pg2Label=new QLabel(tr("Description Label\n")); pg2Label->setAlignment(Qt::AlignLeft);
+	QLabel* pg2Label=new QLabel(tr("Evolve a sequence for a fold\n")); pg2Label->setAlignment(Qt::AlignLeft);
 	pg2Label->setWordWrap(true);
-	// Buttons
-	QPushButton* xButton2=new QPushButton(tr("EXECUTE"));
-	xButton2->setFixedWidth(200);
-	xButton2->setFont(font);
-	// Design Tab Page Layout
-	QGridLayout *pg2box = new QGridLayout;
-	pg2box->setSizeConstraint(QLayout::SetFixedSize);
-	pg2box->addWidget(pg2Label,0,0,1,2);
-	pg2box->addWidget(xButton2,1,0,1,2);
-	// Set Layout
-	tPg2->setLayout(pg2box);
-	// Update Tab Widget
-	theTab->addTab(tPg2,tr("protDielectric"));
-
-	//-----protEVOLVER (tab3)
-	QWidget *tPg3 = new QWidget;
-	// Labels
-	QLabel* pg3Label=new QLabel(tr("Evolve a sequence for a fold\n")); pg3Label->setAlignment(Qt::AlignLeft);
-	pg3Label->setWordWrap(true);
 	protEvolverPDBLabel=new QLabel;
-	protEvolverPDBLabel->setText("<b><span style=\"color:black;\">Select PDB file</span>:</b>");
+	protEvolverPDBLabel->setText("<b>Select PDB file</span>:</b>");
 	protEvolverPDBLabel->setAlignment(Qt::AlignLeft);
 	protEvolverActiveChainLabel=new QLabel;
-	protEvolverActiveChainLabel->setText("<b><span style=\"color:black;\">Specify active chain(s)</span>:</b>");
+	protEvolverActiveChainLabel->setText("<b>Specify active chain(s)</span>:</b>");
 	protEvolverActiveChainLabel->setAlignment(Qt::AlignLeft);
 	protEvolverActivePositionLabel=new QLabel;
-	protEvolverActivePositionLabel->setText("<b><span style=\"color:black;\">Specify active position(s)</span>:</b>");
+	protEvolverActivePositionLabel->setText("<b>Specify active position(s)</span>:</b>");
 	protEvolverActivePositionLabel->setAlignment(Qt::AlignLeft);
 	protEvolverRandomPositionLabel=new QLabel;
-	protEvolverRandomPositionLabel->setText("<b><span style=\"color:black;\">Specify random position(s)</span>:</b>");
+	protEvolverRandomPositionLabel->setText("<b>Specify random position(s)</span>:</b>");
 	protEvolverRandomPositionLabel->setAlignment(Qt::AlignLeft);
 	protEvolverFrozenPositionLabel=new QLabel;
-	protEvolverFrozenPositionLabel->setText("<b><span style=\"color:black;\">Specify frozen position(s)</span>:</b>");
+	protEvolverFrozenPositionLabel->setText("<b>Specify frozen position(s)</span>:</b>");
 	protEvolverFrozenPositionLabel->setAlignment(Qt::AlignLeft);
 	protEvolverAminoAcidLabel=new QLabel;
-	protEvolverAminoAcidLabel->setText("<b><span style=\"color:black;\">Specify Amino Acids</span>:</b>");
+	protEvolverAminoAcidLabel->setText("<b>Specify Amino Acids</span>:</b>");
 	protEvolverAminoAcidLabel->setAlignment(Qt::AlignLeft);
 	maxThreadsLabel=new QLabel;
-	maxThreadsLabel->setText("<b><span style=\"color:black;\">Specify Number of Threads</span>:</b>");
+	maxThreadsLabel->setText("<b>Specify Number of Threads</span>:</b>");
 	maxThreadsLabel->setAlignment(Qt::AlignLeft);
 	// Line Input
 	protEvolverActiveChainInput=new QLineEdit;
@@ -144,29 +99,29 @@ pUI::pUI(QWidget *parent) : QWidget(parent)
 	protEvolverPDBButton->setFixedWidth(80);
 	protEvolverPDBButton->setFont(font);
 	connect(protEvolverPDBButton,SIGNAL(clicked()),this,SLOT(open_protEvolverPDBFile()));
-	xButton3=new QPushButton(tr("RUN"));	
-	xButton3->setFixedWidth(200);
-	xButton3->setFont(font);
-	xButton3->setCheckable(true);
-	xButton3->setChecked(false);
-	connect(xButton3,SIGNAL(clicked()),this,SLOT(runProtEvolver()));
+	xButton2=new QPushButton(tr("RUN"));	
+	xButton2->setFixedWidth(200);
+	xButton2->setFont(font);
+	xButton2->setCheckable(true);
+	xButton2->setChecked(false);
+	connect(xButton2,SIGNAL(clicked()),this,SLOT(runProtEvolver()));
 	// Design Tab Page Layout
-	QGridLayout *pg3box = new QGridLayout;
-	pg3box->setSizeConstraint(QLayout::SetFixedSize);
-	pg3box->addWidget(pg3Label,0,0,1,3);
-	pg3box->addWidget(protEvolverPDBLabel,1,0,1,1);pg3box->addWidget(protEvolverPDBButton,1,1,1,1);pg3box->addWidget(viewButton,1,2,1,1);
-	pg3box->addWidget(protEvolverActiveChainLabel,2,0,1,1);pg3box->addWidget(protEvolverActiveChainInput,2,1,1,1);
-	pg3box->addWidget(protEvolverActivePositionLabel,3,0,1,1);pg3box->addWidget(protEvolverActivePositionInput,3,1,1,1);
-	pg3box->addWidget(protEvolverRandomPositionLabel,4,0,1,1);pg3box->addWidget(protEvolverRandomPositionInput,4,1,1,1);
-	pg3box->addWidget(protEvolverFrozenPositionLabel,5,0,1,1);pg3box->addWidget(protEvolverFrozenPositionInput,5,1,1,1);
-	pg3box->addWidget(protEvolverAminoAcidLabel,6,0,1,1);pg3box->addWidget(protEvolverAminoAcidInput,6,1,1,1);
-	pg3box->addWidget(maxThreadsLabel,7,0,1,1);pg3box->addWidget(maxThreadsLine,7,1,1,1);
-	pg3box->addWidget(protEvolverRelaxationBox,8,0,1,3);
-	pg3box->addWidget(xButton3,9,0,1,3);
+	QGridLayout *pg2box = new QGridLayout;
+	pg2box->setSizeConstraint(QLayout::SetFixedSize);
+	pg2box->addWidget(pg2Label,0,0,1,3);
+	pg2box->addWidget(protEvolverPDBLabel,1,0,1,1);pg2box->addWidget(protEvolverPDBButton,1,1,1,1);pg2box->addWidget(viewButton,1,2,1,1);
+	pg2box->addWidget(protEvolverActiveChainLabel,2,0,1,1);pg2box->addWidget(protEvolverActiveChainInput,2,1,1,1);
+	pg2box->addWidget(protEvolverActivePositionLabel,3,0,1,1);pg2box->addWidget(protEvolverActivePositionInput,3,1,1,1);
+	pg2box->addWidget(protEvolverRandomPositionLabel,4,0,1,1);pg2box->addWidget(protEvolverRandomPositionInput,4,1,1,1);
+	pg2box->addWidget(protEvolverFrozenPositionLabel,5,0,1,1);pg2box->addWidget(protEvolverFrozenPositionInput,5,1,1,1);
+	pg2box->addWidget(protEvolverAminoAcidLabel,6,0,1,1);pg2box->addWidget(protEvolverAminoAcidInput,6,1,1,1);
+	pg2box->addWidget(maxThreadsLabel,7,0,1,1);pg2box->addWidget(maxThreadsLine,7,1,1,1);
+	pg2box->addWidget(protEvolverRelaxationBox,8,0,1,3);
+	pg2box->addWidget(xButton2,9,0,1,3);
 	// Set Layout
-	tPg3->setLayout(pg3box);
+	tPg2->setLayout(pg2box);
 	// Update Tab Widget
-	theTab->addTab(tPg3,tr("protEvolver"));
+	theTab->addTab(tPg2,tr("protEvolver"));
 
 	//---main layout
 	QGridLayout *mainLayout = new QGridLayout;
@@ -175,30 +130,6 @@ pUI::pUI(QWidget *parent) : QWidget(parent)
 	setLayout(mainLayout);
 	setWindowTitle(tr("protCAD"));
 	resize(QDesktopWidget().availableGeometry(this).size());
-}
-
-void pUI::open_protAlignPDBFile1()
-{
-	QString Fldr=QDir::currentPath();
-	string sFldr=Fldr.toStdString()+"/";
-	QStringList filenames = QFileDialog::getOpenFileNames(this,tr("files"),tr(sFldr.c_str()),tr("All files (*)") );
-	string tmp;
-	if(filenames.count()!=0)
-		{tmp=filenames.at(0).toLocal8Bit().constData();
-		protAlign_pdbFile1=tmp;
-		protAlignPDBLabel1->setText("<b><span style=\"color:black;\">Select PDB file #1</span>:</b>");}
-}
-
-void pUI::open_protAlignPDBFile2()
-{
-	QString Fldr=QDir::currentPath();
-	string sFldr=Fldr.toStdString()+"/";
-	QStringList filenames = QFileDialog::getOpenFileNames(this,tr("files"),tr(sFldr.c_str()),tr("All files (*)") );
-	string tmp;
-	if(filenames.count()!=0)
-		{tmp=filenames.at(0).toLocal8Bit().constData();
-		protAlign_pdbFile2=tmp;
-		protAlignPDBLabel2->setText("<b><span style=\"color:black;\">Select PDB file #2</span>:</b>");}
 }
 
 void pUI::open_protEvolverPDBFile()
@@ -225,10 +156,10 @@ void pUI::open_protEvolverPDBFile()
 
 void pUI::runProtEvolver()
 {	
-	if (xButton3->isChecked())
+	if (xButton2->isChecked())
 	{
-		xButton3->setChecked(true);
-		xButton3->setText("STOP");
+		xButton2->setChecked(true);
+		xButton2->setText("STOP");
 		//write input file from UI feilds
 		string data="";
 		data+="PDB file,";
@@ -274,7 +205,7 @@ void pUI::runProtEvolver()
 	}
 	else
 	{
-		xButton3->setChecked(false);xButton3->setText("RUN");
+		xButton2->setChecked(false);xButton2->setText("RUN");
 		string cmd="killall protEvolver";
 		int statusCode=system(cmd.c_str());
 		if (statusCode == -1){fprintf(stderr, "program failed to run, errno = %d\n", errno);}

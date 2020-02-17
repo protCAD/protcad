@@ -55,12 +55,6 @@ public:
    pUI(QWidget *parent = 0);
 
 	void write_protEvolver_pymolFunction_File(string pyFnNm,string outFile);
-	// protAlign
-	QLabel* protAlignPDBLabel1;
-	QLabel* protAlignPDBLabel2;
-	string protAlign_pdbFile1;
-	string protAlign_pdbFile2;
-	// protDielectric
 
 	// protEvolver
 	QLabel* protEvolverPDBLabel;
@@ -80,10 +74,8 @@ public:
 	string protEvolver_pdbFile;
 	string protEvolver_path;
 	QPushButton* protEvolverPDBButton;
-	QPushButton* xButton3;
+	QPushButton* xButton2;
 public slots:
-	void open_protAlignPDBFile1();
-	void open_protAlignPDBFile2();
 	void open_protEvolverPDBFile();
 	void runProtEvolver();
 	void view();
