@@ -79,6 +79,7 @@ public:
 	QLineEdit* protEvolverAminoAcidInput;
 	QLineEdit* maxThreadsLine;
 	QCheckBox* protEvolverRelaxationBox;
+	QCheckBox* protEvolverPolarityBox;
 	string protEvolver_pdbFile;
 	string protEvolver_path;
 	QPushButton* protEvolverPDBButton;

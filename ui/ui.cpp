@@ -66,7 +66,8 @@ pUI::pUI(QWidget *parent) : QWidget(parent)
 	protEvolverAminoAcidInput->setAlignment(Qt::AlignCenter);
 	protEvolverAminoAcidInput->setFixedWidth(250);
 	// Check Boxes
-	protEvolverRelaxationBox=new QCheckBox(tr("Allow Backbone Relaxation?")); protEvolverRelaxationBox->setChecked(false); protEvolverRelaxationBox->setFont(font);
+	protEvolverRelaxationBox=new QCheckBox(tr("Backbone relaxation?")); protEvolverRelaxationBox->setChecked(false); protEvolverRelaxationBox->setFont(font);
+	protEvolverPolarityBox=new QCheckBox(tr("Auto assign polarity?")); protEvolverPolarityBox->setChecked(true); protEvolverPolarityBox->setFont(font);
 	unsigned int number_of_threads = thread::hardware_concurrency();
 	string numThreadValue;
 	if(number_of_threads!=0)
@@ -104,6 +105,7 @@ pUI::pUI(QWidget *parent) : QWidget(parent)
 	pg2box->addWidget(protEvolverAminoAcidLabel,6,0,1,1);pg2box->addWidget(protEvolverAminoAcidInput,6,1,1,1);
 	pg2box->addWidget(maxThreadsLabel,7,0,1,1);pg2box->addWidget(maxThreadsLine,7,1,1,1);
 	pg2box->addWidget(protEvolverRelaxationBox,8,0,1,3);
+	pg2box->addWidget(protEvolverPolarityBox,8,1,1,3);
 	pg2box->addWidget(xButton2,9,0,1,3);
 	// Set Layout
 	tPg2->setLayout(pg2box);
@@ -170,7 +172,11 @@ void pUI::runProtEvolver()
 		data+="Backbone Relaxation,";
 		if(protEvolverRelaxationBox->isChecked()){data+="true";}
 		else{data+="false";}
-		data+=",\n";
+		data+="\n";
+		data+="Polarity Assignment,";
+		if(protEvolverPolarityBox->isChecked()){data+="true";}
+		else{data+="false";}
+		data+="\n";
 		
 		string sFldr=protEvolver_path;
 		string inputFile=sFldr+"evolver.in";
