@@ -82,7 +82,7 @@ pUI::pUI(QWidget *parent) : QWidget(parent)
 	QPushButton* viewButton=new QPushButton(tr("View"));
 	connect(viewButton,SIGNAL(clicked()),this,SLOT(view()));
 	protEvolverPDBButton=new QPushButton(tr("..."));	
-	protEvolverPDBButton->setToolTip(tr("Tooltip"));
+	protEvolverPDBButton->setToolTip(tr("Load start PDB to evolve a sequence for."));
 	protEvolverPDBButton->setFixedWidth(80);
 	protEvolverPDBButton->setFont(font);
 	connect(protEvolverPDBButton,SIGNAL(clicked()),this,SLOT(open_protEvolverPDBFile()));
@@ -137,7 +137,7 @@ void pUI::open_protEvolverPDBFile()
 		}
 		protEvolver_path = path;
 		protEvolverPDBButton->setText(QString::fromStdString(name));
-		protEvolverPDBLabel->setText("<b><span style=\"color:black;\">Select PDB file</span>:</b>");
+		protEvolverPDBLabel->setText("Select PDB file:");
 	}
 }
 
