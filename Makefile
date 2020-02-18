@@ -145,7 +145,12 @@ $(LIB_F77_OBJECTS): %.o: %.f
 	mv $@ $(OBJDIR)
 
 protcad:
+ifeq ($(UNAME),Linux)
 	cd $(UIDIR) && qmake protcad.pro && make && strip $@ && mv $@ $(BINDIR)
+endif
+ifeq ($(UNAME),Darwin)
+	cd $(UIDIR) && qmake protcad.pro && make && cp $(BINDIR)/protEvolver protcad.app/Contents/MacOS/
+endif
 
 clean: 
 	rm -f $(OBJDIR)/*.o 

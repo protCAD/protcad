@@ -1,4 +1,14 @@
+# include <fstream>
+# include <unistd.h>
+# include <iostream>
+# include <sstream>
 # include <string>
+# include <vector>
+# include <thread>
+# include <QWidget>
+# include <QProcess>
+# include <QtWidgets>
+# include <QDialog>
 
 // Computational Constants
 # define LINE_INPUT_SIZE 100
@@ -9,13 +19,11 @@ using namespace std;
 # ifndef UI_H
 # define UI_H
 
-# include <QWidget>
-
 QT_BEGIN_NAMESPACE
 class QLineEdit;
 QT_END_NAMESPACE
 class Button;
-# include <QDialog>
+
 
 QT_BEGIN_NAMESPACE
 class QCheckBox;
@@ -55,12 +63,6 @@ public:
    pUI(QWidget *parent = 0);
 
 	void write_protEvolver_pymolFunction_File(string pyFnNm,string outFile);
-	// protAlign
-	QLabel* protAlignPDBLabel1;
-	QLabel* protAlignPDBLabel2;
-	string protAlign_pdbFile1;
-	string protAlign_pdbFile2;
-	// protDielectric
 
 	// protEvolver
 	QLabel* protEvolverPDBLabel;
@@ -77,13 +79,13 @@ public:
 	QLineEdit* protEvolverAminoAcidInput;
 	QLineEdit* maxThreadsLine;
 	QCheckBox* protEvolverRelaxationBox;
+	QCheckBox* protEvolverPolarityBox;
 	string protEvolver_pdbFile;
 	string protEvolver_path;
 	QPushButton* protEvolverPDBButton;
-	QPushButton* xButton3;
+	QPushButton* xButton2;
+	QProcess * process = new QProcess;
 public slots:
-	void open_protAlignPDBFile1();
-	void open_protAlignPDBFile2();
 	void open_protEvolverPDBFile();
 	void runProtEvolver();
 	void view();
@@ -100,16 +102,8 @@ string* fill_string_array(string Data,int numPnts,string delimiter);
 vector<string> split (const string &s, char delim);
 int* fill_int_array(string Data,int numPnts,string delimiter);
 double* fill_double_array(string Data,int numPnts,string delimiter);
-string fixSubscriptNumbers(string s);
-string getBaseFolder(string f);
 string makeUpperCase(string X);
 string checkFinalBackSlash(string s);
 string setStringWidth(string In,int width);
-void updateParameterFile(string Name,string Value);
-double interpolate(double x,double x1,double x2,double y1,double y2);
-double getSoluteAqueousSolubility(string solute,double T);
-string base64_decode(string const& encoded_string);
-void decryptString(string encStr,const string salt,const string pass,string outFile);
-void handleErrors(void);
 
 # endif

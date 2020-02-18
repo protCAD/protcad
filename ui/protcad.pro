@@ -19,11 +19,9 @@
 
 TEMPLATE = app
 TARGET = protcad
-INCLUDEPATH += .
+INCLUDEPATH += $$PWD
 QT += core gui widgets
 DEFINES += QT_DEPRECATED_WARNINGS
-
-# Input
 HEADERS += ui.h
 SOURCES += ui.cpp main.cpp
-
+RESOURCES += resource.qrc

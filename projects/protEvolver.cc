@@ -20,7 +20,7 @@
 vector <UInt> getChainSequence(protein* _prot, UInt _chainIndex);
 vector <UInt> getMutationPosition(UIntVec &_activeChains, UIntVec &_activeResidues);
 UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition);
-void createPossibleMutantsDatabase(protein* &_prot, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedTypes);
+void createPossibleMutantsDatabase(protein* &_prot, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedTypes, bool polarityAssignment);
 UInt convertAAStringtoInt(string AA, string aminoAcidString[], UInt size);
 vector < vector < UInt > > readSequencePool();
 vector < vector < UInt > > readPossibleMutants();
@@ -46,12 +46,13 @@ int main (int argc, char* argv[])
 		cout << "Frozen Positions,4,8," << endl;
 		cout << "Amino Acids,A,R,N,D,C,Q,E,He,I,L,K,M,F,P,S,T,W,Y,V,G," << endl;
 		cout << "Backbone Relaxation,false," << endl;
+		cout << "Polarity Assignment,true," << endl;
 		exit(1);
 	}
 	
 	//--read input file
 	UIntVec activeChains, allowedTypes, activeResidues, randomResidues, frozenResidues;
-	bool backboneRelaxation;
+	bool backboneRelaxation, polarityAssignment;
 	string inputfile = argv[1];
 	string infile;
 	ifstream file(inputfile);
@@ -102,6 +103,12 @@ int main (int argc, char* argv[])
 						}
 						else{backboneRelaxation = true;}
 					}
+					if (linecounter == 7){
+						if (item.compare("false") == 0){
+							polarityAssignment = false;
+						}
+						else{polarityAssignment = true;}
+					}
 				}
 				delimitercounter++;
 			}
@@ -119,6 +126,7 @@ int main (int argc, char* argv[])
 		inf << "Frozen Positions,4,8," << endl;
 		inf << "Amino Acids,A,R,N,D,C,Q,E,He,I,L,K,M,F,P,S,T,W,Y,V,G," << endl;
 		inf << "Backbone Relaxation,false," << endl;
+		inf << "Polarity Assignment,true," << endl;
 		cout << "Error: Required input file doesn't exist." << endl << "Template input file has been generated, please fill it out and rerun." << endl;
 		exit(1);
 	}
@@ -132,7 +140,7 @@ int main (int argc, char* argv[])
 	residue::setTemperature(300);
 
 	//--set initial variables
-	int seed = (int)getpid()*(int)gethostid(); srand (seed);
+	int seed = (int)getpid(); srand (seed);
 	double startEnergy = 1E10, pastEnergy, Energy, deltaEnergy;
 	UInt timeid, sec, mutant = 0, plateau = 15, nobetter = 0;
 	vector < UInt > mutantPosition, chainSequence, randomPosition;
@@ -204,7 +212,7 @@ int main (int argc, char* argv[])
 	possibleMutants = readPossibleMutants();
 	if(possibleMutants.size() < activeResidues.size())
 	{
-		createPossibleMutantsDatabase(prot, activeChains, activeResidues, allowedTypes);
+		createPossibleMutantsDatabase(prot, activeChains, activeResidues, allowedTypes, polarityAssignment);
 		possibleMutants = readPossibleMutants();
 	}
 	delete thePDB;
@@ -423,8 +431,22 @@ vector < vector < UInt > > readPossibleMutants()
 	return _possibleMutants;
 }
 
-void createPossibleMutantsDatabase(protein* &_prot, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedTypes)
+void createPossibleMutantsDatabase(protein* &_prot, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedTypes, bool polarityAssignment)
 {
+	double aveDielectric, sumDielectric=0.0;
+	UInt counter = 0;
+	if (polarityAssignment){
+		_prot->updateDielectrics();
+		for (UInt i = 0; i < _prot->getNumChains(); i++)
+		{
+			for (UInt j = 0; j < _prot->getNumResidues(i); j++)
+			{
+				sumDielectric += _prot->getDielectric(i,j);
+				counter++;
+			}
+		}
+		aveDielectric = sumDielectric/counter;
+	}
 	fstream pm; double phi = -100.0; bool active;
 	pm.open ("possiblemutants.out", fstream::in | fstream::out | fstream::app);
 	
@@ -440,6 +462,21 @@ void createPossibleMutantsDatabase(protein* &_prot, UIntVec &_activeChains, UInt
 			if (active){
 				for (UInt l = 0; l <_allowedTypes.size(); l++)
 				{
+					if (polarityAssignment){
+						double dielectric = _prot->getDielectric(_activeChains[i],j);
+						if (dielectric < aveDielectric){
+							if (_allowedTypes[l] != A && _allowedTypes[l] != I && _allowedTypes[l] != L && _allowedTypes[l] != M && _allowedTypes[l] != F && _allowedTypes[l] != W && _allowedTypes[l] != Y && _allowedTypes[l] != V && _allowedTypes[l] != G &&
+								_allowedTypes[l] != dA && _allowedTypes[l] != dI && _allowedTypes[l] != dL && _allowedTypes[l] != dM && _allowedTypes[l] != dF && _allowedTypes[l] != dW && _allowedTypes[l] != dY && _allowedTypes[l] != dV){
+									continue;
+							}
+						} 
+						else{
+							if (_allowedTypes[l] == A || _allowedTypes[l] == I || _allowedTypes[l] == L || _allowedTypes[l] == M || _allowedTypes[l] == F || _allowedTypes[l] == W || _allowedTypes[l] == Y || _allowedTypes[l] == V ||
+								_allowedTypes[l] == dA || _allowedTypes[l] == dI || _allowedTypes[l] == dL || _allowedTypes[l] == dM || _allowedTypes[l] == dF || _allowedTypes[l] == dW || _allowedTypes[l] == dY || _allowedTypes[l] == dV){
+									continue;
+							}
+						}
+					}
 					if(j > 0){
 						phi = _prot->getPhi(_activeChains[i], j);
 					}
