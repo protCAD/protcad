@@ -186,9 +186,9 @@ void pUI::runProtEvolver()
 		QStringList args = {"evolver.in"};	
 		for(int i=0;i<nT;i++)
 		{
+			if (i == 1){usleep(500000);}
 			qint64 pid;
 			process->startDetached(cmd, args, workdir, &pid);
-			if (i == 1){usleep(500000);}
 		}
 	}
 	else

@@ -24,4 +24,4 @@ QT += core gui widgets
 DEFINES += QT_DEPRECATED_WARNINGS
 HEADERS += ui.h
 SOURCES += ui.cpp main.cpp
-
+RESOURCES += resource.qrc
