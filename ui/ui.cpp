@@ -147,53 +147,43 @@ void pUI::runProtEvolver()
 {	
 	if (xButton2->isChecked())
 	{
+		// set button as active
 		xButton2->setChecked(true);
 		xButton2->setText("STOP");
-		//write input file from UI feilds
-		string data="";
-		data+="PDB file,";
-		data+=protEvolver_pdbFile;
-		data+=",\n";
-		data+="Active Chains,";
-		data+=protEvolverActiveChainInput->text().toStdString();
-		data+="\n";
-		data+="Active Positions,";
-		data+=protEvolverActivePositionInput->text().toStdString();
-		data+="\n";
-		data+="Random Positions,";
-		data+=protEvolverRandomPositionInput->text().toStdString();
-		data+="\n";
-		data+="Frozen Positions,";
-		data+=protEvolverFrozenPositionInput->text().toStdString();
-		data+="\n";
-		data+="Amino Acids,";
-		data+=protEvolverAminoAcidInput->text().toStdString();
-		data+="\n";
-		data+="Backbone Relaxation,";
-		if(protEvolverRelaxationBox->isChecked()){data+="true";}
-		else{data+="false";}
-		data+="\n";
-		data+="Polarity Assignment,";
-		if(protEvolverPolarityBox->isChecked()){data+="true";}
-		else{data+="false";}
-		data+="\n";
-		
-		string sFldr=protEvolver_path;
-		string inputFile=sFldr+"evolver.in";
-		ofstream fOut;
-		fOut.open(inputFile.c_str());
-		if(fOut.fail()){}
-		fOut<<data;fOut.close();
 
+		//write input file from UI feilds
+		string data=""; data+="PDB file,"; data+=protEvolver_pdbFile; data+=",\n";
+		data+="Active Chains,"; data+=protEvolverActiveChainInput->text().toStdString(); data+="\n";
+		data+="Active Positions,"; data+=protEvolverActivePositionInput->text().toStdString(); data+="\n";
+		data+="Random Positions,"; data+=protEvolverRandomPositionInput->text().toStdString(); data+="\n";
+		data+="Frozen Positions,"; data+=protEvolverFrozenPositionInput->text().toStdString(); data+="\n";
+		data+="Amino Acids,"; data+=protEvolverAminoAcidInput->text().toStdString(); data+="\n";
+		data+="Backbone Relaxation,"; if(protEvolverRelaxationBox->isChecked()){data+="true";} else{data+="false";} data+="\n";
+		data+="Polarity Assignment,"; if(protEvolverPolarityBox->isChecked()){data+="true";} else{data+="false";} data+="\n";
+		string sFldr=protEvolver_path;string inputFile=sFldr+"evolver.in";
+		ofstream fOut; fOut.open(inputFile.c_str()); if(fOut.fail()){} fOut<<data;fOut.close();
+
+		// define arguments and path for run
+		QString cmd = QCoreApplication::applicationDirPath() +"/"+QString("protEvolver");
+		QString workdir = QString::fromStdString(sFldr);
+		QStringList args = {"evolver.in"};	
+		string protcadpath="";
+		vector<string> v = split (cmd.toStdString(), '/');
+		for (unsigned int i = 0; i < v.size(); i++) 
+		{
+			if (i< v.size()-2){protcadpath+=v[i];protcadpath+="/";}
+		}
+
+		// run job using number of threads chosen
 		string tmp=maxThreadsLine->text().toStdString();
 		int nT=atoi(tmp.c_str());
-		QString workdir = QString::fromStdString(sFldr);
-		auto cmd = QCoreApplication::applicationDirPath() +"/"+QString("protEvolver");
-		QStringList args = {"evolver.in"};	
 		for(int i=0;i<nT;i++)
 		{
 			if (i == 1){usleep(500000);}
 			qint64 pid;
+			QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+			env.insert("PROTCADDIR", QString::fromStdString(protcadpath));
+			process->setProcessEnvironment(env);
 			process->startDetached(cmd, args, workdir, &pid);
 		}
 	}
