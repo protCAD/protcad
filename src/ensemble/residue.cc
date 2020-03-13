@@ -1122,7 +1122,6 @@ void residue::buildRotamerLib()
 	string aaLib = "/data/rotamerLib/";
 
 	path += aaLib;
-	// cout << " right handed alpha helix minimum rotamer library used \n";
 	rotamerLib* temp;
 	string filename;
 	string iFile;

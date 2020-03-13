@@ -14,7 +14,7 @@ PDBInterface::PDBInterface(const string& _filename)
 {
 	resNames = itsAABaseline.list();
 	ifstream inFile(_filename.c_str());
-	if(!inFile)
+	if(inFile.fail())
 	{	cout << "ERROR: cannot open file: " << _filename << endl;
 	}
 	pItsEnsemble = 0;
