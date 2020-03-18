@@ -1511,7 +1511,7 @@ IMPROPER
  CD1  CD2  CG   CB
  CE1  CE2  CZ   OH
                                                                 
-DONE                                                            
+DONE                                                                
 D-GLUTAMIC ACID                                                   
                                                                 
  GUD  INT     1                                                 
@@ -2357,7 +2357,7 @@ CORRECT     OMIT DU   BEG
 
 LOOP
   CHA  C1A
-  C4A   NA
+   NA  C4A
   C1C   NC
   C4C   NC
   C1D   ND
@@ -2365,6 +2365,9 @@ LOOP
   C1B   NB
   C4B   NB
   CBD  CAD
+  CHB  C4A
+  C3A  CMA
+  CAA  CBA
 
 IMPROPER
   CBA  O1A  CGA  O2A
