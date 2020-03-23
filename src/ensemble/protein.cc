@@ -1133,6 +1133,14 @@ double protein::protEnergy()
 	return Energy;
 }
 
+double protein::protEnergy(UInt chainIndex) //Energy of chain alone
+{
+	setMoved(true,0);
+	updateEnergy(chainIndex);
+	double Energy = itsChains[chainIndex]->getEnergy();
+	return Energy;
+}
+
 void protein::updateEnergy()
 {
 	updateMovedDependence(0);
@@ -1145,6 +1153,14 @@ void protein::updateEnergy()
 			itsChains[i]->updateEnergy(itsChains[j]);
 		}
 	}
+	setMoved(false,0);
+}
+
+void protein::updateEnergy(UInt chainIndex)
+{
+	updateMovedDependence(0);
+	updateDielectrics(chainIndex);
+	itsChains[chainIndex]->updateEnergy();
 	setMoved(false,0);
 }
 
@@ -1161,12 +1177,23 @@ void protein::updateDielectrics()
 	calculateDielectrics();
 }
 
+void protein::updateDielectrics(UInt chainIndex)
+{
+	itsChains[chainIndex]->polarizability();
+	calculateDielectrics(chainIndex);
+}
+
 void protein::calculateDielectrics()
 {
 	for(UInt i=0; i<itsChains.size(); i++)
 	{
 		itsChains[i]->calculateDielectrics();
 	}
+}
+
+void protein::calculateDielectrics(UInt chainIndex)
+{
+	itsChains[chainIndex]->calculateDielectrics();
 }
 
 void protein::updateMovedDependence(UInt _EorC)

@@ -46,14 +46,14 @@ int main (int argc, char* argv[])
     for (;!(theIter1.last());theIter1++)
     {
        pAtom = theIter1.getAtomPointer(); 
-      if (pAtom->getName() == "C"){
+      if (pAtom->getName() == "CB"){
             coord1.push_back(pAtom->getCoords());
        }
     }
     for (;!(theIter2.last());theIter2++)
     {
        pAtom = theIter2.getAtomPointer(); 
-       if (pAtom->getName() == "C"){
+       if (pAtom->getName() == "CB"){
             coord2.push_back(pAtom->getCoords());
        }
     }

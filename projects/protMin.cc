@@ -33,10 +33,10 @@ int main (int argc, char* argv[])
 	double cpu_time_used;
 	int seed = (int)getpid()*(int)gethostid(); srand (seed);
 
-	residue::setElectroSolvationScaleFactor(0.0);
-	residue::setHydroSolvationScaleFactor(0.0);
-	residue::setPolarizableElec(false);
-	amberElec::setScaleFactor(0.0);
+	residue::setElectroSolvationScaleFactor(1.0);
+	residue::setHydroSolvationScaleFactor(1.0);
+	residue::setPolarizableElec(true);
+	amberElec::setScaleFactor(1.0);
 	amberVDW::setScaleFactor(1.0);
 	residue::setTemperature(300);
 

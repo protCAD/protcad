@@ -157,7 +157,9 @@ public:
 	void setMoved(bool _moved, UInt EorC);
 	bool getMoved(UInt chainIndex, UInt resIndex, UInt EorC) {return itsChains[chainIndex]->getMoved(resIndex, EorC);}
 	double protEnergy();
+	double protEnergy(UInt chainIndex);
 	void updateEnergy();
+	void updateEnergy(UInt chainIndex);
 	double protEnergy(UInt chainIndex, UInt resIndex);
 	double getMedianResidueEnergy();
 	double getMedianResidueEnergy(UIntVec _activeChains);
@@ -187,10 +189,12 @@ public:
 	vector <double> chainBindingEnergy();
 	void polarizability();
 	void calculateDielectrics();
+	void calculateDielectrics(UInt chainIndex);
 	double calculateSolvationEnergy(UInt _chainIndex, UInt _residueIndex, UInt _atomIndex) {return itsChains[_chainIndex]->itsResidues[_residueIndex]->calculateSolvationEnergy( _atomIndex);}
 	//vector <double> calculateChainIndependentDielectric(chain* _chain, residue* _residue, atom* _atom);
 	//vector <double> calculateResidueIndependentDielectric(residue* _residue, atom* _atom);
 	void updateDielectrics();
+	void updateDielectrics(UInt chainIndex);
 	void updateMovedDependence(UInt _EorC);
 	//void updatePositionDielectrics(UInt _chainIndex, UInt _residueIndex);
 	//void updateChainIndependentDielectrics(UInt _chainIndex);
