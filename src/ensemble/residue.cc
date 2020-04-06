@@ -1292,6 +1292,19 @@ string residue::getType() const
 	return "UNK";
 }
 
+string residue::getType(UInt resType)
+{	if(resType < dataBase.size())
+	{	return dataBase[resType].typeString;
+	}
+	else
+	{	cout << "Error: itsType incompatible with dataBase " << endl;
+		cout << "Error reported by residue::getType() " << endl;
+		return "UNK";
+	}
+	// dummy return to keep compiler shut-up
+	return "UNK";
+}
+
 void residue::interpretBondingPattern()
 {	residueTemplate* pCurrentResTemplate;
 	vector <UInt> theConnectivityVector;
@@ -1825,23 +1838,31 @@ double residue::getBetaChi()
 	{
 		if(pItsPrevRes != 0 && (itsAtoms[4]->getName() == "CB" || itsAtoms[4]->getName() == "CD"))
 		{
-			if (itsType == 19) // proline
-			{
-				vector< dblVec > quadVect(4);
-				quadVect[0] = pItsPrevRes->getMainChain(2)->getCoords();
-				quadVect[1] = itsAtoms[0]->getCoords();
-				quadVect[2] = itsAtoms[4]->getCoords();
-				quadVect[3] = itsAtoms[5]->getCoords();
-				return CMath::dihedral(quadVect[0], quadVect[1], quadVect[2], quadVect[3]);
-			}
-			else{
-				vector< dblVec > quadVect(4);
-				quadVect[0] = pItsPrevRes->getMainChain(2)->getCoords();
-				quadVect[1] = getMainChain(0)->getCoords();
-				quadVect[2] = getMainChain(1)->getCoords();
-				quadVect[3] = itsAtoms[4]->getCoords();
-				return CMath::dihedral(quadVect[0], quadVect[1], quadVect[2], quadVect[3]);
-			}
+			vector< dblVec > quadVect(4);
+			quadVect[0] = pItsPrevRes->getMainChain(2)->getCoords();
+			quadVect[1] = itsAtoms[0]->getCoords();
+			quadVect[2] = itsAtoms[1]->getCoords();
+			if (itsType == 19) {quadVect[3] = itsAtoms[6]->getCoords();} //proline beta carbon in reverse bond order
+			else{quadVect[3] = itsAtoms[4]->getCoords();}
+			return CMath::dihedral(quadVect[0], quadVect[1], quadVect[2], quadVect[3]);
+		}	
+	}
+	return 1000.0;
+}
+
+double residue::getBetaChiR()
+{	
+	if(itsAtoms.size() > 4)
+	{
+		if(pItsNextRes != 0 && (itsAtoms[4]->getName() == "CB" || itsAtoms[4]->getName() == "CD"))
+		{
+			vector< dblVec > quadVect(4);
+			quadVect[0] = pItsNextRes->getMainChain(0)->getCoords();
+			quadVect[1] = itsAtoms[2]->getCoords();
+			quadVect[2] = itsAtoms[1]->getCoords();
+			if (itsType == 19) {quadVect[3] = itsAtoms[6]->getCoords();} //proline beta carbon in reverse bond order
+			else{quadVect[3] = itsAtoms[4]->getCoords();}
+			return CMath::dihedral(quadVect[0], quadVect[1], quadVect[2], quadVect[3]);
 		}	
 	}
 	return 1000.0;

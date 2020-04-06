@@ -16,19 +16,19 @@
 #include <unistd.h>
 int main (int argc, char* argv[])
 {
-	if (argc !=3)
-	{   cout << "protMin <inFile.pdb> <outFile.pdb>" << endl;
+	if (argc !=4)
+	{   cout << "protMin <backboneRelax(t/f)> <inFile.pdb> <outFile.pdb>" << endl;
 		exit(1); }
 
-
-
-	string infile = argv[1];
-	string outFile = argv[2];
+	string relax = argv[1];
+	string infile = argv[2];
+	string outFile = argv[3];
 	PDBInterface* thePDB = new PDBInterface(infile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* _prot = static_cast<protein*>(pMol);
 	bool backbone = false;
+	if (relax == "t"){backbone = true;}
 	clock_t start, end;
 	double cpu_time_used;
 	int seed = (int)getpid()*(int)gethostid(); srand (seed);

@@ -801,6 +801,7 @@ void protein::finishProteinBuild()
 {
 	for (unsigned int i=0; i< itsChains.size(); i++)
 	{
+		itsChains[i]->rebuildResiduesInChain();
 		itsChains[i]->finishChainBuild();
 	}
 /*

@@ -134,6 +134,7 @@ public:
 	double getOmega();
 	double getAmide();
 	double getAtomCharge(UInt _atomNum) {return residueTemplate::itsAmberElec.getItsCharge(itsType, itsAtoms[_atomNum]->itsType); }
+	string getAtomName(UInt _atomNum) {return itsAtoms[_atomNum]->getName(); }
 	void setOmega(double _omega);
 	int setPhi(double _phi);
 	int setPsi(double _psi);
@@ -153,6 +154,7 @@ public:
 	double getChi(const UInt _bpt, const UInt _index) const;
 	double getChi(const UInt _index) const;
     double getBetaChi();
+	double getBetaChiR();
     double getPolarHChi() const;
     double netCharge();
 
@@ -206,10 +208,8 @@ public:
 // ***********************************************************************
 
 	dblVec getCoords( const string _atomName);
-        dblVec getCoords( const UInt _atomIndex)
-        {return itsAtoms[_atomIndex]->getCoords(); }
-	void setCoords(UInt _atomIndex, dblVec _coords)
-		{ return itsAtoms[_atomIndex]->setCoords(_coords);}
+    dblVec getCoords( const UInt _atomIndex){return itsAtoms[_atomIndex]->getCoords();}
+	void setCoords(UInt _atomIndex, dblVec _coords){return itsAtoms[_atomIndex]->setCoords(_coords);}
 	void rotate(const point& _point, const dblMat& _RMatrix);
 	void rotate(UInt _first, UInt _second,const double _theta);
 	void rotate(atom* _pAtom1, atom* _pAtom2, const double _theta, bool backboneRotation);
@@ -306,6 +306,7 @@ private:
 
 public:
 	string getType() const;
+	string getType(UInt resType);
 	UInt getTypeIndex() const {return itsType;}
 	void printMainChain() const;
 	void printBranchPoints() const;

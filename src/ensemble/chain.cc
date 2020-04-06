@@ -422,24 +422,55 @@ void chain::fixBrokenResidue(const UInt _indexInChain)
 	}
 }
 
-void chain::fixBrokenResidue(const UInt _indexInChain, bool withRotamer)
+void chain::rebuildResidue(const UInt _indexInChain)
 {	if (_indexInChain < itsResidues.size())
-	{	// Now check if this position is allowed to be mutated
-		// to this residue type
+	{
 		vector < vector <double> > currentRot;
 		residue* pOldRes = itsResidues[_indexInChain];
-		if (withRotamer)
-		{
-			currentRot = getSidechainDihedralAngles(_indexInChain);
-		}
-		itsResidues[_indexInChain] = pOldRes->mutate( itsResidues[_indexInChain]->getTypeIndex() );
-		if (withRotamer)
-		{
-			setSidechainDihedralAngles(_indexInChain, currentRot);
-		}
+		UInt itsResType = itsResidues[_indexInChain]->getTypeIndex();
+		currentRot = getSidechainDihedralAngles(_indexInChain);
+		bool fliptoD = isDAminoAcid(pOldRes);
+		if (fliptoD){itsResidues[_indexInChain] = pOldRes->mutate(itsResType+27);}
+		else{itsResidues[_indexInChain] = pOldRes->mutate(itsResType);}
+		setSidechainDihedralAngles(_indexInChain, currentRot);
 		itsResidues[_indexInChain]->isArtificiallyBuilt = true;
 		delete pOldRes;
 	}
+}
+
+void chain::rebuildResiduesInChain()
+{
+	for (UInt i=0; i< itsResidues.size(); i++)
+	{
+		rebuildResidue(i);
+	}
+}
+
+bool chain::isDAminoAcid(residue* currentRes)
+{
+	bool flip = false;
+	if (currentRes->getNumAtoms() > 4 && currentRes->getTypeIndex() < 26){
+		if (currentRes->getAtomName(4) == "CB" || currentRes->getAtomName(4) == "CD"){
+			
+			dblVec Ncoords = currentRes->getCoords(0);
+			dblVec Ccoords = currentRes->getCoords(2);
+			dblVec CAcoords = currentRes->getCoords(1);
+			dblVec CBcoords; if (currentRes->getTypeIndex() == 19){CBcoords = currentRes->getCoords(6);}
+			else{CBcoords = currentRes->getCoords(4);}
+			
+			dblVec N_CA = CAcoords - Ncoords;
+			dblVec N_C = Ccoords - Ncoords;
+			dblVec CA_CB = CBcoords - CAcoords;
+
+			// Calculate Cross Products
+			dblVec N_CA_X_N_C(3);
+			N_CA_X_N_C = CMath::cross(N_CA,N_C);
+
+			double chiralityAngle = CMath::dotProduct(N_CA_X_N_C, CA_CB);
+			if (chiralityAngle > 0){flip = true;}
+		}
+	}
+	return flip;
 }
 
 vector<chainModBuffer> chain::performRandomMutation(ran& _ran)

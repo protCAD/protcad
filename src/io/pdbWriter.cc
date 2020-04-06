@@ -54,7 +54,13 @@ unsigned int pdbWriter(protein* _pProtein, const string& _pdbFile)
 
 		outFile << " ";
 	// output the residue name
-		outFile << pCurrentAtom->getResType();
+		string resTypeString;
+		UInt resTypeIndex = pCurrentResidue->getTypeIndex();
+		if (resTypeIndex > 26 && resTypeIndex < 53){
+			resTypeString = pCurrentResidue->getType(resTypeIndex-27);
+		}
+		else{resTypeString = pCurrentResidue->getType();}
+		outFile << resTypeString;
 		outFile << " ";
 	// output the chain ID
 		outFile << pCurrentChain->getChainID();

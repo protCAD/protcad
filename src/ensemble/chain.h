@@ -73,7 +73,9 @@ public:
 	void mutate(const UInt _indexInChain, const UInt _aaType);
 	void mutateWithoutBuffering(const UInt _indexInChain, const UInt _aaType);
     void fixBrokenResidue(const UInt _indexInChain);
-    void fixBrokenResidue(const UInt _indexInChain, bool withRotamer);
+    void rebuildResidue(const UInt _indexInChain);
+	void rebuildResiduesInChain();
+	bool isDAminoAcid(residue* currentRes);
 	void redoModification(chainModBuffer _redoBuffer);
 	void makeAtomSilent(const UInt _resIndex, const UInt _atomIndex);
 	void makeResidueSilent(const UInt _resIndex);
