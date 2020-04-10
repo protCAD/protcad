@@ -1384,10 +1384,7 @@ residue* residue::mutate(const UInt _newTypeIndex)
 {
 	residue* newAA = new residue( _newTypeIndex, hydrogensOn );
 	bool betapivot = false;
-	if (itsType == newAA->itsType)
-	{
-		betapivot = true;
-	}
+	if (itsType == newAA->itsType){betapivot = true;}
 	UInt numbpt = getNumBpt(_newTypeIndex);
 	for (UInt i=0; i<numbpt; i++)
 	{
@@ -1521,6 +1518,80 @@ residue* residue::mutate(const UInt _newTypeIndex)
 	}
 	
 	
+	// now, since we're changing the backbone coordinates, make
+	// sure that the amide hydrogen H is in the right place...
+	// all other hydrogens should have been taken care of by the
+	// code above which sets the coordinates of the branchpoint atoms.
+	if (hydrogensOn)
+	{
+		newAA->alignAmideProtonToBackbone();
+	}
+	newAA->setMoved();
+	return newAA;
+}
+
+residue* residue::mutateNew(const UInt _newTypeIndex)
+{
+	residue* newAA = new residue( _newTypeIndex, hydrogensOn );
+
+    // Load backbone atoms into double array for fit
+	int maxsize = 3;
+	if (newAA->getAtomName(4) == "CB" && getAtomName(4) == "CB"){maxsize = 4;}
+	double coord1[maxsize*3], coord2[maxsize*3];
+	int list1[maxsize]; int list2[maxsize];
+	dblVec oldCoords(3), newCoords(3);
+	for (int i=0; i<maxsize; i++)
+	{	
+		if (i < 3){
+			oldCoords = getMainChain(i)->getCoords();
+			newCoords = newAA->getMainChain(i)->getCoords();
+		}
+		if (i == 3){
+			oldCoords = itsAtoms[4]->getCoords();
+			newCoords = newAA->itsAtoms[4]->getCoords();
+		}
+		for (int j=0; j<3; j++)
+		{
+			coord1[(i*3) + j] = oldCoords[j];
+			coord2[(i*3) + j] = newCoords[j];
+		}
+		list1[i] = i+1;
+		list2[i] = i+1;
+	}
+	
+	// Calculate best fit of backbone atoms, rotation matrix and rmsd using fortran algorithm based on Machlachlan
+	double rotmat[9]; double centroid1[3]; double centroid2[3]; double rmsd = 0; double coord3[maxsize*3]; int ierr = 0;
+	bestfit_(coord1, &maxsize, coord2, &maxsize, &maxsize, coord3, list1, list2, &rmsd, &ierr, rotmat, centroid1, centroid2);
+	
+	// Load rotation vector into rotation matrix and double array into double Vector
+	dblMat rotMat(3,3,3);
+    for (UInt i=0; i<3; i++)
+    {	for (UInt j=0; j<3; j++)
+		{
+			rotMat[i][j] = rotmat[(j*3) + i];
+		}
+    }
+	dblVec centroidOne(3); centroidOne[0] = centroid1[0]; centroidOne[1] = centroid1[1]; centroidOne[2] = centroid1[2];
+	dblVec centroidTwo(3); centroidTwo[0] = centroid2[0]*-1; centroidTwo[1] = centroid2[1]*-1; centroidTwo[2] = centroid2[2]*-1;
+    
+	newAA->translate(centroidTwo);
+	newAA->transform(rotMat);
+	newAA->translate(centroidOne);
+
+	//position new residue with proper position context
+	if (pItsNextRes){ newAA->setNextRes(pItsNextRes); pItsNextRes->setPrevRes(newAA);}
+	else{newAA->setNextRes(pItsNextRes);}
+	if (pItsPrevRes){newAA->setPrevRes(pItsPrevRes); pItsPrevRes->setNextRes(newAA);}
+	else{newAA->setPrevRes(pItsPrevRes);}
+	newAA->setResNum(itsResNum);
+
+	// ensure that we have not modified the main chain
+	// coordinates in any way
+	for (UInt i=0;i<dataBase[itsType].mainChain.size(); i++)
+	{
+		newAA->getMainChain(i)->setCoords( getMainChain(i)->getCoords());
+	}
+
 	// now, since we're changing the backbone coordinates, make
 	// sure that the amide hydrogen H is in the right place...
 	// all other hydrogens should have been taken care of by the

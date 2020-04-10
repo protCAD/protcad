@@ -101,6 +101,7 @@ private:
 	// mutate should only be called from the 'chain' level object
 	// So it is defined to be PRIVATE
 	residue* mutate(const UInt _aaType);
+	residue* mutateNew(const UInt _newTypeIndex);
 	residue* fixBrokenResidue();
 
 public:

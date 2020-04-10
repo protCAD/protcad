@@ -430,8 +430,8 @@ void chain::rebuildResidue(const UInt _indexInChain)
 		UInt itsResType = itsResidues[_indexInChain]->getTypeIndex();
 		currentRot = getSidechainDihedralAngles(_indexInChain);
 		bool fliptoD = isDAminoAcid(pOldRes);
-		if (fliptoD){itsResidues[_indexInChain] = pOldRes->mutate(itsResType+27);}
-		else{itsResidues[_indexInChain] = pOldRes->mutate(itsResType);}
+		if (fliptoD){itsResidues[_indexInChain] = pOldRes->mutateNew(itsResType+27);}
+		else{itsResidues[_indexInChain] = pOldRes->mutateNew(itsResType);}
 		setSidechainDihedralAngles(_indexInChain, currentRot);
 		itsResidues[_indexInChain]->isArtificiallyBuilt = true;
 		delete pOldRes;
