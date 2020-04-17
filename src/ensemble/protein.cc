@@ -119,11 +119,6 @@ void protein::removeChain(UInt _chainIndex)
 	itsChains.resize(itsChains.size()-1);
 	
 }
-//******************testing junk****************
-void protein::accessChainZeroResZero()
-{
-	itsChains[0]->accessResZero();
-}
 
 void protein::symmetryLinkChainAtoB(UInt _aIndex, UInt _bIndex)
 {
@@ -2735,19 +2730,6 @@ double protein::getResPairEnergy(const UInt _chain1, const UInt _res1, const UIn
 	}
 }
 
-bool protein::isNotAminoAcid(UInt chainIndex, UInt resIndex)
-{
-	UInt resnum = getNumResidues(chainIndex);
-	if (resnum == 1){
-		string atomType = getTypeStringFromAtomNum(chainIndex, resIndex, 0);
-		if (atomType != "N")
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
 vector <dblVec> protein::saveCoords( UInt chainIndex, UInt resIndex)
 {
 	UInt nAtoms = getNumAtoms(chainIndex, resIndex);
@@ -2800,7 +2782,7 @@ void protein::protMin(bool _backbone)
 		randchain = rand() % chainNum, resnum = getNumResidues(randchain), randres = rand() % resnum;
 		clashesStart = getNumHardClashes(); nobetter++;
 		backboneTest = false, sidechainTest = false, cofactorTest = false, energyTest = false, revert = true;
-		if (isNotAminoAcid(randchain, randres))
+		if (isCofactor(randchain, randres))
 		{
 			//--Rock and Roll cofactor in site
 			cofactorTest = true;
@@ -2900,7 +2882,7 @@ void protein::protMin(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 		clashesStart = getNumHardClashes(); resnum = getNumResidues(randchain); nobetter++;
 		backboneTest = false, sidechainTest = false, cofactorTest = false, energyTest = false, revert = true;
 		
-		if (isNotAminoAcid(randchain, randres))
+		if (isCofactor(randchain, randres))
 		{
 			//--Rock and Roll cofactor in site
 			cofactorTest = true;
@@ -2990,7 +2972,7 @@ void protein::protMin(bool _backbone, UInt chainIndex, UInt resIndex)
 		clashesStart = getNumHardClashes(); resnum = getNumResidues(randchain); nobetter++;
 		backboneTest = false, sidechainTest = false,  cofactorTest = false, energyTest = false, revert = true;
 		
-		if (isNotAminoAcid(randchain, randres))
+		if (isCofactor(randchain, randres))
 		{
 			//--Rock and Roll cofactor in site
 			cofactorTest = true;

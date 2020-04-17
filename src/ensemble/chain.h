@@ -36,12 +36,8 @@ private:
 
 public:
 	void add(residue* _pResidue);
-	
-	//*************testing junk**************
-	void accessResZero();
 
 	// Accessors
-
 	bool isArtificiallyBuilt(UInt j) { return itsResidues[j]->isArtificiallyBuilt; }
     dblVec getCoords(const UInt _resIndex, const string _atomName)
         {return itsResidues[_resIndex]->getCoords(_atomName);}
@@ -83,7 +79,7 @@ public:
 	void randomizeSystem(ran& _ran);
 	void makeAllAlanine();
     void removeResidue(UInt _resNum);
-	bool isNotAminoAcid(UInt resIndex);
+	bool isCofactor(UInt resIndex){return itsResidues[resIndex]->isCofactor();}   
 
 
 	// single modification buffers

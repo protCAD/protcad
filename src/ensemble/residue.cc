@@ -140,16 +140,16 @@ residue::residue(const UInt _itsType, const bool _hFlag, const bool _hPFlag)
 
 residue::residue(const string& _aaType)
 {
-	hydrogensOn = false;
+	hydrogensOn = true;
 	polarHydrogensOn = false;
 	if(!dataBaseBuilt)
 	{
 		cout << "string aaType build:  ";
 		buildDataBase();
 	}
-	// hydrogensOn defaults to false if not explicity set
+	// hydrogensOn defaults to true if not explicity set
 	defineType(_aaType);
-	residue(itsType);
+	residue(itsType, hydrogensOn);
 }
 
 residue::residue(const string& _aaType, const bool _hFlag)
@@ -211,48 +211,6 @@ residue::residue(const residue& _rhs)
 	if(hydrogensOn || polarHydrogensOn)
 	{ itsPolarHDihedralAngle = _rhs.itsPolarHDihedralAngle; }
 	howMany++;
-}
-
-//******************testing junk*********************
-void residue::accessMe()
-{
-	cout << "accessMe works.\n";
-/*	for(UInt j=0;j<dataBase.size();j++)
-	{
-	UIntVec foo = dataBase[j].getAtomsOfPolarHChi();
-	cout << "output from getAtomsOfPolarHChi:\n";
-	cout << "for dataBase[" << j << "]\n";
-	for(UInt i=0;i<foo.size();i++)
-		{ cout << i << ":\t" << foo[i] << endl; }
-	bool tmpbl = dataBase[j].getHasPolarHRotamers();
-	cout << "getHasPolarHRotamers = " << tmpbl << endl;
-	} */
-
-/*
-	UIntVec foo = dataBase[itsType].getAtomsOfPolarHChi();
-	UIntVec fooNew;
-	fooNew.push_back(1);
-	fooNew.push_back(4);
-	fooNew.push_back(5);
-	fooNew.push_back(10);
-	double dihResult = calculateDihedral(fooNew);
-	cout << "dihResult = " << dihResult << endl;
-	cout << "atomic coords:" << endl;
-	for(UInt i=0;i<fooNew.size();i++)
-	{
-		cout << fooNew[3] << ": \t";
-		dblVec tmpcoord = itsAtoms[fooNew[i]]->getCoords();
-		for(UInt j=0;j<tmpcoord.size();j++)
-		{ cout << tmpcoord[j] << "\t"; }
-		cout << endl;
-	}
-	double dih2 = calculateDihedral(foo);
-	cout << "dih2 = " << dih2 << endl; */
-	UInt rotSwitch = 3;
-	setPolarHRotamer(rotSwitch);
-
-	cout << "hasPolarHRotamers = " << dataBase[itsType].getHasPolarHRotamers() << endl;
-	cout << "itsPolarHDihedralAngle = " << itsPolarHDihedralAngle << endl;
 }
 
 void residue::initializeAtomsAndConnectivity()
@@ -786,6 +744,7 @@ void residue::buildDihedralDataBase()
 
 	for(UInt i=0; i<dataBase.size(); i++)
 	{	pCurrentResTemplate = &dataBase[i];
+		//cout << pCurrentResTemplate->typeString << endl;
 		iFile = path + pCurrentResTemplate->typeString + ".dat";
 		inFile.open(iFile.c_str());
 		//if(!inFile)
@@ -1530,25 +1489,25 @@ residue* residue::mutate(const UInt _newTypeIndex)
 	return newAA;
 }
 
-residue* residue::mutateNew(const UInt _newTypeIndex)
+residue* residue::mutateNew(const UInt _newTypeIndex) // is generalized to support non-backbone mutation using fortan alignment algorithm and supports terminal residues
 {
-	residue* newAA = new residue( _newTypeIndex, hydrogensOn );
-
-    // Load backbone atoms into double array for fit
-	int maxsize = 3;
-	if (newAA->getAtomName(4) == "CB" && getAtomName(4) == "CB"){maxsize = 4;}
-	double coord1[maxsize*3], coord2[maxsize*3];
-	int list1[maxsize]; int list2[maxsize];
-	dblVec oldCoords(3), newCoords(3);
+	residue* newAA; int maxsize = 3; bool sameAA = false;
+	if (itsType == _newTypeIndex && (isD(itsType) || isL(itsType))){maxsize = 4; sameAA = true;}
+	if (!pItsPrevRes && (isL(_newTypeIndex) || isD(_newTypeIndex) || isG(_newTypeIndex))){newAA = new residue( _newTypeIndex+Nterm, true);} //Nterminal mutation
+	if (!pItsNextRes && (isL(_newTypeIndex) || isD(_newTypeIndex) || isG(_newTypeIndex))){newAA = new residue( _newTypeIndex+Cterm, true);} //Cterminal mutation
+	else{newAA = new residue( _newTypeIndex, true); }
+	
+    // Load atoms for alignment onto position into double array for fit
+	double coord1[maxsize*3], coord2[maxsize*3]; int list1[maxsize]; int list2[maxsize]; dblVec oldCoords(3), newCoords(3);
 	for (int i=0; i<maxsize; i++)
 	{	
-		if (i < 3){
-			oldCoords = getMainChain(i)->getCoords();
-			newCoords = newAA->getMainChain(i)->getCoords();
-		}
-		if (i == 3){
+		if (i == 3 && sameAA){
 			oldCoords = itsAtoms[4]->getCoords();
 			newCoords = newAA->itsAtoms[4]->getCoords();
+		}
+		else{
+			oldCoords = getMainChain(i)->getCoords();
+			newCoords = newAA->getMainChain(i)->getCoords();
 		}
 		for (int j=0; j<3; j++)
 		{
@@ -1559,7 +1518,7 @@ residue* residue::mutateNew(const UInt _newTypeIndex)
 		list2[i] = i+1;
 	}
 	
-	// Calculate best fit of backbone atoms, rotation matrix and rmsd using fortran algorithm based on Machlachlan
+	// Calculate best fit of atoms to get rotation matrix and centroid from fortran algorithm based on Machlachlan
 	double rotmat[9]; double centroid1[3]; double centroid2[3]; double rmsd = 0; double coord3[maxsize*3]; int ierr = 0;
 	bestfit_(coord1, &maxsize, coord2, &maxsize, &maxsize, coord3, list1, list2, &rmsd, &ierr, rotmat, centroid1, centroid2);
 	
@@ -1574,9 +1533,8 @@ residue* residue::mutateNew(const UInt _newTypeIndex)
 	dblVec centroidOne(3); centroidOne[0] = centroid1[0]; centroidOne[1] = centroid1[1]; centroidOne[2] = centroid1[2];
 	dblVec centroidTwo(3); centroidTwo[0] = centroid2[0]*-1; centroidTwo[1] = centroid2[1]*-1; centroidTwo[2] = centroid2[2]*-1;
     
-	newAA->translate(centroidTwo);
-	newAA->transform(rotMat);
-	newAA->translate(centroidOne);
+	//translate to origin, rotate using rotation matrix from fit and move to position of starting residue
+	newAA->translate(centroidTwo); newAA->transform(rotMat); newAA->translate(centroidOne);
 
 	//position new residue with proper position context
 	if (pItsNextRes){ newAA->setNextRes(pItsNextRes); pItsNextRes->setPrevRes(newAA);}
@@ -1585,22 +1543,13 @@ residue* residue::mutateNew(const UInt _newTypeIndex)
 	else{newAA->setPrevRes(pItsPrevRes);}
 	newAA->setResNum(itsResNum);
 
-	// ensure that we have not modified the main chain
-	// coordinates in any way
-	for (UInt i=0;i<dataBase[itsType].mainChain.size(); i++)
-	{
-		newAA->getMainChain(i)->setCoords( getMainChain(i)->getCoords());
-	}
-
-	// now, since we're changing the backbone coordinates, make
-	// sure that the amide hydrogen H is in the right place...
-	// all other hydrogens should have been taken care of by the
-	// code above which sets the coordinates of the branchpoint atoms.
-	if (hydrogensOn)
-	{
-		newAA->alignAmideProtonToBackbone();
+	// move carbonyl oxygen, amide proton into position and activate for energy calculation
+	if(!isCofactor(_newTypeIndex)){
+		if (pItsNextRes){newAA->getMainChain(3)->setCoords(getMainChain(3)->getCoords());}
+		if (pItsPrevRes){newAA->alignAmideProtonToBackbone();}
 	}
 	newAA->setMoved();
+
 	return newAA;
 }
 

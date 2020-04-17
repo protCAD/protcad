@@ -179,7 +179,6 @@ void PDBInterface::parseAtomLine()
 	}
 	//cout << endl;
 	//cout << "Number of unique protein chains in file: " << numchains << endl;
-
 	// OK, now build the protein, and add the chains in (empty at first)
 	protein* pTheProtein = new protein(theProteinName);
 	vector<chain*> vecChainPointers;
@@ -216,8 +215,9 @@ void PDBInterface::parseAtomLine()
 	// The following function is called in order to initialize all 
 	// the static stuff in the
 	// residue class definition, such as the residue database, etc.
-
+	//cout << "presetup" << endl;
 	residue::setupDataBase();
+	//cout << "setup" << endl;
     bool hydrogensFound = true;
 	bool altLocFound = false;
 	vector<bool> Hflags;
@@ -333,9 +333,12 @@ void PDBInterface::parseAtomLine()
 			}
 			else
 			{
-				cout << "Don't understand atom name ";
-				cout << currentRecord.getAtomName() << endl;
-				cout << "Further behavior unpredictable" << endl;
+				if (currentRecord.getAtomName() != "H1" && currentRecord.getAtomName() != "H2" && currentRecord.getAtomName() != "H3" && currentRecord.getAtomName() != "OXT")
+				{
+					cout << "Don't understand atom name ";
+					cout << currentRecord.getResName() << " " << currentRecord.getAtomName() << endl;
+					cout << "Further behavior unpredictable" << endl;
+				}
 			}
 		}
 		if (currentAltLoc != lastAltLoc)

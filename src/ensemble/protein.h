@@ -150,7 +150,7 @@ public:
 	void optimizeRotamers();
 	void optimizeRotamers(vector <UIntVec> _positions);
 	void optimizeRotamers(vector <UIntVec> _positions, vector <UIntVec> _rotamerArray);
-	bool isNotAminoAcid(UInt chainIndex, UInt resIndex);
+	bool isCofactor(UInt chainIndex, UInt resIndex){return itsChains[chainIndex]->isCofactor(resIndex);}   
 
 	//--Energy functions
 	void setMoved (UInt chainIndex, UInt resIndex, bool _moved, UInt _EorC) {itsChains[chainIndex]->setMoved(resIndex, _moved, _EorC);}
