@@ -101,6 +101,7 @@ private:
 	// mutate should only be called from the 'chain' level object
 	// So it is defined to be PRIVATE
 	residue* mutate(const UInt _aaType);
+	residue* mutateNew(const UInt _newTypeIndex);
 	residue* fixBrokenResidue();
 
 public:
@@ -109,9 +110,19 @@ public:
 	void addAtom(pdbAtom& _pdbAtom);
 	void makeAtomSilent(const UInt _atomIndex);
 	void makeResidueSilent();
-        
-        //******************testing junk************************
-	void accessMe();
+
+	// Residue Types
+	bool isL(unsigned int resType){if(resType >= 0 && resType < 26){return true;}else{return false;}}        // L amino acids
+	bool isG(unsigned int resType){if(resType == 26){return true;}else{return false;}}                       // Glycine
+	bool isD(unsigned int resType){if(resType > 26 && resType < 53){return true;}else{return false;}}        // D amino acids
+	bool isLNterm(unsigned int resType){if(resType >= 53 && resType < 79){return true;}else{return false;}}  // N terminal L amino acids
+	bool isGNterm(unsigned int resType){if(resType == 79){return true;}else{return false;}}                  // N terminal Glycine
+	bool isDNterm(unsigned int resType){if(resType > 79 && resType < 106){return true;}else{return false;}}  // N terminal D amino acids
+	bool isLCterm(unsigned int resType){if(resType >= 106 && resType < 132){return true;}else{return false;}}// C terminal L amino acids
+	bool isGCterm(unsigned int resType){if(resType == 132){return true;}else{return false;}}                 // C terminal Glycine
+	bool isDCterm(unsigned int resType){if(resType > 132 && resType < 159){return true;}else{return false;}} // C terminal D amino acids
+	bool isCofactor(unsigned int resType){if(resType >= 159){return true;}else{return false;}}               // Cofactor
+	bool isCofactor(){if(itsType >= 159){return true;}else{return false;}}   
 
 // ***********************************************************************
 // ***********************************************************************
@@ -134,6 +145,7 @@ public:
 	double getOmega();
 	double getAmide();
 	double getAtomCharge(UInt _atomNum) {return residueTemplate::itsAmberElec.getItsCharge(itsType, itsAtoms[_atomNum]->itsType); }
+	string getAtomName(UInt _atomNum) {return itsAtoms[_atomNum]->getName(); }
 	void setOmega(double _omega);
 	int setPhi(double _phi);
 	int setPsi(double _psi);
@@ -153,6 +165,7 @@ public:
 	double getChi(const UInt _bpt, const UInt _index) const;
 	double getChi(const UInt _index) const;
     double getBetaChi();
+	double getBetaChiR();
     double getPolarHChi() const;
     double netCharge();
 
@@ -206,10 +219,8 @@ public:
 // ***********************************************************************
 
 	dblVec getCoords( const string _atomName);
-        dblVec getCoords( const UInt _atomIndex)
-        {return itsAtoms[_atomIndex]->getCoords(); }
-	void setCoords(UInt _atomIndex, dblVec _coords)
-		{ return itsAtoms[_atomIndex]->setCoords(_coords);}
+    dblVec getCoords( const UInt _atomIndex){return itsAtoms[_atomIndex]->getCoords();}
+	void setCoords(UInt _atomIndex, dblVec _coords){return itsAtoms[_atomIndex]->setCoords(_coords);}
 	void rotate(const point& _point, const dblMat& _RMatrix);
 	void rotate(UInt _first, UInt _second,const double _theta);
 	void rotate(atom* _pAtom1, atom* _pAtom2, const double _theta, bool backboneRotation);
@@ -306,6 +317,7 @@ private:
 
 public:
 	string getType() const;
+	string getType(UInt resType);
 	UInt getTypeIndex() const {return itsType;}
 	void printMainChain() const;
 	void printBranchPoints() const;

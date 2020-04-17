@@ -163,7 +163,7 @@ int main (int argc, char* argv[])
 		for (UInt i = 0; i < prot->getNumChains(); i++)
 		{
 			UInt resN = prot->getNumResidues(i);
-			if (resN < 2 && prot->isNotAminoAcid(i,0)){continue;}
+			if (resN < 2 && prot->isCofactor(i,0)){continue;}
 			else{activeChains.push_back(i);}
 		}
 	}
@@ -174,7 +174,7 @@ int main (int argc, char* argv[])
 		{
 			if (!done){
 				UInt resN = prot->getNumResidues(i);
-				if (resN < 2 && prot->isNotAminoAcid(i,0)){continue;}
+				if (resN < 2 && prot->isCofactor(i,0)){continue;}
 				else{
 					for (UInt j = 0; j < resN; j++)
 					{
@@ -243,7 +243,6 @@ int main (int argc, char* argv[])
 		pdbWriter(prot, tempModel);
 		Energy = prot->protEnergy();
 		pastEnergy = Energy;
-		//cout << "test1" << endl;
 
 		//--Run through a single evolutionary path (ancestral line) till hitting plateau
 		do
@@ -253,7 +252,6 @@ int main (int argc, char* argv[])
 			mutantPosition.clear();
 			mutantPosition = getMutationPosition(activeChains, activeResidues);
 			mutant = getProbabilisticMutation(sequencePool, possibleMutants, mutantPosition);
-			//cout << mutant << " " << mutantPosition[1] << endl;
 			prot->mutateWBC(mutantPosition[0], mutantPosition[1], mutant);
 
 			//--Energy test

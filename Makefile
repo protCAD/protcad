@@ -70,6 +70,8 @@ endif
 
 all : $(LIB_TARGETS) $(TARGETS) protcad
 
+headless : $(LIB_TARGETS) $(TARGETS)
+
 lib : libprotcad.a
 
 libprotcad.a : $(LIB_CC_OBJECTS) $(LIB_F77_OBJECTS)

@@ -35,14 +35,14 @@ int main (int argc, char* argv[])
 	protein* _prot = static_cast<protein*>(pMol);
 	string outFile;
 
-    _prot->protEnergy();
+   // _prot->protEnergy();
     cout << "chain" << " position" << " residue" << " dielectric" << " solvationEnergy" << endl;
     for (UInt i = 0; i < _prot->getNumChains(); i++)
     {
         for (UInt j = 0; j < _prot->getNumResidues(i); j++)
         {
             UInt restype = _prot->getTypeFromResNum(i,j);
-            cout << i << " " << j+1 << " " << aminoAcidString[restype] << " " << _prot->getDielectric(i, j) << " " << _prot->getSolvationEnergy(i, j) << endl;
+            cout << _prot->getResNum(i,j) << " " << aminoAcidString[restype] << " " << _prot->getResiduesPerTurn(i,j) << endl;
         }
     }
 

@@ -119,11 +119,6 @@ void protein::removeChain(UInt _chainIndex)
 	itsChains.resize(itsChains.size()-1);
 	
 }
-//******************testing junk****************
-void protein::accessChainZeroResZero()
-{
-	itsChains[0]->accessResZero();
-}
 
 void protein::symmetryLinkChainAtoB(UInt _aIndex, UInt _bIndex)
 {
@@ -801,6 +796,7 @@ void protein::finishProteinBuild()
 {
 	for (unsigned int i=0; i< itsChains.size(); i++)
 	{
+		itsChains[i]->rebuildResiduesInChain();
 		itsChains[i]->finishChainBuild();
 	}
 /*
@@ -1133,6 +1129,14 @@ double protein::protEnergy()
 	return Energy;
 }
 
+double protein::protEnergy(UInt chainIndex) //Energy of chain alone
+{
+	setMoved(true,0);
+	updateEnergy(chainIndex);
+	double Energy = itsChains[chainIndex]->getEnergy();
+	return Energy;
+}
+
 void protein::updateEnergy()
 {
 	updateMovedDependence(0);
@@ -1145,6 +1149,14 @@ void protein::updateEnergy()
 			itsChains[i]->updateEnergy(itsChains[j]);
 		}
 	}
+	setMoved(false,0);
+}
+
+void protein::updateEnergy(UInt chainIndex)
+{
+	updateMovedDependence(0);
+	updateDielectrics(chainIndex);
+	itsChains[chainIndex]->updateEnergy();
 	setMoved(false,0);
 }
 
@@ -1161,12 +1173,23 @@ void protein::updateDielectrics()
 	calculateDielectrics();
 }
 
+void protein::updateDielectrics(UInt chainIndex)
+{
+	itsChains[chainIndex]->polarizability();
+	calculateDielectrics(chainIndex);
+}
+
 void protein::calculateDielectrics()
 {
 	for(UInt i=0; i<itsChains.size(); i++)
 	{
 		itsChains[i]->calculateDielectrics();
 	}
+}
+
+void protein::calculateDielectrics(UInt chainIndex)
+{
+	itsChains[chainIndex]->calculateDielectrics();
 }
 
 void protein::updateMovedDependence(UInt _EorC)
@@ -2707,19 +2730,6 @@ double protein::getResPairEnergy(const UInt _chain1, const UInt _res1, const UIn
 	}
 }
 
-bool protein::isNotAminoAcid(UInt chainIndex, UInt resIndex)
-{
-	UInt resnum = getNumResidues(chainIndex);
-	if (resnum == 1){
-		string atomType = getTypeStringFromAtomNum(chainIndex, resIndex, 0);
-		if (atomType != "N")
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
 vector <dblVec> protein::saveCoords( UInt chainIndex, UInt resIndex)
 {
 	UInt nAtoms = getNumAtoms(chainIndex, resIndex);
@@ -2772,7 +2782,7 @@ void protein::protMin(bool _backbone)
 		randchain = rand() % chainNum, resnum = getNumResidues(randchain), randres = rand() % resnum;
 		clashesStart = getNumHardClashes(); nobetter++;
 		backboneTest = false, sidechainTest = false, cofactorTest = false, energyTest = false, revert = true;
-		if (isNotAminoAcid(randchain, randres))
+		if (isCofactor(randchain, randres))
 		{
 			//--Rock and Roll cofactor in site
 			cofactorTest = true;
@@ -2872,7 +2882,7 @@ void protein::protMin(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 		clashesStart = getNumHardClashes(); resnum = getNumResidues(randchain); nobetter++;
 		backboneTest = false, sidechainTest = false, cofactorTest = false, energyTest = false, revert = true;
 		
-		if (isNotAminoAcid(randchain, randres))
+		if (isCofactor(randchain, randres))
 		{
 			//--Rock and Roll cofactor in site
 			cofactorTest = true;
@@ -2962,7 +2972,7 @@ void protein::protMin(bool _backbone, UInt chainIndex, UInt resIndex)
 		clashesStart = getNumHardClashes(); resnum = getNumResidues(randchain); nobetter++;
 		backboneTest = false, sidechainTest = false,  cofactorTest = false, energyTest = false, revert = true;
 		
-		if (isNotAminoAcid(randchain, randres))
+		if (isCofactor(randchain, randres))
 		{
 			//--Rock and Roll cofactor in site
 			cofactorTest = true;
