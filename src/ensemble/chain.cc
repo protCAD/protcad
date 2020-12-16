@@ -1634,14 +1634,21 @@ double chain::getResiduesPerTurn(const UInt _resIndex)
 			phi = itsResidues[_resIndex]->getPhi();
 			psi = itsResidues[_resIndex]->getPsi();
 		}
-		double radSum = ((phi+psi)/2)*PI/180;
-		double radDiff = ((psi-phi)/2)*PI/180;
-		double radTheta = 2*acos(-0.8235*sin(radSum)-0.0222*sin(radDiff));
-		double theta = radTheta*180/PI;
-		if (theta > 180) {rpt = 360/(theta-360);} else {rpt = 360/theta;}
-        double rise = 1/sin(radTheta/2)*(2.999*cos(radSum)-0.657*cos(radDiff));
-    	if (rise < 0) {rpt = rpt*-1;}
+		return getResiduesPerTurn(phi, psi);
 	}
+	else{return 0;}
+}
+
+double chain::getResiduesPerTurn(double phi, double psi)
+{
+	double rpt;
+	double radSum = ((phi+psi)/2)*PI/180;
+	double radDiff = ((psi-phi)/2)*PI/180;
+	double radTheta = 2*acos(-0.8235*sin(radSum)-0.0222*sin(radDiff));
+	double theta = radTheta*180/PI;
+	if (theta > 180) {rpt = 360/(theta-360);} else {rpt = 360/theta;}
+	double rise = 1/sin(radTheta/2)*(2.999*cos(radSum)-0.657*cos(radDiff));
+	if (rise < 0) {rpt = rpt*-1;}
 	return rpt;
 }
 
@@ -1655,6 +1662,11 @@ UInt chain::getBackboneSequenceType(const UInt _resIndex)
 		phi = itsResidues[_resIndex]->getPhi();
 	}
 	double RPT = getResiduesPerTurn(_resIndex);
+	return getBackboneSequenceType(RPT, phi);
+}
+
+UInt chain::getBackboneSequenceType(double RPT, double phi)
+{
 	if (RPT <= -4.83 && phi <= 0)					{return 0;}
 	if (RPT > -4.83  && RPT <= -4.13 && phi <= 0)	{return 1;}
 	if (RPT > -4.13  && RPT <= -3.43 && phi <= 0)	{return 2;}

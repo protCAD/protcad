@@ -3224,44 +3224,6 @@ void protein::protSampling(UInt iterations)
 	return;
 }
 
-double protein::getResiduesPerTurn(double phi, double psi)
-{
-	double rpt;
-	double radSum = ((phi+psi)/2)*PI/180;
-	double radDiff = ((psi-phi)/2)*PI/180;
-	double radTheta = 2*acos(-0.8235*sin(radSum)-0.0222*sin(radDiff));
-	double theta = radTheta*180/PI;
-	if (theta > 180) {rpt = 360/(theta-360);} else {rpt = 360/theta;}
-	double rise = 1/sin(radTheta/2)*(2.999*cos(radSum)-0.657*cos(radDiff));
-	if (rise < 0) {rpt = rpt*-1;}
-	return rpt;
-}
-
-UInt protein::getBackboneSequenceType(double RPT, double phi)
-{
-	if (RPT <= -4.83 && phi <= 0)					{return 0;}
-	if (RPT > -4.83  && RPT <= -4.13 && phi <= 0)	{return 1;}
-	if (RPT > -4.13  && RPT <= -3.43 && phi <= 0)	{return 2;}
-	if (RPT > -3.43  && RPT <= -2.73 && phi <= 0)	{return 3;}
-	if (RPT > -2.73  && RPT < -2.00 && phi <= 0)	{return 4;}
-	if (RPT >=  2.00  && RPT <=  2.73 && phi <= 0)	{return 5;}
-	if (RPT >  2.73  && RPT <=  3.43 && phi <= 0)	{return 6;}
-	if (RPT >  3.43  && RPT <=  4.13 && phi <= 0)	{return 7;}
-	if (RPT >  4.13  && RPT <=  4.83 && phi <= 0)	{return 8;}
-	if (RPT >  4.83 && phi <= 0)					{return 9;}
-	if (RPT <= -4.83 && phi > 0)					{return 10;}
-	if (RPT > -4.83  && RPT <= -4.13 && phi > 0)	{return 11;}
-	if (RPT > -4.13  && RPT <= -3.43 && phi > 0)	{return 12;}
-	if (RPT > -3.43  && RPT <= -2.73 && phi > 0)	{return 13;}
-	if (RPT > -2.73  && RPT < -2.00 && phi > 0)		{return 14;}
-	if (RPT >=  2.00  && RPT <=  2.73 && phi > 0)	{return 15;}
-	if (RPT >  2.73  && RPT <=  3.43 && phi > 0)	{return 16;}
-	if (RPT >  3.43  && RPT <=  4.13 && phi > 0)	{return 17;}
-	if (RPT >  4.13  && RPT <=  4.83 && phi > 0)	{return 18;}
-	if (RPT >  4.83 && phi > 0)						{return 19;}
-	return 0;
-}
-
 vector <double> protein::getRandPhiPsifromBackboneSequenceType(UInt _RPTType)
 {
 	vector <double> angles(2);
