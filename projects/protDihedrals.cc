@@ -36,7 +36,8 @@ int main (int argc, char* argv[])
 		for (UInt j = 1; j < resNum-1; j ++)
 		{
 			UInt backboneType = bundle->getBackboneSequenceType(i,j);
-			cout << backboneTypes[backboneType] << " " << bundle->getPhi(i,j) << " " << bundle->getPsi(i,j) << endl;
+			double rpt = bundle->getResiduesPerTurn(i,j);
+			cout << rpt << " " << backboneTypes[backboneType] << " " << bundle->getPhi(i,j) << " " << bundle->getPsi(i,j) << endl;
 		}
 	}
 	return 0;
