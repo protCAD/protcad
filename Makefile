@@ -21,7 +21,7 @@ export MAKE = make
 
 SHELL = /bin/sh
 
-TARGETS = protDielectric protEvolver protDihedrals protOligamer protEnergy protFolder protMover protMutator protSequence protInverter protMin protAlign protShaper protBindingEnergy hammingdist accretor
+TARGETS = protDielectric protEvolver protDihedrals protOligamer protEnergy protFolder protMover protMutator protSequence protInverter protMin protAlign protShaper protBindingEnergy hammingdist
 
 .SUFFIXES: .cc .o .h .a .f
 
