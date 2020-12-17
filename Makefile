@@ -137,10 +137,6 @@ protBindingEnergy : libprotcad.a protBindingEnergy.cc
 hammingdist : libprotcad.a hammingdist.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
 	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
-	
-accretor : libprotcad.a accretor.cc
-	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
-	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 
 $(LIB_CC_OBJECTS): %.o: %.cc %.h
 	$(CXX) -c $(CFLAGS) $(INC_BASE) $< -o $@
