@@ -2178,7 +2178,7 @@ void protein::alignToAxis(const axis _axis)
     for (;!(theIter.last());theIter++)
     {
        pAtom = theIter.getAtomPointer(); 
-       if (pAtom->getName() == "N" || pAtom->getName() == "CA" || pAtom->getName() == "C" || pAtom->getName() == "O" || pAtom->getName() == "CB"){
+       if (pAtom->getName() == "N" || pAtom->getName() == "CA" || pAtom->getName() == "C" || pAtom->getName() == "O"){
             coord2.push_back(pAtom->getCoords());
        }
     }
@@ -3152,6 +3152,43 @@ void protein::protRelax(UIntVec _frozenResidues, UIntVec _activeChains)
 				}
 			}
 		} while (nobetter < _plateau);
+	}
+	return;
+}
+
+void protein::cofactorRelax(UInt _plateau)
+{  
+	UInt pastCofactorClashes = getNumHardClashes(),count = 0;
+	if (pastCofactorClashes > 0)
+	{	
+		//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
+		double rotX,rotY,rotZ;
+		UInt randchain, randres, resnum, chainNum = getNumChains(), cofactorClashes, nobetter = 0;
+		srand (time(NULL));
+
+		//--Run optimizaiton loop to relative minima, determined by _plateau----------------------------
+		do
+		{   //--choose random cofactor
+			do{
+				randchain = rand() % chainNum;
+				resnum = getNumResidues(randchain);
+				randres = rand() % resnum;
+			}while (!isCofactor(randchain, randres));
+			nobetter++;
+			count++;
+	
+			//--cofactor rotation-----------------------------------------------------------------------
+			rotX = rand() % 31, rotY = rand() % 31, rotZ = rand() % 31;
+			rotateChainRelative(randchain,X_axis,rotX), rotateChainRelative(randchain,Y_axis,rotY), rotateChainRelative(randchain,Z_axis,rotZ);
+			cofactorClashes = getNumHardClashes();
+			if (cofactorClashes <= pastCofactorClashes){
+				nobetter = 0, pastCofactorClashes = cofactorClashes;
+			}
+			else{
+				rotateChainRelative(randchain,Z_axis,rotZ*-1), rotateChainRelative(randchain,Y_axis,rotY*-1), rotateChainRelative(randchain,X_axis,rotX*-1);
+			}
+
+		} while (nobetter < _plateau && count < _plateau*10);
 	}
 	return;
 }

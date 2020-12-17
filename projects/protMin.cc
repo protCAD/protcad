@@ -44,7 +44,7 @@ int main (int argc, char* argv[])
 	cout << "Starting Energy: " << startE << " kcal/mol" << endl;
 	UInt startclashes = _prot->getNumHardClashes();
 	start = clock();
-	_prot->protMin(backbone);
+	_prot->cofactorRelax(1000);
 	end = clock();
 	UInt endclashes = _prot->getNumHardClashes();
 	double endE = _prot->protEnergy();

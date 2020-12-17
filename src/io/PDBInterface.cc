@@ -5,7 +5,9 @@
 #include <stdio.h>
 
 aaBaseline PDBInterface::itsAABaseline(0);
-
+string chainIdString[] = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","1","2","3","4",
+"5","6","7","8","9"};
+UInt chainIDSize = sizeof(chainIdString)/sizeof(chainIdString[0]);
 PDBInterface::PDBInterface()
 {
 }
@@ -146,12 +148,15 @@ void PDBInterface::parseAtomLine()
 	//cout << "Entering PDBInterface::parseAtomLine()" << endl;
 	// First, Let's find out how many chains we have in the file
 	// We're going to assume (for now) that there's at least one...
+
 	UInt numchains = 1;
 	vector<string> chainsSeen;
 	string theProteinName;
 	int counter = 1;
 	bool iveSeenIt;
+	string lastSeenChain;
 	string tempstring;
+	//UInt nextChainID;
 	for (UInt i=0; i< atomLines.size(); i++)
 	{
 		tempstring = theLines[atomLines[i]];
@@ -174,9 +179,16 @@ void PDBInterface::parseAtomLine()
 		{	
 			numchains++;
 			chainsSeen.push_back(currentRecord.getChainID());
+			//if (currentRecord.getChainID() != " "){lastSeenChain = currentRecord.getChainID();}
 		}
 		counter++;
 	}
+	// find next chain to seperate cofactors by
+	/*for (UInt i=0; i < chainIDSize; i++)
+	{
+		if (lastSeenChain == chainIdString[i]){nextChainID = i+1;}
+	}*/
+
 	//cout << endl;
 	//cout << "Number of unique protein chains in file: " << numchains << endl;
 	// OK, now build the protein, and add the chains in (empty at first)
@@ -284,22 +296,11 @@ void PDBInterface::parseAtomLine()
 			lastResSeq = currentResSeq;
 			lastICode = currentICode;
 		}
-		// Now, check for the presence of hydrogens in each of the residues,
-		// if they exist, set the value of Hflag to true
-        if (currentRecord.getElement() == "H")
-        {
-            //cout << "Found a hydrogen at " << i << endl;
-			hydrogensFound = true;
-        }
 		counter++;
-		if (currentRecord.getElement() == "" ||
-		    currentRecord.getElement() == " " ||
-                    currentRecord.getElement() == "  " )
+		if (currentRecord.getElement() == "" || currentRecord.getElement() == " " || currentRecord.getElement() == "  " )
 		{ 
 			// more robust method in case the element field has
 			// been left blank
-			//cout << "PDBInterface::Null element field! "<< endl;
-			//cout << "Checking against residue type database" << endl;
 			// Figure out what kind of residue we're dealing with	
 			UInt theType = 9999;
 			for (UInt j=0; j<residue::getDataBaseSize(); j++)
@@ -308,30 +309,10 @@ void PDBInterface::parseAtomLine()
 					break;
 				}
 			}
-			if (theType == 9999)
-			{
-				//cout << "Don't know how to build a residue of type ";
-				//cout << "uknownRes:" << currentRecord.getResName() << endl;
-				//cout << "Please add it to the database!" << endl;
-				//cout << "Further behavior unpredictable  - Stopping" << endl;
-				//continue;
-			}
 			// OK, now we now the residue type, let's find the
 			// atom name amongst the atoms in the template
-			//cout << "Querying atom names" << endl;
 			int theAtomTypeIndex = residue::dataBase[theType].getAtomIndexOf(currentRecord.getAtomName());
-			if (theAtomTypeIndex >= 0)
-			{
-				//cout << "atomTypeIndex = " << theAtomTypeIndex << endl;
-                //string atomTypeString = (residue::dataBase[theType].atomList[theAtomTypeIndex]).getType();
-				//cout << "atomTypeString = " << atomTypeString << endl;
-                //if (atomTypeString == "H")
-                //{
-                    //cout << "Found a hydrogen at " << i << endl;
-					hydrogensFound = true;
-                //}
-			}
-			else
+			if (theAtomTypeIndex < 0)
 			{
 				if (currentRecord.getAtomName() != "H1" && currentRecord.getAtomName() != "H2" && currentRecord.getAtomName() != "H3" && currentRecord.getAtomName() != "OXT")
 				{
@@ -349,25 +330,17 @@ void PDBInterface::parseAtomLine()
 	resend.push_back(atomLines.size()-1);
     Hflags.push_back(hydrogensFound);
 	altLocFlags.push_back(altLocFound);
-/*	
-	for (UInt i=0; i<resend.size(); i++)
-	{	cout << resname [i] << "  " << resbegin[i] << "  " << resend[i];
-		cout << "  " << Hflags[i] << "  " << altLocFlags[i] << endl;
-	}
-*/
+
 	counter = 0;
 	for (UInt i=0; i<atomLines.size(); i++)
 	{	
 		tempstring = theLines[atomLines[i]];
 		PDBAtomRecord currentRecord(tempstring);
-		if (counter == 0)
-		{	
-		}
 	}
+
 	// now we're going to loop over the residues and
 	// generate them, with an internal loop to add the
 	// atoms
-
 	for (UInt i=0; i< resbegin.size(); i++)
 	{	
 		// Figure out what kind of residue we're dealing with	
@@ -378,20 +351,23 @@ void PDBInterface::parseAtomLine()
 				break;
 			}
 		}
-		if (theType == 9999)
-		{
-			//cout << "Don't know how to build a residue of type ";
-			//cout << "unknownRes:" << resname[i] << endl;
-			//cout << "Please add it to the database!" << endl;
-			//cout << "Further behavior unpredictable  - Stopping" << endl;
-			//continue;
-		}
-		//cout << residue::getDataBaseItem(theType) << "  "<< "Hflags[" << i << "] = " << Hflags[i] << endl;
         residue* pTheResidue = new residue(theType,Hflags[i]);
 		pTheResidue->setResNum(resnums[i]);
+
+		// if residue is a cofactor add it to it's own chain
+		/*if (pTheResidue->isCofactor() && nextChainID < chainIDSize){
+			const char* pTheChainID  = chainIdString[nextChainID].c_str();
+			resChainID[i] = chainIdString[nextChainID];
+			char theChainID = *pTheChainID;
+			chain* theChain = new chain(theChainID);
+			pTheProtein->add(theChain);
+			vecChainPointers.push_back(theChain);
+			nextChainID++;
+		}*/
+
+		// OK, now which chain do we add this to?
 		chain* pCurrentChain = 0;
 		char theChainID;
-		// OK, now which chain do we add this to?
 		for (UInt j=0; j<vecChainPointers.size(); j++)
 		{
 			const char* pTheChainID  = resChainID[i].c_str();
@@ -409,8 +385,8 @@ void PDBInterface::parseAtomLine()
 		}
 		else
 		{
-			//cout << "Wasn't able to find chain named: ";
-			//cout << "unfoundChain:" << theChainID << endl;
+			cout << "Wasn't able to find chain named: ";
+			cout << "unfoundChain:" << theChainID << endl;
 			//cout << "Please fix your pdb file!" << endl;
 			//cout << "Further behavior unpredictable  - Stopping" << endl;
 			//break;

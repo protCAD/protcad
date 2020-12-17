@@ -1494,8 +1494,10 @@ residue* residue::mutateNew(const UInt _newTypeIndex) // is generalized to suppo
 	residue* newAA; int maxsize = 3; bool sameAA = false;
 	if (itsType == _newTypeIndex && (isD(itsType) || isL(itsType))){maxsize = 4; sameAA = true;}
 	if (!pItsPrevRes && (isL(_newTypeIndex) || isD(_newTypeIndex) || isG(_newTypeIndex))){newAA = new residue( _newTypeIndex+Nterm, true);} //Nterminal mutation
-	if (!pItsNextRes && (isL(_newTypeIndex) || isD(_newTypeIndex) || isG(_newTypeIndex))){newAA = new residue( _newTypeIndex+Cterm, true);} //Cterminal mutation
+	else if(!pItsNextRes && (isL(_newTypeIndex) || isD(_newTypeIndex) || isG(_newTypeIndex))){newAA = new residue( _newTypeIndex+Cterm, true);} //Cterminal mutation
 	else{newAA = new residue( _newTypeIndex, true); }
+	//cout << itsAtoms.size() << endl;
+	if(itsAtoms.size() < 4){maxsize = 1;}
 	
     // Load atoms for alignment onto position into double array for fit
 	double coord1[maxsize*3], coord2[maxsize*3]; int list1[maxsize]; int list2[maxsize]; dblVec oldCoords(3), newCoords(3);

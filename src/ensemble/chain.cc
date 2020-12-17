@@ -1575,8 +1575,9 @@ void chain::rotateRelative(const axis _axis,const double _theta)
 		}
 	}
 	COMcoords[0] = COMcoords[0]/totalAtoms, COMcoords[1] = COMcoords[1]/totalAtoms, COMcoords[2] = COMcoords[2]/totalAtoms;
+	translate(COMcoords[0]*-1,COMcoords[1]*-1,COMcoords[2]*-1);
 	point origin;
-	origin.setCoords(COMcoords[0],COMcoords[1],COMcoords[2]);
+	origin.setCoords(0,0,0);
 
 	dblVec vec(3);
 #ifdef USE_SVMT
@@ -1598,6 +1599,7 @@ void chain::rotateRelative(const axis _axis,const double _theta)
 	{	vec[2]	= 1.0;
 	}
 	rotate(origin, vec, _theta);
+	translate(COMcoords[0],COMcoords[1],COMcoords[2]);
 }
 	
 void chain::rotate(const point& _point,const dblVec& _R_axis, const double _theta)
