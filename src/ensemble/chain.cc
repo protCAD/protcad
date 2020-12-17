@@ -1621,9 +1621,8 @@ void chain::updateResiduesPerTurnType()
 
 double chain::getResiduesPerTurn(const UInt _resIndex)
 {
-	double phi, psi, residuesPerTurn = 0.0;
-	UInt type = getTypeFromResNum(_resIndex);
-	if (type < 53)
+	double phi, psi, rpt = 0.0;
+	if (!isCofactor(_resIndex))
 	{
 		if (_resIndex == 0){
 			psi = itsResidues[_resIndex]->getPsi();
@@ -1637,17 +1636,22 @@ double chain::getResiduesPerTurn(const UInt _resIndex)
 			phi = itsResidues[_resIndex]->getPhi();
 			psi = itsResidues[_resIndex]->getPsi();
 		}
-		
-		double phipsisum = phi+psi;
-		double handedness;
-		if ((phipsisum > 0 && phipsisum < 180)|| phipsisum < -180){handedness = -1.0;}
-		else{handedness = 1.0;}
-		double angleSumHalfRad = ((phipsisum)/2)*PI/180;
-		double radAngle = acos(-0.3333333-0.6666666*cos(2*angleSumHalfRad));
-		double radAngletoDeg = radAngle*180/PI;
-		residuesPerTurn = (360/radAngletoDeg)*handedness;
+		return getResiduesPerTurn(phi, psi);
 	}
-	return residuesPerTurn;
+	else{return 0;}
+}
+
+double chain::getResiduesPerTurn(double phi, double psi)
+{
+	double rpt;
+	double radSum = ((phi+psi)/2)*PI/180;
+	double radDiff = ((psi-phi)/2)*PI/180;
+	double radTheta = 2*acos(-0.8235*sin(radSum)-0.0222*sin(radDiff));
+	double theta = radTheta*180/PI;
+	if (theta > 180) {rpt = 360/(theta-360);} else {rpt = 360/theta;}
+	double rise = 1/sin(radTheta/2)*(2.999*cos(radSum)-0.657*cos(radDiff));
+	if (rise < 0) {rpt = rpt*-1;}
+	return rpt;
 }
 
 UInt chain::getBackboneSequenceType(const UInt _resIndex)
@@ -1660,26 +1664,31 @@ UInt chain::getBackboneSequenceType(const UInt _resIndex)
 		phi = itsResidues[_resIndex]->getPhi();
 	}
 	double RPT = getResiduesPerTurn(_resIndex);
-	if (RPT <= -4.48 && phi <= 0)					{return 0;}
-	if (RPT > -4.48  && RPT <= -3.86 && phi <= 0)	{return 1;}
-	if (RPT > -3.86  && RPT <= -3.24 && phi <= 0)	{return 2;}
-	if (RPT > -3.24  && RPT <= -2.62 && phi <= 0)	{return 3;}
-	if (RPT > -2.62  && RPT <= -2.00 && phi <= 0)	{return 4;}
-	if (RPT >  2.00  && RPT <=  2.62 && phi <= 0)	{return 5;}
-	if (RPT >  2.62  && RPT <=  3.24 && phi <= 0)	{return 6;}
-	if (RPT >  3.24  && RPT <=  3.86 && phi <= 0)	{return 7;}
-	if (RPT >  3.86  && RPT <=  4.48 && phi <= 0)	{return 8;}
-	if (RPT >  4.48 && phi <= 0)					{return 9;}
-	if (RPT <= -4.48 && phi > 0)					{return 10;}
-	if (RPT > -4.48  && RPT <= -3.86 && phi > 0)	{return 11;}
-	if (RPT > -3.86  && RPT <= -3.24 && phi > 0)	{return 12;}
-	if (RPT > -3.24  && RPT <= -2.62 && phi > 0)	{return 13;}
-	if (RPT > -2.62  && RPT <= -2.00 && phi > 0)	{return 14;}
-	if (RPT >  2.00  && RPT <=  2.62 && phi > 0)	{return 15;}
-	if (RPT >  2.62  && RPT <=  3.24 && phi > 0)	{return 16;}
-	if (RPT >  3.24  && RPT <=  3.86 && phi > 0)	{return 17;}
-	if (RPT >  3.86  && RPT <=  4.48 && phi > 0)	{return 18;}
-	if (RPT >  4.48 && phi > 0)						{return 19;}
+	return getBackboneSequenceType(RPT, phi);
+}
+
+UInt chain::getBackboneSequenceType(double RPT, double phi)
+{
+	if (RPT <= -4.83 && phi <= 0)					{return 0;}
+	if (RPT > -4.83  && RPT <= -4.13 && phi <= 0)	{return 1;}
+	if (RPT > -4.13  && RPT <= -3.43 && phi <= 0)	{return 2;}
+	if (RPT > -3.43  && RPT <= -2.73 && phi <= 0)	{return 3;}
+	if (RPT > -2.73  && RPT < -2.00 && phi <= 0)	{return 4;}
+	if (RPT >=  2.00  && RPT <=  2.73 && phi <= 0)	{return 5;}
+	if (RPT >  2.73  && RPT <=  3.43 && phi <= 0)	{return 6;}
+	if (RPT >  3.43  && RPT <=  4.13 && phi <= 0)	{return 7;}
+	if (RPT >  4.13  && RPT <=  4.83 && phi <= 0)	{return 8;}
+	if (RPT >  4.83 && phi <= 0)					{return 9;}
+	if (RPT <= -4.83 && phi > 0)					{return 10;}
+	if (RPT > -4.83  && RPT <= -4.13 && phi > 0)	{return 11;}
+	if (RPT > -4.13  && RPT <= -3.43 && phi > 0)	{return 12;}
+	if (RPT > -3.43  && RPT <= -2.73 && phi > 0)	{return 13;}
+	if (RPT > -2.73  && RPT < -2.00 && phi > 0)		{return 14;}
+	if (RPT >=  2.00  && RPT <=  2.73 && phi > 0)	{return 15;}
+	if (RPT >  2.73  && RPT <=  3.43 && phi > 0)	{return 16;}
+	if (RPT >  3.43  && RPT <=  4.13 && phi > 0)	{return 17;}
+	if (RPT >  4.13  && RPT <=  4.83 && phi > 0)	{return 18;}
+	if (RPT >  4.83 && phi > 0)						{return 19;}
 	return 0;
 }
 

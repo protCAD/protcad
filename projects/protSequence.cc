@@ -30,9 +30,6 @@ int main (int argc, char* argv[])
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* _prot = static_cast<protein*>(pMol);
 	
-	//UInt numChains = _prot->getNumChains();
-	//for (UInt i = 0; i < numChains; i++)
-	//{	
 	fstream aa;
 	aa.open ("aa.faa", fstream::in | fstream::out | fstream::app);
 	aa << endl << ">" << infile << " aaseq:" << endl;
@@ -42,11 +39,10 @@ int main (int argc, char* argv[])
 		UInt restype = _prot->getTypeFromResNum(0,j);
 		aa << aminoAcidString[restype];
 	}
+	aa << endl;
 	aa.close();
-	//}
-	//for (UInt i = 0; i < numChains; i++)
-	//{
-	/*fstream bb;
+
+	fstream bb;
 	bb.open ("bb.faa", fstream::in | fstream::out | fstream::app);
 	bb << endl << ">" << infile << " bbseq:" << endl;
 	numRes = _prot->getNumResidues(0);
@@ -56,13 +52,7 @@ int main (int argc, char* argv[])
 		bb << backboneSeq[backboneType];
 	}
 	bb << endl;
-	/*for (UInt j = 0; j < numRes; j++)
-	{
-		UInt backboneType = _prot->getBackboneSequenceType(0,j);;
-		bb << backboneTypes[backboneType] << " ";
-	}
-	bb.close();*/
-	//}
+	bb.close();
 	return 0;
 }
 
