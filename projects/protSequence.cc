@@ -29,19 +29,24 @@ int main (int argc, char* argv[])
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* _prot = static_cast<protein*>(pMol);
-	
+	string pdb = infile.substr(3,infile.length()-7);
+
 	fstream aa, bb;
 	aa.open ("aa.faa", fstream::in | fstream::out | fstream::app);
 	bb.open ("bb.faa", fstream::in | fstream::out | fstream::app);
 	UInt numChains = _prot->getNumChains();
 	for (UInt i = 0; i < numChains; i++)
 	{
-		aa << ">" << infile << "_" << _prot->getChainID(i) << endl;
-		bb << ">" << infile << "_" << _prot->getChainID(i) << endl;
+		bool write = true;
 		UInt numRes = _prot->getNumResidues(i);
 		for (UInt j = 0; j < numRes; j++)
 		{
 			if (!_prot->isCofactor(i,j)){
+				if (write){
+					aa << ">" << pdb << _prot->getChainID(i) << " " << _prot->getResNum(i,0) << endl;
+					bb << ">" << pdb << _prot->getChainID(i) << " " << _prot->getResNum(i,0) << endl;
+					write = false;
+				}
 				UInt restype = _prot->getTypeFromResNum(i,j);
 				aa << aminoAcidString[restype];
 				UInt backboneType = _prot->getBackboneSequenceType(i,j);
