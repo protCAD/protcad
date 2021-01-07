@@ -31,17 +31,17 @@ dblVec CMath::dotProduct(const dblMat& _mat1, const dblVec& _vec1)
 	return result;
 }
 
-dblVec CMath::translate(const dblVec* _pdv1,const dblVec* _pdv2) 
+dblVec CMath::translate(const dblVec* _pdv1,const dblVec* _pdv2)
 {	dblVec dv3 = *(_pdv1) + *(_pdv2);
 	return dv3;
 }
 
-dblVec CMath::translate(const dblVec* _pdv1,const dblVec& _dv2) 
+dblVec CMath::translate(const dblVec* _pdv1,const dblVec& _dv2)
 {	dblVec dv3 = *(_pdv1) + _dv2;
 	return dv3;
 }
 
-dblVec CMath::translate(const dblVec& _dv1, const dblVec* _pdv2) 
+dblVec CMath::translate(const dblVec& _dv1, const dblVec* _pdv2)
 {	dblVec dv3 = _dv1 + *(_pdv2);
 	return dv3;
 }
@@ -52,31 +52,31 @@ dblVec CMath::translate(const dblVec& _dv1,const dblVec& _dv2)
 }
 
 dblVec CMath::transform(const dblVec* _pdv,const dblMat* _pdm)
-{	
+{
 	dblVec dv2 = dotProduct( (*_pdm) , (*_pdv) );
 	return dv2;
 }
 
 dblVec CMath::transform(const dblVec* _pdv,const dblMat& _dm)
-{	
+{
 	dblVec dv2 = dotProduct( _dm, (*_pdv) );
 	return dv2;
 }
 
 dblVec CMath::transform(const dblVec& _dv,const dblMat* _pdm)
-{	
+{
 	dblVec dv2 = dotProduct( (*_pdm) , _dv );
 	return dv2;
 }
 
 dblVec CMath::transform(const dblVec& _dv,const dblMat& _dm)
-{	
+{
 	dblVec dv2 = dotProduct(_dm, _dv);
 	return dv2;
 }
 
 double CMath::distance( const dblVec* _pdv1, const dblVec* _pdv2)
-{	
+{
 /*
 	return	sqrt(   pow( (*_pdv1)[0] - (*_pdv2)[0], 2) +
 			pow( (*_pdv1)[1] - (*_pdv2)[1], 2) +
@@ -88,7 +88,7 @@ double CMath::distance( const dblVec* _pdv1, const dblVec* _pdv2)
 }
 
 double CMath::distance(const dblVec& _dv1,const dblVec* _pdv2)
-{	
+{
 /*
 	return	sqrt(   pow( _dv1[0] - (*_pdv2)[0], 2) +
 			pow( _dv1[1] - (*_pdv2)[1], 2) +
@@ -100,7 +100,7 @@ double CMath::distance(const dblVec& _dv1,const dblVec* _pdv2)
 }
 
 double CMath::distance(const dblVec* _pdv1, const dblVec& _dv2)
-{	
+{
 /*
 	return	sqrt(   pow( (*_pdv1)[0] - _dv2[0], 2) +
 			pow( (*_pdv1)[1] - _dv2[1], 2) +
@@ -113,7 +113,7 @@ double CMath::distance(const dblVec* _pdv1, const dblVec& _dv2)
 
 
 double CMath::distance(const dblVec& _dv1, const dblVec& _dv2)
-{	
+{
 /*
 	return	sqrt(   pow( _dv1[0] - _dv2[0], 2) +
 			pow( _dv1[1] - _dv2[1], 2) +
@@ -125,7 +125,7 @@ double CMath::distance(const dblVec& _dv1, const dblVec& _dv2)
 }
 
 double CMath::distanceSquared(const dblVec& _dv1, const dblVec& _dv2)
-{	
+{
 /*
 	return	pow( _dv1[0] - _dv2[0], 2) +
 		pow( _dv1[1] - _dv2[1], 2) +
@@ -143,7 +143,7 @@ double CMath::dihedral(const dblVec& _V_a, const dblVec& _V_b,
 {	dblVec V_ab(3);
 	dblVec V_bc(3);
 	dblVec V_cd(3);
- 
+
 	V_ab = _V_b - _V_a;
 	V_bc = _V_c - _V_b;
 	V_cd = _V_d - _V_c;
@@ -152,13 +152,13 @@ double CMath::dihedral(const dblVec& _V_a, const dblVec& _V_b,
 
 	dblVec V_abXbc(3);
 	dblVec V_bcXcd(3);
-	
+
 	V_abXbc = CMath::cross( V_ab, V_bc );
 	V_bcXcd = CMath::cross( V_bc, V_cd );
 
 	double normV_abXbc = dotProduct( V_abXbc, V_abXbc );
 	double normV_bcXcd = dotProduct( V_bcXcd, V_bcXcd );
-	
+
 	double angle;
 	double radToDeg = 57.29577951308;
 	double angleCos;
@@ -169,15 +169,7 @@ double CMath::dihedral(const dblVec& _V_a, const dblVec& _V_b,
 	else
 	{
 		angle = 1000.00;
-		cout << "Error reported from CartesianMath::dihedral" << endl;
-		cout << "normV_avXbc = " << normV_abXbc << endl;
-		cout << "normV_bcXcd = " << normV_bcXcd << endl;
-		cout << "_V_a " << _V_a << endl;
-		cout << "_V_b " << _V_b << endl;
-		cout << "_V_c " << _V_c << endl;
-		cout << "_V_d " << _V_d << endl;
-		cout << "Dihedral angle undefined" << endl;
-		cout << "Problem likely elsewhere !!!" << endl;
+		cout << "no dihedral" << endl;
 		return angle;
 	}
 
@@ -355,7 +347,7 @@ double CMath::determinant(const dblMat* _pMat)
 double CMath::linearInterpolate(const double _m, const double _b, const
 			double _x)
 {
-	
+
 	return _m*_x + _b;
 }
 
