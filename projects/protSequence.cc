@@ -22,8 +22,8 @@ int main (int argc, char* argv[])
 	}
 	enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,Sf4,Saf,Hem};
 	string aminoAcidString[] = {"A","R","N","D","D","C","C","C","Q","E","E","H","H","H","I","L","K","M","F","P","O","S","T","W","Y","V","G","A","R","N","D","D","C","C","C","Q","E","E","H","H","H","I","L","K","M","F","P","O","S","T","W","Y","V","A","R","N","D","D","C","C","C","Q","E","E","H","H","H","I","L","K","M","F","P","O","S","T","W","Y","V","G","A","R","N","D","D","C","C","C","Q","E","E","H","H","H","I","L","K","M","F","P","O","S","T","W","Y","V","A","R","N","D","D","C","C","C","Q","E","E","H","H","H","I","L","K","M","F","P","O","S","T","W","Y","V","G","A","R","N","D","D","C","C","C","Q","E","E","H","H","H","I","L","K","M","F","P","O","S","T","W","Y","V"};
-	string backboneSeq[] =   { "m", "c", "l", "p", "b","t","y","a","i","g",  "n",  "d",  "q",  "r",  "f", "h", "w", "k", "s", "v"};
-	string backboneTypes[] = {"-γ","-π","-α","-ρ","-β","β","ρ","α","π","γ","-γi","-πi","-αi","-ρi","-βi","βi","ρi","αi","πi","γi"};
+	string backboneSeq[] =   { "m", "c", "l", "p", "b","t","y","a","i","g",  "n",  "d",  "q",  "r",  "f", "h", "w", "k", "s", "v","-"};
+	string backboneTypes[] = {"-γ","-π","-α","-ρ","-β","β","ρ","α","π","γ","-γi","-πi","-αi","-ρi","-βi","βi","ρi","αi","πi","γi","-"};
 	string infile = argv[1];
 	PDBInterface* thePDB = new PDBInterface(infile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
@@ -38,6 +38,7 @@ int main (int argc, char* argv[])
 	for (UInt i = 0; i < numChains; i++)
 	{
 		bool write = true;
+		bool firstbreak = true;
 		UInt numRes = _prot->getNumResidues(i);
 		for (UInt j = 0; j < numRes; j++)
 		{
@@ -51,6 +52,13 @@ int main (int argc, char* argv[])
 				aa << aminoAcidString[restype];
 				UInt backboneType = _prot->getBackboneSequenceType(i,j);
 				bb << backboneSeq[backboneType];
+				if (backboneType == 20 && j < numRes-1){
+					if (firstbreak){
+						bb << backboneSeq[backboneType];
+						firstbreak = false;
+					}
+					else{firstbreak = true;}
+				}
 			}
 		}
 		aa << endl;
