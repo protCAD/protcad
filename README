@@ -54,14 +54,11 @@ sudo apt-get install g++ gfortran git pymol qt5-default;
 
 --Mac:
 
-In terminal:
+In terminal install dev tools, homebrew and then dependencies:
 xcode-select --install
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+brew install g++ gfortran git qt5-default
 
-If you are running Mac OS X 10.14 or higher you will need to run this command as well specifying your version:
-sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /
-
-Next you will need to install gfortran for your version of Mac found here: 
-https://github.com/fxcoudert/gfortran-for-macOS/releases
 
 === Install
 
@@ -107,8 +104,8 @@ Output result: List of local dielectrics and solvation energy for each residue
 --protDihedrals
 
 Description: Calculates backbone phi psi and backbone classification type for each residue.
-Backbone Classification Type: -π -α -ρ -β β ρ α π -πi -αi -ρi -βi βi ρi αi πi
-Backbone Classification Index: 0  1  2  3 4 5 6 7  8   9   10  11 12 13 14 15
+Backbone Classification Type: -γ -π -α -ρ -β β ρ α π γ -γi -πi -αi -ρi -βi βi ρi αi πi γi
+
 
 Input command: protDihedrals <inFile.pdb>
 Output result: List of phi psi and classification type for each residue
@@ -140,7 +137,7 @@ Backbone Relaxation,false,
 Output result: Evolved model pdbs, sequences and energies written to results.out file
 
 
---protFolder
+--protFolder (in development, nearly complete)
 
 Description: Fold Selective Machine Learning Evolution Based Algorithm in Implicit Solvent
 
@@ -151,10 +148,10 @@ Input PDB File,xyz.pdb,
 Active Chains,0,1,2,
 Active Positions,0,1,2,3,5,6,7,9,10,
 Random Positions,0,2,5,6,10,
-Backbone Types,C,L,P,T,E,Y,A,I,D,Q,R,F,H,W,K,S,
+Backbone Types,m,c,l, p, b,t,y,a,i,g,n,d,q,r,f,h,w,k,s,v,
 
-Backbone Classification Type: -π -α -ρ -β β ρ α π -πi -αi -ρi -βi βi ρi αi πi
-Backbone Classification Key:   C  L  P  T E Y A I  D   Q   R   F  H  W  K  S
+Backbone Classification Type: -γ -π -α -ρ -β β ρ α π γ -γi -πi -αi -ρi -βi βi ρi αi πi γi
+Backbone Classification Key:   m  c  l  p  b t y a i g  n   d   q   r   f  h  w  k  s  v
 
 Output result: Folded model pdbs, backbone type sequences and energies written to results.out file
 
@@ -214,8 +211,8 @@ Description: Reports amino acid sequence and backbone type sequence for a protei
 Input command: protSequence <inFile.pdb>
 Output result: Returns amino acid sequence and backbone type sequence in fasta format
 
-Backbone Classification Type: -π -α -ρ -β β ρ α π -πi -αi -ρi -βi βi ρi αi πi
-Backbone Classification Key:   C  L  P  T E Y A I  D   Q   R   F  H  W  K  S
+Backbone Classification Type: -γ -π -α -ρ -β β ρ α π γ -γi -πi -αi -ρi -βi βi ρi αi πi γi
+Backbone Classification Key:   m  c  l  p  b t y a i g  n   d   q   r   f  h  w  k  s  v
 
 
  Development process
