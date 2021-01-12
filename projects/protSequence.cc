@@ -52,12 +52,12 @@ int main (int argc, char* argv[])
 				aa << aminoAcidString[restype];
 				UInt backboneType = _prot->getBackboneSequenceType(i,j);
 				bb << backboneSeq[backboneType];
-				if (backboneType == 20 && j < numRes-1){
+				if (backboneType == 20 && j > 0 && j < numRes-1 && !_prot->isCofactor(i,j+1)){
 					if (firstbreak){
 						bb << backboneSeq[backboneType];
+						aa << backboneSeq[backboneType];
 						firstbreak = false;
-					}
-					else{firstbreak = true;}
+					} else {firstbreak = true;}
 				}
 			}
 		}
