@@ -17,6 +17,9 @@
 #include "ensemble.h"
 #include "PDBInterface.h"
 
+enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,SF4,HEM,NI2,CLN,CO2,MG2,OH,OXY,CLD,HIS};
+string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dCf","dQ","dE","dEh","dHd","dHe","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV","SF4","HEM","NI2","CLN","CO2","MG2","OH-","OXY","CLD","HIS"};
+
 int main (int argc, char* argv[])
 {
 	//--Running parameters
@@ -25,8 +28,6 @@ int main (int argc, char* argv[])
         cout << "protDielectric <inFile.pdb>" << endl;
 		exit(1);
 	}
-	enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,Csf,Sf4,Hca,Eoc,Oec,Saf,Hem,Cyn,Tp};
-	string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dCf","dQ","dE","dEh","dHd","dHe","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV","Csf","Sf4","Hca","Eoc","Oec","Saf","Hem","Cyn","Tp"};
 	string infile = argv[1];
 	PDBInterface* thePDB = new PDBInterface(infile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
@@ -34,14 +35,14 @@ int main (int argc, char* argv[])
 	protein* _prot = static_cast<protein*>(pMol);
 	string outFile;
 
-    _prot->protEnergy();
+   // _prot->protEnergy();
     cout << "chain" << " position" << " residue" << " dielectric" << " solvationEnergy" << endl;
     for (UInt i = 0; i < _prot->getNumChains(); i++)
     {
         for (UInt j = 0; j < _prot->getNumResidues(i); j++)
         {
             UInt restype = _prot->getTypeFromResNum(i,j);
-            cout << i << " " << j+1 << " " << aminoAcidString[restype] << " " << _prot->getDielectric(i, j) << " " << _prot->getSolvationEnergy(i, j) << endl;
+            cout << _prot->getResNum(i,j) << " " << aminoAcidString[restype] << " " << _prot->getResiduesPerTurn(i,j) << endl;
         }
     }
 

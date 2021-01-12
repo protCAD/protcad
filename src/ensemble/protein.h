@@ -56,11 +56,13 @@ public:
 		{ return itsChains[_chainIndex]->getNumAtoms(_resIndex); }
 	void setCoords(UInt _chainIndex, UInt _resIndex, UInt _atomIndex, dblVec _coords)
 		{ return itsChains[_chainIndex]->setCoords(_resIndex, _atomIndex, _coords);}
+	void setAllCoords( UInt chainIndex, UInt resIndex, vector<dblVec> allCoords);
 	void makeAtomSilent(const UInt _chainIndex, const UInt _residueIndex, const UInt _atomIndex);
 	void makeResidueSilent(const UInt _chainIndex, const UInt _residueIndex);
 	vector <chainPosition*> getChainPositionVector(const UInt _chain);
 	UIntVec getItsIndependentChainsMap() { return itsIndependentChainsMap; }
 	vector <vector <int> > getItsChainLinkageMap() { return itsChainLinkageMap; }
+	vector <dblVec> saveCoords( UInt chainIndex, UInt resIndex);
 	void finishProteinBuild();
 	void listSecondaryStructure();
 	void listDihedrals();
@@ -87,6 +89,8 @@ public:
 	string getTypeStringFromAtomNum(UInt _chainIndex, UInt _resNum, UInt _atomNum) { return itsChains[_chainIndex]->getTypeStringFromAtomNum(_resNum, _atomNum);}
 	string getTypeStringFromResNum(UInt _chainIndex, UInt _resNum) {return itsChains[_chainIndex]->getTypeStringFromResNum(_resNum);}
 	void removeResidue(UInt _chainIndex, UInt _resNum) {return itsChains[_chainIndex]->removeResidue(_resNum);}
+	void removeChain(UInt _chainIndex);
+
 
 	//--Mutations functions
 	void stripToGlycine();
@@ -131,11 +135,12 @@ public:
 	 // --Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics-- dpike
 	void protRelax(UInt _plateau);
 	void protRelax(UIntVec _frozenResidues, UIntVec _activeChains);
-	void protMin(bool _backboneRelaxation);
-	void protMin(bool _backboneRelaxation, UIntVec _frozenResidues, UIntVec _activeChains);
-	void protOpt(bool _backbone);
-	void protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeChains);
-	void protOpt(bool _backbone, UInt chainIndex, UInt resIndex);
+	void cofactorRelax(UInt _plateau);
+	void protOpt(bool _backboneRelaxation);
+	void protOpt(bool _backboneRelaxation, UIntVec _frozenResidues, UIntVec _activeChains);
+	void protMin(bool _backbone);
+	void protMin(bool _backbone, UIntVec _frozenResidues, UIntVec _activeChains);
+	void protMin(bool _backbone, UInt chainIndex, UInt resIndex);
 	void optimizeSmallRotations(UInt _steps, double _stepSize);
 	void optimizeSmallRotations(vector <UIntVec> _positions, UInt _steps, double _stepSize);
 	void optimizeSmallRotations(UIntVec _position, UInt _steps, double _stepSize);
@@ -146,13 +151,16 @@ public:
 	void optimizeRotamers();
 	void optimizeRotamers(vector <UIntVec> _positions);
 	void optimizeRotamers(vector <UIntVec> _positions, vector <UIntVec> _rotamerArray);
-	
+	bool isCofactor(UInt chainIndex, UInt resIndex){return itsChains[chainIndex]->isCofactor(resIndex);}   
+
 	//--Energy functions
 	void setMoved (UInt chainIndex, UInt resIndex, bool _moved, UInt _EorC) {itsChains[chainIndex]->setMoved(resIndex, _moved, _EorC);}
 	void setMoved(bool _moved, UInt EorC);
 	bool getMoved(UInt chainIndex, UInt resIndex, UInt EorC) {return itsChains[chainIndex]->getMoved(resIndex, EorC);}
 	double protEnergy();
+	double protEnergy(UInt chainIndex);
 	void updateEnergy();
+	void updateEnergy(UInt chainIndex);
 	double protEnergy(UInt chainIndex, UInt resIndex);
 	double getMedianResidueEnergy();
 	double getMedianResidueEnergy(UIntVec _activeChains);
@@ -182,10 +190,12 @@ public:
 	vector <double> chainBindingEnergy();
 	void polarizability();
 	void calculateDielectrics();
+	void calculateDielectrics(UInt chainIndex);
 	double calculateSolvationEnergy(UInt _chainIndex, UInt _residueIndex, UInt _atomIndex) {return itsChains[_chainIndex]->itsResidues[_residueIndex]->calculateSolvationEnergy( _atomIndex);}
 	//vector <double> calculateChainIndependentDielectric(chain* _chain, residue* _residue, atom* _atom);
 	//vector <double> calculateResidueIndependentDielectric(residue* _residue, atom* _atom);
 	void updateDielectrics();
+	void updateDielectrics(UInt chainIndex);
 	void updateMovedDependence(UInt _EorC);
 	//void updatePositionDielectrics(UInt _chainIndex, UInt _residueIndex);
 	//void updateChainIndependentDielectrics(UInt _chainIndex);
@@ -208,11 +218,11 @@ public:
 	int setPsi(const UInt _chain, const UInt _res, double _angle);
 	int setDihedral(const UInt _chainIndex, const UInt _resIndex, double _dihedral, UInt _angleType, UInt _direction);
 	void updateResiduesPerTurnType();
-	UInt getBackboneSequenceType(double RPT, double phi);
+	UInt getBackboneSequenceType(double RPT, double phi){return itsChains[0]->getBackboneSequenceType(RPT,phi);}
 	UInt getBackboneSequenceType(UInt _chainIndex, UInt _resIndex) {return itsChains[_chainIndex]->getBackboneSequenceType(_resIndex);}
 	vector <double> getRandPhiPsifromBackboneSequenceType(UInt _RPTType);
 	vector <double> getRandConformationFromBackboneType(double _phi, double _psi);
-	double getResiduesPerTurn(double phi, double psi);
+	double getResiduesPerTurn(double phi, double psi) {return itsChains[0]->getResiduesPerTurn(phi,psi);}
 	double getResiduesPerTurn(UInt _chainIndex, UInt _resIndex) {return itsChains[_chainIndex]->getResiduesPerTurn(_resIndex);}
 	double getPhi(UInt _chain, UInt _res) {return itsChains[_chain]->getPhi(_res);}
 	double getPsi(UInt _chain, UInt _res) {return itsChains[_chain]->getPsi(_res);}
@@ -237,6 +247,7 @@ public:
 	void eulerRotate(UInt _chain, const double _phi, const double _theta, const double _psi);
 	void undoEulerRotate(UInt _chain, const double _phi, const double _theta, const double _psi);
 	void rotateChain(UInt _chain, const axis _axis, const double _theta);
+	void rotateChainRelative(UInt _chain, const axis _axis, const double _theta);
 	void alignToAxis(const axis _axis);
 
 	//--Rotamer functions
@@ -285,6 +296,8 @@ public:
 	double getItsSolvationParam();
 	void setItsSolvationParam(UInt _param);
 
+	//Sequence analysis
+	double getHammingDistance(vector<string>seq1,vector<string>seq2);
 //--Defined functions------------------------------------------------------------------------------------
 private:
 	bool isValidHelixRotamer ( UInt _resType, UInt _bpt, UInt _allowedRotamer ); // contains our definitions for canonical helix rotamers
@@ -296,7 +309,6 @@ private:
 	static bool calcSelfEnergy;
 	static UInt howMany;
 	UInt itsNumResidues;
-	vector < vector < vector  <double> > > energies;
 	static UInt itsSolvationParam;
 	vector <chain*> itsChains;
 	vector <UInt> itsIndependentChainsMap;
@@ -307,5 +319,6 @@ private:
 	int itsLastModifiedChain;
 	int itsLastModificationMethod;
 	ran itsRan;
+
 };
 #endif

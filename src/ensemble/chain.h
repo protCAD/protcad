@@ -36,12 +36,8 @@ private:
 
 public:
 	void add(residue* _pResidue);
-	
-	//*************testing junk**************
-	void accessResZero();
 
 	// Accessors
-
 	bool isArtificiallyBuilt(UInt j) { return itsResidues[j]->isArtificiallyBuilt; }
     dblVec getCoords(const UInt _resIndex, const string _atomName)
         {return itsResidues[_resIndex]->getCoords(_atomName);}
@@ -73,7 +69,9 @@ public:
 	void mutate(const UInt _indexInChain, const UInt _aaType);
 	void mutateWithoutBuffering(const UInt _indexInChain, const UInt _aaType);
     void fixBrokenResidue(const UInt _indexInChain);
-    void fixBrokenResidue(const UInt _indexInChain, bool withRotamer);
+    void rebuildResidue(const UInt _indexInChain);
+	void rebuildResiduesInChain();
+	bool isDAminoAcid(residue* currentRes);
 	void redoModification(chainModBuffer _redoBuffer);
 	void makeAtomSilent(const UInt _resIndex, const UInt _atomIndex);
 	void makeResidueSilent(const UInt _resIndex);
@@ -81,6 +79,8 @@ public:
 	void randomizeSystem(ran& _ran);
 	void makeAllAlanine();
     void removeResidue(UInt _resNum);
+	bool isCofactor(UInt resIndex){return itsResidues[resIndex]->isCofactor();}   
+
 
 	// single modification buffers
 	vector<chainModBuffer> performRandomMutation(ran& _ran);
@@ -114,6 +114,8 @@ public:
 	void listChiDefinitions() const;
 	UInt getNumChis(const UInt _resIndex, const UInt _bpt);
 	double netCharge();
+	vector <dblVec> saveCoords(UInt resIndex);
+	void setAllCoords(UInt resIndex, vector<dblVec> allCoords);
 	
 	void setMoved (UInt resIndex, bool _moved, UInt _EorC) {itsResidues[resIndex]->setMoved(_moved, _EorC);}
 	void setMoved (bool _moved, UInt _EorC);
@@ -191,9 +193,12 @@ public:
 	dblVec getBackBoneCentroid();
 
 	void rotate(const axis _axis,const double _theta);
+	void rotateRelative(const axis _axis,const double _theta);
 	void rotate(const point& _point, const dblVec& _R_axis, const double _theta);
 	double getResiduesPerTurn(const UInt _resIndex);
+	double getResiduesPerTurn(double phi, double psi);
 	UInt getBackboneSequenceType(const UInt _resIndex);
+	UInt getBackboneSequenceType(double RPT, double phi);
 	void updateResiduesPerTurnType();
 	double getPhi(const UInt _indexInChain);
 	double getPsi(const UInt _indexInChain);

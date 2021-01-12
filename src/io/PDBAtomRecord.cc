@@ -95,7 +95,7 @@ void PDBAtomRecord::convert(string& _pdbAtomLine)
 
 	ASSERT(firstAlpha+((lastAlpha - firstAlpha) + 1) <=4);
 	atomName = atomNameString.substr(firstAlpha,(lastAlpha-firstAlpha)+1);
-    if (atomName == "FE1")
+    /*if (atomName == "FE1")
     {
         atomName = "F1";
     }
@@ -110,7 +110,7 @@ void PDBAtomRecord::convert(string& _pdbAtomLine)
     if (atomName == "FE4")
     {
         atomName = "F4";
-    }
+    }*/
 
 	//cout << "atomName= " <<atomName << endl;
 
@@ -123,14 +123,12 @@ void PDBAtomRecord::convert(string& _pdbAtomLine)
     {
         resName = "HIE";
     }
-	
-        //cout << "resName= " <<resName << endl;
+	if (resName == "WAT")  // default to pdb water nomenclature
+    {
+        resName = "HOH";
+    }
 
-	if(hetflag)
-	{
-		chainID = "X";
-	}
-	else{chainID = _pdbAtomLine.substr(21,1);}
+	chainID = _pdbAtomLine.substr(21,1);
 
 	string sResSeq = _pdbAtomLine.substr(22,4);
 	sscanf(sResSeq.c_str(), "%d", &tempint);

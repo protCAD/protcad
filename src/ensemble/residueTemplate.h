@@ -26,6 +26,7 @@ public:
 	void initialize();
 	void reset();
 	int getAtomIndexOf(const string& _name) const;
+	string getAtomNameOf(UInt index) const;
 
 private:
 	void initializeChiDefinitions();

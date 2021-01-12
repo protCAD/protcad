@@ -1,8 +1,4 @@
 *~
-protcad.files
-protcad.creator*
-protcad.config
-protcad.includes
 .*.swp
-.qmake.stash
 .DS_Store
+.vscode

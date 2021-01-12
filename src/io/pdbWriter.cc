@@ -22,11 +22,12 @@ unsigned int pdbWriter(protein* _pProtein, const string& _pdbFile)
 		chain* pCurrentChain = theIterator.getChainPointer();
 		outFile << "ATOM";
 		outFile << " ";
+
 	// output the serial number
 		outFile.width(6);
 		outFile << pCurrentAtom->getSerialNumber();
-	//	outFile << pCurrentResidue->getResNum();
 		outFile << " ";
+
 	// output the atom name
 		int len = pCurrentAtom->getName().size();
 		if (len == 1)
@@ -51,20 +52,26 @@ unsigned int pdbWriter(protein* _pProtein, const string& _pdbFile)
 //			outFile.width(4);
 			outFile << pCurrentAtom->getName();
 		}
+		outFile << " ";
 
+	// output the residue name converting terminal and d-amino acid types to standard amino acid nomenclature
+		UInt resTypeIndex = pCurrentResidue->getTypeIndex();
+		if (pCurrentResidue->isDNterm(resTypeIndex) || pCurrentResidue->isLNterm(resTypeIndex) || pCurrentResidue->isGNterm(resTypeIndex)){resTypeIndex = resTypeIndex-Nterm;}
+		if (pCurrentResidue->isDCterm(resTypeIndex) || pCurrentResidue->isLCterm(resTypeIndex) || pCurrentResidue->isGCterm(resTypeIndex)){resTypeIndex = resTypeIndex-Cterm;}
+		if (pCurrentResidue->isD(resTypeIndex)){resTypeIndex = resTypeIndex-Daa;}
+		outFile << pCurrentResidue->getType(resTypeIndex);
 		outFile << " ";
-	// output the residue name
-		outFile << pCurrentAtom->getResType();
-		outFile << " ";
+
 	// output the chain ID
 		outFile << pCurrentChain->getChainID();
 		outFile << " ";
+
 	// output the residue number
 		outFile.width(3);
 		outFile << pCurrentResidue->getResNum();
 		outFile << "    ";
-	// output the coordinates
 
+	// output the coordinates
 		dblVec coords = pCurrentAtom->getCoords();
 		for (unsigned int i=0; i<3; i++)
 		{

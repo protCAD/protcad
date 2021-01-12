@@ -140,16 +140,16 @@ residue::residue(const UInt _itsType, const bool _hFlag, const bool _hPFlag)
 
 residue::residue(const string& _aaType)
 {
-	hydrogensOn = false;
+	hydrogensOn = true;
 	polarHydrogensOn = false;
 	if(!dataBaseBuilt)
 	{
 		cout << "string aaType build:  ";
 		buildDataBase();
 	}
-	// hydrogensOn defaults to false if not explicity set
+	// hydrogensOn defaults to true if not explicity set
 	defineType(_aaType);
-	residue(itsType);
+	residue(itsType, hydrogensOn);
 }
 
 residue::residue(const string& _aaType, const bool _hFlag)
@@ -211,48 +211,6 @@ residue::residue(const residue& _rhs)
 	if(hydrogensOn || polarHydrogensOn)
 	{ itsPolarHDihedralAngle = _rhs.itsPolarHDihedralAngle; }
 	howMany++;
-}
-
-//******************testing junk*********************
-void residue::accessMe()
-{
-	cout << "accessMe works.\n";
-/*	for(UInt j=0;j<dataBase.size();j++)
-	{
-	UIntVec foo = dataBase[j].getAtomsOfPolarHChi();
-	cout << "output from getAtomsOfPolarHChi:\n";
-	cout << "for dataBase[" << j << "]\n";
-	for(UInt i=0;i<foo.size();i++)
-		{ cout << i << ":\t" << foo[i] << endl; }
-	bool tmpbl = dataBase[j].getHasPolarHRotamers();
-	cout << "getHasPolarHRotamers = " << tmpbl << endl;
-	} */
-
-/*
-	UIntVec foo = dataBase[itsType].getAtomsOfPolarHChi();
-	UIntVec fooNew;
-	fooNew.push_back(1);
-	fooNew.push_back(4);
-	fooNew.push_back(5);
-	fooNew.push_back(10);
-	double dihResult = calculateDihedral(fooNew);
-	cout << "dihResult = " << dihResult << endl;
-	cout << "atomic coords:" << endl;
-	for(UInt i=0;i<fooNew.size();i++)
-	{
-		cout << fooNew[3] << ": \t";
-		dblVec tmpcoord = itsAtoms[fooNew[i]]->getCoords();
-		for(UInt j=0;j<tmpcoord.size();j++)
-		{ cout << tmpcoord[j] << "\t"; }
-		cout << endl;
-	}
-	double dih2 = calculateDihedral(foo);
-	cout << "dih2 = " << dih2 << endl; */
-	UInt rotSwitch = 3;
-	setPolarHRotamer(rotSwitch);
-
-	cout << "hasPolarHRotamers = " << dataBase[itsType].getHasPolarHRotamers() << endl;
-	cout << "itsPolarHDihedralAngle = " << itsPolarHDihedralAngle << endl;
 }
 
 void residue::initializeAtomsAndConnectivity()
@@ -683,24 +641,12 @@ void residue::setPolarHydrogensOn(const bool _polarHydrogensOn)
 void residue::buildDataBase()
 {
 	dataBase.resize(0);
-//	cout << "building database with ";
-	//if (hydrogensOn) //cout << "hydrogens ON" << endl;
-	//else //cout << "hydrogens OFF" << endl;
 	// first, build the residueTemplates
 	buildResidueDataBaseAminoAcids();
-	//buildDataBaseAA();
-	// second build atom energy type assignment
-	//buildDataBaseAE();
-	//buildDataBaseAE();
-
-	// third build connectivities, chi angles etc
-	buildDataBaseCC();
+	buildDihedralDataBase();
+	buildDataBaseFromPrep();
 	interpretBondingPattern();
-	// fourth build rotamerLib
 	buildRotamerLib();
-	// indicate the type base is built
-	//for(UInt i=0;i<dataBase.size();i++)
-	//{	dataBase[i].initializeHasPolarHRotamers();  }
 	dataBaseBuilt = true;
 
 	// now that database has been constructed, build electrostatics forcefields
@@ -721,8 +667,8 @@ void residue::buildResidueDataBaseAminoAcids()
 
 	string evname = "PROTCADDIR";
 	string path = getEnvironmentVariable(evname);
-	
-	string aaLib = "/data/res.lib";
+
+	string aaLib = "/data/mol.lib";
 	string iFile;
 	ifstream inFile;
 
@@ -735,19 +681,19 @@ void residue::buildResidueDataBaseAminoAcids()
 			 << iFile << endl;
 		exit (1);
 	}
-	
+
 	string linebuffer;
 
 	// Used to assign the type index
 	int resTypeIndex = 0;
 	// used to assign the atom name within each residue
 	int atomNameIndex = 0;
-	
+
 	residueTemplate tempTemplate;
 	// a strange string
 	const string strange = "*^{POLHGYHG><MDEZF!";
 	string currentResName = strange;
-	
+
 	while (getline(inFile,linebuffer,'\n'))
 	{
 		PDBAtomRecord currentRecord(linebuffer);
@@ -775,93 +721,18 @@ void residue::buildResidueDataBaseAminoAcids()
 	}
 }
 
-
-void residue::buildDataBaseAA()
-{	// initialize the dataBase
-	//cout << "Initializing the residue type database...." << endl;
-
-	string evname = "PROTCADDIR";
-	string path = getEnvironmentVariable(evname);
-
-	string aaLib = "/data/res.lib";
-	string iFile;
-	ifstream inFile;
-
-	// first build the amino acids
-	iFile = path + aaLib;
-	inFile.open(iFile.c_str());
-
-	if(!inFile)
-	{	cout << "Error: unable to open input file: "
-			 << iFile << endl;
-		exit (1);
-	}
-
-	pdbAtom tempPdb;
-	// Used to assign the type index
-	int resTypeIndex = 0;
-	// used to assign the atom name within each residue
-	int atomNameIndex = 0;
-	
-	residueTemplate tempTemplate;
-	// a strange string
-	const string strange = "*^{POLHGYHG><MDEZF!";
-	string currentResName = strange;
-	
-	for(;;)
-	{	if(tempPdb.pdbGetLine(inFile))
-		{	if(currentResName != tempPdb.getItem(resName))
-	 		{	if(currentResName != strange)
-				{	dataBase.push_back(tempTemplate);
-					resTypeIndex++;
-					tempTemplate.reset();
-				}
-				currentResName = tempPdb.getItem(resName);
-				tempTemplate.typeIndex = resTypeIndex;
-				tempTemplate.typeString = currentResName;
-				atomNameIndex = 0;
-				//cout << currentResName << " " << resTypeIndex << endl;
-			}
-
-			atom tempAtom(tempPdb);
-			tempAtom.itsResType = resTypeIndex;
-			tempTemplate.atomNameList.push_back(tempPdb.getItem(pdbAtomName));
-			// set the corresponding index atom name
-			tempAtom.itsName = atomNameIndex;
-			atomNameIndex++;
-			tempTemplate.atomList.push_back(tempAtom);
-			// initialize the isMainChain database
-			tempTemplate.isMainChain.push_back(false);
-		}
-		else
-		{	if(currentResName != strange)
-			{	dataBase.push_back(tempTemplate);
-			}
-			break; //get out of the loop at the end of the file
-		}
-	}
-}
-
-/*
-void residue::buildDataBaseAE()
-{	for(UInt i=0; i<dataBase.size(); i++)
-	{	dataBase[i].assignAtomEnergyTypes();
-	}
-}
-*/
-
 // *****************************************************************************
 // *****************************************************************************
 //  buildDataBaseCC is ONLY for buildDataBase
 // *****************************************************************************
 // *****************************************************************************
 
-void residue::buildDataBaseCC()
-{	
+void residue::buildDihedralDataBase()
+{
 	string evname = "PROTCADDIR";
 	string path = getEnvironmentVariable(evname);
-	
-	string aaDat = "/data/res/";
+
+	string aaDat = "/data/mol/";
 
 	path += aaDat;
 	string iFile;
@@ -873,21 +744,20 @@ void residue::buildDataBaseCC()
 
 	for(UInt i=0; i<dataBase.size(); i++)
 	{	pCurrentResTemplate = &dataBase[i];
+		//cout << pCurrentResTemplate->typeString << endl;
 		iFile = path + pCurrentResTemplate->typeString + ".dat";
 		inFile.open(iFile.c_str());
-		if(!inFile)
-		{	cout << "Error: unable to open input file: "
-			     << iFile << endl;
-			exit (1);
-		}
-		
+		//if(!inFile)
+		//{	cout << "Error: unable to open input file: "
+		//	     << iFile << endl;
+		//	exit (1);
+		//}
+
 		// the available headers without spaces in between
 		string mcn = "mainchainatoms";
 		string bpt = "sidechainbranchpoints";
-		string con = "connectivity";
 		string chi = "defineddihedralangles";
-		string aet = "atomtypes";
-		
+
 		char ch;
 		// used to convert a char to a string
 		string strCh;
@@ -957,36 +827,6 @@ void residue::buildDataBaseCC()
 					}
 				}
 			}
-			else if(header == con)
-			{	if(ch !=' ' && ch != '\t' && ch != '\n')
-				{	strCh[0] = ch;
-					strBuf.append(strCh);
-				}
-				else
-				{	if(strBuf.size() != 0)
-					{	tempInt = pCurrentResTemplate->getAtomIndexOf(strBuf);
-						if(tempInt != -1)
-						{	if(pCurrentResTemplate->connectivity.size() == 0)
-							{	// connectivity starts with a 0
-								pCurrentResTemplate->connectivity.push_back(0);
-							}
-							// connectivity used 0 as delimiter
-							// so all the index is shifted up by 1
-							// 0->1 and 1->2 ...
-							pCurrentResTemplate->connectivity.push_back(tempInt+1);
-						}
-						strBuf.resize(0);
-					}
-					if(ch == '\n')
-					{	// new line starts different connectivity sets
-						// ignore blank lines
-					
-						if(pCurrentResTemplate->connectivity[pCurrentResTemplate->connectivity.size()-1] != 0)
-						{	pCurrentResTemplate->connectivity.push_back(0);
-						}
-					}
-				}
-			}
 			else if(header == chi)
 			{	if(ch != ' ' && ch !='\t' && ch !='\n')
 				{	strCh[0] = ch;
@@ -1005,40 +845,242 @@ void residue::buildDataBaseCC()
 					}
 				}
 			}
-			else if (header == aet)
-			{	if(ch != ' ' && ch !='\t' && ch !='\n')
-				{	strCh[0] = ch;
-					strBuf.append(strCh);
-				}
-				else
-				{	if (strBuf.size() !=0)
-					{	strVect.push_back(strBuf);
-						if (ch == '\n')
-						{	
-							// this is the call to set the Atom Types for energycalculations
-							pCurrentResTemplate->addAtomTypeDefinitions(strVect);
-							//reset the strVect after processing
-							strVect.resize(0);
-						}
-						strBuf.resize(0);
-					}
-				}
-			}
 		}
 		inFile.close();
 		inFile.clear();
 	}
 }
 
+void residue::buildDataBaseFromPrep()
+{
+	string itsFileName = "amber.prep";
+	string evname = "PROTCADDIR";
+	string path = getEnvironmentVariable(evname);
+	path += "/data/";
+	string iFile = path + itsFileName;
+	ifstream inFile;
+	string currentLine;
+	StrVec parsedStrings;
+	vector< vector< string > > atomNames;
+	vector< vector< string > > loopedAtoms;
+	vector< vector< int > > bondIndices;
+	vector< vector< int > > bondedIndices;
+	vector< vector< string > > vdwTypes;
+	vector< string > resNames;
+	int bondIndex, bondedIndex;
+	parsedStrings.resize(0);
+
+	inFile.open(iFile.c_str());
+	if (!inFile)
+	{
+		cout << "Error: unable to open input file: " ;
+		cout << iFile << endl;
+		exit (1);
+	}
+	bool loop = false;
+	while (getline (inFile, currentLine))
+	{
+		parsedStrings=Parse::parse(currentLine);
+		if (loop && parsedStrings.size() == 0){loop = false;}
+		if (parsedStrings.size() > 1){
+			if (loop){
+				loopedAtoms[loopedAtoms.size()-1].push_back(parsedStrings[0]);
+				loopedAtoms[loopedAtoms.size()-1].push_back(parsedStrings[1]);
+			}
+			if (parsedStrings[1].size() == 3){
+				if (parsedStrings[1].compare("INT") == 0){
+					string tmpStr;
+					string tmpChar;
+					tmpChar.resize(1);
+					tmpStr.resize(0);
+					for (UInt i = 0; i < parsedStrings[0].size(); i++) // loop starts after the # mark
+					{
+						tmpChar = parsedStrings[0][i];
+						tmpStr.append(tmpChar);
+					}
+					resNames.push_back(tmpStr);
+					StrVec tempVec;
+					loopedAtoms.push_back(tempVec);
+				}
+			}
+		}
+		else if (parsedStrings.size() == 1){
+			if (parsedStrings[0].compare("LOOP") == 0){loop = true;}
+		}
+		if (parsedStrings.size() == 11)
+		{
+			if (parsedStrings[2][0] != 'D'){
+
+				// Get bonding index
+				bondIndex = 0;
+				sscanf(parsedStrings[0].c_str(), "%d", &bondIndex);
+
+				// Get bonded index
+				bondedIndex = 0;
+				sscanf(parsedStrings[4].c_str(), "%d", &bondedIndex);
+
+				if (resNames.size() != atomNames.size()) // if there are fewer atom vectors than their are residues
+				{
+					vector <string> atomList;
+					atomList.push_back(parsedStrings[1]);
+					atomNames.push_back(atomList);
+					vector <string> vdwList;
+					vdwList.push_back(parsedStrings[2]);
+					vdwTypes.push_back(vdwList);
+					vector <int> bondList;
+					bondList.push_back(bondIndex);
+					bondIndices.push_back(bondList);
+					vector <int> bondedList;
+					bondedList.push_back(bondedIndex);
+					bondedIndices.push_back(bondedList);
+				}
+				else
+				{
+					UInt size = atomNames.size();
+					atomNames[size - 1].push_back(parsedStrings[1]);
+					vdwTypes[size - 1].push_back(parsedStrings[2]);
+					bondIndices[size - 1].push_back(bondIndex);
+					bondedIndices[size - 1].push_back(bondedIndex);
+				}
+			}
+		}
+		parsedStrings.resize(0);
+	}
+	inFile.close();
+	inFile.clear();
+
+	// Pointer is used to make the process efficient
+	// But any modification should be conducted very carefully!!!
+	residueTemplate* pCurrentResTemplate = 0;
+
+	for(UInt i=0; i<dataBase.size(); i++)
+	{	pCurrentResTemplate = &dataBase[i];
+		string res = pCurrentResTemplate->typeString;
+		int resIndex;
+		for (UInt j = 0; j < resNames.size(); j++)
+		{
+			if (res.compare(resNames[j]) == 0){resIndex = j; break;}
+		}
+
+		// string buffer
+		string strBuf;
+		strBuf.resize(0);
+		// atom index buffer
+		int tempInt;
+		// strings buffer
+		StrVec typeVect;
+		typeVect.resize(0);
+
+		// build mainchain atoms as backbone atoms or first four atoms in mol.lib
+		if (pCurrentResTemplate->mainChain.size() == 0){
+			tempInt = pCurrentResTemplate->getAtomIndexOf("N");
+			if(tempInt != -1){pCurrentResTemplate->mainChain.push_back(tempInt);}
+			else{pCurrentResTemplate->mainChain.push_back(0);}
+			tempInt = pCurrentResTemplate->getAtomIndexOf("CA");
+			if(tempInt != -1){pCurrentResTemplate->mainChain.push_back(tempInt);}
+			else{pCurrentResTemplate->mainChain.push_back(1);}
+			tempInt = pCurrentResTemplate->getAtomIndexOf("C");
+			if(tempInt != -1){pCurrentResTemplate->mainChain.push_back(tempInt);}
+			else{pCurrentResTemplate->mainChain.push_back(2);}
+			tempInt = pCurrentResTemplate->getAtomIndexOf("O");
+			if(tempInt != -1){pCurrentResTemplate->mainChain.push_back(tempInt);}
+			else{pCurrentResTemplate->mainChain.push_back(3);}
+		}
+
+		// build branchpoint atom as alpha carbon or second atom in mol.lib
+		if (pCurrentResTemplate->branchPoints.size() == 0){
+			tempInt = pCurrentResTemplate->getAtomIndexOf("CA");
+			if(tempInt != -1){pCurrentResTemplate->branchPoints.push_back(tempInt);}
+			else{pCurrentResTemplate->branchPoints.push_back(1);}
+		}
+
+		// build vdw type, connectivity from amber prep file
+		for (UInt j = 0; j < atomNames[resIndex].size(); j++)
+		{
+			int atomIndex;
+			string atomName = pCurrentResTemplate->getAtomNameOf(j);
+			for (UInt k = 0; k < atomNames[resIndex].size(); k++)
+			{
+				if (atomName.compare(atomNames[resIndex][k]) == 0){atomIndex = k; break;}
+			}
+
+			// Load vdw type into atom
+			typeVect.push_back(atomName);
+			typeVect.push_back(vdwTypes[resIndex][atomIndex]);
+			typeVect.push_back(vdwTypes[resIndex][atomIndex]);
+			pCurrentResTemplate->addAtomTypeDefinitions(typeVect);
+			typeVect.resize(0);
+
+			// add to connectivity vector for each atom
+			pCurrentResTemplate->connectivity.push_back(0);
+			tempInt = pCurrentResTemplate->getAtomIndexOf(atomName);
+			if(tempInt != -1){
+				pCurrentResTemplate->connectivity.push_back(tempInt+1);
+			}
+			for (UInt k = 0; k < bondedIndices[resIndex].size(); k++)
+			{
+				int otherAtomIndex;
+				string otherAtomName = pCurrentResTemplate->getAtomNameOf(k);
+				for (UInt l = 0; l < atomNames[resIndex].size(); l++)
+				{
+					if (otherAtomName.compare(atomNames[resIndex][l]) == 0){otherAtomIndex = l; break;}
+				}
+				if (bondIndices[resIndex][atomIndex] == bondedIndices[resIndex][otherAtomIndex])
+				{
+					tempInt = pCurrentResTemplate->getAtomIndexOf(atomNames[resIndex][otherAtomIndex]);
+					if(tempInt != -1){
+						pCurrentResTemplate->connectivity.push_back(tempInt+1);
+					}
+				}
+			}
+			if (loopedAtoms[resIndex].size() > 1){
+				for (UInt k = 1; k < loopedAtoms[resIndex].size(); k++)
+				{
+					if (atomName.compare(loopedAtoms[resIndex][k]) == 0)
+					{
+						tempInt = pCurrentResTemplate->getAtomIndexOf(loopedAtoms[resIndex][k-1]);
+						if(tempInt != -1){
+							pCurrentResTemplate->connectivity.push_back(tempInt+1);
+						}
+					}
+					k++;
+				}
+			}
+		}
+	}
+}
+
+/*void residue::buildAutoRotamerLib()
+{
+
+	rotamerLib* temp;
+	UIntVec angles;
+	for(UInt i=0; i<dataBase.size(); i++)
+	{	// if chis are defined
+		if( dataBase[i].chiDefinitionsNonempty() )
+		{
+			temp = new rotamerLib(dataBase[i].branchPoints.size());
+			// since it is a pointer, the changes below done to
+			// temp is the same as the ones done to rotamerlib
+			ASSERT(temp != 0);
+			dataBase[i].itsRotamerLibs.push_back(temp);
+			for (UInt j = 0; j < dataBase[i].branchPoints.size(); j++)
+			{
+				for ()
+						temp->addRotamer(j, angles);
+						angles.resize(0);
+		}
+	}
+}*/
+
 void residue::buildRotamerLib()
 {
 	string evname = "PROTCADDIR";
 	string path = getEnvironmentVariable(evname);
-	
-	string aaLib = "/data/rotamerLib";
 
-	path += "/data/rotamerLib/";
-	// cout << " right handed alpha helix minimum rotamer library used \n";
+	string aaLib = "/data/rotamerLib/";
+
+	path += aaLib;
 	rotamerLib* temp;
 	string filename;
 	string iFile;
@@ -1065,7 +1107,7 @@ void residue::buildRotamerLib()
 				// then skip
 				continue;
 			}
-		
+
 			while(inFile.get(ch))
 			{
 				if(ch == '!')
@@ -1091,7 +1133,7 @@ void residue::buildRotamerLib()
 				}
 				else
 				{
-/*	
+/*
 					cout << "Im in the else phrase" << endl;
 					cout << "strBuf.size() = " << strBuf.size() << endl;
 					cout << "strVec.size() = " << strVec.size() << endl;
@@ -1101,7 +1143,7 @@ void residue::buildRotamerLib()
 						strBuf.resize(0);
 					}
 					if(strVec.size() != 0)
-					{	
+					{
 				//		cout << strVec.size() << "  ";
 				//		cout << temp << endl;
 						temp->addRotamer(jason);
@@ -1115,7 +1157,7 @@ void residue::buildRotamerLib()
 	}
 }
 
-		
+
 // *****************************************************************************
 // *****************************************************************************
 //	dataBase information accessors
@@ -1209,6 +1251,19 @@ string residue::getType() const
 	return "UNK";
 }
 
+string residue::getType(UInt resType)
+{	if(resType < dataBase.size())
+	{	return dataBase[resType].typeString;
+	}
+	else
+	{	cout << "Error: itsType incompatible with dataBase " << endl;
+		cout << "Error reported by residue::getType() " << endl;
+		return "UNK";
+	}
+	// dummy return to keep compiler shut-up
+	return "UNK";
+}
+
 void residue::interpretBondingPattern()
 {	residueTemplate* pCurrentResTemplate;
 	vector <UInt> theConnectivityVector;
@@ -1233,16 +1288,16 @@ void residue::interpretBondingPattern()
 		vector<UInt> tempVec;
 		UInt counter = 0;
 		for (UInt j=0; j<theConnectivityVector.size();j++)
-		{	
+		{
 			if (theConnectivityVector[j] == 0)
 			{
 				if (tempVec.size())
-				{	
+				{
 #ifdef _CONNECTIVITY_DEBUG
 					cout << counter << " : ";
 #endif
 					for (UInt k=1;k<tempVec.size();k++)
-					{	
+					{
 #ifdef _CONNECTIVITY_DEBUG
 						cout << tempVec[k] << " ";
 #endif
@@ -1263,7 +1318,7 @@ void residue::interpretBondingPattern()
 #ifdef _CONNECTIVITY_DEBUG
 		cout << "---------------------" << endl;
 		for (UInt j=0; j<theBondingPatternVector.size(); j++)
-		{	
+		{
 			cout << j << " : ";
 			for (UInt k=0; k<theBondingPatternVector[j].size(); k++)
 			{		cout << theBondingPatternVector[j][k] << " ";
@@ -1288,10 +1343,7 @@ residue* residue::mutate(const UInt _newTypeIndex)
 {
 	residue* newAA = new residue( _newTypeIndex, hydrogensOn );
 	bool betapivot = false;
-	if (itsType == newAA->itsType)
-	{
-		betapivot = true;
-	}
+	if (itsType == newAA->itsType){betapivot = true;}
 	UInt numbpt = getNumBpt(_newTypeIndex);
 	for (UInt i=0; i<numbpt; i++)
 	{
@@ -1404,21 +1456,26 @@ residue* residue::mutate(const UInt _newTypeIndex)
 	}
 	newAA->setResNum(itsResNum);
 
-	// When mutating the same residue in place of old
-	// make sure same amino acid has near identical Calpha-Cbeta angle
-	// and Cbeta position relative to backbone
-	if (betapivot)
-	{
-		newAA->getAtom(4)->setCoords(itsAtoms[4]->getCoords());
-		newAA->setBetaChi(getBetaChi());
-	}
-
 	// ensure that we have not modified the main chain
 	// coordinates in any way
 	for (UInt i=0;i<dataBase[itsType].mainChain.size(); i++)
 	{
 		newAA->getMainChain(i)->setCoords( getMainChain(i)->getCoords());
 	}
+
+	// When mutating the same residue in place of old
+	// make sure same amino acid has near identical Calpha-Cbeta angle
+	// and Cbeta position relative to backbone
+	if (betapivot)
+	{
+		if (itsAtoms.size() > 4){
+			if (itsAtoms[4]->getName() == "CB"){
+				//newAA->getAtom(4)->setCoords(itsAtoms[4]->getCoords());
+				newAA->setBetaChi(getBetaChi());
+			}
+		}
+	}
+
 
 	// now, since we're changing the backbone coordinates, make
 	// sure that the amide hydrogen H is in the right place...
@@ -1429,6 +1486,72 @@ residue* residue::mutate(const UInt _newTypeIndex)
 		newAA->alignAmideProtonToBackbone();
 	}
 	newAA->setMoved();
+	return newAA;
+}
+
+residue* residue::mutateNew(const UInt _newTypeIndex) // is generalized to support non-backbone mutation using fortan alignment algorithm and supports terminal residues
+{
+	residue* newAA; int maxsize = 3; bool sameAA = false;
+	if (itsType == _newTypeIndex && (isD(itsType) || isL(itsType))){maxsize = 4; sameAA = true;}
+	if (!pItsPrevRes && (isL(_newTypeIndex) || isD(_newTypeIndex) || isG(_newTypeIndex))){newAA = new residue( _newTypeIndex+Nterm, true);} //Nterminal mutation
+	else if(!pItsNextRes && (isL(_newTypeIndex) || isD(_newTypeIndex) || isG(_newTypeIndex))){newAA = new residue( _newTypeIndex+Cterm, true);} //Cterminal mutation
+	else{newAA = new residue( _newTypeIndex, true); }
+	//cout << itsAtoms.size() << endl;
+	if(itsAtoms.size() < 4){maxsize = 1;}
+
+    // Load atoms for alignment onto position into double array for fit
+	double coord1[maxsize*3], coord2[maxsize*3]; int list1[maxsize]; int list2[maxsize]; dblVec oldCoords(3), newCoords(3);
+	for (int i=0; i<maxsize; i++)
+	{
+		if (i == 3 && sameAA){
+			oldCoords = itsAtoms[4]->getCoords();
+			newCoords = newAA->itsAtoms[4]->getCoords();
+		}
+		else{
+			oldCoords = getMainChain(i)->getCoords();
+			newCoords = newAA->getMainChain(i)->getCoords();
+		}
+		for (int j=0; j<3; j++)
+		{
+			coord1[(i*3) + j] = oldCoords[j];
+			coord2[(i*3) + j] = newCoords[j];
+		}
+		list1[i] = i+1;
+		list2[i] = i+1;
+	}
+
+	// Calculate best fit of atoms to get rotation matrix and centroid from fortran algorithm based on Machlachlan
+	double rotmat[9]; double centroid1[3]; double centroid2[3]; double rmsd = 0; double coord3[maxsize*3]; int ierr = 0;
+	bestfit_(coord1, &maxsize, coord2, &maxsize, &maxsize, coord3, list1, list2, &rmsd, &ierr, rotmat, centroid1, centroid2);
+
+	// Load rotation vector into rotation matrix and double array into double Vector
+	dblMat rotMat(3,3,3);
+    for (UInt i=0; i<3; i++)
+    {	for (UInt j=0; j<3; j++)
+		{
+			rotMat[i][j] = rotmat[(j*3) + i];
+		}
+    }
+	dblVec centroidOne(3); centroidOne[0] = centroid1[0]; centroidOne[1] = centroid1[1]; centroidOne[2] = centroid1[2];
+	dblVec centroidTwo(3); centroidTwo[0] = centroid2[0]*-1; centroidTwo[1] = centroid2[1]*-1; centroidTwo[2] = centroid2[2]*-1;
+
+	//translate to origin, rotate using rotation matrix from fit and move to position of starting residue
+	newAA->translate(centroidTwo); newAA->transform(rotMat); newAA->translate(centroidOne);
+
+	//position new residue with proper position context
+	if (pItsNextRes){ newAA->setNextRes(pItsNextRes); pItsNextRes->setPrevRes(newAA);}
+	else{newAA->setNextRes(pItsNextRes);}
+	if (pItsPrevRes){newAA->setPrevRes(pItsPrevRes); pItsPrevRes->setNextRes(newAA);}
+	else{newAA->setPrevRes(pItsPrevRes);}
+	newAA->setResNum(itsResNum);
+
+	// move carbonyl oxygen, amide proton into position and activate for energy calculation
+	if(!isCofactor(_newTypeIndex)){
+		if (pItsNextRes){newAA->getMainChain(3)->setCoords(getMainChain(3)->getCoords());}
+		if (pItsPrevRes){newAA->alignAmideProtonToBackbone();}
+	}
+	newAA->setMoved();
+
 	return newAA;
 }
 
@@ -1512,14 +1635,14 @@ residue* residue::fixBrokenResidue()
 	bool OK = true;
 	residue* fixedres = 0;
 	for (UInt i=0;i<dataBase[itsType].mainChain.size(); i++)
-	{	
+	{
 		if ( getMainChain(i)->getCoords() == dataBase[itsType].atomList[dataBase[itsType].mainChain[i]].getCoords() )
 		{
 			OK = false;
 			break;
 		}
 	}
-	if (OK)		
+	if (OK)
 	{
 		fixedres = mutate(itsType);
 		cout << "Residue fixed successfully" << endl;
@@ -1535,7 +1658,7 @@ residue* residue::fixBrokenResidue()
 void residue::alignAmideProtonToBackbone()
 {
 	if (pItsPrevRes)
-	{	
+	{
 		// get the index of "H" if it exists
 		string amideProton = "H";
 		UInt HIndex = 99;
@@ -1653,7 +1776,8 @@ void residue::setBetaChi(const double _angle)
 		double currentBetaChi = getBetaChi();
 		ASSERT(currentBetaChi < 1e5 && currentBetaChi > -1e5);
 		double diff = _angle - currentBetaChi;
-		rotate(0,1, diff);
+		if (itsType == 19){rotate(0,4, diff);}//proline
+		else{rotate(0,1, diff);}
 		setMoved();
 	}
 }
@@ -1718,7 +1842,7 @@ double residue::getPolarHChi() const
 
 
 double residue::getChi(const UInt _bpt, const UInt _index) const
-{       
+{
 	vector<UInt> theAtomIndices = dataBase[itsType].getAtomsOfChi(_bpt, _index);
 	double theAngle = calculateDihedral(theAtomIndices);
 	return theAngle;
@@ -1731,18 +1855,39 @@ double residue::getChi(const UInt _index) const
 }
 
 double residue::getBetaChi()
-{	if(pItsPrevRes != 0 && itsAtoms[4]->getType() == "C")
+{
+	if(itsAtoms.size() > 4)
 	{
-		vector< dblVec > quadVect(4);
-		quadVect[0] = pItsPrevRes->getMainChain(2)->getCoords();
-		quadVect[1] = getMainChain(0)->getCoords();
-		quadVect[2] = getMainChain(1)->getCoords();
-		quadVect[3] = itsAtoms[4]->getCoords();
-		return CMath::dihedral(quadVect[0], quadVect[1], quadVect[2], quadVect[3]);
+		if(pItsPrevRes != 0 && (itsAtoms[4]->getName() == "CB" || itsAtoms[4]->getName() == "CD"))
+		{
+			vector< dblVec > quadVect(4);
+			quadVect[0] = pItsPrevRes->getMainChain(2)->getCoords();
+			quadVect[1] = itsAtoms[0]->getCoords();
+			quadVect[2] = itsAtoms[1]->getCoords();
+			if (itsType == 19) {quadVect[3] = itsAtoms[6]->getCoords();} //proline beta carbon in reverse bond order
+			else{quadVect[3] = itsAtoms[4]->getCoords();}
+			return CMath::dihedral(quadVect[0], quadVect[1], quadVect[2], quadVect[3]);
+		}
 	}
-	else{
-		return 1000.0;
+	return 1000.0;
+}
+
+double residue::getBetaChiR()
+{
+	if(itsAtoms.size() > 4)
+	{
+		if(pItsNextRes != 0 && (itsAtoms[4]->getName() == "CB" || itsAtoms[4]->getName() == "CD"))
+		{
+			vector< dblVec > quadVect(4);
+			quadVect[0] = pItsNextRes->getMainChain(0)->getCoords();
+			quadVect[1] = itsAtoms[2]->getCoords();
+			quadVect[2] = itsAtoms[1]->getCoords();
+			if (itsType == 19) {quadVect[3] = itsAtoms[6]->getCoords();} //proline beta carbon in reverse bond order
+			else{quadVect[3] = itsAtoms[4]->getCoords();}
+			return CMath::dihedral(quadVect[0], quadVect[1], quadVect[2], quadVect[3]);
+		}
 	}
+	return 1000.0;
 }
 
 double residue::calculateDihedral(const vector<UInt>& _quad) const
@@ -1788,46 +1933,44 @@ vector <double> residue::getBackboneAngles()
 	angles.push_back(getPsi());
 	return angles;
 }
-		
+
 double residue::getPhi()
 {
 	double tempdouble;
-	if (pItsPrevRes != 0)
-	{
-		vector<atom*> fourAtomPointers;
-		UInt i = dataBase[pItsPrevRes->getTypeIndex()].mainChain.size()-1;
-		fourAtomPointers.push_back(pItsPrevRes->getMainChain(i-1));
-		fourAtomPointers.push_back(getMainChain(0));
-		fourAtomPointers.push_back(getMainChain(1));
-		fourAtomPointers.push_back(getMainChain(2));
-		tempdouble = calculateDihedral(fourAtomPointers);
+	if (pItsPrevRes != 0){
+		double distanceSquared = itsAtoms[1]->distanceSquared(pItsPrevRes->itsAtoms[1]);
+		if (distanceSquared < 20){ // confirm they are bonded
+			vector<atom*> fourAtomPointers;
+			UInt i = dataBase[pItsPrevRes->getTypeIndex()].mainChain.size()-1;
+			fourAtomPointers.push_back(pItsPrevRes->getMainChain(i-1));
+			fourAtomPointers.push_back(getMainChain(0));
+			fourAtomPointers.push_back(getMainChain(1));
+			fourAtomPointers.push_back(getMainChain(2));
+			tempdouble = calculateDihedral(fourAtomPointers);
+		}
+		else {tempdouble = 1000.0;}
 	}
-	else
-	{
-		//cout << "Cannot calcualate PHI for this amino acid" << endl;
-		tempdouble = 1000.0;
-	}
+	else {tempdouble = 1000.0;}
 	return tempdouble;
 }
 
 double residue::getPsi()
 {
 	double tempdouble;
-	if (pItsNextRes != 0)
-	{
-		vector<atom*> fourAtomPointers;
-		UInt i = dataBase[itsType].mainChain.size()-1;
-		fourAtomPointers.push_back(getMainChain(i-3));
-		fourAtomPointers.push_back(getMainChain(i-2));
-		fourAtomPointers.push_back(getMainChain(i-1));
-		fourAtomPointers.push_back(pItsNextRes->getMainChain(0));
-		tempdouble = calculateDihedral(fourAtomPointers);
+	if (pItsNextRes != 0){
+		double distanceSquared = itsAtoms[1]->distanceSquared(pItsNextRes->itsAtoms[1]);
+		if (distanceSquared < 20){ // confirm they are bonded
+			vector<atom*> fourAtomPointers;
+			UInt i = dataBase[itsType].mainChain.size()-1;
+			fourAtomPointers.push_back(getMainChain(i-3));
+			fourAtomPointers.push_back(getMainChain(i-2));
+			fourAtomPointers.push_back(getMainChain(i-1));
+			fourAtomPointers.push_back(pItsNextRes->getMainChain(0));
+			tempdouble = calculateDihedral(fourAtomPointers);
+		}
+		else {tempdouble = 1000.0;}
 	}
-	else
-	{
-		//cout << "Cannot calcualate PSI for this amino acid" << endl;
-		tempdouble = 1000.0;
-	}
+	else {tempdouble = 1000.0;}
 	return tempdouble;
 }
 
@@ -1835,7 +1978,7 @@ double residue::getAngle(UInt angleType)
 {
     double tempdouble = 0.0;
 	if (angleType == 0) //phi
-	{	
+	{
 		if (pItsPrevRes != 0)
 		{
 			vector<atom*> fourAtomPointers;
@@ -1950,7 +2093,7 @@ int residue::setDihedral(double _dihedral, UInt _angleType, UInt _direction)
 			{
 				rotateDihedral(getMainChain(i-2), getMainChain(i-1), deltaTheta, _angleType, _direction); //NtoC
 			}
-			if (_direction == 1)				
+			if (_direction == 1)
 			{
 				rotateDihedral(getMainChain(i-1), getMainChain(i-2), deltaTheta, _angleType, _direction); //CtoN
 			}
@@ -2058,13 +2201,13 @@ void residue::calculateSidechainDihedralAngles()
 }
 
 vector< vector< double > > residue::randContinuousSidechainConformation()
-{	
+{
 	vector < vector <double> > sideChainDihedralAngles;
 	vector <double> chis;
 	double angle;
 	UInt branchpoints = getNumBpt(itsType);
 	for (UInt i=0; i<branchpoints; i++)
-	{	
+	{
 		chis.clear();
 		UInt dihedrals = getNumDihedralAngles(itsType,i);
 		for (UInt j=0; j<dihedrals; j++)
@@ -2131,7 +2274,7 @@ void residue::rotate(UInt _first, UInt _second, double _theta)
 	{	backboneRotation = true;
 	}
 	rotate(pAtom1, pAtom2, _theta, backboneRotation);
-
+	setMoved();
 }
 
 void residue::rotateDihedral(atom* _pAtom1, atom* _pAtom2, double _deltaTheta,  UInt _angleType, UInt _direction)
@@ -2141,7 +2284,7 @@ void residue::rotateDihedral(atom* _pAtom1, atom* _pAtom2, double _deltaTheta,  
 	dblVec backHome = _pAtom1->getCoords();
 
 	if (_direction == 0)
-	{	
+	{
 		_pAtom1->translate(toOrigin);
 		_pAtom2->translate(toOrigin);
 		_pAtom2->translateChildren(toOrigin);
@@ -2153,15 +2296,15 @@ void residue::rotateDihedral(atom* _pAtom1, atom* _pAtom2, double _deltaTheta,  
 	{
 		recursiveTranslateWithDirection(toOrigin, _direction);
 	}
-	
+
 	dblVec atomCoords = _pAtom2->getCoords();
 	dblMat R(3,3,0.0);
 	R = CMath::rotationMatrix(atomCoords, _deltaTheta);
-	
+
 	if (_direction == 0)
 	{	_pAtom2->transformChildren(R);
 		if (pItsNextRes)
-		{	
+		{
 			pItsNextRes->recursiveTransform(R);
 		}
 	}
@@ -2169,7 +2312,7 @@ void residue::rotateDihedral(atom* _pAtom1, atom* _pAtom2, double _deltaTheta,  
 	{
 		if (_angleType == 0){
 			if (pItsPrevRes)
-			{	
+			{
 				pItsPrevRes->recursiveTransformR(R);
 			}
 		}
@@ -2181,7 +2324,7 @@ void residue::rotateDihedral(atom* _pAtom1, atom* _pAtom2, double _deltaTheta,  
 	}
 
 	if (_direction == 0)
-	{	
+	{
 		_pAtom1->translate(backHome);
 		_pAtom2->translate(backHome);
 		_pAtom2->translateChildren(backHome);
@@ -2195,6 +2338,7 @@ void residue::rotateDihedral(atom* _pAtom1, atom* _pAtom2, double _deltaTheta,  
 	}
 	if(_angleType == 0 && _direction == 1)
 	{alignAmideProtonToBackbone();}
+	setMoved();
 }
 
 void residue::rotate(atom* _pAtom1, atom* _pAtom2, double _theta,
@@ -2272,7 +2416,7 @@ void residue::rotate(atom* _pAtom1, atom* _pAtom2, double _theta,
 	cout << _pAtom2->getName() << " " << _pAtom2->getCoords() << endl;
 	_pAtom2->queryChildrensCoords();
 #endif
-
+	setMoved();
 }
 
 void residue::rotate(const point& _point, const dblMat& _RMatrix )
@@ -2302,18 +2446,18 @@ void residue::rotate(const point& _point, const dblMat& _RMatrix )
 	pAtom->translateChildren(backHome);
 
 #ifdef __RES_DEBUG
-	cout << "after translation back Home" << endl;    
+	cout << "after translation back Home" << endl;
 	cout << _pAtom->getName() << " " << _pAtom->getCoords() << endl;
 	pAtom->queryChildrensCoords();
 #endif
-
+	setMoved();
 }
 
 void residue::rotate_new(atom* _pivotAtom, const dblMat& _RMatrix)
 {
 	dblVec toOrigin = _pivotAtom->getCoords() * (-1.0);
 	dblVec backHome =  toOrigin * (-1.0);
-	
+
 	_pivotAtom->translate(toOrigin);
 	_pivotAtom->translateChildren(toOrigin);
 	_pivotAtom->transform(_RMatrix);
@@ -2321,14 +2465,14 @@ void residue::rotate_new(atom* _pivotAtom, const dblMat& _RMatrix)
 
 	_pivotAtom->translate(backHome);
 	_pivotAtom->translateChildren(backHome);
-
+	setMoved();
 }
 
 void residue::rotate_new(atom* _pivotAtom, atom* _firstAtom, const dblMat& _RMatrix)
 {
 	dblVec toOrigin = _pivotAtom->getCoords() * (-1.0);
 	dblVec backHome =  toOrigin * (-1.0);
-	
+
 	_firstAtom->translate(toOrigin);
 	_firstAtom->translateChildren(toOrigin);
 	_firstAtom->transform(_RMatrix);
@@ -2336,7 +2480,7 @@ void residue::rotate_new(atom* _pivotAtom, atom* _firstAtom, const dblMat& _RMat
 
 	_firstAtom->translate(backHome);
 	_firstAtom->translateChildren(backHome);
-
+	setMoved();
 }
 
 
@@ -2359,29 +2503,29 @@ void residue::rotate(const point& _point, const dblVec& _R_axis,const double _th
 	dblMat R(3,3,0.0);
 	R = CMath::rotationMatrix(_R_axis, _theta);
 #ifdef __RES_DEBUG
-	cout << "rotation matrix" << endl;                            
-	cout << R;                                                    
+	cout << "rotation matrix" << endl;
+	cout << R;
 #endif
-                                                                      
+
 	pAtom->transform(R);
 	pAtom->transformChildren(R);
 
-#ifdef __RES_DEBUG                                                    
-	cout << "after rotation has been applied" << endl;            
-	pAtom->queryChildrensCoords();                               
+#ifdef __RES_DEBUG
+	cout << "after rotation has been applied" << endl;
+	pAtom->queryChildrensCoords();
 #endif
 
 	//Finally, translate all the atoms back via the backHome vector
-	pAtom->translate(backHome);                                  
-	pAtom->translateChildren(backHome);                          
+	pAtom->translate(backHome);
+	pAtom->translateChildren(backHome);
 
-#ifdef __RES_DEBUG                                                    
-	cout << "after translation back Home" << endl;                
+#ifdef __RES_DEBUG
+	cout << "after translation back Home" << endl;
 	cout << _pAtom->getName() << " " << _pAtom->getCoords() << endl;
-	pAtom->queryChildrensCoords();                               
-#endif                                                                
-
-}                                       
+	pAtom->queryChildrensCoords();
+#endif
+	setMoved();
+}
 
 void residue::rotate(atom* _pAtom, const dblVec& _R_axis, const double _theta)
 {	// the coords of _atom1 give us the translation vector to get
@@ -2409,39 +2553,39 @@ void residue::rotate(atom* _pAtom, const dblVec& _R_axis, const double _theta)
 	R = CMath::rotationMatrix(_R_axis, _theta);
 
 #ifdef __RES_DEBUG
-	cout << "rotation matrix" << endl;                            
-	cout << R;                                                    
+	cout << "rotation matrix" << endl;
+	cout << R;
 #endif
-	_pAtom->transformChildren(R);                                 
+	_pAtom->transformChildren(R);
 
-#ifdef __RES_DEBUG                                                    
-	cout << "after rotation has been applied" << endl;            
-	_pAtom->queryChildrensCoords();                               
-#endif                                                                
+#ifdef __RES_DEBUG
+	cout << "after rotation has been applied" << endl;
+	_pAtom->queryChildrensCoords();
+#endif
 
 	//Finally, translate all the atoms back via the backHome vector
-	_pAtom->translate(backHome);                                  
-	_pAtom->translateChildren(backHome);                          
+	_pAtom->translate(backHome);
+	_pAtom->translateChildren(backHome);
 
-#ifdef __RES_DEBUG                                                    
-	cout << "after translation back Home" << endl;                
+#ifdef __RES_DEBUG
+	cout << "after translation back Home" << endl;
 	cout << _pAtom->getName() << " " << _pAtom->getCoords() << endl;
 	_pAtom->queryChildrensCoords();
-#endif                                                                
+#endif
+	setMoved();
+}
 
-} 
-                                                    
 void residue::translate(const dblVec& _dblVec)
 {
     for (UInt i=0; i < itsAtoms.size(); i++)
 	{	itsAtoms[i]->translate(_dblVec);
 	}
-
+	setMoved();
 }
 
 
 void residue::recursiveTranslateWithDirection(dblVec& _dblVec, UInt _direction)
-{	
+{
     setMoved();
 	translate(_dblVec);
 	if (_direction == 0)
@@ -2483,6 +2627,7 @@ void residue::recursiveTransformR(dblMat& _dblMat)
 	if (pItsPrevRes)
 	{	pItsPrevRes->recursiveTransformR(_dblMat);
 	}
+	setMoved();
 }
 
 void residue::transform(const dblMat& _dblMat)
@@ -2669,7 +2814,7 @@ double residue::intraEnergy()
 // protEnergy functions (new (2019) complete solvation and forcefeild)-----------------------------------------------
 
 double residue::intraSoluteEnergy()
-{	
+{
 	double intraEnergy = 0.0;
 	bool threeBonds;
 	for(UInt i=0; i<itsAtoms.size(); i++)
@@ -2705,12 +2850,12 @@ double residue::intraSoluteEnergy()
 						{
 							// ** get dielectric average of atoms
 							double dielectric = (itsAtoms[i]->getDielectric() + itsAtoms[j]->getDielectric()) * 0.5;
-							
+
 							//recalculate the dielectric using the Maxwell Garnett mixing formula to include the polarizability of the pairwise dipole inclusion
 							if (polarizableElec){
 								dielectric = maxwellGarnettApproximation(i, j, dielectric, distanceSquared);
 							}
-							
+
 							// calculate coulombic energy with effective dielectric
 							double tempAmberElecEnergy = residueTemplate::getAmberElecSoluteEnergySQ(itsType, i, itsType, j, distanceSquared, dielectric);
 							intraEnergy += tempAmberElecEnergy;
@@ -2746,7 +2891,7 @@ double residue::interSoluteEnergy(residue* _other)
 							{
 								// ** get dielectric average
 								double dielectric = (itsAtoms[i]->getDielectric() + _other->itsAtoms[j]->getDielectric()) * 0.5;
-								
+
 								//recalculate the dielectric using the Maxwell Garnett mixing formula to include the polarizability of the pairwise dipole-dipole inclusion of hbonds
 								if (polarizableElec){
 									dielectric = maxwellGarnettApproximation(i, _other, j, dielectric, distanceSquared);
@@ -2792,14 +2937,14 @@ double residue::calculateSolvationEnergy(UInt _atomIndex)
 			double charge = residueTemplate::itsAmberElec.getItsCharge(itsType, _atomIndex);
 			soluteSolventEnthalpy += (-(KC/2)*(charge*charge)/(solvatedRadius*atomDielectric))*shellWaters*EsolvationFactor;
 		}
-	
+
 		// Non-Polar solvation
 		if (HsolvationFactor != 0.0)
 		{	// Lennard Jones dipole packing ethalpy estimate assuming ideal interaction of solute atom and solvent
 			// TIP3P VDW water interaction R. W. Impey, and M. L. Klein, J. Chem. Phys. 79 (1983) 926-935
 			double tempvdwEnergy = residueTemplate::getVDWWaterEnergy(atomVDWtype);
 			soluteSolventEnthalpy += tempvdwEnergy*shellWaters;
-	
+
 			// Solvent Entropy loss estimate due to lack of ideal water lattice hydrogen bond network formation (hydrophobic effect)
 			// Gill Hydrophobic solvation  S.J.Gill, S.F.Dec. J Phys. Chem. 1985
 			soluteSolventEntropy = (-temperature*KB*log(pow(0.5,shellWaters)))*HsolvationFactor;
@@ -2832,7 +2977,7 @@ double residue::getDielectric()
 }
 
 void residue::polarizability()
-{	
+{
 	bool inCube;
 	int vdwIndexI, vdwIndexJ;
 	double solvatedRadius;
@@ -2854,7 +2999,7 @@ void residue::polarizability()
 						//i sum environment j
 						vdwIndexJ = dataBase[itsType].itsAtomEnergyTypeDefinitions[j][0];
 						itsAtoms[i]->sumEnvVol(residueTemplate::getVolume(vdwIndexJ)/2);
-						
+
 						//j sum environment i
 						itsAtoms[j]->sumEnvVol(residueTemplate::getVolume(vdwIndexI)/2);
 					}
@@ -2865,7 +3010,7 @@ void residue::polarizability()
 }
 
 void residue::polarizability(residue* _other)
-{	
+{
 	bool inCube, resI = getMoved(0), resJ = _other->getMoved(0);
 	int vdwIndexI, vdwIndexJ;
 	double solvatedRadius;
@@ -2930,12 +3075,18 @@ void residue::calculateDielectrics()
 double residue::maxwellGarnettApproximation(UInt _atomIndex1, UInt _atomIndex2, double _dielectric, double _distanceSquared)
 {	//Polarizable electrostatics model via a dipole-dipole polarization effect on the medium
 	//Vadim A. Markel 1244 Vol. 33, No. 7 / July 2016 / J Opt Soc Amer
-	
-	if (itsAtoms[_atomIndex1]->getType() == "H" || itsAtoms[_atomIndex2]->getType() == "H" || itsAtoms[_atomIndex1]->getType() == "NI" || itsAtoms[_atomIndex2]->getType() == "NI" || itsAtoms[_atomIndex1]->getType() == "FE" || itsAtoms[_atomIndex2]->getType() == "FE"){
+
+	// Check for hbonds and metal ligation where polarization is significant and worth calculating
+	if( ((itsAtoms[_atomIndex1]->getType() == "H" || itsAtoms[_atomIndex1]->getType() == "FE" || itsAtoms[_atomIndex1]->getType() == "NI") &&
+	     (itsAtoms[_atomIndex2]->getType() == "O" || itsAtoms[_atomIndex2]->getType() == "S"  || itsAtoms[_atomIndex2]->getType() == "N")) ||
+		((itsAtoms[_atomIndex2]->getType() == "H" || itsAtoms[_atomIndex2]->getType() == "FE" || itsAtoms[_atomIndex2]->getType() == "NI") &&
+	     (itsAtoms[_atomIndex1]->getType() == "O" || itsAtoms[_atomIndex1]->getType() == "S"  || itsAtoms[_atomIndex1]->getType() == "N"))
+	  )
+	{
 		//get dipole-dipole polarization
 		double pol = approximateDipoleDipolePolarization(_atomIndex1, _atomIndex2);
 		double vol = 4/3*PI*pow((sqrt(_distanceSquared)/2),3);
-		
+
 		//recalculate the dielectric using the Maxwell Garnett mixing formula to include the polarizability of the dipole inclusion over the volume of inclusion
 		double dielectric = _dielectric+4*PI*(pol/vol)/1-(4*PI/3*_dielectric)*(pol/vol);
 		if (dielectric < 1){dielectric = 1;}
@@ -2947,12 +3098,17 @@ double residue::maxwellGarnettApproximation(UInt _atomIndex1, UInt _atomIndex2, 
 double residue::maxwellGarnettApproximation(UInt _atomIndex1, residue* _other, UInt _atomIndex2,  double _dielectric, double _distanceSquared)
 {	//Polarizable electrostatics model via a dipole-dipole polarization effect on the medium
 	//Vadim A. Markel 1244 Vol. 33, No. 7 / July 2016 / J Opt Soc Amer
-	
-	if (itsAtoms[_atomIndex1]->getType() == "H" || _other->itsAtoms[_atomIndex2]->getType() == "H"){
-		//get dipole-dipole polarization
+
+	// Check for hbonds and metal ligation where polarization is significant and worth calculating
+	if( ((itsAtoms[_atomIndex1]->getType() == "H" || itsAtoms[_atomIndex1]->getType() == "FE" || itsAtoms[_atomIndex1]->getType() == "NI") &&
+	     (_other->itsAtoms[_atomIndex2]->getType() == "O" || _other->itsAtoms[_atomIndex2]->getType() == "S"  || _other->itsAtoms[_atomIndex2]->getType() == "N")) ||
+		((_other->itsAtoms[_atomIndex2]->getType() == "H" || _other->itsAtoms[_atomIndex2]->getType() == "FE" || _other->itsAtoms[_atomIndex2]->getType() == "NI") &&
+	     (itsAtoms[_atomIndex1]->getType() == "O" || itsAtoms[_atomIndex1]->getType() == "S"  || itsAtoms[_atomIndex1]->getType() == "N"))
+	  )
+	{	//get dipole-dipole polarization
 		double pol = approximateDipoleDipolePolarization(_atomIndex1, _other, _atomIndex2);
 		double vol = 4/3*PI*pow((sqrt(_distanceSquared)/2),3);
-		
+
 		//recalculate the dielectric using the Maxwell Garnett mixing formula to include the polarizability of the dipole inclusion over the volume of inclusion
 		double dielectric = _dielectric+4*PI*(pol/vol)/1-(4*PI/3*_dielectric)*(pol/vol);
 		if (dielectric < 1){dielectric = 1;}
@@ -2963,62 +3119,70 @@ double residue::maxwellGarnettApproximation(UInt _atomIndex1, residue* _other, U
 
 double residue::approximateDipoleDipolePolarization(UInt _atomIndex1, UInt _atomIndex2)
 {	//Approximate the polarizability of inclusion in medium due to the sum of the dipole angle product of the static polarizabilities
-	
+
 	//Identify Atoms in Dipoles
 	dblVec a1Coords = getCoords(_atomIndex1); dblVec p1Coords;
+	bool dipole1 = false;
 	for (UInt i = 0; i < itsAtoms.size(); i++)
 	{
 		if (isBonded(_atomIndex1, i)){
 			p1Coords = getCoords(i);
+			dipole1 = true;
 			break;
 		}
 	}
 	dblVec a2Coords = getCoords(_atomIndex2); dblVec p2Coords;
+	bool dipole2 = false;
 	for (UInt i = 0; i < itsAtoms.size(); i++)
 	{
 		if (isBonded(_atomIndex2, i)){
 			p2Coords = getCoords(i);
+			dipole2 = true;
 			break;
 		}
 	}
-	double statpol1 = residueTemplate::getPolarizability(dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex1][0]); 
+	double statpol1 = residueTemplate::getPolarizability(dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex1][0]);
 	double statpol2 = residueTemplate::getPolarizability(dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex2][0]);
-	double pol1 = CMath::cosTheta90(p1Coords,a1Coords,a2Coords)*statpol1;
-	double pol2 = CMath::cosTheta90(p2Coords,a2Coords,a1Coords)*statpol2;
+	double pol1, pol2;
+	if(dipole1){pol1 = fabs(cos(CMath::angle(p1Coords,a1Coords,a2Coords)*PI/180.0))*statpol1;} else{pol1 = statpol1;}
+	if(dipole2){pol2 = fabs(cos(CMath::angle(p2Coords,a2Coords,a1Coords)*PI/180.0))*statpol2;} else{pol2 = statpol2;}
 	return pol1+pol2;
 }
 
 double residue::approximateDipoleDipolePolarization(UInt _atomIndex1, residue* _other, UInt _atomIndex2)
-{	//Approximate the polarizability of inclusion in medium due to the sum of the static polarizabilities and angles of interacting dipoles
-	
+{	//Approximate the polarizability of inclusion in medium due to the sum of the dipole angle product of the static polarizabilities
+
 	//Identify Atoms in Dipoles
 	dblVec a1Coords = getCoords(_atomIndex1); dblVec p1Coords;
+	bool dipole1 = false;
 	for (UInt i = 0; i < itsAtoms.size(); i++)
 	{
 		if (isBonded(_atomIndex1, i)){
 			p1Coords = getCoords(i);
+			dipole1 = true;
 			break;
 		}
 	}
 	dblVec a2Coords = _other->getCoords(_atomIndex2); dblVec p2Coords;
+	bool dipole2 = false;
 	for (UInt i = 0; i < _other->itsAtoms.size(); i++)
 	{
 		if (_other->isBonded(_atomIndex2, i)){
 			p2Coords = _other->getCoords(i);
+			dipole2 = true;
 			break;
 		}
 	}
-	double statpol1 = residueTemplate::getPolarizability(dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex1][0]); 
+	double statpol1 = residueTemplate::getPolarizability(dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex1][0]);
 	double statpol2 = residueTemplate::getPolarizability(dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[_atomIndex2][0]);
-	double pol1 = CMath::cosTheta90(p1Coords,a1Coords,a2Coords)*statpol1;
-	double pol2 = CMath::cosTheta90(p1Coords,a1Coords,a2Coords)*statpol2;
+	double pol1, pol2;
+	if(dipole1){pol1 = fabs(cos(CMath::angle(p1Coords,a1Coords,a2Coords)*PI/180.0))*statpol1;} else{pol1 = statpol1;}
+	if(dipole2){pol2 = fabs(cos(CMath::angle(p2Coords,a2Coords,a1Coords)*PI/180.0))*statpol2;} else{pol2 = statpol2;}
 	return pol1+pol2;
 }
 
-// end protEnergy functions ---------------------------------------------------------------------
-
 void residue::updateMovedDependence(residue* _other, UInt _EorC)
-{	
+{
 	bool inCube;
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
@@ -3040,6 +3204,8 @@ void residue::updateMovedDependence(residue* _other, UInt _EorC)
 		}
 	}
 }
+
+// end protEnergy functions ---------------------------------------------------------------------
 
 void residue::listConnectivity()
 {
@@ -3084,7 +3250,7 @@ double residue::interEnergy(residue* _other)
 					{
 						distanceSquared = itsAtoms[i]->distanceSquared(_other->itsAtoms[j]);
 						threeBonds = isSeparatedByFewBonds(this,i,_other,j);
-						
+
 						// ** inter AMBER Electrostatics
 						if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
 						{
@@ -3113,9 +3279,9 @@ double residue::interEnergy(residue* _other)
 							{
 								double tempvdwEnergy = residueTemplate::getVDWEnergySQ(index1, index2, distanceSquared);
 								vdwEnergy += tempvdwEnergy;
-								
+
 				//				cout << i << " " << j << " " << tempvdwEnergy << endl;
-							
+
 							}
 						}
 					}
@@ -3182,7 +3348,7 @@ UInt residue::getNumHardClashes(residue* _other)
 		for (UInt j = 0; j < _other->getNumAtoms(); j ++)
 		{
 			if (isClash(i, _other, j)) numClashes++;
-		} 
+		}
 	}
 	return numClashes;
 }
@@ -3190,15 +3356,18 @@ UInt residue::getNumHardClashes(residue* _other)
 UInt residue::getNumHardBackboneClashes(residue* _other)
 {
 	UInt numClashes = 0;
-	UInt atomsI =4, atomsJ =4;
-	if (itsAtoms[4]->getName() == "CB"){atomsI = 5;}
-	if (_other->itsAtoms[4]->getName() == "CB"){atomsJ = 5;}
-	for (UInt i = 0; i < atomsI; i ++)
-	{
-		for (UInt j = 0; j < atomsJ; j ++)
+	if (itsAtoms.size() > 3 && _other->itsAtoms.size()> 3){
+		UInt atomsI =4, atomsJ =4;
+		if (itsAtoms[4]->getName() == "CB"){atomsI = 5;}
+
+		if (_other->itsAtoms[4]->getName() == "CB"){atomsJ = 5;}
+		for (UInt i = 0; i < atomsI; i ++)
 		{
-			if (isClash(i, _other, j)) numClashes++;
-		} 
+			for (UInt j = 0; j < atomsJ; j ++)
+			{
+				if (isClash(i, _other, j)) numClashes++;
+			}
+		}
 	}
 	return numClashes;
 }
@@ -3380,7 +3549,7 @@ bool residue::isSeparatedByThreeBackboneBonds(UInt _index1, residue* _pRes2, UIn
 		atom1 = _index1;
 		atom2 = _index2;
 	}
-	
+
 	if (atom1 == 0 && atom2 == 0){
 		return true;
 	}
@@ -3424,7 +3593,7 @@ bool residue::isSeparatedByOneOrTwoBackboneBonds(UInt _index1, residue* _pRes2, 
 		atom1 = _index1;
 		atom2 = _index2;
 	}
-	
+
 	if (atom2 == 0 || atom2 == 1 || name2 == "H")
 	{
 		if (atom1 > 0 && atom1 < 4){
@@ -3452,7 +3621,7 @@ bool residue::isSeparatedByOneOrTwoBonds(UInt _index1, residue* _pRes2, UInt _in
 	{
 		return false;
 	}
-	
+
 	// ok, now we know we've got two sequential amino acids.
 	// find out how far the atom in question in the N-term
 	// amino acid is from the carboxyl carbon (the end).
@@ -4019,17 +4188,17 @@ bool residue::isBonded(UInt _index1, UInt _index2)
 	UInt sizeOfList;
 	// intended assignment in if statement
 	if ( (sizeOfList = bondedList.size()) )
-	{	
+	{
 		for (UInt i=0; i< sizeOfList; i++)
-		{	
+		{
 			if (bondedList[i] == _index2)
-			{	
+			{
 				return true;
 			}
 		}
 	}
 	else
-	{	
+	{
 		return false;
 	}
 	return false;

@@ -20,13 +20,13 @@
 vector <UInt> getChainSequence(protein* _prot, UInt _chainIndex);
 vector <UInt> getMutationPosition(UIntVec &_activeChains, UIntVec &_activeResidues);
 UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition);
-void createPossibleMutantsDatabase(protein* &_prot, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedTypes);
+void createPossibleMutantsDatabase(protein* &_prot, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedTypes, bool polarityAssignment);
 UInt convertAAStringtoInt(string AA, string aminoAcidString[], UInt size);
 vector < vector < UInt > > readSequencePool();
 vector < vector < UInt > > readPossibleMutants();
 
-enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,Csf,Sf4,Hca,Eoc,Oec,Saf,Hem,Cyn,Tp};
-string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dCf","dQ","dE","dEh","dHd","dHe","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV","Csf","Sf4","Hca","Eoc","Oec","Saf","Hem","Cyn","Tp"};
+enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,SF4,HEM,NI2,CLN,CO2,MG2,OH,OXY,CLD,HIS};
+string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dCf","dQ","dE","dEh","dHd","dHe","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV","SF4","HEM","NI2","CLN","CO2","MG2","OH-","OXY","CLD","HIS"};
 UInt aaSize = sizeof(aminoAcidString)/sizeof(aminoAcidString[0]);
 UInt populationBaseline = 1000;
 
@@ -46,12 +46,13 @@ int main (int argc, char* argv[])
 		cout << "Frozen Positions,4,8," << endl;
 		cout << "Amino Acids,A,R,N,D,C,Q,E,He,I,L,K,M,F,P,S,T,W,Y,V,G," << endl;
 		cout << "Backbone Relaxation,false," << endl;
+		cout << "Polarity Assignment,true," << endl;
 		exit(1);
 	}
 	
 	//--read input file
 	UIntVec activeChains, allowedTypes, activeResidues, randomResidues, frozenResidues;
-	bool backboneRelaxation;
+	bool backboneRelaxation, polarityAssignment;
 	string inputfile = argv[1];
 	string infile;
 	ifstream file(inputfile);
@@ -102,6 +103,12 @@ int main (int argc, char* argv[])
 						}
 						else{backboneRelaxation = true;}
 					}
+					if (linecounter == 7){
+						if (item.compare("false") == 0){
+							polarityAssignment = false;
+						}
+						else{polarityAssignment = true;}
+					}
 				}
 				delimitercounter++;
 			}
@@ -119,6 +126,7 @@ int main (int argc, char* argv[])
 		inf << "Frozen Positions,4,8," << endl;
 		inf << "Amino Acids,A,R,N,D,C,Q,E,He,I,L,K,M,F,P,S,T,W,Y,V,G," << endl;
 		inf << "Backbone Relaxation,false," << endl;
+		inf << "Polarity Assignment,true," << endl;
 		cout << "Error: Required input file doesn't exist." << endl << "Template input file has been generated, please fill it out and rerun." << endl;
 		exit(1);
 	}
@@ -132,7 +140,7 @@ int main (int argc, char* argv[])
 	residue::setTemperature(300);
 
 	//--set initial variables
-	int seed = (int)getpid()*(int)gethostid(); srand (seed);
+	int seed = (int)getpid(); srand (seed);
 	double startEnergy = 1E10, pastEnergy, Energy, deltaEnergy;
 	UInt timeid, sec, mutant = 0, plateau = 15, nobetter = 0;
 	vector < UInt > mutantPosition, chainSequence, randomPosition;
@@ -143,15 +151,68 @@ int main (int argc, char* argv[])
 	string tempModel = startstr + "_temp.pdb";
 	bool acceptance;
 
-	//-build possible sequence database per position
+	//load pdb
 	PDBInterface* thePDB = new PDBInterface(infile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* prot = static_cast<protein*>(pMol);
+
+	// set defaults if input file parameters are empty
+	if (activeChains.size() < 1) 
+	{
+		for (UInt i = 0; i < prot->getNumChains(); i++)
+		{
+			UInt resN = prot->getNumResidues(i);
+			if (resN < 2 && prot->isCofactor(i,0)){continue;}
+			else{activeChains.push_back(i);}
+		}
+	}
+	if (activeResidues.size() < 1) 
+	{
+		bool done = false;
+		for (UInt i = 0; i < prot->getNumChains(); i++)
+		{
+			if (!done){
+				UInt resN = prot->getNumResidues(i);
+				if (resN < 2 && prot->isCofactor(i,0)){continue;}
+				else{
+					for (UInt j = 0; j < resN; j++)
+					{
+						activeResidues.push_back(j);
+					}
+					done = true;
+				}
+			}
+		}
+	}
+	if (allowedTypes.size() < 1){
+		allowedTypes.push_back(0); //A
+		allowedTypes.push_back(1); //R
+		allowedTypes.push_back(2); //N
+		allowedTypes.push_back(3); //D
+		allowedTypes.push_back(4); //C
+		allowedTypes.push_back(8); //Q
+		allowedTypes.push_back(9); //E
+		allowedTypes.push_back(12);//H
+		allowedTypes.push_back(14);//I
+		allowedTypes.push_back(15);//L
+		allowedTypes.push_back(16);//K
+		allowedTypes.push_back(17);//M
+		allowedTypes.push_back(18);//F
+		allowedTypes.push_back(19);//P
+		allowedTypes.push_back(21);//S
+		allowedTypes.push_back(22);//T
+		allowedTypes.push_back(23);//W
+		allowedTypes.push_back(24);//Y
+		allowedTypes.push_back(25);//V
+		allowedTypes.push_back(26);//G
+	}
+
+	//-build possible sequence database per position
 	possibleMutants = readPossibleMutants();
 	if(possibleMutants.size() < activeResidues.size())
 	{
-		createPossibleMutantsDatabase(prot, activeChains, activeResidues, allowedTypes);
+		createPossibleMutantsDatabase(prot, activeChains, activeResidues, allowedTypes, polarityAssignment);
 		possibleMutants = readPossibleMutants();
 	}
 	delete thePDB;
@@ -368,8 +429,22 @@ vector < vector < UInt > > readPossibleMutants()
 	return _possibleMutants;
 }
 
-void createPossibleMutantsDatabase(protein* &_prot, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedTypes)
+void createPossibleMutantsDatabase(protein* &_prot, UIntVec &_activeChains, UIntVec &_activeResidues, UIntVec &_allowedTypes, bool polarityAssignment)
 {
+	double aveDielectric, sumDielectric=0.0;
+	UInt counter = 0;
+	if (polarityAssignment){
+		_prot->updateDielectrics();
+		for (UInt i = 0; i < _prot->getNumChains(); i++)
+		{
+			for (UInt j = 0; j < _prot->getNumResidues(i); j++)
+			{
+				sumDielectric += _prot->getDielectric(i,j);
+				counter++;
+			}
+		}
+		aveDielectric = sumDielectric/counter;
+	}
 	fstream pm; double phi = -100.0; bool active;
 	pm.open ("possiblemutants.out", fstream::in | fstream::out | fstream::app);
 	
@@ -385,6 +460,21 @@ void createPossibleMutantsDatabase(protein* &_prot, UIntVec &_activeChains, UInt
 			if (active){
 				for (UInt l = 0; l <_allowedTypes.size(); l++)
 				{
+					if (polarityAssignment){
+						double dielectric = _prot->getDielectric(_activeChains[i],j);
+						if (dielectric < aveDielectric){
+							if (_allowedTypes[l] != A && _allowedTypes[l] != I && _allowedTypes[l] != L && _allowedTypes[l] != M && _allowedTypes[l] != F && _allowedTypes[l] != W && _allowedTypes[l] != Y && _allowedTypes[l] != V && _allowedTypes[l] != G &&
+								_allowedTypes[l] != dA && _allowedTypes[l] != dI && _allowedTypes[l] != dL && _allowedTypes[l] != dM && _allowedTypes[l] != dF && _allowedTypes[l] != dW && _allowedTypes[l] != dY && _allowedTypes[l] != dV){
+									continue;
+							}
+						} 
+						else{
+							if (_allowedTypes[l] == A || _allowedTypes[l] == I || _allowedTypes[l] == L || _allowedTypes[l] == M || _allowedTypes[l] == F || _allowedTypes[l] == W || _allowedTypes[l] == Y || _allowedTypes[l] == V ||
+								_allowedTypes[l] == dA || _allowedTypes[l] == dI || _allowedTypes[l] == dL || _allowedTypes[l] == dM || _allowedTypes[l] == dF || _allowedTypes[l] == dW || _allowedTypes[l] == dY || _allowedTypes[l] == dV){
+									continue;
+							}
+						}
+					}
 					if(j > 0){
 						phi = _prot->getPhi(_activeChains[i], j);
 					}

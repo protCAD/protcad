@@ -104,11 +104,20 @@ void protein::initializeModificationMethods()
 	itsModificationMethods[3] = 0;
 	itsModificationMethods[4] = 0;
 }
-
-//******************testing junk****************
-void protein::accessChainZeroResZero()
+void protein::removeChain(UInt _chainIndex)
 {
-	itsChains[0]->accessResZero();
+	
+	for (UInt i = 0; i < itsChains.size(); i++)
+	{
+		if (i > _chainIndex)
+		{
+			cout << "map " << itsIndependentChainsMap[i] << endl;
+			itsIndependentChainsMap[i] = itsIndependentChainsMap[i]-1;
+		}
+	}
+	delete itsChains[_chainIndex];
+	itsChains.resize(itsChains.size()-1);
+	
 }
 
 void protein::symmetryLinkChainAtoB(UInt _aIndex, UInt _bIndex)
@@ -787,6 +796,7 @@ void protein::finishProteinBuild()
 {
 	for (unsigned int i=0; i< itsChains.size(); i++)
 	{
+		itsChains[i]->rebuildResiduesInChain();
 		itsChains[i]->finishChainBuild();
 	}
 /*
@@ -1119,6 +1129,14 @@ double protein::protEnergy()
 	return Energy;
 }
 
+double protein::protEnergy(UInt chainIndex) //Energy of chain alone
+{
+	setMoved(true,0);
+	updateEnergy(chainIndex);
+	double Energy = itsChains[chainIndex]->getEnergy();
+	return Energy;
+}
+
 void protein::updateEnergy()
 {
 	updateMovedDependence(0);
@@ -1131,6 +1149,14 @@ void protein::updateEnergy()
 			itsChains[i]->updateEnergy(itsChains[j]);
 		}
 	}
+	setMoved(false,0);
+}
+
+void protein::updateEnergy(UInt chainIndex)
+{
+	updateMovedDependence(0);
+	updateDielectrics(chainIndex);
+	itsChains[chainIndex]->updateEnergy();
 	setMoved(false,0);
 }
 
@@ -1147,12 +1173,23 @@ void protein::updateDielectrics()
 	calculateDielectrics();
 }
 
+void protein::updateDielectrics(UInt chainIndex)
+{
+	itsChains[chainIndex]->polarizability();
+	calculateDielectrics(chainIndex);
+}
+
 void protein::calculateDielectrics()
 {
 	for(UInt i=0; i<itsChains.size(); i++)
 	{
 		itsChains[i]->calculateDielectrics();
 	}
+}
+
+void protein::calculateDielectrics(UInt chainIndex)
+{
+	itsChains[chainIndex]->calculateDielectrics();
 }
 
 void protein::updateMovedDependence(UInt _EorC)
@@ -1475,6 +1512,20 @@ void protein::rotateChain(UInt _chain, const axis _axis, const double _theta)
 	else
 	{
 		cout << "ERROR in protein::rotateChain(...)\n\tchain index is out of bounds ..." << endl;
+		return;
+	}
+	return;
+}
+
+void protein::rotateChainRelative(UInt _chain, const axis _axis, const double _theta)
+{
+	if (_chain >= 0 && _chain < itsChains.size())
+	{
+		itsChains[_chain]->rotateRelative(_axis, _theta);
+	}
+	else
+	{
+		cout << "ERROR in protein::rotateChainRelative(...)\n\tchain index is out of bounds ..." << endl;
 		return;
 	}
 	return;
@@ -2127,7 +2178,7 @@ void protein::alignToAxis(const axis _axis)
     for (;!(theIter.last());theIter++)
     {
        pAtom = theIter.getAtomPointer(); 
-       if (pAtom->getName() == "N" || pAtom->getName() == "CA" || pAtom->getName() == "C" || pAtom->getName() == "O" || pAtom->getName() == "CB"){
+       if (pAtom->getName() == "N" || pAtom->getName() == "CA" || pAtom->getName() == "C" || pAtom->getName() == "O"){
             coord2.push_back(pAtom->getCoords());
        }
     }
@@ -2679,19 +2730,40 @@ double protein::getResPairEnergy(const UInt _chain1, const UInt _res1, const UIn
 	}
 }
 
-void protein::protMin(bool _backboneRelaxation)
+vector <dblVec> protein::saveCoords( UInt chainIndex, UInt resIndex)
+{
+	UInt nAtoms = getNumAtoms(chainIndex, resIndex);
+	vector <dblVec> allCoords;
+	for (UInt i=0; i<nAtoms; i++)
+	{
+		dblVec coords = getCoords(chainIndex, resIndex, i);
+		allCoords.push_back(coords);
+	}
+	return allCoords;
+}
+
+void protein::setAllCoords( UInt chainIndex, UInt resIndex, vector<dblVec> allCoords)
+{
+	UInt nAtoms = getNumAtoms(chainIndex, resIndex);
+	for (UInt i=0; i<nAtoms; i++)
+	{
+		setCoords(chainIndex, resIndex, i, allCoords[i]);
+	}
+}
+
+void protein::protOpt(bool _backboneRelaxation)
 {
 	protRelax(1000);
 	protOpt(_backboneRelaxation);
 }
 
-void protein::protMin(bool _backboneRelaxation, UIntVec _frozenResidues, UIntVec _activeChains)
+void protein::protOpt(bool _backboneRelaxation, UIntVec _frozenResidues, UIntVec _activeChains)
 {
 	protRelax(_frozenResidues, _activeChains);
 	protOpt(_backboneRelaxation, _frozenResidues, _activeChains);
 }
 
-void protein::protOpt(bool _backbone)
+void protein::protMin(bool _backbone)
 {
 	// Sidechain and backslide optimization with a local dielectric scaling of electrostatics and corresponding Born/Gill implicit solvation energy
 	
@@ -2699,41 +2771,58 @@ void protein::protOpt(bool _backbone)
 	saveCurrentState();
 	UInt randchain, randres, resnum, backboneOrSidechain = 1;
 	UInt clashes, clashesStart, bbClashes, bbClashesStart, chainNum = getNumChains(), plateau = 1000;
-	double Energy, pastEnergy = protEnergy(), deltaEnergy, sPhi, sPsi,nobetter = 0.0, KT = KB*Temperature();
+	double Energy, pastEnergy = protEnergy(), deltaEnergy, sPhi, sPsi, nobetter = 0.0, KT = KB*Temperature();
+	double rotX, rotY, rotZ, transX, transY, transZ;
 	vector < vector <double>> currentSidechainConf, newSidechainConf; srand (time(NULL)); vector <double> backboneAngles(2);
-	bool sidechainTest, backboneTest, revert, energyTest, boltzmannAcceptance;
-	
+	bool sidechainTest, backboneTest, cofactorTest, revert, energyTest, boltzmannAcceptance;
+	vector <dblVec> currentCoords;
 	//--Run optimizaiton loop to local minima defined by an RT plateau------------------------
 	do{
 		//--choose random residue and set variables
 		randchain = rand() % chainNum, resnum = getNumResidues(randchain), randres = rand() % resnum;
 		clashesStart = getNumHardClashes(); nobetter++;
-		backboneTest = false, sidechainTest = false, energyTest = false, revert = true;
-		
-		//--Backbone conformation trial--------------------------------------------------------
-		if (_backbone) {backboneOrSidechain = rand() % 2;}
-		if (randres > 0 && randres < resnum-2 && backboneOrSidechain == 0){
-			backboneTest = true; bbClashesStart = getNumHardBackboneClashes();
-			sPhi = getPhi(randchain,randres), sPsi = getPsi(randchain,randres);
-			backboneAngles = getRandConformationFromBackboneType(sPhi, sPsi);
-			setDihedral(randchain,randres,backboneAngles[0],0,0); setDihedral(randchain,randres,backboneAngles[1],1,0);
-			bbClashes = getNumHardBackboneClashes();
-			if (bbClashes <= bbClashesStart){
+		backboneTest = false, sidechainTest = false, cofactorTest = false, energyTest = false, revert = true;
+		if (isCofactor(randchain, randres))
+		{
+			//--Rock and Roll cofactor in site
+			cofactorTest = true;
+			currentCoords.clear();
+			currentCoords = saveCoords(randchain, randres);
+			rotX = rand() % 2, rotY = rand() % 2, rotZ = rand() % 2;
+			transX = (rand() % 30)/100, transY = (rand() % 30)/100, transZ = (rand() % 30)/100;
+			rotateChainRelative(randchain,X_axis,rotX), rotateChainRelative(randchain,Y_axis,rotY), rotateChainRelative(randchain,Z_axis,rotZ);
+			translateChain(randchain, transX, transY, transZ);
+			clashes = getNumHardClashes();
+			if (clashes <= clashesStart){
+					energyTest = true; revert = false;
+			}
+		}
+		else{
+			//--Backbone conformation trial--------------------------------------------------------
+			if (_backbone) {backboneOrSidechain = rand() % 2;}
+			if (randres > 0 && randres < resnum-2 && backboneOrSidechain == 0){
+				backboneTest = true; bbClashesStart = getNumHardBackboneClashes();
+				sPhi = getPhi(randchain,randres), sPsi = getPsi(randchain,randres);
+				backboneAngles = getRandConformationFromBackboneType(sPhi, sPsi);
+				setDihedral(randchain,randres,backboneAngles[0],0,0); setDihedral(randchain,randres,backboneAngles[1],1,0);
+				bbClashes = getNumHardBackboneClashes();
+				if (bbClashes <= bbClashesStart){
+					clashes = getNumHardClashes();
+					if (clashes <= clashesStart){
+						energyTest = true; revert = false;
+					}
+				}
+			}
+			//--Sidechain conformation trial--------------------------------------------------------
+			else{
+				sidechainTest = true;
+				currentSidechainConf = getSidechainDihedrals(randchain, randres);
+				newSidechainConf = randContinuousSidechainConformation(randchain, randres);
+				setSidechainDihedralAngles(randchain, randres, newSidechainConf);
 				clashes = getNumHardClashes();
 				if (clashes <= clashesStart){
 					energyTest = true; revert = false;
 				}
-			}
-		}
-		//--Sidechain conformation trial--------------------------------------------------------
-		else{
-			sidechainTest = true;
-			currentSidechainConf = getSidechainDihedrals(randchain, randres);
-			newSidechainConf = randContinuousSidechainConformation(randchain, randres);
-			setSidechainDihedralAngles(randchain, randres, newSidechainConf);
-			clashes = getNumHardClashes();
-			if (clashes <= clashesStart){
-				energyTest = true; revert = false;
 			}
 		}
 		//--Energy-Test-------------------------------------------------------------------------
@@ -2749,6 +2838,10 @@ void protein::protOpt(bool _backbone)
 		}
 		//--Revert conformation-----------------------------------------------------------------
 		if (revert){
+			if(cofactorTest)
+			{
+				setAllCoords(randchain, randres, currentCoords);
+			}
 			if(backboneTest){
 				setDihedral(randchain,randres,sPhi,0,0);
 				setDihedral(randchain,randres,sPsi,1,0);
@@ -2761,7 +2854,7 @@ void protein::protOpt(bool _backbone)
 	return;
 }
 
-void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeChains)
+void protein::protMin(bool _backbone, UIntVec _frozenResidues, UIntVec _activeChains)
 {
 	// Sidechain and backslide optimization with a local dielectric scaling of electrostatics and corresponding Born/Gill implicit solvation energy
 	
@@ -2770,9 +2863,10 @@ void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 	UInt randchain, randres, resnum, backboneOrSidechain = 1;
 	UInt clashes, clashesStart, bbClashes, bbClashesStart, chainNum = _activeChains.size(), plateau = 1000;
 	double Energy, pastEnergy = protEnergy(), deltaEnergy, sPhi, sPsi,nobetter = 0.0, KT = KB*Temperature();
+	double rotX, rotY, rotZ, transX, transY, transZ;
 	vector < vector <double>> currentSidechainConf, newSidechainConf; srand (time(NULL)); vector <double> backboneAngles(2);
-	bool sidechainTest, backboneTest, revert, energyTest, skip, boltzmannAcceptance;
-	
+	bool sidechainTest, backboneTest, revert, cofactorTest, energyTest, skip, boltzmannAcceptance;
+	vector <dblVec> currentCoords;
 	//--Run optimizaiton loop to local minima defined by an RT plateau------------------------
 	do{
 		//--choose random residue not frozen of active chains
@@ -2786,32 +2880,49 @@ void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 				}
 			} while (skip);
 		clashesStart = getNumHardClashes(); resnum = getNumResidues(randchain); nobetter++;
-		backboneTest = false, sidechainTest = false, energyTest = false, revert = true;
+		backboneTest = false, sidechainTest = false, cofactorTest = false, energyTest = false, revert = true;
 		
-		//--Backbone conformation trial--------------------------------------------------------
-		if (_backbone) {backboneOrSidechain = rand() % 2;}
-		if (randres > 0 && randres < resnum-2 && backboneOrSidechain == 0){
-			backboneTest = true; bbClashesStart = getNumHardBackboneClashes();
-			sPhi = getPhi(randchain,randres), sPsi = getPsi(randchain,randres);
-			backboneAngles = getRandConformationFromBackboneType(sPhi, sPsi);
-			setDihedral(randchain,randres,backboneAngles[0],0,0); setDihedral(randchain,randres,backboneAngles[1],1,0);
-			bbClashes = getNumHardBackboneClashes();
-			if (bbClashes <= bbClashesStart){
+		if (isCofactor(randchain, randres))
+		{
+			//--Rock and Roll cofactor in site
+			cofactorTest = true;
+			currentCoords.clear();
+			currentCoords = saveCoords(randchain, randres);
+			rotX = rand() % 2, rotY = rand() % 2, rotZ = rand() % 2;
+			transX = (rand() % 30)/100, transY = (rand() % 30)/100, transZ = (rand() % 30)/100;
+			rotateChainRelative(randchain,X_axis,rotX), rotateChainRelative(randchain,Y_axis,rotY), rotateChainRelative(randchain,Z_axis,rotZ);
+			translateChain(randchain, transX, transY, transZ);
+			clashes = getNumHardClashes();
+			if (clashes <= clashesStart){
+					energyTest = true; revert = false;
+			}
+		}
+		else{
+			//--Backbone conformation trial--------------------------------------------------------
+			if (_backbone) {backboneOrSidechain = rand() % 2;}
+			if (randres > 0 && randres < resnum-2 && backboneOrSidechain == 0){
+				backboneTest = true; bbClashesStart = getNumHardBackboneClashes();
+				sPhi = getPhi(randchain,randres), sPsi = getPsi(randchain,randres);
+				backboneAngles = getRandConformationFromBackboneType(sPhi, sPsi);
+				setDihedral(randchain,randres,backboneAngles[0],0,0); setDihedral(randchain,randres,backboneAngles[1],1,0);
+				bbClashes = getNumHardBackboneClashes();
+				if (bbClashes <= bbClashesStart){
+					clashes = getNumHardClashes();
+					if (clashes <= clashesStart){
+						energyTest = true; revert = false;
+					}
+				}
+			}
+			//--Sidechain conformation trial--------------------------------------------------------
+			else{
+				sidechainTest = true;
+				currentSidechainConf = getSidechainDihedrals(randchain, randres);
+				newSidechainConf = randContinuousSidechainConformation(randchain, randres);
+				setSidechainDihedralAngles(randchain, randres, newSidechainConf);
 				clashes = getNumHardClashes();
 				if (clashes <= clashesStart){
 					energyTest = true; revert = false;
 				}
-			}
-		}
-		//--Sidechain conformation trial--------------------------------------------------------
-		else{
-			sidechainTest = true;
-			currentSidechainConf = getSidechainDihedrals(randchain, randres);
-			newSidechainConf = randContinuousSidechainConformation(randchain, randres);
-			setSidechainDihedralAngles(randchain, randres, newSidechainConf);
-			clashes = getNumHardClashes();
-			if (clashes <= clashesStart){
-				energyTest = true; revert = false;
 			}
 		}
 		//--Energy-Test-------------------------------------------------------------------------
@@ -2827,6 +2938,10 @@ void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 		}
 		//--Revert conformation-----------------------------------------------------------------
 		if (revert){
+			if(cofactorTest)
+			{
+				setAllCoords(randchain, randres, currentCoords);
+			}
 			if(backboneTest){
 				setDihedral(randchain,randres,sPhi,0,0);
 				setDihedral(randchain,randres,sPsi,1,0);
@@ -2839,7 +2954,7 @@ void protein::protOpt(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 	return;
 }
 
-void protein::protOpt(bool _backbone, UInt chainIndex, UInt resIndex)
+void protein::protMin(bool _backbone, UInt chainIndex, UInt resIndex)
 {
 	// Sidechain and backslide optimization with a local dielectric scaling of electrostatics and corresponding Born/Gill implicit solvation energy
 	
@@ -2848,38 +2963,56 @@ void protein::protOpt(bool _backbone, UInt chainIndex, UInt resIndex)
 	UInt randchain = chainIndex, randres = resIndex, resnum, backboneOrSidechain = 1;
 	UInt clashes, clashesStart, bbClashes, bbClashesStart, plateau = 1000;
 	double Energy, pastEnergy = protEnergy(), deltaEnergy, sPhi, sPsi,nobetter = 0.0, KT = KB*Temperature();
+	double rotX, rotY, rotZ, transX, transY, transZ;
 	vector < vector <double>> currentSidechainConf, newSidechainConf; srand (time(NULL)); vector <double> backboneAngles(2);
-	bool sidechainTest, backboneTest, revert, energyTest, boltzmannAcceptance;
-	
+	bool sidechainTest, backboneTest, revert, cofactorTest, energyTest, boltzmannAcceptance;
+	vector <dblVec> currentCoords;
 	//--Run optimizaiton loop to local minima defined by an RT plateau------------------------
 	do{
 		clashesStart = getNumHardClashes(); resnum = getNumResidues(randchain); nobetter++;
-		backboneTest = false, sidechainTest = false, energyTest = false, revert = true;
+		backboneTest = false, sidechainTest = false,  cofactorTest = false, energyTest = false, revert = true;
 		
-		//--Backbone conformation trial--------------------------------------------------------
-		if (_backbone) {backboneOrSidechain = rand() % 2;}
-		if (randres > 0 && randres < resnum-2 && backboneOrSidechain == 0){
-			backboneTest = true; bbClashesStart = getNumHardBackboneClashes();
-			sPhi = getPhi(randchain,randres), sPsi = getPsi(randchain,randres);
-			backboneAngles = getRandConformationFromBackboneType(sPhi, sPsi);
-			setDihedral(randchain,randres,backboneAngles[0],0,0); setDihedral(randchain,randres,backboneAngles[1],1,0);
-			bbClashes = getNumHardBackboneClashes();
-			if (bbClashes <= bbClashesStart){
+		if (isCofactor(randchain, randres))
+		{
+			//--Rock and Roll cofactor in site
+			cofactorTest = true;
+			currentCoords.clear();
+			currentCoords = saveCoords(randchain, randres);
+			rotX = rand() % 2, rotY = rand() % 2, rotZ = rand() % 2;
+			transX = (rand() % 30)/100, transY = (rand() % 30)/100, transZ = (rand() % 30)/100;
+			rotateChainRelative(randchain,X_axis,rotX), rotateChainRelative(randchain,Y_axis,rotY), rotateChainRelative(randchain,Z_axis,rotZ);
+			translateChain(randchain, transX, transY, transZ);
+			clashes = getNumHardClashes();
+			if (clashes <= clashesStart){
+					energyTest = true; revert = false;
+			}
+		}
+		else{
+			//--Backbone conformation trial--------------------------------------------------------
+			if (_backbone) {backboneOrSidechain = rand() % 2;}
+			if (randres > 0 && randres < resnum-2 && backboneOrSidechain == 0){
+				backboneTest = true; bbClashesStart = getNumHardBackboneClashes();
+				sPhi = getPhi(randchain,randres), sPsi = getPsi(randchain,randres);
+				backboneAngles = getRandConformationFromBackboneType(sPhi, sPsi);
+				setDihedral(randchain,randres,backboneAngles[0],0,0); setDihedral(randchain,randres,backboneAngles[1],1,0);
+				bbClashes = getNumHardBackboneClashes();
+				if (bbClashes <= bbClashesStart){
+					clashes = getNumHardClashes();
+					if (clashes <= clashesStart){
+						energyTest = true; revert = false;
+					}
+				}
+			}
+			//--Sidechain conformation trial--------------------------------------------------------
+			else{
+				sidechainTest = true;
+				currentSidechainConf = getSidechainDihedrals(randchain, randres);
+				newSidechainConf = randContinuousSidechainConformation(randchain, randres);
+				setSidechainDihedralAngles(randchain, randres, newSidechainConf);
 				clashes = getNumHardClashes();
 				if (clashes <= clashesStart){
 					energyTest = true; revert = false;
 				}
-			}
-		}
-		//--Sidechain conformation trial--------------------------------------------------------
-		else{
-			sidechainTest = true;
-			currentSidechainConf = getSidechainDihedrals(randchain, randres);
-			newSidechainConf = randContinuousSidechainConformation(randchain, randres);
-			setSidechainDihedralAngles(randchain, randres, newSidechainConf);
-			clashes = getNumHardClashes();
-			if (clashes <= clashesStart){
-				energyTest = true; revert = false;
 			}
 		}
 		//--Energy-Test-------------------------------------------------------------------------
@@ -2895,6 +3028,10 @@ void protein::protOpt(bool _backbone, UInt chainIndex, UInt resIndex)
 		}
 		//--Revert conformation-----------------------------------------------------------------
 		if (revert){
+			if(cofactorTest)
+			{
+				setAllCoords(randchain, randres, currentCoords);
+			}
 			if(backboneTest){
 				setDihedral(randchain,randres,sPhi,0,0);
 				setDihedral(randchain,randres,sPsi,1,0);
@@ -3019,6 +3156,43 @@ void protein::protRelax(UIntVec _frozenResidues, UIntVec _activeChains)
 	return;
 }
 
+void protein::cofactorRelax(UInt _plateau)
+{  
+	UInt pastCofactorClashes = getNumHardClashes(),count = 0;
+	if (pastCofactorClashes > 0)
+	{	
+		//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
+		double rotX,rotY,rotZ;
+		UInt randchain, randres, resnum, chainNum = getNumChains(), cofactorClashes, nobetter = 0;
+		srand (time(NULL));
+
+		//--Run optimizaiton loop to relative minima, determined by _plateau----------------------------
+		do
+		{   //--choose random cofactor
+			do{
+				randchain = rand() % chainNum;
+				resnum = getNumResidues(randchain);
+				randres = rand() % resnum;
+			}while (!isCofactor(randchain, randres));
+			nobetter++;
+			count++;
+	
+			//--cofactor rotation-----------------------------------------------------------------------
+			rotX = rand() % 31, rotY = rand() % 31, rotZ = rand() % 31;
+			rotateChainRelative(randchain,X_axis,rotX), rotateChainRelative(randchain,Y_axis,rotY), rotateChainRelative(randchain,Z_axis,rotZ);
+			cofactorClashes = getNumHardClashes();
+			if (cofactorClashes <= pastCofactorClashes){
+				nobetter = 0, pastCofactorClashes = cofactorClashes;
+			}
+			else{
+				rotateChainRelative(randchain,Z_axis,rotZ*-1), rotateChainRelative(randchain,Y_axis,rotY*-1), rotateChainRelative(randchain,X_axis,rotX*-1);
+			}
+
+		} while (nobetter < _plateau && count < _plateau*10);
+	}
+	return;
+}
+
 void protein::protSampling(UInt iterations)
 {
 	//--Initialize variables for loop, calculate starting energy and build energy vectors-----
@@ -3069,6 +3243,7 @@ void protein::protSampling(UInt iterations)
 			boltzmannAcceptance = boltzmannEnergyCriteria(deltaEnergy);
 			if (boltzmannAcceptance){
 				pastEnergy = Energy; changes++;
+				cout << changes << " " << Energy << endl;
 			}
 			else{revert = true;}
 		}
@@ -3084,40 +3259,6 @@ void protein::protSampling(UInt iterations)
 		}
 	} while(changes < iterations);
 	return;
-}
-
-double protein::getResiduesPerTurn(double phi, double psi)
-{
-	double phipsisum = phi+psi;
-	double handedness;
-	if ((phipsisum > 0 && phipsisum < 180)|| phipsisum < -180){handedness = -1.0;}
-	else{handedness = 1.0;}
-	double angleSumHalfRad = ((phipsisum)/2)*PI/180;
-	double radAngle = acos(-0.3333333-0.6666666*cos(2*angleSumHalfRad));
-	double radAngletoDeg = radAngle*180/PI;
-	double residuesPerTurn = (360/radAngletoDeg)*handedness;
-	return residuesPerTurn;
-}
-
-UInt protein::getBackboneSequenceType(double RPT, double phi)
-{
-	if (RPT <= -4.1 && phi <= 0)				{return 0;}
-	if (RPT > -4.1  && RPT <= -3.4 && phi <= 0)	{return 1;}
-	if (RPT > -3.4  && RPT <= -2.7 && phi <= 0)	{return 2;}
-	if (RPT > -2.7  && RPT <= -2.0 && phi <= 0)	{return 3;}
-	if (RPT >  2.0  && RPT <=  2.7 && phi <= 0)	{return 4;}
-	if (RPT >  2.7  && RPT <=  3.4 && phi <= 0)	{return 5;}
-	if (RPT >  3.4  && RPT <=  4.1 && phi <= 0)	{return 6;}
-	if (RPT >  4.1 && phi <= 0)					{return 7;}
-	if (RPT <= -4.1 && phi > 0)					{return 8;}
-	if (RPT > -4.1  && RPT <= -3.4 && phi > 0)	{return 9;}
-	if (RPT > -3.4  && RPT <= -2.7 && phi > 0)	{return 10;}
-	if (RPT > -2.7  && RPT <= -2.0 && phi > 0)	{return 11;}
-	if (RPT >  2.0  && RPT <=  2.7 && phi > 0)	{return 12;}
-	if (RPT >  2.7  && RPT <=  3.4 && phi > 0)	{return 13;}
-	if (RPT >  3.4  && RPT <=  4.1 && phi > 0)	{return 14;}
-	if (RPT >  4.1 && phi > 0)					{return 15;}
-	return 0;
 }
 
 vector <double> protein::getRandPhiPsifromBackboneSequenceType(UInt _RPTType)
@@ -4096,4 +4237,20 @@ double protein::getHBondEnergy(const UInt _chain1, const UInt _res1, const UInt 
     }
     return energy;
 }
+//this function will calculate the hammingdistance between two sequences obtained from two pdb files
+double protein::getHammingDistance(vector<string>seq1,vector<string>seq2) 
+{ 
+	double count = 0.0;double percent=0.0;double countsim=0.0;
+	for (UInt i=0;i<seq1.size();i++){
+        	if(seq1[i]==seq2[i]){
+                	if (seq1[i]!="-" || seq2[i]!="X"){
+                        	 count++;
+                }
+         }
+        }
+	countsim=seq1.size()-count;
+	percent=((countsim/double(seq1.size()))*100);
+   	return percent;
+}  
+
 

@@ -109,12 +109,6 @@ void chain::removeResidue(UInt _resNum)
     itsSecondaryStructures.resize(itsSecondaryStructures.size()-1);
 }
 
-//***************testing junk*********************
-void chain::accessResZero()
-{
-	itsResidues[0]->accessMe();
-}
-
 void chain::add(residue* _pResidue)
 {
 	addResidue(_pResidue);
@@ -202,7 +196,7 @@ void chain::makeResidueSilent(const UInt _resIndex)
 bool chain::activateForRepacking(UInt _indexInChain)
 {
 	if (_indexInChain < itsResidues.size())
-	{	
+	{
 		for (UInt i=0; i<itsRepackActivePositionMap.size(); i++)
 		{	if ( itsRepackActivePositionMap[i] == _indexInChain)
 			{
@@ -422,24 +416,54 @@ void chain::fixBrokenResidue(const UInt _indexInChain)
 	}
 }
 
-void chain::fixBrokenResidue(const UInt _indexInChain, bool withRotamer)
+void chain::rebuildResidue(const UInt _indexInChain)
 {	if (_indexInChain < itsResidues.size())
-	{	// Now check if this position is allowed to be mutated
-		// to this residue type
+	{
 		vector < vector <double> > currentRot;
 		residue* pOldRes = itsResidues[_indexInChain];
-		if (withRotamer)
-		{
-			currentRot = getSidechainDihedralAngles(_indexInChain);
-		}
-		itsResidues[_indexInChain] = pOldRes->mutate( itsResidues[_indexInChain]->getTypeIndex() );
-		if (withRotamer)
-		{
-			setSidechainDihedralAngles(_indexInChain, currentRot);
-		}
+		UInt itsResType = itsResidues[_indexInChain]->getTypeIndex();
+		currentRot = getSidechainDihedralAngles(_indexInChain);
+		bool fliptoD = isDAminoAcid(pOldRes);
+		if (fliptoD){itsResidues[_indexInChain] = pOldRes->mutateNew(itsResType+Daa);}
+		else{itsResidues[_indexInChain] = pOldRes->mutateNew(itsResType);}
+		setSidechainDihedralAngles(_indexInChain, currentRot);
 		itsResidues[_indexInChain]->isArtificiallyBuilt = true;
 		delete pOldRes;
 	}
+}
+
+void chain::rebuildResiduesInChain()
+{
+	for (UInt i=0; i< itsResidues.size(); i++)
+	{
+		rebuildResidue(i);
+	}
+}
+
+bool chain::isDAminoAcid(residue* currentRes)
+{
+	bool flip = false;
+	UInt resType = currentRes->getTypeIndex();
+	if (currentRes->isL(resType) && currentRes->getNumAtoms() > 4 ){
+
+		dblVec Ncoords = currentRes->getCoords(0);
+		dblVec Ccoords = currentRes->getCoords(2);
+		dblVec CAcoords = currentRes->getCoords(1);
+		dblVec CBcoords; if (resType == 19){CBcoords = currentRes->getCoords(6);} //proline
+		else{CBcoords = currentRes->getCoords(4);}
+
+		dblVec N_CA = CAcoords - Ncoords;
+		dblVec N_C = Ccoords - Ncoords;
+		dblVec CA_CB = CBcoords - CAcoords;
+
+		// Calculate Cross Products
+		dblVec N_CA_X_N_C(3);
+		N_CA_X_N_C = CMath::cross(N_CA,N_C);
+
+		double chiralityAngle = CMath::dotProduct(N_CA_X_N_C, CA_CB);
+		if (chiralityAngle > 0){flip = true;}
+	}
+	return flip;
 }
 
 vector<chainModBuffer> chain::performRandomMutation(ran& _ran)
@@ -1019,41 +1043,34 @@ void chain::undoLastRotamerRotation()
 #endif
 }
 
+vector <dblVec> chain::saveCoords(UInt resIndex)
+{
+	UInt nAtoms = getNumAtoms(resIndex);
+	vector <dblVec> allCoords;
+	for (UInt i=0; i<nAtoms; i++)
+	{
+		dblVec coords = getCoords(resIndex, i);
+		allCoords.push_back(coords);
+	}
+	return allCoords;
+}
+
+void chain::setAllCoords(UInt resIndex, vector<dblVec> allCoords)
+{
+	UInt nAtoms = getNumAtoms(resIndex);
+	for (UInt i=0; i<nAtoms; i++)
+	{
+		setCoords(resIndex, i, allCoords[i]);
+	}
+}
+
 vector <chainModBuffer> chain::saveCurrentState()
 {
 	stateBuffers.resize(0);
 	for (UInt i = 0; i < itsResidues.size(); i ++)
 	{
-		chainModBuffer temp;
-
-		temp.setIndexInChainBuffer(i);
-		temp.setResidueIdentityBuffer(itsResidues[i]->getTypeIndex());
-		vector<UInt> tempRotamer;
-		tempRotamer = itsChainPositions[i]->getCurrentRotamerIndex();
-		temp.setRotamerIndexBuffer(tempRotamer);
-		vector< vector< double> > tempAngles;
-		tempAngles = itsResidues[i]->getSidechainDihedralAngles();
-		temp.setSidechainDihedralAngleBuffer(tempAngles);
-		vector< double> tempBBAngles(3);
-		tempBBAngles.push_back(itsResidues[i]->getPhi());
-		tempBBAngles.push_back(itsResidues[i]->getPsi());
-		tempBBAngles.push_back(itsResidues[i]->getBetaChi());
-		temp.setBackboneDihedralAngleBuffer(tempBBAngles);
-		stateBuffers.push_back(temp);
-	}
-	return stateBuffers;
-}
-
-vector <chainModBuffer> chain::saveCurrentState(vector <int> _indices)
-{
-	stateBuffers.resize(0);
-	for (UInt x = 0; x < _indices.size(); x ++)
-	{
-		int i = _indices[x];
-		if (i >= 0 && (UInt)i < itsResidues.size())
-		{
+		if (!isCofactor(i)){
 			chainModBuffer temp;
-
 			temp.setIndexInChainBuffer(i);
 			temp.setResidueIdentityBuffer(itsResidues[i]->getTypeIndex());
 			vector<UInt> tempRotamer;
@@ -1068,6 +1085,36 @@ vector <chainModBuffer> chain::saveCurrentState(vector <int> _indices)
 			tempBBAngles.push_back(itsResidues[i]->getBetaChi());
 			temp.setBackboneDihedralAngleBuffer(tempBBAngles);
 			stateBuffers.push_back(temp);
+		}
+	}
+	return stateBuffers;
+}
+
+vector <chainModBuffer> chain::saveCurrentState(vector <int> _indices)
+{
+	stateBuffers.resize(0);
+	for (UInt x = 0; x < _indices.size(); x ++)
+	{
+		int i = _indices[x];
+		if (i >= 0 && (UInt)i < itsResidues.size())
+		{
+			if (!isCofactor(i)){
+				chainModBuffer temp;
+				temp.setIndexInChainBuffer(i);
+				temp.setResidueIdentityBuffer(itsResidues[i]->getTypeIndex());
+				vector<UInt> tempRotamer;
+				tempRotamer = itsChainPositions[i]->getCurrentRotamerIndex();
+				temp.setRotamerIndexBuffer(tempRotamer);
+				vector< vector< double> > tempAngles;
+				tempAngles = itsResidues[i]->getSidechainDihedralAngles();
+				temp.setSidechainDihedralAngleBuffer(tempAngles);
+				vector< double> tempBBAngles(3);
+				tempBBAngles.push_back(itsResidues[i]->getPhi());
+				tempBBAngles.push_back(itsResidues[i]->getPsi());
+				tempBBAngles.push_back(itsResidues[i]->getBetaChi());
+				temp.setBackboneDihedralAngleBuffer(tempBBAngles);
+				stateBuffers.push_back(temp);
+			}
 		}
 	}
 	return stateBuffers;
@@ -1104,12 +1151,12 @@ void chain::undoState()
 		delete pOldRes;
 
 		itsChainPositions[index]->setCurrentResIndex(itsResidues[index]->getTypeIndex());
-		
+
 		vector<double> bbAngles = stateBuffers[x].getBackboneDihedralAngleBuffer();
 		itsResidues[index]->setPhi(bbAngles[0]);
 		itsResidues[index]->setPsi(bbAngles[1]);
 		itsResidues[index]->setBetaChi(bbAngles[2]);
-		
+
 		vector< UInt> rotIndex = stateBuffers[x].getRotamerIndexBuffer();
 		setRotamerWithoutBuffering(index,rotIndex);
 
@@ -1510,7 +1557,51 @@ void chain::rotate(const axis _axis,const double _theta)
 	}
 	rotate(origin, vec, _theta);
 }
-	
+
+void chain::rotateRelative(const axis _axis,const double _theta)
+{
+	dblVec COMcoords(3);
+	COMcoords[0] = 0.0, COMcoords[1] = 0.0, COMcoords[2] = 0.0;
+	UInt totalAtoms = 0;
+	for (UInt i=0; i<itsResidues.size(); i++)
+	{
+		UInt nAtoms = itsResidues[i]->getNumAtoms();
+		dblVec coords(3);
+		for (UInt j=0; j<nAtoms; j++)
+		{
+			dblVec coords = itsResidues[i]->getCoords(j);
+			COMcoords[0] = COMcoords[0]+coords[0], COMcoords[1] = COMcoords[1]+coords[1], COMcoords[2] = COMcoords[2]+coords[2];
+			totalAtoms++;
+		}
+	}
+	COMcoords[0] = COMcoords[0]/totalAtoms, COMcoords[1] = COMcoords[1]/totalAtoms, COMcoords[2] = COMcoords[2]/totalAtoms;
+	translate(COMcoords[0]*-1,COMcoords[1]*-1,COMcoords[2]*-1);
+	point origin;
+	origin.setCoords(0,0,0);
+
+	dblVec vec(3);
+#ifdef USE_SVMT
+	for (UInt i=0; i<vec.extent(); i++)
+	{	vec[i] = 0.0;
+	}
+#else
+	for (int i=0; i<vec.dim(); i++)
+	{	vec[i] = 0.0;
+	}
+#endif
+	if (_axis == X_axis)
+	{	vec[0] = 1.0;
+	}
+	else if (_axis == Y_axis)
+	{	vec[1] = 1.0;
+	}
+	else if (_axis == Z_axis)
+	{	vec[2]	= 1.0;
+	}
+	rotate(origin, vec, _theta);
+	translate(COMcoords[0],COMcoords[1],COMcoords[2]);
+}
+
 void chain::rotate(const point& _point,const dblVec& _R_axis, const double _theta)
 {	for (UInt i=0; i<itsResidues.size(); i++)
 	{	itsResidues[i]->rotate(_point, _R_axis, _theta);
@@ -1521,7 +1612,7 @@ void chain::updateResiduesPerTurnType()
 {
 	if (itsResidues.size() > 1){
 		for(UInt i=0; i<itsResidues.size(); i++)
-		{	
+		{
 			UInt RPT = getBackboneSequenceType(i);
 			itsResidues[i]->setResiduesPerTurnType(RPT);
 		}
@@ -1530,62 +1621,63 @@ void chain::updateResiduesPerTurnType()
 
 double chain::getResiduesPerTurn(const UInt _resIndex)
 {
-	double phi, psi, residuesPerTurn = 0.0;
-	UInt type = getTypeFromResNum(_resIndex);
-	if (type < 53)
+	double phi, psi;
+	if (!isCofactor(_resIndex))
 	{
-		if (_resIndex == 0){
-			psi = itsResidues[_resIndex]->getPsi();
-			phi = itsResidues[_resIndex+1]->getPhi();
-		}
-		else if (_resIndex == itsResidues.size()-1){
-			psi = itsResidues[_resIndex-1]->getPsi();
-			phi = itsResidues[_resIndex]->getPhi();
-		}
-		else{
-			phi = itsResidues[_resIndex]->getPhi();
-			psi = itsResidues[_resIndex]->getPsi();
-		}
-		
-		double phipsisum = phi+psi;
-		double handedness;
-		if ((phipsisum > 0 && phipsisum < 180)|| phipsisum < -180){handedness = -1.0;}
-		else{handedness = 1.0;}
-		double angleSumHalfRad = ((phipsisum)/2)*PI/180;
-		double radAngle = acos(-0.3333333-0.6666666*cos(2*angleSumHalfRad));
-		double radAngletoDeg = radAngle*180/PI;
-		residuesPerTurn = (360/radAngletoDeg)*handedness;
+		phi = itsResidues[_resIndex]->getPhi();
+		psi = itsResidues[_resIndex]->getPsi();
+		return getResiduesPerTurn(phi, psi);
 	}
-	return residuesPerTurn;
+	else{return 0;}
+}
+
+double chain::getResiduesPerTurn(double phi, double psi)
+{
+	if (phi < 1000 && psi < 1000)
+	{
+		double rpt;
+		double radSum = ((phi+psi)/2)*PI/180;
+		double radDiff = ((psi-phi)/2)*PI/180;
+		double radTheta = 2*acos(-0.8235*sin(radSum)-0.0222*sin(radDiff));
+		double theta = radTheta*180/PI;
+		if (theta > 180) {rpt = 360/(theta-360);} else {rpt = 360/theta;}
+		double rise = 1/sin(radTheta/2)*(2.999*cos(radSum)-0.657*cos(radDiff));
+		if (rise < 0) {rpt = rpt*-1;}
+		return rpt;
+	}
+	else{return 0.0;}
 }
 
 UInt chain::getBackboneSequenceType(const UInt _resIndex)
 {
-	double phi;
-	if (_resIndex == 0){
-		phi = itsResidues[_resIndex+1]->getPhi();
-	}
-	else{
-		phi = itsResidues[_resIndex]->getPhi();
-	}
+	double phi = itsResidues[_resIndex]->getPhi();
 	double RPT = getResiduesPerTurn(_resIndex);
-	if (RPT <= -4.1 && phi <= 0)				{return 0;}
-	if (RPT > -4.1  && RPT <= -3.4 && phi <= 0)	{return 1;}
-	if (RPT > -3.4  && RPT <= -2.7 && phi <= 0)	{return 2;}
-	if (RPT > -2.7  && RPT <= -2.0 && phi <= 0)	{return 3;}
-	if (RPT >  2.0  && RPT <=  2.7 && phi <= 0)	{return 4;}
-	if (RPT >  2.7  && RPT <=  3.4 && phi <= 0)	{return 5;}
-	if (RPT >  3.4  && RPT <=  4.1 && phi <= 0)	{return 6;}
-	if (RPT >  4.1 && phi <= 0)					{return 7;}
-	if (RPT <= -4.1 && phi > 0)					{return 8;}
-	if (RPT > -4.1  && RPT <= -3.4 && phi > 0)	{return 9;}
-	if (RPT > -3.4  && RPT <= -2.7 && phi > 0)	{return 10;}
-	if (RPT > -2.7  && RPT <= -2.0 && phi > 0)	{return 11;}
-	if (RPT >  2.0  && RPT <=  2.7 && phi > 0)	{return 12;}
-	if (RPT >  2.7  && RPT <=  3.4 && phi > 0)	{return 13;}
-	if (RPT >  3.4  && RPT <=  4.1 && phi > 0)	{return 14;}
-	if (RPT >  4.1 && phi > 0)					{return 15;}
-	return 0;
+	return getBackboneSequenceType(RPT, phi);
+}
+
+UInt chain::getBackboneSequenceType(double RPT, double phi)
+{
+	if (RPT <= -4.83 && phi <= 0)					{return 0;}
+	if (RPT > -4.83  && RPT <= -4.13 && phi <= 0)	{return 1;}
+	if (RPT > -4.13  && RPT <= -3.43 && phi <= 0)	{return 2;}
+	if (RPT > -3.43  && RPT <= -2.73 && phi <= 0)	{return 3;}
+	if (RPT > -2.73  && RPT < -2.00 && phi <= 0)	{return 4;}
+	if (RPT >=  2.00  && RPT <=  2.73 && phi <= 0)	{return 5;}
+	if (RPT >  2.73  && RPT <=  3.43 && phi <= 0)	{return 6;}
+	if (RPT >  3.43  && RPT <=  4.13 && phi <= 0)	{return 7;}
+	if (RPT >  4.13  && RPT <=  4.83 && phi <= 0)	{return 8;}
+	if (RPT >  4.83 && phi <= 0)					{return 9;}
+	if (RPT <= -4.83 && phi > 0)					{return 10;}
+	if (RPT > -4.83  && RPT <= -4.13 && phi > 0)	{return 11;}
+	if (RPT > -4.13  && RPT <= -3.43 && phi > 0)	{return 12;}
+	if (RPT > -3.43  && RPT <= -2.73 && phi > 0)	{return 13;}
+	if (RPT > -2.73  && RPT < -2.00 && phi > 0)		{return 14;}
+	if (RPT >=  2.00  && RPT <=  2.73 && phi > 0)	{return 15;}
+	if (RPT >  2.73  && RPT <=  3.43 && phi > 0)	{return 16;}
+	if (RPT >  3.43  && RPT <=  4.13 && phi > 0)	{return 17;}
+	if (RPT >  4.13  && RPT <=  4.83 && phi > 0)	{return 18;}
+	if (RPT >  4.83 && phi > 0)						{return 19;}
+	return 20;
 }
 
 double chain::getPhi(const UInt _indexInChain)
@@ -1642,7 +1734,7 @@ int chain::setPsi(const UInt _index, double _psi)
 	{
 		return itsResidues[_index]->setPsi(_psi);
 	}
-	else 
+	else
 	{
 		cout << "Residue index out of range: " << _index << endl;
 		return -1;
@@ -1753,11 +1845,11 @@ double chain::intraEnergy()
 }
 
 void chain::updateEnergy()
-{	
+{
 	bool resI, resJ;
 	double resEnergy;
 	for(UInt i=0; i<itsResidues.size(); i++)
-	{	
+	{
 		resI = itsResidues[i]->getMoved(0);
 		for(UInt j=i+1; j<itsResidues.size(); j++)
 		{
@@ -1798,10 +1890,10 @@ void chain::polarizability()
 {
 	bool resI, resJ;
 	for(UInt i=0; i<itsResidues.size(); i++)
-	{	
+	{
 		resI = itsResidues[i]->getMoved(0);
 		for(UInt j=i+1; j<itsResidues.size(); j++)
-		{	
+		{
 			resJ = itsResidues[j]->getMoved(0);
 			if (resI || resJ){
 				itsResidues[i]->polarizability(itsResidues[j]);
@@ -1832,7 +1924,7 @@ void chain::polarizability(chain* _other)
 void chain::calculateDielectrics()
 {
 	for(UInt i=0; i<itsResidues.size(); i++)
-	{	
+	{
 		if (itsResidues[i]->getMoved(0)){
 			itsResidues[i]->calculateDielectrics();
 		}
@@ -1842,10 +1934,10 @@ void chain::calculateDielectrics()
 void chain::updateMovedDependence(UInt _EorC)
 {
 	for(UInt i=0; i<itsResidues.size(); i++)
-	{	
+	{
 		if (itsResidues[i]->getCheckMovedDependence(_EorC)){
 			for(UInt j=i+1; j<itsResidues.size(); j++)
-			{	
+			{
 				itsResidues[i]->updateMovedDependence(itsResidues[j], _EorC);
 			}
 		}
@@ -1869,7 +1961,7 @@ void chain::updateMovedDependence(chain* _other, UInt _EorC)
 void chain::setMoved(bool _moved, UInt _EorC)
 {
 	for(UInt i=0; i<itsResidues.size(); i++)
-	{	
+	{
 		itsResidues[i]->setMoved(_moved, _EorC);
 	}
 }
@@ -1878,7 +1970,7 @@ double chain::getEnergy()
 {
 	double Energy = 0.0;
 	for(UInt i=0; i<itsResidues.size(); i++)
-	{	
+	{
 		Energy += itsResidues[i]->getEnergy();
 	}
 	return Energy;
@@ -1890,7 +1982,7 @@ void chain::updateClashes()
 	bool resI, resJ;
 	UInt clashes;
 	for(UInt i=0; i<itsResidues.size(); i++)
-	{	
+	{
 		resI = itsResidues[i]->getMoved(1);
 		for(UInt j=i+1; j<itsResidues.size(); j++)
 		{
@@ -1931,7 +2023,7 @@ UInt chain::getClashes()
 {
 	UInt clashes = 0;
 	for(UInt i=0; i<itsResidues.size(); i++)
-	{	
+	{
 		clashes += itsResidues[i]->getClashes();
 	}
 	return clashes;
@@ -1943,7 +2035,7 @@ void chain::updateBackboneClashes()
 	bool resI, resJ;
 	UInt clashes;
 	for(UInt i=0; i<itsResidues.size(); i++)
-	{	
+	{
 		resI = itsResidues[i]->getMoved(2);
 		for(UInt j=i+1; j<itsResidues.size(); j++)
 		{
@@ -1980,7 +2072,7 @@ UInt chain::getBackboneClashes()
 {
 	UInt clashes = 0;
 	for(UInt i=0; i<itsResidues.size(); i++)
-	{	
+	{
 		clashes += itsResidues[i]->getBackboneClashes();
 	}
 	return clashes;
@@ -2039,7 +2131,7 @@ double chain::rotamerEnergy(const UInt _indexInChain)
 	if (rotamer::getScaleFactor() != 0.0)
 	{
 		UInt itsType = itsResidues[_indexInChain]->getTypeIndex();
-		if(	residue::dataBase[itsType].chiDefinitions.size() > 0 && 
+		if(	residue::dataBase[itsType].chiDefinitions.size() > 0 &&
 			residue::dataBase[itsType].chiDefinitions[0].size() >= 4)
 		{	if(itsChainPositions[_indexInChain] == 0)
 			{	return 0.0;
@@ -2055,7 +2147,7 @@ double chain::rotamerEnergy(const UInt _indexInChain)
 			UInt rotamerLibIndex =
 					itsChainPositions[_indexInChain]->getRotamerLibIndex();
 			for (UInt i=0; i< rotamerIndex.size(); i++)
-			{	
+			{
 				theEnergy = rotamer::getScaleFactor() * residue::dataBase[itsType].itsRotamerLibs[rotamerLibIndex]->getEnergy(i,rotamerIndex[i]);
 			}
 			/*
@@ -2070,7 +2162,7 @@ double chain::rotamerEnergy(const UInt _indexInChain)
 	}
 	return theEnergy;
 }
-	
+
 
 void chain::addResidue(residue* _pResidue)
 {	if (itsResidues.size() == 0)
@@ -2338,7 +2430,7 @@ double chain::tabulateSurfaceArea(UInt _residueIndex, UInt _atomIndex)
 	}
 	return surfaceArea;
 }
-	
+
 void chain::removeIntraChainSpherePoints()
 {
 	for (UInt i = 0; i < itsResidues.size(); i ++)

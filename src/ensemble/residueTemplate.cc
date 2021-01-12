@@ -25,10 +25,10 @@ residueTemplate::residueTemplate(const residueTemplate& _rhs)
 		branchPoints = _rhs.branchPoints;
 		isMainChain = _rhs.isMainChain;
 		atomList = _rhs.atomList;
-		itsAtomEnergyTypeIndex = _rhs.itsAtomEnergyTypeIndex;	
+		itsAtomEnergyTypeIndex = _rhs.itsAtomEnergyTypeIndex;
 		itsRotamerLibs = _rhs.itsRotamerLibs;
 		chiDefinitions = _rhs.chiDefinitions;
-                hasPolarHRotamers = _rhs.hasPolarHRotamers;		
+		hasPolarHRotamers = _rhs.hasPolarHRotamers;
 		howManyTemplates++;
 }
 
@@ -74,8 +74,13 @@ int residueTemplate::getAtomIndexOf(const string& _name) const
 		}
 	}
 	// no fit
-	cout << "Invalid Atom Name Found: " << _name << endl;
+	//cout << "Invalid Atom Name Found: " << _name << endl;
 	return -1;
+}
+
+string residueTemplate::getAtomNameOf(UInt index) const
+{	
+	return atomNameList[index];
 }
 	
 void residueTemplate::initializeChiDefinitions()

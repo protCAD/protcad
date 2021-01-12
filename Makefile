@@ -2,6 +2,7 @@ export PROTCADDIR=$(PWD)
 export SRCDIR=$(PROTCADDIR)/src
 export TNTINCLUDE=$(SRCDIR)
 export BINDIR=$(PROTCADDIR)/bin
+export UIDIR=$(PROTCADDIR)/ui
 export OBJDIR=$(PROTCADDIR)/obj
 export PROJDIR=$(PROTCADDIR)/projects
 
@@ -20,13 +21,13 @@ export MAKE = make
 
 SHELL = /bin/sh
 
-TARGETS = protDielectric protEvolver protDihedrals protOligamer protEnergy protFolder protMover protMutator protSequence protInverter protMin protAlign
+TARGETS = protDielectric protEvolver protDihedrals protOligamer protEnergy protFolder protMover protMutator protSequence protInverter protMin protAlign protShaper protBindingEnergy hammingdist
 
 .SUFFIXES: .cc .o .h .a .f
 
 LIB_TARGETS = lib
 
-LIB_CC_OBJECTS = ran1.o ran.o point.o treeNode.o atom.o atomIterator.o residue.o chain.o residueTemplate.o allowedResidue.o secondaryStructure.o chainPosition.o residueIterator.o chainModBuffer.o molecule.o protein.o ensemble.o CMath.o generalio.o pdbData.o pdbReader.o pdbWriter.o amberVDW.o aaBaseline.o amberElec.o rotamer.o rotamerLib.o PDBAtomRecord.o PDBInterface.o ruler.o line.o lineSegment.o unitSphere.o helixPropensity.o parse.o ramachandranMap.o
+LIB_CC_OBJECTS = ran.o point.o treeNode.o atom.o atomIterator.o residue.o chain.o residueTemplate.o allowedResidue.o secondaryStructure.o chainPosition.o residueIterator.o chainModBuffer.o molecule.o protein.o ensemble.o CMath.o generalio.o pdbData.o pdbReader.o pdbWriter.o amberVDW.o aaBaseline.o amberElec.o rotamer.o rotamerLib.o PDBAtomRecord.o PDBInterface.o ruler.o line.o lineSegment.o unitSphere.o helixPropensity.o parse.o ramachandranMap.o 
 
 LIB_F77_OBJECTS = bestfit.o
 
@@ -57,7 +58,7 @@ vpath %.a $(OBJDIR)
 
 vpath %.o $(OBJDIR)
 
-install : $(LIB_TARGETS) $(TARGETS)
+install : $(LIB_TARGETS) $(TARGETS) protcad
 ifeq ($(UNAME),Linux)
 	@echo export PROTCADDIR=$(PROTCADDIR) >> ~/.bashrc
 	@echo export PATH=$(PATH):$(PROTCADDIR):$(PROTCADDIR)/bin >> ~/.bashrc
@@ -67,7 +68,9 @@ ifeq ($(UNAME),Darwin)
 	@echo export PATH=$(PATH):$(PROTCADDIR):$(PROTCADDIR)/bin >> ~/.bash_profile
 endif
 
-all : $(LIB_TARGETS) $(TARGETS)
+all : $(LIB_TARGETS) $(TARGETS) protcad
+
+headless : $(LIB_TARGETS) $(TARGETS)
 
 lib : libprotcad.a
 
@@ -123,6 +126,18 @@ protSequence : libprotcad.a protSequence.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
 	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 
+protShaper : libprotcad.a protShaper.cc
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
+
+protBindingEnergy : libprotcad.a protBindingEnergy.cc
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
+
+hammingdist : libprotcad.a hammingdist.cc
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
+
 $(LIB_CC_OBJECTS): %.o: %.cc %.h
 	$(CXX) -c $(CFLAGS) $(INC_BASE) $< -o $@
 	mv $@ $(OBJDIR)
@@ -131,7 +146,17 @@ $(LIB_F77_OBJECTS): %.o: %.f
 	$(F77) -c $(FFLAGS) $< -o $@
 	mv $@ $(OBJDIR)
 
+protcad:
+ifeq ($(UNAME),Linux)
+	cd $(UIDIR) && qmake protcad.pro && make && strip $@ && mv $@ $(BINDIR)
+endif
+ifeq ($(UNAME),Darwin)
+	cd $(UIDIR) && qmake protcad.pro && make && cp $(BINDIR)/protEvolver protcad.app/Contents/MacOS/
+endif
+
 clean: 
 	rm -f $(OBJDIR)/*.o 
 	rm -f $(OBJDIR)/*.a
-	cd $(BINDIR) && rm -f $(TARGETS)
+	cd $(BINDIR) && rm -f $(TARGETS) && rm -f protcad
+	cd $(UIDIR) && if [ -f Makefile ]; then make distclean; fi;
+	
