@@ -5943,5 +5943,21 @@ IMPROPER
   CBD  O1D  CGD  O2D
 
 DONE
-STOP
+water
+HOH   INT  0
+CORRECT     OMIT DU   BEG
+  0.0000
+   1  DUMM  DU    M    0  -1  -2     0.000      .0        .0      .00000
+   2  DUMM  DU    M    1   0  -1     1.449      .0        .0      .00000
+   3  DUMM  DU    M    2   1   0     1.523   111.21       .0      .00000
+   4  O     OH    M    3   2   1     1.540   111.208  -180.000 -0.785000
+   5  H1    HO    E    4   3   2     0.956    56.638   130.990  0.392000
+   6  H2    HO    E    4   3   2     0.957   110.995  -135.091  0.392000
+
+
+LOOP
+
+IMPROPER
+
+DONE
 

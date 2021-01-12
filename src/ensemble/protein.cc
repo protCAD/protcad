@@ -2178,7 +2178,7 @@ void protein::alignToAxis(const axis _axis)
     for (;!(theIter.last());theIter++)
     {
        pAtom = theIter.getAtomPointer(); 
-       if (pAtom->getName() == "N" || pAtom->getName() == "CA" || pAtom->getName() == "C" || pAtom->getName() == "O" || pAtom->getName() == "CB"){
+       if (pAtom->getName() == "N" || pAtom->getName() == "CA" || pAtom->getName() == "C" || pAtom->getName() == "O"){
             coord2.push_back(pAtom->getCoords());
        }
     }
@@ -3156,6 +3156,43 @@ void protein::protRelax(UIntVec _frozenResidues, UIntVec _activeChains)
 	return;
 }
 
+void protein::cofactorRelax(UInt _plateau)
+{  
+	UInt pastCofactorClashes = getNumHardClashes(),count = 0;
+	if (pastCofactorClashes > 0)
+	{	
+		//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
+		double rotX,rotY,rotZ;
+		UInt randchain, randres, resnum, chainNum = getNumChains(), cofactorClashes, nobetter = 0;
+		srand (time(NULL));
+
+		//--Run optimizaiton loop to relative minima, determined by _plateau----------------------------
+		do
+		{   //--choose random cofactor
+			do{
+				randchain = rand() % chainNum;
+				resnum = getNumResidues(randchain);
+				randres = rand() % resnum;
+			}while (!isCofactor(randchain, randres));
+			nobetter++;
+			count++;
+	
+			//--cofactor rotation-----------------------------------------------------------------------
+			rotX = rand() % 31, rotY = rand() % 31, rotZ = rand() % 31;
+			rotateChainRelative(randchain,X_axis,rotX), rotateChainRelative(randchain,Y_axis,rotY), rotateChainRelative(randchain,Z_axis,rotZ);
+			cofactorClashes = getNumHardClashes();
+			if (cofactorClashes <= pastCofactorClashes){
+				nobetter = 0, pastCofactorClashes = cofactorClashes;
+			}
+			else{
+				rotateChainRelative(randchain,Z_axis,rotZ*-1), rotateChainRelative(randchain,Y_axis,rotY*-1), rotateChainRelative(randchain,X_axis,rotX*-1);
+			}
+
+		} while (nobetter < _plateau && count < _plateau*10);
+	}
+	return;
+}
+
 void protein::protSampling(UInt iterations)
 {
 	//--Initialize variables for loop, calculate starting energy and build energy vectors-----
@@ -3222,44 +3259,6 @@ void protein::protSampling(UInt iterations)
 		}
 	} while(changes < iterations);
 	return;
-}
-
-double protein::getResiduesPerTurn(double phi, double psi)
-{
-	double phipsisum = phi+psi;
-	double handedness;
-	if ((phipsisum > 0 && phipsisum < 180)|| phipsisum < -180){handedness = -1.0;}
-	else{handedness = 1.0;}
-	double angleSumHalfRad = ((phipsisum)/2)*PI/180;
-	double radAngle = acos(-0.3333333-0.6666666*cos(2*angleSumHalfRad));
-	double radAngletoDeg = radAngle*180/PI;
-	double residuesPerTurn = (360/radAngletoDeg)*handedness;
-	return residuesPerTurn;
-}
-
-UInt protein::getBackboneSequenceType(double RPT, double phi)
-{
-	if (RPT <= -4.48 && phi <= 0)					{return 0;}
-	if (RPT > -4.48  && RPT <= -3.86 && phi <= 0)	{return 1;}
-	if (RPT > -3.86  && RPT <= -3.24 && phi <= 0)	{return 2;}
-	if (RPT > -3.24  && RPT <= -2.62 && phi <= 0)	{return 3;}
-	if (RPT > -2.62  && RPT <= -2.00 && phi <= 0)	{return 4;}
-	if (RPT >  2.00  && RPT <=  2.62 && phi <= 0)	{return 5;}
-	if (RPT >  2.62  && RPT <=  3.24 && phi <= 0)	{return 6;}
-	if (RPT >  3.24  && RPT <=  3.86 && phi <= 0)	{return 7;}
-	if (RPT >  3.86  && RPT <=  4.48 && phi <= 0)	{return 8;}
-	if (RPT >  4.48 && phi <= 0)					{return 9;}
-	if (RPT <= -4.48 && phi > 0)					{return 10;}
-	if (RPT > -4.48  && RPT <= -3.86 && phi > 0)	{return 11;}
-	if (RPT > -3.86  && RPT <= -3.24 && phi > 0)	{return 12;}
-	if (RPT > -3.24  && RPT <= -2.62 && phi > 0)	{return 13;}
-	if (RPT > -2.62  && RPT <= -2.00 && phi > 0)	{return 14;}
-	if (RPT >  2.00  && RPT <=  2.62 && phi > 0)	{return 15;}
-	if (RPT >  2.62  && RPT <=  3.24 && phi > 0)	{return 16;}
-	if (RPT >  3.24  && RPT <=  3.86 && phi > 0)	{return 17;}
-	if (RPT >  3.86  && RPT <=  4.48 && phi > 0)	{return 18;}
-	if (RPT >  4.48 && phi > 0)						{return 19;}
-	return 0;
 }
 
 vector <double> protein::getRandPhiPsifromBackboneSequenceType(UInt _RPTType)

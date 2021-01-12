@@ -196,7 +196,9 @@ public:
 	void rotateRelative(const axis _axis,const double _theta);
 	void rotate(const point& _point, const dblVec& _R_axis, const double _theta);
 	double getResiduesPerTurn(const UInt _resIndex);
+	double getResiduesPerTurn(double phi, double psi);
 	UInt getBackboneSequenceType(const UInt _resIndex);
+	UInt getBackboneSequenceType(double RPT, double phi);
 	void updateResiduesPerTurnType();
 	double getPhi(const UInt _indexInChain);
 	double getPsi(const UInt _indexInChain);

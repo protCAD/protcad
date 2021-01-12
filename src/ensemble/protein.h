@@ -135,6 +135,7 @@ public:
 	 // --Sidechain and backbone optimization with a polarization based dielectric scaling of electrostatics-- dpike
 	void protRelax(UInt _plateau);
 	void protRelax(UIntVec _frozenResidues, UIntVec _activeChains);
+	void cofactorRelax(UInt _plateau);
 	void protOpt(bool _backboneRelaxation);
 	void protOpt(bool _backboneRelaxation, UIntVec _frozenResidues, UIntVec _activeChains);
 	void protMin(bool _backbone);
@@ -217,11 +218,11 @@ public:
 	int setPsi(const UInt _chain, const UInt _res, double _angle);
 	int setDihedral(const UInt _chainIndex, const UInt _resIndex, double _dihedral, UInt _angleType, UInt _direction);
 	void updateResiduesPerTurnType();
-	UInt getBackboneSequenceType(double RPT, double phi);
+	UInt getBackboneSequenceType(double RPT, double phi){return itsChains[0]->getBackboneSequenceType(RPT,phi);}
 	UInt getBackboneSequenceType(UInt _chainIndex, UInt _resIndex) {return itsChains[_chainIndex]->getBackboneSequenceType(_resIndex);}
 	vector <double> getRandPhiPsifromBackboneSequenceType(UInt _RPTType);
 	vector <double> getRandConformationFromBackboneType(double _phi, double _psi);
-	double getResiduesPerTurn(double phi, double psi);
+	double getResiduesPerTurn(double phi, double psi) {return itsChains[0]->getResiduesPerTurn(phi,psi);}
 	double getResiduesPerTurn(UInt _chainIndex, UInt _resIndex) {return itsChains[_chainIndex]->getResiduesPerTurn(_resIndex);}
 	double getPhi(UInt _chain, UInt _res) {return itsChains[_chain]->getPhi(_res);}
 	double getPsi(UInt _chain, UInt _res) {return itsChains[_chain]->getPsi(_res);}
