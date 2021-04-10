@@ -227,6 +227,7 @@ public:
 	double getPositionIntraSoluteEnergy(vector<int> _position);
 	double getPositionIntraSoluteEnergy(UInt _residueIndex);
 	double getPositionInterSoluteEnergy(vector<int> _position, chain* _other);
+	void getSoluteEnergy(UInt resIndex, UInt atomIndex, chain* _other, UInt otherResIndex, UInt otherAtomIndex);
 
 	double getVolume(UInt _method);
 

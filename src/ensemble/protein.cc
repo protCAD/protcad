@@ -1115,6 +1115,11 @@ double protein::intraEnergy()
     //}
 	return intraEnergy;
 }
+void protein::getSoluteEnergy(UInt chainIndex, UInt resIndex, UInt atomIndex, UInt otherChainIndex, UInt otherResIndex, UInt otherAtomIndex)
+{
+	updateDielectrics();
+	itsChains[chainIndex]->getSoluteEnergy(resIndex, atomIndex, itsChains[otherChainIndex], otherResIndex, otherAtomIndex);
+}
 
 
 //**************Default non-Redundant optimized Energy Function***************************************

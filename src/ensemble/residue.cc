@@ -2918,6 +2918,35 @@ double residue::interSoluteEnergy(residue* _other)
 	return interEnergy;
 }
 
+void residue::getSoluteEnergy(UInt atomIndex, residue* _other, UInt otherAtomIndex)
+{
+	double distanceSquared = itsAtoms[atomIndex]->inCubeWithDistSQ(_other->itsAtoms[otherAtomIndex], 99999999);
+	// ** inter AMBER Electrostatics
+	if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
+	{
+		// ** get dielectric average
+		double dielectric = (itsAtoms[atomIndex]->getDielectric() + _other->itsAtoms[otherAtomIndex]->getDielectric()) * 0.5;
+
+		//recalculate the dielectric using the Maxwell Garnett mixing formula to include the polarizability of the pairwise dipole-dipole inclusion of hbonds
+		if (polarizableElec){
+			dielectric = maxwellGarnettApproximation(atomIndex, _other, otherAtomIndex, dielectric, distanceSquared);
+		}
+		// calculate coulombic energy with effective dielectric
+		double tempAmberElecEnergy = residueTemplate::getAmberElecSoluteEnergySQ(itsType, atomIndex, _other->itsType, otherAtomIndex, distanceSquared, dielectric);
+		double elecEnergy = tempAmberElecEnergy;
+		cout << "elec " << elecEnergy << " " << sqrt(distanceSquared) << " " << dielectric << endl;
+	}
+	// ** inter AMBER vdW
+	if (residueTemplate::itsAmberVDW.getScaleFactor() != 0.0)
+	{
+		int index1, index2;
+		index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[atomIndex][0];
+		index2 = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[otherAtomIndex][0];
+		double vdwEnergy = residueTemplate::getVDWEnergySQ(index1, index2, distanceSquared);
+		cout << "vdw  " << vdwEnergy << " " << sqrt(distanceSquared) << endl;
+	}
+}
+
 double residue::calculateSolvationEnergy(UInt _atomIndex)
 {	// note: Requires update of dielectrics at protein level to be accurate for water count and local dielctric. Meant to be part of protEnergy().
 	double soluteSolventEnthalpy = 0.0;

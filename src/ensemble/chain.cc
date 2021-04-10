@@ -1885,6 +1885,11 @@ void chain::updateEnergy(chain* _other)
 		}
 	}
 }
+void chain::getSoluteEnergy(UInt resIndex, UInt atomIndex, chain* _other, UInt otherResIndex, UInt otherAtomIndex)
+{
+	itsResidues[resIndex]->getSoluteEnergy(atomIndex, _other->itsResidues[otherResIndex], otherAtomIndex);
+}
+
 
 void chain::polarizability()
 {

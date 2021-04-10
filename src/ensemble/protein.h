@@ -187,6 +187,8 @@ public:
 	double intraEnergy();
 	double intraSoluteEnergy(bool _updateDielectrics, UInt _activeChain);
 	double interSoluteEnergy(bool _updateDielectrics, UInt _chain1, UInt _chain2);
+	void getSoluteEnergy(UInt chainIndex, UInt resIndex, UInt atomIndex, UInt otherChainIndex, UInt otherResIndex, UInt otherAtomIndex);
+
 	vector <double> chainBindingEnergy();
 	void polarizability();
 	void calculateDielectrics();

@@ -265,6 +265,7 @@ public:
 	double getIntraEnergy(const UInt atom1, residue* _other, const UInt atom2);
 	double interEnergy(residue* _other);
 	double interSoluteEnergy(residue* _other);
+	void getSoluteEnergy(UInt atomIndex, residue* _other, UInt otherAtomIndex);
 	double getSelfEnergy(residue* _other);
 	double calculateHCA_O_hBondEnergy(residue* _other);
 	double getVolume(UInt _method);
