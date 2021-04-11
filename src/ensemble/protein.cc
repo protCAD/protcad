@@ -1115,12 +1115,69 @@ double protein::intraEnergy()
     //}
 	return intraEnergy;
 }
-void protein::getSoluteEnergy(UInt chainIndex, UInt resIndex, UInt atomIndex, UInt otherChainIndex, UInt otherResIndex, UInt otherAtomIndex)
+double protein::getSoluteEnergy(UInt chainIndex, UInt resIndex, UInt atomIndex, UInt otherChainIndex, UInt otherResIndex, UInt otherAtomIndex)
 {
+	setMoved(true,0);
 	updateDielectrics();
-	itsChains[chainIndex]->getSoluteEnergy(resIndex, atomIndex, itsChains[otherChainIndex], otherResIndex, otherAtomIndex);
+	double E = itsChains[chainIndex]->getSoluteEnergy(resIndex, atomIndex, itsChains[otherChainIndex], otherResIndex, otherAtomIndex);
+	return E;
 }
 
+double protein::getBackboneHBondEnergy(UInt donorChainIndex, UInt donorResIndex, UInt acceptorChainIndex, UInt acceptorResIndex)
+{	
+	if( isCofactor(donorChainIndex,donorResIndex) || isCofactor(acceptorChainIndex,acceptorResIndex) ){return 0.0;}
+
+    vector <dblVec> donorList(0);
+    vector <dblVec> donorBaseList(0);
+    vector <dblVec> acceptorList(0);
+    vector <dblVec> acceptorBaseList(0);
+    vector <double> donorAngleList(0);
+    vector <double> acceptorAngleList(0);
+	
+	dblVec donor = getCoords(donorChainIndex,donorResIndex,"H");
+	dblVec donorBase = getCoords(donorChainIndex,donorResIndex,"N");
+	dblVec acceptor = getCoords(acceptorChainIndex,acceptorResIndex,"O");
+	dblVec acceptorBase = getCoords(acceptorChainIndex,acceptorResIndex,"C");
+	donorList.push_back(donor);
+	donorBaseList.push_back(donorBase);
+	acceptorList.push_back(acceptor);
+	acceptorBaseList.push_back(acceptorBase);
+	donorAngleList.push_back(180.0);
+	acceptorAngleList.push_back(180.0);
+        
+    double energy = 0.0;
+
+    for (UInt i = 0; i < donorList.size(); i ++)
+    {
+        for (UInt j = 0; j < acceptorList.size(); j ++)
+        {
+            dblVec DDB = donorList[i] - donorBaseList[i];
+            dblVec DA = donorList[i] - acceptorList[j];
+            dblVec AAB = acceptorList[j] - acceptorBaseList[j];
+
+            double magDDB = sqrt(CMath::dotProduct(DDB,DDB));
+            double magDA = sqrt(CMath::dotProduct(DA,DA));
+            double magAAB = sqrt(CMath::dotProduct(AAB,AAB));
+
+			double thisE;
+			if (magDA < 1e-50) thisE = 0.0;            
+			else 
+			{
+				double donorAngle = acos( CMath::dotProduct(DA,DDB)/(magDDB*magDA) );
+            	double acceptorAngle = acos( CMath::dotProduct(DA,AAB)/(magDA*magAAB) );
+
+            	double distRatio = 1.8 / magDA;
+            	thisE = 10.0 *(5.0*pow(distRatio,12.0)-6.0*pow(distRatio,10.0));
+				//cout << thisE << endl;
+            	double angleFactor1 = cos(donorAngleList[i]*PI/180.0-donorAngle);
+            	double angleFactor2 = cos(acceptorAngleList[j]*PI/180.0-acceptorAngle);
+            	thisE = thisE * pow(angleFactor1, 2.0) * pow (angleFactor2, 2.0);
+			}
+            energy += thisE;
+        }
+    }
+    return energy;
+}
 
 //**************Default non-Redundant optimized Energy Function***************************************
 double protein::protEnergy()

@@ -2918,8 +2918,9 @@ double residue::interSoluteEnergy(residue* _other)
 	return interEnergy;
 }
 
-void residue::getSoluteEnergy(UInt atomIndex, residue* _other, UInt otherAtomIndex)
+double residue::getSoluteEnergy(UInt atomIndex, residue* _other, UInt otherAtomIndex)
 {
+	double E = 0.0;
 	double distanceSquared = itsAtoms[atomIndex]->inCubeWithDistSQ(_other->itsAtoms[otherAtomIndex], 99999999);
 	// ** inter AMBER Electrostatics
 	if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
@@ -2933,8 +2934,8 @@ void residue::getSoluteEnergy(UInt atomIndex, residue* _other, UInt otherAtomInd
 		}
 		// calculate coulombic energy with effective dielectric
 		double tempAmberElecEnergy = residueTemplate::getAmberElecSoluteEnergySQ(itsType, atomIndex, _other->itsType, otherAtomIndex, distanceSquared, dielectric);
-		double elecEnergy = tempAmberElecEnergy;
-		cout << "elec " << elecEnergy << " " << sqrt(distanceSquared) << " " << dielectric << endl;
+		E += tempAmberElecEnergy;
+		
 	}
 	// ** inter AMBER vdW
 	if (residueTemplate::itsAmberVDW.getScaleFactor() != 0.0)
@@ -2943,8 +2944,9 @@ void residue::getSoluteEnergy(UInt atomIndex, residue* _other, UInt otherAtomInd
 		index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[atomIndex][0];
 		index2 = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[otherAtomIndex][0];
 		double vdwEnergy = residueTemplate::getVDWEnergySQ(index1, index2, distanceSquared);
-		cout << "vdw  " << vdwEnergy << " " << sqrt(distanceSquared) << endl;
+		E += vdwEnergy;
 	}
+	return E;
 }
 
 double residue::calculateSolvationEnergy(UInt _atomIndex)
