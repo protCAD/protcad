@@ -376,6 +376,14 @@ double residueTemplate::getPolarizability(const int _type1)
     }
     return 0.0;
 }
+double residueTemplate::getPolarizabilityFlag(const int _type1)
+{
+    if( _type1 >= 0)
+    {
+        return itsAmberVDW.getPolarizabilityFlag(UInt(_type1));
+    }
+    return 0.0;
+}
 
 double residueTemplate::getVolume(const int _type1)
 {

@@ -2934,7 +2934,7 @@ double residue::getSoluteEnergy(UInt atomIndex, residue* _other, UInt otherAtomI
 		}
 		// calculate coulombic energy with effective dielectric
 		double tempAmberElecEnergy = residueTemplate::getAmberElecSoluteEnergySQ(itsType, atomIndex, _other->itsType, otherAtomIndex, distanceSquared, dielectric);
-		E += tempAmberElecEnergy;
+		E += dielectric;
 		
 	}
 	// ** inter AMBER vdW
@@ -3108,11 +3108,9 @@ double residue::maxwellGarnettApproximation(UInt _atomIndex1, UInt _atomIndex2, 
 	//Vadim A. Markel 1244 Vol. 33, No. 7 / July 2016 / J Opt Soc Amer
 
 	// Check for hbonds and metal ligation where polarization is significant and worth calculating
-	if( ((itsAtoms[_atomIndex1]->getType() == "H" || itsAtoms[_atomIndex1]->getType() == "FE" || itsAtoms[_atomIndex1]->getType() == "NI") &&
-	     (itsAtoms[_atomIndex2]->getType() == "O" || itsAtoms[_atomIndex2]->getType() == "S"  || itsAtoms[_atomIndex2]->getType() == "N")) ||
-		((itsAtoms[_atomIndex2]->getType() == "H" || itsAtoms[_atomIndex2]->getType() == "FE" || itsAtoms[_atomIndex2]->getType() == "NI") &&
-	     (itsAtoms[_atomIndex1]->getType() == "O" || itsAtoms[_atomIndex1]->getType() == "S"  || itsAtoms[_atomIndex1]->getType() == "N"))
-	  )
+	double polflag1 = residueTemplate::getPolarizabilityFlag(dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex1][0]);
+	double polflag2 = residueTemplate::getPolarizabilityFlag(dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex2][0]);
+	if(polflag1 > 0 && polflag2 > 0 && polflag1 == polflag2)
 	{
 		//get dipole-dipole polarization
 		double pol = approximateDipoleDipolePolarization(_atomIndex1, _atomIndex2);
@@ -3120,7 +3118,7 @@ double residue::maxwellGarnettApproximation(UInt _atomIndex1, UInt _atomIndex2, 
 
 		//recalculate the dielectric using the Maxwell Garnett mixing formula to include the polarizability of the dipole inclusion over the volume of inclusion
 		double dielectric = _dielectric+4*PI*(pol/vol)/1-(4*PI/3*_dielectric)*(pol/vol);
-		if (dielectric < 1){dielectric = 1;}
+		if (dielectric < 2){dielectric = 2;} // estimate of protein minimum compared to pure vacuum of 1
 		return dielectric;
 	}
 	return _dielectric;
@@ -3131,18 +3129,17 @@ double residue::maxwellGarnettApproximation(UInt _atomIndex1, residue* _other, U
 	//Vadim A. Markel 1244 Vol. 33, No. 7 / July 2016 / J Opt Soc Amer
 
 	// Check for hbonds and metal ligation where polarization is significant and worth calculating
-	if( ((itsAtoms[_atomIndex1]->getType() == "H" || itsAtoms[_atomIndex1]->getType() == "FE" || itsAtoms[_atomIndex1]->getType() == "NI") &&
-	     (_other->itsAtoms[_atomIndex2]->getType() == "O" || _other->itsAtoms[_atomIndex2]->getType() == "S"  || _other->itsAtoms[_atomIndex2]->getType() == "N")) ||
-		((_other->itsAtoms[_atomIndex2]->getType() == "H" || _other->itsAtoms[_atomIndex2]->getType() == "FE" || _other->itsAtoms[_atomIndex2]->getType() == "NI") &&
-	     (itsAtoms[_atomIndex1]->getType() == "O" || itsAtoms[_atomIndex1]->getType() == "S"  || itsAtoms[_atomIndex1]->getType() == "N"))
-	  )
-	{	//get dipole-dipole polarization
+	double polflag1 = residueTemplate::getPolarizabilityFlag(dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex1][0]);
+	double polflag2 = residueTemplate::getPolarizabilityFlag(dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[_atomIndex2][0]);
+	if(polflag1 > 0 && polflag2 > 0 && polflag1 == polflag2)
+	{	
+		//get dipole-dipole polarization
 		double pol = approximateDipoleDipolePolarization(_atomIndex1, _other, _atomIndex2);
 		double vol = 4/3*PI*pow((sqrt(_distanceSquared)/2),3);
 
 		//recalculate the dielectric using the Maxwell Garnett mixing formula to include the polarizability of the dipole inclusion over the volume of inclusion
 		double dielectric = _dielectric+4*PI*(pol/vol)/1-(4*PI/3*_dielectric)*(pol/vol);
-		if (dielectric < 1){dielectric = 1;}
+		if (dielectric < 2){dielectric = 2;} // estimate of protein minimum compared to pure vacuum of 1
 		return dielectric;
 	}
 	return _dielectric;

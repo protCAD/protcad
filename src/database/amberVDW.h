@@ -28,6 +28,7 @@ public:
 	bool isClash(const UInt _type1, const UInt _type2, const double _distance);
     double getRadius(const UInt _type1);
     double getPolarizability(const UInt _type1);
+	double getPolarizabilityFlag(const UInt _type1);
     double getVolume(const UInt _type1);
 
 	static double itsScaleFactor;
@@ -83,6 +84,7 @@ private:
 	vector< double > R_ref;
 	vector< double > EPS;
     vector< double > Pol_ref;
+	vector< double > Pol_flag;
     vector< double > Vol_ref;
 	vector< string > amberAtomTypeNames;
 	string itsFileName;

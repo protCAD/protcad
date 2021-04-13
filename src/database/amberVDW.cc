@@ -16,6 +16,7 @@ amberVDW::amberVDW()
 	R_ref.resize(0);
 	EPS.resize(0);
     Pol_ref.resize(0);
+	Pol_flag.resize(0);
     Vol_ref.resize(0);
 	buildDataBase();
 	//cout << " amberVDW database is built " << endl;
@@ -38,6 +39,7 @@ amberVDW::amberVDW(int _Dummy)
 	R_ref.resize(0);
 	EPS.resize(0);
     Pol_ref.resize(0);
+	Pol_flag.resize(0);
     Vol_ref.resize(0);
 	buildDataBase();
 	//cout << " amberVDW database is built " << endl;
@@ -60,6 +62,7 @@ amberVDW::amberVDW(const amberVDW& _otherAmberVDW)
 	R_ref = _otherAmberVDW.R_ref;
 	EPS = _otherAmberVDW.EPS;
     Pol_ref = _otherAmberVDW.Pol_ref;
+	Pol_flag = _otherAmberVDW.Pol_flag;
     Vol_ref = _otherAmberVDW.Vol_ref;
 	amberAtomTypeNames = _otherAmberVDW.amberAtomTypeNames;
 }
@@ -85,6 +88,12 @@ double amberVDW::getPolarizability(const UInt _type1)
 {
     double polarizability  = Pol_ref[_type1];
     return polarizability;
+}
+
+double amberVDW::getPolarizabilityFlag(const UInt _type1)
+{
+    double polflag  = Pol_flag[_type1];
+    return polflag;
 }
 
 double amberVDW::getVolume(const UInt _type1)
@@ -211,6 +220,8 @@ void amberVDW::buildDataBase()
 void amberVDW::convertToDataElements(const StrVec& _parsedStrings)
 {
 	double tmpDouble;
+	sscanf(_parsedStrings[1].c_str(), "%lf", &tmpDouble);
+    Pol_flag.push_back(tmpDouble);
 	amberAtomTypeNames.push_back(_parsedStrings[2]);
 	sscanf(_parsedStrings[3].c_str(), "%lf", &tmpDouble);
 	R_ref.push_back(tmpDouble);

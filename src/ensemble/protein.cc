@@ -1124,7 +1124,7 @@ double protein::getSoluteEnergy(UInt chainIndex, UInt resIndex, UInt atomIndex, 
 }
 
 double protein::getBackboneHBondEnergy(UInt donorChainIndex, UInt donorResIndex, UInt acceptorChainIndex, UInt acceptorResIndex)
-{	
+{	//gordon and mayot 1999
 	if( isCofactor(donorChainIndex,donorResIndex) || isCofactor(acceptorChainIndex,acceptorResIndex) ){return 0.0;}
 
     vector <dblVec> donorList(0);
