@@ -2782,7 +2782,7 @@ void protein::protMin(bool _backbone)
 		randchain = rand() % chainNum, resnum = getNumResidues(randchain), randres = rand() % resnum;
 		clashesStart = getNumHardClashes(); nobetter++;
 		backboneTest = false, sidechainTest = false, cofactorTest = false, energyTest = false, revert = true;
-		if (isCofactor(randchain, randres))
+		/*if (isCofactor(randchain, randres))
 		{
 			//--Rock and Roll cofactor in site
 			cofactorTest = true;
@@ -2797,7 +2797,7 @@ void protein::protMin(bool _backbone)
 					energyTest = true; revert = false;
 			}
 		}
-		else{
+		else{*/
 			//--Backbone conformation trial--------------------------------------------------------
 			if (_backbone) {backboneOrSidechain = rand() % 2;}
 			if (randres > 0 && randres < resnum-2 && backboneOrSidechain == 0){
@@ -2824,7 +2824,7 @@ void protein::protMin(bool _backbone)
 					energyTest = true; revert = false;
 				}
 			}
-		}
+		//}
 		//--Energy-Test-------------------------------------------------------------------------
 		if (energyTest){
 			Energy = protEnergy();
@@ -2882,7 +2882,7 @@ void protein::protMin(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 		clashesStart = getNumHardClashes(); resnum = getNumResidues(randchain); nobetter++;
 		backboneTest = false, sidechainTest = false, cofactorTest = false, energyTest = false, revert = true;
 		
-		if (isCofactor(randchain, randres))
+		/*if (isCofactor(randchain, randres))
 		{
 			//--Rock and Roll cofactor in site
 			cofactorTest = true;
@@ -2897,7 +2897,7 @@ void protein::protMin(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 					energyTest = true; revert = false;
 			}
 		}
-		else{
+		else{*/
 			//--Backbone conformation trial--------------------------------------------------------
 			if (_backbone) {backboneOrSidechain = rand() % 2;}
 			if (randres > 0 && randres < resnum-2 && backboneOrSidechain == 0){
@@ -2924,7 +2924,7 @@ void protein::protMin(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 					energyTest = true; revert = false;
 				}
 			}
-		}
+		//}
 		//--Energy-Test-------------------------------------------------------------------------
 		if (energyTest){
 			Energy = protEnergy();
