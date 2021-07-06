@@ -2918,6 +2918,37 @@ double residue::interSoluteEnergy(residue* _other)
 	return interEnergy;
 }
 
+double residue::getSoluteEnergy(UInt atomIndex, residue* _other, UInt otherAtomIndex)
+{
+	double E = 0.0;
+	double distanceSquared = itsAtoms[atomIndex]->inCubeWithDistSQ(_other->itsAtoms[otherAtomIndex], 99999999);
+	// ** inter AMBER Electrostatics
+	if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
+	{
+		// ** get dielectric average
+		double dielectric = (itsAtoms[atomIndex]->getDielectric() + _other->itsAtoms[otherAtomIndex]->getDielectric()) * 0.5;
+
+		//recalculate the dielectric using the Maxwell Garnett mixing formula to include the polarizability of the pairwise dipole-dipole inclusion of hbonds
+		if (polarizableElec){
+			dielectric = maxwellGarnettApproximation(atomIndex, _other, otherAtomIndex, dielectric, distanceSquared);
+		}
+		// calculate coulombic energy with effective dielectric
+		double tempAmberElecEnergy = residueTemplate::getAmberElecSoluteEnergySQ(itsType, atomIndex, _other->itsType, otherAtomIndex, distanceSquared, dielectric);
+		E += dielectric;
+		
+	}
+	// ** inter AMBER vdW
+	if (residueTemplate::itsAmberVDW.getScaleFactor() != 0.0)
+	{
+		int index1, index2;
+		index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[atomIndex][0];
+		index2 = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[otherAtomIndex][0];
+		double vdwEnergy = residueTemplate::getVDWEnergySQ(index1, index2, distanceSquared);
+		E += vdwEnergy;
+	}
+	return E;
+}
+
 double residue::calculateSolvationEnergy(UInt _atomIndex)
 {	// note: Requires update of dielectrics at protein level to be accurate for water count and local dielctric. Meant to be part of protEnergy().
 	double soluteSolventEnthalpy = 0.0;
@@ -3077,11 +3108,9 @@ double residue::maxwellGarnettApproximation(UInt _atomIndex1, UInt _atomIndex2, 
 	//Vadim A. Markel 1244 Vol. 33, No. 7 / July 2016 / J Opt Soc Amer
 
 	// Check for hbonds and metal ligation where polarization is significant and worth calculating
-	if( ((itsAtoms[_atomIndex1]->getType() == "H" || itsAtoms[_atomIndex1]->getType() == "FE" || itsAtoms[_atomIndex1]->getType() == "NI") &&
-	     (itsAtoms[_atomIndex2]->getType() == "O" || itsAtoms[_atomIndex2]->getType() == "S"  || itsAtoms[_atomIndex2]->getType() == "N")) ||
-		((itsAtoms[_atomIndex2]->getType() == "H" || itsAtoms[_atomIndex2]->getType() == "FE" || itsAtoms[_atomIndex2]->getType() == "NI") &&
-	     (itsAtoms[_atomIndex1]->getType() == "O" || itsAtoms[_atomIndex1]->getType() == "S"  || itsAtoms[_atomIndex1]->getType() == "N"))
-	  )
+	double polflag1 = residueTemplate::getPolarizabilityFlag(dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex1][0]);
+	double polflag2 = residueTemplate::getPolarizabilityFlag(dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex2][0]);
+	if(polflag1 > 0 && polflag2 > 0 && polflag1 == polflag2)
 	{
 		//get dipole-dipole polarization
 		double pol = approximateDipoleDipolePolarization(_atomIndex1, _atomIndex2);
@@ -3089,7 +3118,7 @@ double residue::maxwellGarnettApproximation(UInt _atomIndex1, UInt _atomIndex2, 
 
 		//recalculate the dielectric using the Maxwell Garnett mixing formula to include the polarizability of the dipole inclusion over the volume of inclusion
 		double dielectric = _dielectric+4*PI*(pol/vol)/1-(4*PI/3*_dielectric)*(pol/vol);
-		if (dielectric < 1){dielectric = 1;}
+		if (dielectric < 2){dielectric = 2;} // estimate of protein minimum compared to pure vacuum of 1
 		return dielectric;
 	}
 	return _dielectric;
@@ -3100,18 +3129,17 @@ double residue::maxwellGarnettApproximation(UInt _atomIndex1, residue* _other, U
 	//Vadim A. Markel 1244 Vol. 33, No. 7 / July 2016 / J Opt Soc Amer
 
 	// Check for hbonds and metal ligation where polarization is significant and worth calculating
-	if( ((itsAtoms[_atomIndex1]->getType() == "H" || itsAtoms[_atomIndex1]->getType() == "FE" || itsAtoms[_atomIndex1]->getType() == "NI") &&
-	     (_other->itsAtoms[_atomIndex2]->getType() == "O" || _other->itsAtoms[_atomIndex2]->getType() == "S"  || _other->itsAtoms[_atomIndex2]->getType() == "N")) ||
-		((_other->itsAtoms[_atomIndex2]->getType() == "H" || _other->itsAtoms[_atomIndex2]->getType() == "FE" || _other->itsAtoms[_atomIndex2]->getType() == "NI") &&
-	     (itsAtoms[_atomIndex1]->getType() == "O" || itsAtoms[_atomIndex1]->getType() == "S"  || itsAtoms[_atomIndex1]->getType() == "N"))
-	  )
-	{	//get dipole-dipole polarization
+	double polflag1 = residueTemplate::getPolarizabilityFlag(dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex1][0]);
+	double polflag2 = residueTemplate::getPolarizabilityFlag(dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[_atomIndex2][0]);
+	if(polflag1 > 0 && polflag2 > 0 && polflag1 == polflag2)
+	{	
+		//get dipole-dipole polarization
 		double pol = approximateDipoleDipolePolarization(_atomIndex1, _other, _atomIndex2);
 		double vol = 4/3*PI*pow((sqrt(_distanceSquared)/2),3);
 
 		//recalculate the dielectric using the Maxwell Garnett mixing formula to include the polarizability of the dipole inclusion over the volume of inclusion
 		double dielectric = _dielectric+4*PI*(pol/vol)/1-(4*PI/3*_dielectric)*(pol/vol);
-		if (dielectric < 1){dielectric = 1;}
+		if (dielectric < 2){dielectric = 2;} // estimate of protein minimum compared to pure vacuum of 1
 		return dielectric;
 	}
 	return _dielectric;

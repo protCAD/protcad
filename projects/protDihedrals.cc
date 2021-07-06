@@ -19,7 +19,7 @@ int main (int argc, char* argv[])
 		cout << "protDihedrals <inFile.pdb>" << endl;
 		exit(1);
 	}
-	
+
 	string backboneTypes[] = {"-γ","-π","-α","-ρ","-β","β","ρ","α","π","γ","-γi","-πi","-αi","-ρi","-βi","βi","ρi","αi","πi","γi"};
 	string infile = argv[1];
 	PDBInterface* thePDB = new PDBInterface(infile);
@@ -27,7 +27,7 @@ int main (int argc, char* argv[])
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
     protein* bundle = static_cast<protein*>(pMol);
 
-	cout << "type phi psi" << endl;
+	cout << "aa rpt bbtype phi psi" << endl;
 
 	UInt chainNum = bundle->getNumChains();
 	for (UInt i = 0; i < chainNum; i ++)
@@ -37,7 +37,7 @@ int main (int argc, char* argv[])
 		{
 			UInt backboneType = bundle->getBackboneSequenceType(i,j);
 			double rpt = bundle->getResiduesPerTurn(i,j);
-			cout << rpt << " " << backboneTypes[backboneType] << " " << bundle->getPhi(i,j) << " " << bundle->getPsi(i,j) << endl;
+			cout << bundle->getTypeStringFromResNum(i,j) << " " << rpt << " " << backboneTypes[backboneType] << " " << bundle->getPhi(i,j) << " " << bundle->getPsi(i,j) << endl;
 		}
 	}
 	return 0;

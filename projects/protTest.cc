@@ -1,7 +1,7 @@
 //*******************************************************************************************************
 //*******************************************************************************************************
 //*****************************                         *************************************************
-//*****************************        protEnergy       *************************************************
+//*****************************        protTest         *************************************************
 //*****************************                         *************************************************
 //*******************************************************************************************************
 //*******************************************************************************************************
@@ -18,7 +18,7 @@ int main (int argc, char* argv[])
 
 	if (argc !=2)
 	{
-		cout << "protEnergy <inFile.pdb>" << endl;
+		cout << "protTest <inFile.pdb>" << endl;
 		exit(1);
 	}
 	clock_t start, end;
@@ -30,31 +30,25 @@ int main (int argc, char* argv[])
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* bundle = static_cast<protein*>(pMol);
 	
-	residue::setElectroSolvationScaleFactor(1.0);
-	residue::setHydroSolvationScaleFactor(1.0);
+	residue::setElectroSolvationScaleFactor(0.0);
+	residue::setHydroSolvationScaleFactor(0.0);
 	residue::setPolarizableElec(true);
-	amberElec::setScaleFactor(1.0);
+	amberElec::setScaleFactor(0.0);
 	amberVDW::setScaleFactor(1.0);
 	residue::setTemperature(300);
 	
-	start = clock();
-	double Energy = bundle->protEnergy();
-	end = clock();
-	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-	cout << infile << " " << Energy << " kcal/mol time: " << cpu_time_used << endl;
-	//string outFile = infile;
-	//pdbWriter(bundle, outFile);
+	bundle->translateChain(1,-1,0,0);
+	for (UInt i = 0; i < 102; i++)
+	{
+		//start = clock();
+		double E = bundle->getSoluteEnergy(0, 1, 3, 1, 2, 4);
+		//double E = bundle->getBackboneHBondEnergy(1, 2, 0, 1);
+		//end = clock();
+		//cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+		cout << E << endl; //" " << cpu_time_used << endl;
+		bundle->translateChain(1,0.04,0,0);
+		//bundle->rotateChain(0, Z_axis, -1);
+	}
 	
-	start = clock();
-	UInt clashes = bundle->getNumHardClashes();
-	end = clock();
-	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-	cout << "Clashes: " << clashes << " clashes time: " << cpu_time_used << endl;
-	
-	start = clock();
-	clashes = bundle->getNumHardBackboneClashes();
-	end = clock();
-	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-	cout << "Backbone Clashes: " << clashes << " clashes time: " << cpu_time_used << endl;
 	return 0;
 }
