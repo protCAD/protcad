@@ -2957,7 +2957,7 @@ double residue::calculateSolvationEnergy(UInt _atomIndex)
 	// First estimate water occupancy around solute atom in solvent volume shells of total proximal solute atom excluded volume
 	int atomVDWtype = dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex][0];
 	double solvatedRadius = residueTemplate::getVDWRadius(atomVDWtype)+1.4; //atom radius + water radius
-	int shellWaters = itsAtoms[_atomIndex]->getNumberofWaters();;
+	int shellWaters = itsAtoms[_atomIndex]->getNumberofWaters();
 	if (shellWaters > 0){
 		// Polar solvation
 		if (EsolvationFactor != 0.0)
