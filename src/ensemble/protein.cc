@@ -1115,7 +1115,69 @@ double protein::intraEnergy()
     //}
 	return intraEnergy;
 }
+double protein::getSoluteEnergy(UInt chainIndex, UInt resIndex, UInt atomIndex, UInt otherChainIndex, UInt otherResIndex, UInt otherAtomIndex)
+{
+	setMoved(true,0);
+	updateDielectrics();
+	double E = itsChains[chainIndex]->getSoluteEnergy(resIndex, atomIndex, itsChains[otherChainIndex], otherResIndex, otherAtomIndex);
+	return E;
+}
 
+double protein::getBackboneHBondEnergy(UInt donorChainIndex, UInt donorResIndex, UInt acceptorChainIndex, UInt acceptorResIndex)
+{	//gordon and mayot 1999
+	if( isCofactor(donorChainIndex,donorResIndex) || isCofactor(acceptorChainIndex,acceptorResIndex) ){return 0.0;}
+
+    vector <dblVec> donorList(0);
+    vector <dblVec> donorBaseList(0);
+    vector <dblVec> acceptorList(0);
+    vector <dblVec> acceptorBaseList(0);
+    vector <double> donorAngleList(0);
+    vector <double> acceptorAngleList(0);
+	
+	dblVec donor = getCoords(donorChainIndex,donorResIndex,"H");
+	dblVec donorBase = getCoords(donorChainIndex,donorResIndex,"N");
+	dblVec acceptor = getCoords(acceptorChainIndex,acceptorResIndex,"O");
+	dblVec acceptorBase = getCoords(acceptorChainIndex,acceptorResIndex,"C");
+	donorList.push_back(donor);
+	donorBaseList.push_back(donorBase);
+	acceptorList.push_back(acceptor);
+	acceptorBaseList.push_back(acceptorBase);
+	donorAngleList.push_back(180.0);
+	acceptorAngleList.push_back(180.0);
+        
+    double energy = 0.0;
+
+    for (UInt i = 0; i < donorList.size(); i ++)
+    {
+        for (UInt j = 0; j < acceptorList.size(); j ++)
+        {
+            dblVec DDB = donorList[i] - donorBaseList[i];
+            dblVec DA = donorList[i] - acceptorList[j];
+            dblVec AAB = acceptorList[j] - acceptorBaseList[j];
+
+            double magDDB = sqrt(CMath::dotProduct(DDB,DDB));
+            double magDA = sqrt(CMath::dotProduct(DA,DA));
+            double magAAB = sqrt(CMath::dotProduct(AAB,AAB));
+
+			double thisE;
+			if (magDA < 1e-50) thisE = 0.0;            
+			else 
+			{
+				double donorAngle = acos( CMath::dotProduct(DA,DDB)/(magDDB*magDA) );
+            	double acceptorAngle = acos( CMath::dotProduct(DA,AAB)/(magDA*magAAB) );
+
+            	double distRatio = 1.8 / magDA;
+            	thisE = 10.0 *(5.0*pow(distRatio,12.0)-6.0*pow(distRatio,10.0));
+				//cout << thisE << endl;
+            	double angleFactor1 = cos(donorAngleList[i]*PI/180.0-donorAngle);
+            	double angleFactor2 = cos(acceptorAngleList[j]*PI/180.0-acceptorAngle);
+            	thisE = thisE * pow(angleFactor1, 2.0) * pow (angleFactor2, 2.0);
+			}
+            energy += thisE;
+        }
+    }
+    return energy;
+}
 
 //**************Default non-Redundant optimized Energy Function***************************************
 double protein::protEnergy()
@@ -2773,7 +2835,7 @@ void protein::protMin(bool _backbone)
 	UInt clashes, clashesStart, bbClashes, bbClashesStart, chainNum = getNumChains(), plateau = 1000;
 	double Energy, pastEnergy = protEnergy(), deltaEnergy, sPhi, sPsi, nobetter = 0.0, KT = KB*Temperature();
 	double rotX, rotY, rotZ, transX, transY, transZ;
-	vector < vector <double>> currentSidechainConf, newSidechainConf; srand (time(NULL)); vector <double> backboneAngles(2);
+	vector < DouVec > currentSidechainConf, newSidechainConf; srand (time(NULL)); vector <double> backboneAngles(2);
 	bool sidechainTest, backboneTest, cofactorTest, revert, energyTest, boltzmannAcceptance;
 	vector <dblVec> currentCoords;
 	//--Run optimizaiton loop to local minima defined by an RT plateau------------------------
@@ -2782,7 +2844,7 @@ void protein::protMin(bool _backbone)
 		randchain = rand() % chainNum, resnum = getNumResidues(randchain), randres = rand() % resnum;
 		clashesStart = getNumHardClashes(); nobetter++;
 		backboneTest = false, sidechainTest = false, cofactorTest = false, energyTest = false, revert = true;
-		if (isCofactor(randchain, randres))
+		/*if (isCofactor(randchain, randres))
 		{
 			//--Rock and Roll cofactor in site
 			cofactorTest = true;
@@ -2797,7 +2859,7 @@ void protein::protMin(bool _backbone)
 					energyTest = true; revert = false;
 			}
 		}
-		else{
+		else{*/
 			//--Backbone conformation trial--------------------------------------------------------
 			if (_backbone) {backboneOrSidechain = rand() % 2;}
 			if (randres > 0 && randres < resnum-2 && backboneOrSidechain == 0){
@@ -2824,7 +2886,7 @@ void protein::protMin(bool _backbone)
 					energyTest = true; revert = false;
 				}
 			}
-		}
+		//}
 		//--Energy-Test-------------------------------------------------------------------------
 		if (energyTest){
 			Energy = protEnergy();
@@ -2864,7 +2926,7 @@ void protein::protMin(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 	UInt clashes, clashesStart, bbClashes, bbClashesStart, chainNum = _activeChains.size(), plateau = 1000;
 	double Energy, pastEnergy = protEnergy(), deltaEnergy, sPhi, sPsi,nobetter = 0.0, KT = KB*Temperature();
 	double rotX, rotY, rotZ, transX, transY, transZ;
-	vector < vector <double>> currentSidechainConf, newSidechainConf; srand (time(NULL)); vector <double> backboneAngles(2);
+	vector < DouVec > currentSidechainConf, newSidechainConf; srand (time(NULL)); vector <double> backboneAngles(2);
 	bool sidechainTest, backboneTest, revert, cofactorTest, energyTest, skip, boltzmannAcceptance;
 	vector <dblVec> currentCoords;
 	//--Run optimizaiton loop to local minima defined by an RT plateau------------------------
@@ -2882,7 +2944,7 @@ void protein::protMin(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 		clashesStart = getNumHardClashes(); resnum = getNumResidues(randchain); nobetter++;
 		backboneTest = false, sidechainTest = false, cofactorTest = false, energyTest = false, revert = true;
 		
-		if (isCofactor(randchain, randres))
+		/*if (isCofactor(randchain, randres))
 		{
 			//--Rock and Roll cofactor in site
 			cofactorTest = true;
@@ -2897,7 +2959,7 @@ void protein::protMin(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 					energyTest = true; revert = false;
 			}
 		}
-		else{
+		else{*/
 			//--Backbone conformation trial--------------------------------------------------------
 			if (_backbone) {backboneOrSidechain = rand() % 2;}
 			if (randres > 0 && randres < resnum-2 && backboneOrSidechain == 0){
@@ -2924,7 +2986,7 @@ void protein::protMin(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 					energyTest = true; revert = false;
 				}
 			}
-		}
+		//}
 		//--Energy-Test-------------------------------------------------------------------------
 		if (energyTest){
 			Energy = protEnergy();
@@ -2964,7 +3026,7 @@ void protein::protMin(bool _backbone, UInt chainIndex, UInt resIndex)
 	UInt clashes, clashesStart, bbClashes, bbClashesStart, plateau = 1000;
 	double Energy, pastEnergy = protEnergy(), deltaEnergy, sPhi, sPsi,nobetter = 0.0, KT = KB*Temperature();
 	double rotX, rotY, rotZ, transX, transY, transZ;
-	vector < vector <double>> currentSidechainConf, newSidechainConf; srand (time(NULL)); vector <double> backboneAngles(2);
+	vector < DouVec > currentSidechainConf, newSidechainConf; srand (time(NULL)); vector <double> backboneAngles(2);
 	bool sidechainTest, backboneTest, revert, cofactorTest, energyTest, boltzmannAcceptance;
 	vector <dblVec> currentCoords;
 	//--Run optimizaiton loop to local minima defined by an RT plateau------------------------
@@ -3200,7 +3262,7 @@ void protein::protSampling(UInt iterations)
 	UInt randchain, randres, resnum, changes = 0, backboneOrSidechain = 1;
 	UInt clashes, clashesStart, bbClashes, bbClashesStart, chainNum = getNumChains();
 	double Energy, pastEnergy = protEnergy(), deltaEnergy, sPhi, sPsi;
-	vector < vector <double>> currentSidechainConf, newSidechainConf; srand (time(NULL)); vector <double> backboneAngles(2);
+	vector < DouVec> currentSidechainConf, newSidechainConf; srand (time(NULL)); vector <double> backboneAngles(2);
 	bool sidechainTest, backboneTest, revert, energyTest, boltzmannAcceptance;
 	
 	//--Run sampling loop to number of iterations------------------------
