@@ -3118,7 +3118,7 @@ double residue::maxwellGarnettApproximation(UInt _atomIndex1, UInt _atomIndex2, 
 
 		//recalculate the dielectric using the Maxwell Garnett mixing formula to include the polarizability of the dipole inclusion over the volume of inclusion
 		double dielectric = _dielectric+4*PI*(pol/vol)/1-(4*PI/3*_dielectric)*(pol/vol);
-		if (dielectric < 2){dielectric = 2;} // estimate of protein minimum compared to pure vacuum of 1
+		if (dielectric < 3){dielectric = 3;} // estimate of protein minimum compared to pure vacuum of 1
 		return dielectric;
 	}
 	return _dielectric;
@@ -3139,7 +3139,7 @@ double residue::maxwellGarnettApproximation(UInt _atomIndex1, residue* _other, U
 
 		//recalculate the dielectric using the Maxwell Garnett mixing formula to include the polarizability of the dipole inclusion over the volume of inclusion
 		double dielectric = _dielectric+4*PI*(pol/vol)/1-(4*PI/3*_dielectric)*(pol/vol);
-		if (dielectric < 2){dielectric = 2;} // estimate of protein minimum compared to pure vacuum of 1
+		if (dielectric < 3){dielectric = 3;} // estimate of protein minimum compared to pure vacuum of 1
 		return dielectric;
 	}
 	return _dielectric;
