@@ -2834,7 +2834,7 @@ void protein::protMin(bool _backbone)
 	UInt randchain, randres, resnum, backboneOrSidechain = 1;
 	UInt clashes, clashesStart, bbClashes, bbClashesStart, chainNum = getNumChains(), plateau = 1000;
 	double Energy, pastEnergy = protEnergy(), deltaEnergy, sPhi, sPsi, nobetter = 0.0, KT = KB*Temperature();
-	double rotX, rotY, rotZ, transX, transY, transZ;
+	//double rotX, rotY, rotZ, transX, transY, transZ;
 	vector < DouVec > currentSidechainConf, newSidechainConf; srand (time(NULL)); vector <double> backboneAngles(2);
 	bool sidechainTest, backboneTest, cofactorTest, revert, energyTest, boltzmannAcceptance;
 	vector <dblVec> currentCoords;
@@ -2925,7 +2925,7 @@ void protein::protMin(bool _backbone, UIntVec _frozenResidues, UIntVec _activeCh
 	UInt randchain, randres, resnum, backboneOrSidechain = 1;
 	UInt clashes, clashesStart, bbClashes, bbClashesStart, chainNum = _activeChains.size(), plateau = 1000;
 	double Energy, pastEnergy = protEnergy(), deltaEnergy, sPhi, sPsi,nobetter = 0.0, KT = KB*Temperature();
-	double rotX, rotY, rotZ, transX, transY, transZ;
+	//double rotX, rotY, rotZ, transX, transY, transZ;
 	vector < DouVec > currentSidechainConf, newSidechainConf; srand (time(NULL)); vector <double> backboneAngles(2);
 	bool sidechainTest, backboneTest, revert, cofactorTest, energyTest, skip, boltzmannAcceptance;
 	vector <dblVec> currentCoords;

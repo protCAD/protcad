@@ -21,8 +21,8 @@ int main (int argc, char* argv[])
 		cout << "protTest <inFile.pdb>" << endl;
 		exit(1);
 	}
-	clock_t start, end;
-	double cpu_time_used;
+	//clock_t start, end;
+	//double cpu_time_used;
 	string infile = argv[1];
 	
 	PDBInterface* thePDB = new PDBInterface(infile);
