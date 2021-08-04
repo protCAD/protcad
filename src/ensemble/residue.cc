@@ -2212,7 +2212,7 @@ vector< vector< double > > residue::randContinuousSidechainConformation()
 		for (UInt j=0; j<dihedrals; j++)
 		{
 			current = itsSidechainDihedralAngles[i][j];
-			angle = current + (rand() % 15)-29;
+			angle = current + (rand() % 31)-15;
 			chis.push_back(angle);
 		}
 		sideChainDihedralAngles.push_back(chis);
