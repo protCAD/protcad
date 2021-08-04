@@ -2203,7 +2203,7 @@ vector< vector< double > > residue::randContinuousSidechainConformation()
 {
 	vector < vector <double> > sideChainDihedralAngles;
 	vector <double> chis;
-	double angle;
+	double angle, current;
 	UInt branchpoints = getNumBpt(itsType);
 	for (UInt i=0; i<branchpoints; i++)
 	{
@@ -2211,7 +2211,8 @@ vector< vector< double > > residue::randContinuousSidechainConformation()
 		UInt dihedrals = getNumDihedralAngles(itsType,i);
 		for (UInt j=0; j<dihedrals; j++)
 		{
-			angle = (rand() % 360)-179;
+			current = itsSidechainDihedralAngles[i][j];
+			angle = current + (rand() % 15)-29;
 			chis.push_back(angle);
 		}
 		sideChainDihedralAngles.push_back(chis);
