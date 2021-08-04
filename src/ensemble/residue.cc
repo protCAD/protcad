@@ -1907,7 +1907,6 @@ double residue::calculateDihedral(const vector<UInt>& _quad) const
 		cout << quadVect[i][1] << " " << quadVect[i][2] << endl;
 	}
 #endif
-
 	return CMath::dihedral(quadVect[0], quadVect[1], quadVect[2], quadVect[3]);
 }
 
@@ -2933,7 +2932,7 @@ double residue::getSoluteEnergy(UInt atomIndex, residue* _other, UInt otherAtomI
 			dielectric = maxwellGarnettApproximation(atomIndex, _other, otherAtomIndex, dielectric, distanceSquared);
 		}
 		// calculate coulombic energy with effective dielectric
-		double tempAmberElecEnergy = residueTemplate::getAmberElecSoluteEnergySQ(itsType, atomIndex, _other->itsType, otherAtomIndex, distanceSquared, dielectric);
+		//double tempAmberElecEnergy = residueTemplate::getAmberElecSoluteEnergySQ(itsType, atomIndex, _other->itsType, otherAtomIndex, distanceSquared, dielectric);
 		E += dielectric;
 		
 	}
