@@ -100,7 +100,7 @@ int main (int argc, char* argv[])
 				bundle->mutateWBC(activeChains[i], activeResidues[j], seq[j]);
 			}
 		}
-		bundle->protRelax(1000);
+		bundle->protRelax(1000, true);
 		string outFile;
 		outFile = "mut.pdb";
 		pdbWriter(bundle, outFile);

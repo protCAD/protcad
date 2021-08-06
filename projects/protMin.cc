@@ -48,7 +48,7 @@ int main (int argc, char* argv[])
 	if (clash){
 		UInt startclashes = _prot->getNumHardClashes();
 		cout << "Starting Clashes: " << startclashes << endl;
-		_prot->protRelax(1000);
+		_prot->protRelax(1000, backbone);
 		UInt endclashes = _prot->getNumHardClashes();
 		cout << "Clashes cleared: " << (int)startclashes-(int)endclashes << endl;
 	}
