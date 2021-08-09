@@ -1146,7 +1146,6 @@ double protein::getBackboneHBondEnergy(UInt donorChainIndex, UInt donorResIndex,
 	acceptorAngleList.push_back(180.0);
         
     double energy = 0.0;
-
     for (UInt i = 0; i < donorList.size(); i ++)
     {
         for (UInt j = 0; j < acceptorList.size(); j ++)
