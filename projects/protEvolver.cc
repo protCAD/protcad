@@ -4,7 +4,7 @@
 //***********************************      protEvolver 4       ******************************************
 //***********************************                          ******************************************
 //*******************************************************************************************************
-//******  -Sequence Selective Machine Learning Evolution Based Algorithm in Implicit Solvent -  **********
+//*********  -Sequence Selective Evolutionary Algorithm of a Fold in Implicit Solvent -  ****************
 //*******************************************************************************************************
 
 /////// Just specify infile structure, active chains and residues indexes, and it will evolve a fold
@@ -26,7 +26,7 @@ vector < vector < UInt > > readSequencePool();
 vector < vector < UInt > > readPossibleMutants();
 
 enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,SF4,HEM,NI2,CLN,CO2,MG2,OH,OXY,CLD,HIS};
-string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dCf","dQ","dE","dEh","dHd","dHe","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV","SF4","HEM","NI2","CLN","CO2","MG2","OH-","OXY","CLD","HIS"};
+string aminoAcidString[] = {"A","R","N","D","D","C","C","C","Q","E","E","H","H","H","I","L","K","M","F","P","O","S","T","W","Y","V","G","A","R","N","D","D","C","C","C","Q","E","E","H","H","H","I","L","K","M","F","P","O","S","T","W","Y","V","A","R","N","D","D","C","C","C","Q","E","E","H","H","H","I","L","K","M","F","P","O","S","T","W","Y","V","G","A","R","N","D","D","C","C","C","Q","E","E","H","H","H","I","L","K","M","F","P","O","S","T","W","Y","V","A","R","N","D","D","C","C","C","Q","E","E","H","H","H","I","L","K","M","F","P","O","S","T","W","Y","V","G","A","R","N","D","D","C","C","C","Q","E","E","H","H","H","I","L","K","M","F","P","O","S","T","W","Y","V"};
 UInt aaSize = sizeof(aminoAcidString)/sizeof(aminoAcidString[0]);
 UInt populationBaseline = 1000;
 
@@ -284,6 +284,11 @@ int main (int argc, char* argv[])
 		deltaEnergy = Energy-startEnergy;
 		acceptance = prot->boltzmannEnergyCriteria(deltaEnergy);
 		startEnergy = Energy;
+	
+		// calculate binding energy
+		double receptorE = prot->protEnergy(0);
+		double ligandE = prot->protEnergy(1);
+		double bindingEnergy = Energy-(ligandE+receptorE);
 		
 		//-generate pdb output
 		sec = time(NULL); timeid = sec;
@@ -300,22 +305,25 @@ int main (int argc, char* argv[])
 			finalSequence.push_back(chainSequence);
 		}
 		fstream finalline; finalline.open ("results.out", fstream::in | fstream::out | fstream::app);
-		finalline << timeid << " " << Energy << " ";
+		finalline << timeid << " " << Energy << " " << bindingEnergy << endl;
 		fstream fs; fs.open ("sequencepool.out", fstream::in | fstream::out | fstream::app);
+		fstream population; population.open ("population.faa", fstream::in | fstream::out | fstream::app);
+		if (acceptance){population << ">" << outFile << endl;}
 		for (UInt i = 0; i < activeChains.size(); i++)
 		{
 			for (UInt j = 0; j < finalSequence[i].size(); j++)
 			{
-				finalline << aminoAcidString[finalSequence[i][j]] << " ";
 				if (acceptance){
 					fs << finalSequence[i][j] << ",";
+					population << aminoAcidString[finalSequence[i][j]];
 				}
 			}
 		}
 		if (acceptance){
-			finalline << " pool"; fs << endl;
+			fs << endl;
+			population << endl;
 		}
-		fs.close(); finalline << endl; finalline.close();
+		fs.close(); finalline.close(); population.close();
 		
 		//-clear variables for next iteration
 		delete thePDB;

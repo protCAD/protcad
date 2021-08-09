@@ -158,13 +158,13 @@ int main (int argc, char* argv[])
 				randomPosition.push_back(activeChains[i]);
 				randomPosition.push_back(randomResidues[j]);
 				mutant = getProbabilisticMutation(sequencePool, possibleMutants, randomPosition);
-				backboneAngles = prot->getRandPhiPsifromBackboneSequenceType(mutant);
+				//backboneAngles = prot->getRandPhiPsifromBackboneSequenceType(mutant);
 				prot->setDihedral(activeChains[i], randomResidues[j],backboneAngles[0],0,0);
 				prot->setDihedral(activeChains[i], randomResidues[j],backboneAngles[1],1,0);
 				randomPosition.clear();
 			}
 		}
-		prot->protRelax(1000);
+		prot->protRelax(1000, false);
 		pdbWriter(prot, tempModel);
 		Energy = prot->protEnergy();
 		pastEnergy = Energy;
@@ -189,7 +189,7 @@ int main (int argc, char* argv[])
 			
 			//--Sidechain relaxation and energy calculation
 			if(!revert){
-				prot->protRelax(1000); nobetter++;
+				prot->protRelax(1000, false); nobetter++;
 				Energy = prot->protEnergy();
 				deltaEnergy = Energy-pastEnergy;
 				acceptance = prot->boltzmannEnergyCriteria(deltaEnergy);

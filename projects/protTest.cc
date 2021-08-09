@@ -21,8 +21,9 @@ int main (int argc, char* argv[])
 		cout << "protTest <inFile.pdb>" << endl;
 		exit(1);
 	}
-	clock_t start, end;
-	double cpu_time_used;
+
+	//clock_t start, end;
+	//double cpu_time_used;
 	string infile = argv[1];
 	
 	PDBInterface* thePDB = new PDBInterface(infile);
@@ -33,8 +34,8 @@ int main (int argc, char* argv[])
 	residue::setElectroSolvationScaleFactor(0.0);
 	residue::setHydroSolvationScaleFactor(0.0);
 	residue::setPolarizableElec(true);
-	amberElec::setScaleFactor(0.0);
-	amberVDW::setScaleFactor(1.0);
+	amberElec::setScaleFactor(1.0);
+	amberVDW::setScaleFactor(0.0);
 	residue::setTemperature(300);
 	
 	bundle->translateChain(1,-1,0,0);

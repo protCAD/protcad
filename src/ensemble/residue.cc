@@ -1907,7 +1907,6 @@ double residue::calculateDihedral(const vector<UInt>& _quad) const
 		cout << quadVect[i][1] << " " << quadVect[i][2] << endl;
 	}
 #endif
-
 	return CMath::dihedral(quadVect[0], quadVect[1], quadVect[2], quadVect[3]);
 }
 
@@ -2204,7 +2203,7 @@ vector< vector< double > > residue::randContinuousSidechainConformation()
 {
 	vector < vector <double> > sideChainDihedralAngles;
 	vector <double> chis;
-	double angle;
+	double angle, current;
 	UInt branchpoints = getNumBpt(itsType);
 	for (UInt i=0; i<branchpoints; i++)
 	{
@@ -2212,7 +2211,8 @@ vector< vector< double > > residue::randContinuousSidechainConformation()
 		UInt dihedrals = getNumDihedralAngles(itsType,i);
 		for (UInt j=0; j<dihedrals; j++)
 		{
-			angle = (rand() % 360)-179;
+			current = itsSidechainDihedralAngles[i][j];
+			angle = current + ((rand() % 31)-15);
 			chis.push_back(angle);
 		}
 		sideChainDihedralAngles.push_back(chis);
@@ -2933,7 +2933,7 @@ double residue::getSoluteEnergy(UInt atomIndex, residue* _other, UInt otherAtomI
 			dielectric = maxwellGarnettApproximation(atomIndex, _other, otherAtomIndex, dielectric, distanceSquared);
 		}
 		// calculate coulombic energy with effective dielectric
-		double tempAmberElecEnergy = residueTemplate::getAmberElecSoluteEnergySQ(itsType, atomIndex, _other->itsType, otherAtomIndex, distanceSquared, dielectric);
+		//double tempAmberElecEnergy = residueTemplate::getAmberElecSoluteEnergySQ(itsType, atomIndex, _other->itsType, otherAtomIndex, distanceSquared, dielectric);
 		E += dielectric;
 		
 	}
@@ -2957,7 +2957,7 @@ double residue::calculateSolvationEnergy(UInt _atomIndex)
 	// First estimate water occupancy around solute atom in solvent volume shells of total proximal solute atom excluded volume
 	int atomVDWtype = dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex][0];
 	double solvatedRadius = residueTemplate::getVDWRadius(atomVDWtype)+1.4; //atom radius + water radius
-	int shellWaters = itsAtoms[_atomIndex]->getNumberofWaters();;
+	int shellWaters = itsAtoms[_atomIndex]->getNumberofWaters();
 	if (shellWaters > 0){
 		// Polar solvation
 		if (EsolvationFactor != 0.0)
@@ -3118,7 +3118,8 @@ double residue::maxwellGarnettApproximation(UInt _atomIndex1, UInt _atomIndex2, 
 
 		//recalculate the dielectric using the Maxwell Garnett mixing formula to include the polarizability of the dipole inclusion over the volume of inclusion
 		double dielectric = _dielectric+4*PI*(pol/vol)/1-(4*PI/3*_dielectric)*(pol/vol);
-		if (dielectric < 2){dielectric = 2;} // estimate of protein minimum compared to pure vacuum of 1
+
+		if (dielectric < 4){dielectric = 4;} // estimate of protein minimum compared to pure vacuum of 1
 		return dielectric;
 	}
 	return _dielectric;
@@ -3139,7 +3140,8 @@ double residue::maxwellGarnettApproximation(UInt _atomIndex1, residue* _other, U
 
 		//recalculate the dielectric using the Maxwell Garnett mixing formula to include the polarizability of the dipole inclusion over the volume of inclusion
 		double dielectric = _dielectric+4*PI*(pol/vol)/1-(4*PI/3*_dielectric)*(pol/vol);
-		if (dielectric < 2){dielectric = 2;} // estimate of protein minimum compared to pure vacuum of 1
+		if (dielectric < 4){dielectric = 4;} // estimate of protein minimum compared to pure vacuum of 1
+
 		return dielectric;
 	}
 	return _dielectric;
