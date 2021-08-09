@@ -25,6 +25,7 @@ int main (int argc, char* argv[])
 	string bbrelax = argv[3];
 	string infile = argv[4];
 	string outFile = argv[5];
+
 	PDBInterface* thePDB = new PDBInterface(infile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
