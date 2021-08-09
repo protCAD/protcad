@@ -1347,8 +1347,7 @@ bool protein::boltzmannEnergyCriteria(double _deltaEnergy) //calculate boltzmann
 
 double protein::boltzmannProbabilityToEnergy(double Pi, double Pj) //calculate boltzmann Energy from a probability (Pi) compared to a reference (Pj) probability to determine acceptance criteria
 {
-	double KT = residue::getTemperature()*KB;
-	double Energy = -KT*log(Pi/Pj);
+	double Energy = -residue::getKT()*log(Pi/Pj);
 	return Energy;
 }
 
@@ -2857,10 +2856,7 @@ void protein::protMin(bool _backbone)
 				setDihedral(randchain,randres,backboneAngles[0],0,0); setDihedral(randchain,randres,backboneAngles[1],1,0);
 				bbClashes = getNumHardBackboneClashes();
 				if (bbClashes <= bbClashesStart){
-					clashes = getNumHardClashes();
-					if (clashes <= clashesStart){
-						energyTest = true; revert = false;
-					}
+					energyTest = true; revert = false;
 				}
 			}
 			//--Sidechain conformation trial--------------------------------------------------------
