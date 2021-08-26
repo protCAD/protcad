@@ -364,7 +364,7 @@ vector <UInt> getMutationPosition(UIntVec &_activeChains, UIntVec &_activeResidu
 
 UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector < vector < UInt > > &_possibleMutants, UIntVec &_mutantPosition)
 {
-	double Pi, Pj, Energy, poolSize = _sequencePool.size(), KT = residue::getKT();
+	double Pi, entropy, poolSize = _sequencePool.size();
 	vector <UInt> Freqs(57,1);
 	UInt mutant, type;
 	UInt positionPossibles = _possibleMutants[(_mutantPosition[0]+1)*_mutantPosition[1]].size();
@@ -372,16 +372,18 @@ UInt getProbabilisticMutation(vector < vector < UInt > > &_sequencePool, vector 
 	//--determine frequency based chance of mutation acceptance (statistical potential)
 	do
 	{
+		entropy = rand() % 100+1;
 		mutant = _possibleMutants[(_mutantPosition[0]+1)*_mutantPosition[1]][rand() % positionPossibles];
-		for (UInt i = 0; i < poolSize; i++)
-		{
-			type = _sequencePool[i][(_mutantPosition[0]+1)*_mutantPosition[1]];
-			Freqs[type] += 1;
+		if (poolSize >= ::populationBaseline){
+			for (UInt i = 0; i < poolSize; i++)
+			{
+				type = _sequencePool[i][(_mutantPosition[0]+1)*_mutantPosition[1]];
+				Freqs[type] += 1;
+			}
+			Pi = (Freqs[mutant]/(poolSize-1))*100;
 		}
-		Pi = Freqs[mutant]/(poolSize-1);
-		Pj = 1/(double)positionPossibles;
-		Energy = -KT*log(Pi/Pj);
-	}while (poolSize >= ::populationBaseline && Energy > KT);
+		else{Pi = 100;}  //random mutant
+	}while (entropy > Pi);
 	return mutant;
 }
 
