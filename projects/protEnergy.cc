@@ -16,19 +16,21 @@
 int main (int argc, char* argv[])
 {	
 
-	if (argc !=2)
+	if (argc !=3)
 	{
-		cout << "protEnergy <inFile.pdb>" << endl;
+		cout << "protEnergy <inFile.pdb> <predictTM(t/f)>" << endl;
 		exit(1);
 	}
-	clock_t start, end;
-	double cpu_time_used;
 	string infile = argv[1];
-	
+	string predicttm = argv[2];
+
+	bool predictTM = false;
+	if (predicttm == "t"){predictTM = true;}
+
 	PDBInterface* thePDB = new PDBInterface(infile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
-	protein* bundle = static_cast<protein*>(pMol);
+	protein* prot = static_cast<protein*>(pMol);
 	
 	amberElec::setScaleFactor(1.0);
 	amberVDW::setScaleFactor(1.0);
@@ -36,26 +38,28 @@ int main (int argc, char* argv[])
 	residue::setHydroSolvationScaleFactor(1.0);
 	residue::setPolarizableElec(true);
 	residue::setEntropyFactor(1.0);
-	residue::setTemperature(300);
 	
-	start = clock();
-	double Energy = bundle->protEnergy();
-	end = clock();
-	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-	cout << infile << " " << Energy << " kcal/mol time: " << cpu_time_used << endl;
-	//string outFile = infile;
-	//pdbWriter(bundle, outFile);
-	
-	start = clock();
-	UInt clashes = bundle->getNumHardClashes();
-	end = clock();
-	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-	cout << "Clashes: " << clashes << " clashes time: " << cpu_time_used << endl;
-	
-	start = clock();
-	clashes = bundle->getNumHardBackboneClashes();
-	end = clock();
-	cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-	cout << "Backbone Clashes: " << clashes << " clashes time: " << cpu_time_used << endl;
+	double Energy = 0.0;
+	if (predictTM){
+		double standardE;
+		double tm;
+		double temp;
+		bool notm = true;
+		residue::setTemperature(273);
+		for (UInt i=0; i < 100; i++)
+		{
+			Energy = prot->protEnergy();
+			temp = residue::getTemperature();
+			if (Energy > 0 && notm) {tm = temp-273; notm = false;}
+			if (temp == 300){standardE = Energy;}
+			prot->setMoved(true,0);
+			residue::setTemperature(274+i);
+		}
+		cout << infile << " " << standardE << " kcal/mol at 300K Predicted TM: " << tm << "C" << endl;
+	}
+	else{
+		residue::setTemperature(300);
+		cout << infile << " " << prot->protEnergy() << " kcal/mol at 300K" << endl;
+	}
 	return 0;
 }

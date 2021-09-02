@@ -2958,6 +2958,7 @@ double residue::calculateSolvationEnergy(UInt _atomIndex)
 {	// note: Requires update of dielectrics at protein level to be accurate for water count and local dielctric. Meant to be part of protEnergy().
 	double soluteSolventEnthalpy = 0.0;
 	double soluteSolventEntropy = 0.0;
+	double kt = temperature*KB;
 
 	// First estimate water occupancy around solute atom in solvent volume shells of total proximal solute atom excluded volume
 	int atomVDWtype = dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex][0];
@@ -2983,7 +2984,7 @@ double residue::calculateSolvationEnergy(UInt _atomIndex)
 
 			// Solvent Entropy loss estimate due to lack of ideal water lattice hydrogen bond network formation (hydrophobic effect)
 			// Gill Hydrophobic solvation  S.J.Gill, S.F.Dec. J Phys. Chem. 1985
-			soluteSolventEntropy = (-KT*log(pow(0.5,shellWaters)))*HsolvationFactor;
+			soluteSolventEntropy = (-kt*log(pow(0.5,shellWaters)))*HsolvationFactor;
 		}
 	}
 	//Total atom solvation Energy
@@ -4586,28 +4587,29 @@ double residue::configurationEntropy()
 	// b = number of RPT backbone bins in PDB which have a potential less than zero for given residue
 	// r = total number of possible rotamers
 	double Entropy = 0.0;
+	double kt = temperature*KB;
 	string residueType = getDataBaseItem(itsType);
-	if (residueType == "ALA" || residueType == "ALD") 													{Entropy = (KT*log(pow(4,1)))*EntropyFactor; return Entropy;}
-	if (residueType == "ARG" || residueType == "ARD") 													{Entropy = (KT*log(pow(5,81)))*EntropyFactor; return Entropy;}
-	if (residueType == "ASN" || residueType == "AND") 													{Entropy = (KT*log(pow(8,9)))*EntropyFactor; return Entropy;}
-	if (residueType == "ASP" || residueType == "APD" || residueType == "ASH" || residueType == "AHD") 	{Entropy = (KT*log(pow(9,9)))*EntropyFactor; return Entropy;}
-	if (residueType == "CYS" || residueType == "CYD" || residueType == "CYX" || residueType == "CXD") 	{Entropy = (KT*log(pow(5,3)))*EntropyFactor; return Entropy;}
-	if (residueType == "GLN" || residueType == "GND") 													{Entropy = (KT*log(pow(5,27)))*EntropyFactor; return Entropy;}
-	if (residueType == "GLU" || residueType == "GUD" || residueType == "GLH" || residueType == "GHD") 	{Entropy = (KT*log(pow(5,27)))*EntropyFactor; return Entropy;}
-	if (residueType == "GLY" ) 																			{Entropy = (KT*log(pow(12,1)))*EntropyFactor; return Entropy;}
+	if (residueType == "ALA" || residueType == "ALD") 													{Entropy = (kt*log(pow(4,1)))*EntropyFactor; return Entropy;}
+	if (residueType == "ARG" || residueType == "ARD") 													{Entropy = (kt*log(pow(5,81)))*EntropyFactor; return Entropy;}
+	if (residueType == "ASN" || residueType == "AND") 													{Entropy = (kt*log(pow(8,9)))*EntropyFactor; return Entropy;}
+	if (residueType == "ASP" || residueType == "APD" || residueType == "ASH" || residueType == "AHD") 	{Entropy = (kt*log(pow(9,9)))*EntropyFactor; return Entropy;}
+	if (residueType == "CYS" || residueType == "CYD" || residueType == "CYX" || residueType == "CXD") 	{Entropy = (kt*log(pow(5,3)))*EntropyFactor; return Entropy;}
+	if (residueType == "GLN" || residueType == "GND") 													{Entropy = (kt*log(pow(5,27)))*EntropyFactor; return Entropy;}
+	if (residueType == "GLU" || residueType == "GUD" || residueType == "GLH" || residueType == "GHD") 	{Entropy = (kt*log(pow(5,27)))*EntropyFactor; return Entropy;}
+	if (residueType == "GLY" ) 																			{Entropy = (kt*log(pow(12,1)))*EntropyFactor; return Entropy;}
 	if (residueType == "HIE" || residueType == "HID" || residueType == "HIP" || residueType == "HED" 
-	   || residueType == "HDD" || residueType == "HPD") 												{Entropy = (KT*log(pow(9,9)))*EntropyFactor; return Entropy;}
-	if (residueType == "ILE" || residueType == "ILD") 													{Entropy = (KT*log(pow(6,9)))*EntropyFactor; return Entropy;}
-	if (residueType == "LEU" || residueType == "LED") 													{Entropy = (KT*log(pow(3,9)))*EntropyFactor; return Entropy;}
-	if (residueType == "LYS" || residueType == "LYD") 													{Entropy = (KT*log(pow(6,81)))*EntropyFactor; return Entropy;}
-	if (residueType == "MET" || residueType == "MED") 													{Entropy = (KT*log(pow(3,27)))*EntropyFactor; return Entropy;}
-	if (residueType == "PHE" || residueType == "PHD") 													{Entropy = (KT*log(pow(5,9)))*EntropyFactor; return Entropy;}
-	if (residueType == "PRO" || residueType == "PRD") 													{Entropy = (KT*log(pow(4,2)))*EntropyFactor; return Entropy;}
-	if (residueType == "SER" || residueType == "SED") 													{Entropy = (KT*log(pow(9,3)))*EntropyFactor; return Entropy;}
-	if (residueType == "THR" || residueType == "THD") 													{Entropy = (KT*log(pow(8,3)))*EntropyFactor; return Entropy;}
-	if (residueType == "TRP" || residueType == "TRD") 													{Entropy = (KT*log(pow(3,9)))*EntropyFactor; return Entropy;}
-	if (residueType == "TYR" || residueType == "TYD") 													{Entropy = (KT*log(pow(5,9)))*EntropyFactor; return Entropy;}
-	if (residueType == "VAL" || residueType == "VAD") 													{Entropy = (KT*log(pow(5,3)))*EntropyFactor; return Entropy;}
+	   || residueType == "HDD" || residueType == "HPD") 												{Entropy = (kt*log(pow(9,9)))*EntropyFactor; return Entropy;}
+	if (residueType == "ILE" || residueType == "ILD") 													{Entropy = (kt*log(pow(6,9)))*EntropyFactor; return Entropy;}
+	if (residueType == "LEU" || residueType == "LED") 													{Entropy = (kt*log(pow(3,9)))*EntropyFactor; return Entropy;}
+	if (residueType == "LYS" || residueType == "LYD") 													{Entropy = (kt*log(pow(6,81)))*EntropyFactor; return Entropy;}
+	if (residueType == "MET" || residueType == "MED") 													{Entropy = (kt*log(pow(3,27)))*EntropyFactor; return Entropy;}
+	if (residueType == "PHE" || residueType == "PHD") 													{Entropy = (kt*log(pow(5,9)))*EntropyFactor; return Entropy;}
+	if (residueType == "PRO" || residueType == "PRD") 													{Entropy = (kt*log(pow(4,2)))*EntropyFactor; return Entropy;}
+	if (residueType == "SER" || residueType == "SED") 													{Entropy = (kt*log(pow(9,3)))*EntropyFactor; return Entropy;}
+	if (residueType == "THR" || residueType == "THD") 													{Entropy = (kt*log(pow(8,3)))*EntropyFactor; return Entropy;}
+	if (residueType == "TRP" || residueType == "TRD") 													{Entropy = (kt*log(pow(3,9)))*EntropyFactor; return Entropy;}
+	if (residueType == "TYR" || residueType == "TYD") 													{Entropy = (kt*log(pow(5,9)))*EntropyFactor; return Entropy;}
+	if (residueType == "VAL" || residueType == "VAD") 													{Entropy = (kt*log(pow(5,3)))*EntropyFactor; return Entropy;}
 	return Entropy;
 }
 
