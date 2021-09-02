@@ -30,11 +30,12 @@ int main (int argc, char* argv[])
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* bundle = static_cast<protein*>(pMol);
 	
+	amberElec::setScaleFactor(1.0);
+	amberVDW::setScaleFactor(1.0);
 	residue::setElectroSolvationScaleFactor(1.0);
 	residue::setHydroSolvationScaleFactor(1.0);
 	residue::setPolarizableElec(true);
-	amberElec::setScaleFactor(1.0);
-	amberVDW::setScaleFactor(1.0);
+	residue::setEntropyFactor(1.0);
 	residue::setTemperature(300);
 	
 	start = clock();

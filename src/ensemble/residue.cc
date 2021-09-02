@@ -22,6 +22,7 @@ bool residue::polarizableElec = true;
 double residue::temperature = 300.0;
 double residue::HsolvationFactor = 1.0;
 double residue::EsolvationFactor = 1.0;
+double residue::EntropyFactor = 1.0;
 double residue::cutoffDistance = 7.0;
 double residue::cutoffDistanceSquared = residue::cutoffDistance*residue::cutoffDistance;
 double residue::cutoffCubeVolume = pow((residue::cutoffDistance*2),3);
@@ -2865,6 +2866,10 @@ double residue::intraSoluteEnergy()
 			}
 		}
 	}
+	// Calculate Configuration Entropy based on amino acid type and it's statistical distribution in RPT bins
+	if (EntropyFactor != 0.0){
+		intraEnergy += configurationEntropy();
+	}
 	return intraEnergy;
 }
 
@@ -2978,7 +2983,7 @@ double residue::calculateSolvationEnergy(UInt _atomIndex)
 
 			// Solvent Entropy loss estimate due to lack of ideal water lattice hydrogen bond network formation (hydrophobic effect)
 			// Gill Hydrophobic solvation  S.J.Gill, S.F.Dec. J Phys. Chem. 1985
-			soluteSolventEntropy = (-temperature*KB*log(pow(0.5,shellWaters)))*HsolvationFactor;
+			soluteSolventEntropy = (-KT*log(pow(0.5,shellWaters)))*HsolvationFactor;
 		}
 	}
 	//Total atom solvation Energy
@@ -4574,6 +4579,36 @@ double residue::wodakVolume()
 	if (residueType == "TYD") volume = 209.8;
 	if (residueType == "VAD") volume = 138.4;
 	return volume;
+}
+
+double residue::configurationEntropy()
+{	// simplest model implemented right now -> KT*log(b^r) same formula as solvent entropy
+	// b = number of RPT backbone bins in PDB which have a potential less than zero for given residue
+	// r = total number of possible rotamers
+	double Entropy = 0.0;
+	string residueType = getDataBaseItem(itsType);
+	if (residueType == "ALA" || residueType == "ALD") 													{Entropy = (KT*log(pow(4,1)))*EntropyFactor; return Entropy;}
+	if (residueType == "ARG" || residueType == "ARD") 													{Entropy = (KT*log(pow(5,81)))*EntropyFactor; return Entropy;}
+	if (residueType == "ASN" || residueType == "AND") 													{Entropy = (KT*log(pow(8,9)))*EntropyFactor; return Entropy;}
+	if (residueType == "ASP" || residueType == "APD" || residueType == "ASH" || residueType == "AHD") 	{Entropy = (KT*log(pow(9,9)))*EntropyFactor; return Entropy;}
+	if (residueType == "CYS" || residueType == "CYD" || residueType == "CYX" || residueType == "CXD") 	{Entropy = (KT*log(pow(5,3)))*EntropyFactor; return Entropy;}
+	if (residueType == "GLN" || residueType == "GND") 													{Entropy = (KT*log(pow(5,27)))*EntropyFactor; return Entropy;}
+	if (residueType == "GLU" || residueType == "GUD" || residueType == "GLH" || residueType == "GHD") 	{Entropy = (KT*log(pow(5,27)))*EntropyFactor; return Entropy;}
+	if (residueType == "GLY" ) 																			{Entropy = (KT*log(pow(12,1)))*EntropyFactor; return Entropy;}
+	if (residueType == "HIE" || residueType == "HID" || residueType == "HIP" || residueType == "HED" 
+	   || residueType == "HDD" || residueType == "HPD") 												{Entropy = (KT*log(pow(9,9)))*EntropyFactor; return Entropy;}
+	if (residueType == "ILE" || residueType == "ILD") 													{Entropy = (KT*log(pow(6,9)))*EntropyFactor; return Entropy;}
+	if (residueType == "LEU" || residueType == "LED") 													{Entropy = (KT*log(pow(3,9)))*EntropyFactor; return Entropy;}
+	if (residueType == "LYS" || residueType == "LYD") 													{Entropy = (KT*log(pow(6,81)))*EntropyFactor; return Entropy;}
+	if (residueType == "MET" || residueType == "MED") 													{Entropy = (KT*log(pow(3,27)))*EntropyFactor; return Entropy;}
+	if (residueType == "PHE" || residueType == "PHD") 													{Entropy = (KT*log(pow(5,9)))*EntropyFactor; return Entropy;}
+	if (residueType == "PRO" || residueType == "PRD") 													{Entropy = (KT*log(pow(4,2)))*EntropyFactor; return Entropy;}
+	if (residueType == "SER" || residueType == "SED") 													{Entropy = (KT*log(pow(9,3)))*EntropyFactor; return Entropy;}
+	if (residueType == "THR" || residueType == "THD") 													{Entropy = (KT*log(pow(8,3)))*EntropyFactor; return Entropy;}
+	if (residueType == "TRP" || residueType == "TRD") 													{Entropy = (KT*log(pow(3,9)))*EntropyFactor; return Entropy;}
+	if (residueType == "TYR" || residueType == "TYD") 													{Entropy = (KT*log(pow(5,9)))*EntropyFactor; return Entropy;}
+	if (residueType == "VAL" || residueType == "VAD") 													{Entropy = (KT*log(pow(5,3)))*EntropyFactor; return Entropy;}
+	return Entropy;
 }
 
 void residue::coilcoil(const double _pitch)

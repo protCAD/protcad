@@ -256,6 +256,7 @@ public:
 	void updateMovedDependence(residue* _other, UInt _EorC);
 	void calculateDielectrics();
     double calculateSolvationEnergy(UInt _atomIndex);
+	double configurationEntropy();
     double getSolvationEnergy();
     double getDielectric();
     double maxwellGarnettApproximation(UInt _atomIndex1, UInt _atomIndex2, double _dielectric, double _distanceSquared);
@@ -376,6 +377,7 @@ public:
 	static double getKT() { return KT; }
 	static void setPolarizableElec( bool _polElec ) { polarizableElec = _polElec; }
 	static void setElectroSolvationScaleFactor( const double _Esolv ) { EsolvationFactor = _Esolv; }
+	static void setEntropyFactor( const double _EntropyF ) { EntropyFactor = _EntropyF; }
 	static double getElectroSolvationScaleFactor() { return EsolvationFactor; }
 	static void setHydroSolvationScaleFactor( const double _Hsolv ) { HsolvationFactor = _Hsolv; }
 	static double getHydroSolvationScaleFactor() { return HsolvationFactor; }
@@ -429,6 +431,7 @@ private:
 	static double temperature;
 	static double EsolvationFactor;
 	static double HsolvationFactor;
+	static double EntropyFactor;
 	static double cutoffDistance;
 	static double cutoffDistanceSquared;
 	static double cutoffCubeVolume;
