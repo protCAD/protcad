@@ -2818,7 +2818,7 @@ void protein::protMin(bool _backbone)
 	//--Initialize variables for loop, calculate starting energy and build energy vectors-----
 	saveCurrentState();
 	UInt randchain, randres, resnum, backboneOrSidechain = 1;
-	UInt clashes, clashesStart, bbClashes, bbClashesStart, chainNum = getNumChains(), plateau = 1000;
+	UInt clashes, clashesStart, bbClashes, bbClashesStart, chainNum = getNumChains(), plateau = 2000;
 	double Energy, pastEnergy = protEnergy(), deltaEnergy, sPhi, sPsi, nobetter = 0.0, KT = KB*Temperature();
 	//double rotX, rotY, rotZ, transX, transY, transZ;
 	vector < DouVec > currentSidechainConf, newSidechainConf; srand (time(NULL)); vector <double> backboneAngles(2);
