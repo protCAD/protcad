@@ -14,7 +14,6 @@
 #include <string>
 #include <sstream>
 #include <fstream>
-#include <unistd.h>
 #include "PDBInterface.h"
 
 vector <UInt> getChainSequence(protein* _prot, UInt _chainIndex);
@@ -140,7 +139,7 @@ int main (int argc, char* argv[])
 	residue::setTemperature(300);
 
 	//--set initial variables
-	int seed = (int)getpid(); srand (seed);
+	random_device rd; srand((int)rd());
 	double startEnergy = 1E10, pastEnergy, Energy, deltaEnergy;
 	UInt timeid, sec, mutant = 0, plateau = 15, nobetter = 0;
 	vector < UInt > mutantPosition, chainSequence, randomPosition;

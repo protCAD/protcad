@@ -13,6 +13,7 @@
 #include <string.h>
 #include <vector>
 #include <algorithm>
+#include <random>
 #include "typedef.h"
 #include "ran.h"
 #include "molecule.h"
