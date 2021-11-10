@@ -44,5 +44,6 @@ int main (int argc, char* argv[])
 	// calculate binding energys
 	double bindingEnergy = complexE-(ligandE+receptorE);
 	cout << infile << " " << complexE << " " << bindingEnergy << endl;
+	pdbWriter(prot,infile);
 	return 0;
 }

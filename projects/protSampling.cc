@@ -10,7 +10,6 @@
 #include <string>
 #include "ensemble.h"
 #include "PDBInterface.h"
-#include <random>
 
 //--Program setup-------------------------------------------------------------
 int main (int argc, char* argv[])

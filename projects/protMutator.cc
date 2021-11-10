@@ -16,7 +16,7 @@
 
 UInt convertAAStringtoInt(string AA, string aminoAcidString[], UInt size);
 enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,SF4,HEM,NI2,CLN,CO2,MG2,OH,OXY,CLD,HIS};
-string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dCf","dQ","dE","dEh","dHd","dHe","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV","SF4","HEM","NI2","CLN","CO2","MG2","OH-","OXY","CLD","HIS"};
+string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","H","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dCf","dQ","dE","dEh","dHd","dHe","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV","SF4","HEM","NI2","CLN","CO2","MG2","OH-","OXY","CLD","HIS"};
 UInt aaSize = sizeof(aminoAcidString)/sizeof(aminoAcidString[0]);
 
 int main (int argc, char* argv[])
@@ -28,15 +28,18 @@ int main (int argc, char* argv[])
 		cout << "Command: protMutator <inputfile>" << endl;
 		cout << "Input file format as listed below:" << endl;
 		cout << "Input PDB File,xyz.pdb," << endl;
-		cout << "Active Chains,0,1,2," << endl;
-		cout << "Active Positions,0,1,2,3,5,6,7,9,10," << endl;
-		cout << "A,K,D,L,K,D,R,R,R," << endl;
+		cout << "Active Chain,0," << endl;
+		cout << "V57A,G23R," << endl;
 		exit(1);
 	}
 	string inputfile = argv[1];
 	string infile;
-	vector <UInt> seq;
-	UIntVec activeChains, activeResidues;
+	UInt activeChain;
+	vector <UIntVec> activeResidues;
+	UIntVec activeRes, seq;
+	vector <UIntVec> seqs;
+	UInt variant = 0;
+	UInt resnum, resIndex;
 	
 	//--read input file
 	ifstream file(inputfile);
@@ -49,7 +52,7 @@ int main (int argc, char* argv[])
 			stringstream stream(line);
 			while(getline(stream,item,','))
 			{
-				if (linecounter < 3){
+				if (linecounter < 2){
 					if (delimitercounter > 0){
 						if (linecounter == 0){
 							infile = item;
@@ -58,23 +61,32 @@ int main (int argc, char* argv[])
 							stringstream inputString(item);
 							UInt index;
 							inputString >> index;
-							activeChains.push_back(index);
-						}
-						if (linecounter == 2){
-							stringstream inputString(item);
-							UInt index;
-							inputString >> index;
-							activeResidues.push_back(index);
+							activeChain = index;
 						}
 					}
 				}
 				else{
-					UInt index = convertAAStringtoInt(item, aminoAcidString, aaSize);
+					const char *itemchar = item.c_str();
+					if (isdigit(itemchar[0])){resnum = atoi(itemchar);}
+					else{itemchar = &itemchar[1]; resnum = atoi(itemchar);}
+					activeRes.push_back(resnum);
+					UInt i = 0; string aa;
+					while (item[i]){if(isalpha(item[i])){aa = item[i];}i++;}
+					UInt index = convertAAStringtoInt(aa, aminoAcidString, aaSize);
 					seq.push_back(index);
 				}
 				delimitercounter++;
 			}
 			linecounter++;
+			if (linecounter > 2){
+				activeResidues.push_back(activeRes); 
+				seqs.push_back(seq);
+				seq.clear(); 
+				seq.resize(0);
+				activeRes.clear(); 
+				activeRes.resize(0); 
+				variant++;
+			}
 		}
 		file.close();
 	}
@@ -82,29 +94,30 @@ int main (int argc, char* argv[])
 		fstream inf;
 		inf.open ("mutator.in", fstream::in | fstream::out | fstream::app);
 		inf << "Input PDB File,xyz.pdb," << endl;
-		inf << "Active Chains,0,1,2," << endl;
-		inf << "Active Positions,0,1,2,3,5,6,7,9,10," << endl;
-		inf << "A,K,D,L,K,D,R,R,R," << endl;
+		inf << "Active Chain,0," << endl;
+		inf << "V57A,G23R," << endl;
 		cout << "Error: Required input file doesn't exist." << endl << "Template input file has been generated, please fill it out and rerun." << endl;
 		exit(1);
 	}
+	for (UInt i = 0; i < seqs.size(); i++)
+	{
 		PDBInterface* thePDB = new PDBInterface(infile);
 		ensemble* theEnsemble = thePDB->getEnsemblePointer();
 		molecule* pMol = theEnsemble->getMoleculePointer(0);
-		protein* bundle = static_cast<protein*>(pMol);
-		for (UInt i = 0; i < activeChains.size(); i ++)
+		protein* prot = static_cast<protein*>(pMol);
+		for (UInt j = 0; j < activeResidues[i].size(); j++)
 		{
-			for (UInt j = 0; j < activeResidues.size(); j++)
-			{
-				bundle->activateForRepacking(activeChains[i], activeResidues[j]);
-				bundle->mutateWBC(activeChains[i], activeResidues[j], seq[j]);
-			}
+			resIndex = prot->getIndexFromResNum(activeChain, activeResidues[i][j]);
+			prot->activateForRepacking(activeChain, resIndex);
+			prot->mutateWBC(activeChain, resIndex, seqs[i][j]);
 		}
-		bundle->protRelax(1000, true);
-		string outFile;
-		outFile = "mut.pdb";
-		pdbWriter(bundle, outFile);
+		prot->protRelax(1000, false);
+		stringstream convert; string countstr;
+		convert << i+1, countstr = convert.str();
+		string outFile = "variant_" + activeResidues[i][0] + aminoAcidString[seqs[i][0]] + ".pdb";
+		pdbWriter(prot, outFile);
 		delete thePDB;
+	}
 	return 0;
 }
 
