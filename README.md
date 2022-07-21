@@ -1,7 +1,7 @@
 ![background](https://raw.githubusercontent.com/protCAD/protcad/master/ui/images/splash.png)
 
 
-protCAD official development tree
+Official protcad development tree
 ===================================================================================================
 
 protCAD is an implementation of the protein design software library that originated in the 
@@ -33,14 +33,18 @@ Then follow the Ubuntu Linux install dependency instructions and install below i
 --Ubuntu Linux:
 
 In terminal:
-sudo apt-get install g++ gfortran git pymol qt5-default;
+
+sudo apt-get install g++ gfortran git;
 
 --Mac:
 
 In terminal install dev tools, homebrew and then dependencies:
+
 xcode-select --install
+
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-brew install g++ gfortran git qt5-default
+
+brew install gcc gfortran git
 
 
 === Install
@@ -172,11 +176,10 @@ Input command: protMutator <inputfile>
 
 Input file format:
 Input PDB File,xyz.pdb,
-Active Chains,0,1,2,
-Active Positions,0,1,2,3,5,6,7,9,10,
-A,K,D,L,K,D,R,R,R,
+Active Chain,0,
+V57A,G23R,
 
-Output result: Minimized mutated model pdb of amino acid muations at positions in in input file
+Output result: Minimized mutated model pdb of amino acid muations at positions in input file
 
 
 --protOligamer
@@ -225,5 +228,5 @@ make install
  Issues
 ===================================================================================================
 Bugs and issues can be submitted into the issues section of http://www.github.com/protcad/protcad repo or a
-description of the issue and result can be emailed to Douglas Pike at doughp1@cabm.rutgers.edu
+description of the issue and result can be emailed to Douglas Pike at doughp11@gmail.com
 

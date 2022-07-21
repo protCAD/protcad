@@ -317,7 +317,7 @@ void chain::mutate(const UInt _indexInChain, const UInt _aaType)
             //buffer everything
             bufferResidueIntoUndoBuffer(_indexInChain);
             // mutate to new residue and place new pointer in chain
-            itsResidues[_indexInChain] = pOldRes->mutate( _aaType );
+            itsResidues[_indexInChain] = pOldRes->mutateNew( _aaType );
             delete pOldRes;
             itsChainPositions[_indexInChain]->setCurrentResIndex(_aaType);
 

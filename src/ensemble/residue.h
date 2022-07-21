@@ -112,17 +112,17 @@ public:
 	void makeResidueSilent();
 
 	// Residue Types
-	bool isL(unsigned int resType){if(resType >= 0 && resType < 26){return true;}else{return false;}}        // L amino acids
-	bool isG(unsigned int resType){if(resType == 26){return true;}else{return false;}}                       // Glycine
-	bool isD(unsigned int resType){if(resType > 26 && resType < 53){return true;}else{return false;}}        // D amino acids
-	bool isLNterm(unsigned int resType){if(resType >= 53 && resType < 79){return true;}else{return false;}}  // N terminal L amino acids
-	bool isGNterm(unsigned int resType){if(resType == 79){return true;}else{return false;}}                  // N terminal Glycine
-	bool isDNterm(unsigned int resType){if(resType > 79 && resType < 106){return true;}else{return false;}}  // N terminal D amino acids
-	bool isLCterm(unsigned int resType){if(resType >= 106 && resType < 132){return true;}else{return false;}}// C terminal L amino acids
-	bool isGCterm(unsigned int resType){if(resType == 132){return true;}else{return false;}}                 // C terminal Glycine
-	bool isDCterm(unsigned int resType){if(resType > 132 && resType < 159){return true;}else{return false;}} // C terminal D amino acids
-	bool isCofactor(unsigned int resType){if(resType >= 159){return true;}else{return false;}}               // Cofactor
-	bool isCofactor(){if(itsType >= 159){return true;}else{return false;}}   
+	bool isL(unsigned int resType){if(resType >= 0 && resType < 26){return true;}else{return false;}}           // L amino acids
+	bool isG(unsigned int resType){if(resType == 26){return true;}else{return false;}}                          // Glycine
+	bool isD(unsigned int resType){if(resType > 26 && resType < 53){return true;}else{return false;}}           // D amino acids
+	bool isLNterm(unsigned int resType){if(resType >= 53 && resType < 79){return true;}else{return false;}}     // N terminal L amino acids
+	bool isGNterm(unsigned int resType){if(resType == 79){return true;}else{return false;}}                     // N terminal Glycine
+	bool isDNterm(unsigned int resType){if(resType > 79 && resType < 106){return true;}else{return false;}}     // N terminal D amino acids
+	bool isLCterm(unsigned int resType){if(resType >= 106 && resType < 132){return true;}else{return false;}}   // C terminal L amino acids
+	bool isGCterm(unsigned int resType){if(resType == 132){return true;}else{return false;}}                    // C terminal Glycine
+	bool isDCterm(unsigned int resType){if(resType > 132 && resType < 159){return true;}else{return false;}}    // C terminal D amino acids
+	bool isCofactor(unsigned int resType){if(resType > 162){return true;}else{return false;}}					// Cofactor
+	bool isCofactor(){if(itsType > 162){return true;}else{return false;}}										// Cofactor
 
 // ***********************************************************************
 // ***********************************************************************
@@ -256,6 +256,7 @@ public:
 	void updateMovedDependence(residue* _other, UInt _EorC);
 	void calculateDielectrics();
     double calculateSolvationEnergy(UInt _atomIndex);
+	double configurationEntropy();
     double getSolvationEnergy();
     double getDielectric();
     double maxwellGarnettApproximation(UInt _atomIndex1, UInt _atomIndex2, double _dielectric, double _distanceSquared);
@@ -376,6 +377,7 @@ public:
 	static double getKT() { return KT; }
 	static void setPolarizableElec( bool _polElec ) { polarizableElec = _polElec; }
 	static void setElectroSolvationScaleFactor( const double _Esolv ) { EsolvationFactor = _Esolv; }
+	static void setEntropyFactor( const double _EntropyF ) { EntropyFactor = _EntropyF; }
 	static double getElectroSolvationScaleFactor() { return EsolvationFactor; }
 	static void setHydroSolvationScaleFactor( const double _Hsolv ) { HsolvationFactor = _Hsolv; }
 	static double getHydroSolvationScaleFactor() { return HsolvationFactor; }
@@ -429,6 +431,7 @@ private:
 	static double temperature;
 	static double EsolvationFactor;
 	static double HsolvationFactor;
+	static double EntropyFactor;
 	static double cutoffDistance;
 	static double cutoffDistanceSquared;
 	static double cutoffCubeVolume;

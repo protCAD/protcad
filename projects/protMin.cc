@@ -45,7 +45,8 @@ int main (int argc, char* argv[])
 	amberElec::setScaleFactor(1.0);
 	amberVDW::setScaleFactor(1.0);
 	residue::setTemperature(300);
-	
+	residue::setEntropyFactor(1.0);
+  
 	if (clash){
 		UInt startclashes = _prot->getNumHardClashes();
 		cout << "Starting Clashes: " << startclashes << endl;

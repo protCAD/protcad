@@ -21,7 +21,7 @@ export MAKE = make
 
 SHELL = /bin/sh
 
-TARGETS = protDielectric protEvolver protDihedrals protOligamer protEnergy protMover protMutator protSequence protInverter protMin protAlign protShaper protBindingEnergy hammingdist protTest
+TARGETS = protDielectric protEvolver protDihedrals protOligamer protEnergy protMover protMutator protSequence protInverter protMin protAlign protShaper protBindingEnergy hammingdist protSampling protTest
 
 .SUFFIXES: .cc .o .h .a .f
 
@@ -58,17 +58,17 @@ vpath %.a $(OBJDIR)
 
 vpath %.o $(OBJDIR)
 
-install : $(LIB_TARGETS) $(TARGETS) protcad
+install : $(LIB_TARGETS) $(TARGETS)
 ifeq ($(UNAME),Linux)
 	@echo export PROTCADDIR=$(PROTCADDIR) >> ~/.bashrc
 	@echo export PATH=$(PATH):$(PROTCADDIR):$(PROTCADDIR)/bin >> ~/.bashrc
 endif
 ifeq ($(UNAME),Darwin)
-	@echo export PROTCADDIR=$(PROTCADDIR) >> ~/.bash_profile
-	@echo export PATH=$(PATH):$(PROTCADDIR):$(PROTCADDIR)/bin >> ~/.bash_profile
+	@echo export PROTCADDIR=$(PROTCADDIR) >> ~/.zshrc
+	@echo export PATH=$(PATH):$(PROTCADDIR):$(PROTCADDIR)/bin >> ~/.zshrc
 endif
 
-all : $(LIB_TARGETS) $(TARGETS) protcad
+all : $(LIB_TARGETS) $(TARGETS)
 
 headless : $(LIB_TARGETS) $(TARGETS)
 
@@ -138,6 +138,10 @@ hammingdist : libprotcad.a hammingdist.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
 	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
 
+protSampling : libprotcad.a protSampling.cc
+	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
+	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
+
 protTest : libprotcad.a protTest.cc
 	cd $(OBJDIR) && $(CXX) $(CFLAGS) $^ -o $@ $(INC_BASE) $(LIB_BASE)
 	cd $(OBJDIR) && strip $@ && mv $@ $(BINDIR)
@@ -162,4 +166,3 @@ clean:
 	rm -f $(OBJDIR)/*.o
 	rm -f $(OBJDIR)/*.a
 	cd $(BINDIR) && rm -f $(TARGETS) && rm -f protcad
-	cd $(UIDIR) && if [ -f Makefile ]; then make distclean; fi;

@@ -1146,7 +1146,6 @@ double protein::getBackboneHBondEnergy(UInt donorChainIndex, UInt donorResIndex,
 	acceptorAngleList.push_back(180.0);
         
     double energy = 0.0;
-
     for (UInt i = 0; i < donorList.size(); i ++)
     {
         for (UInt j = 0; j < acceptorList.size(); j ++)
@@ -2819,7 +2818,7 @@ void protein::protMin(bool _backbone)
 	//--Initialize variables for loop, calculate starting energy and build energy vectors-----
 	saveCurrentState();
 	UInt randchain, randres, resnum, backboneOrSidechain = 1;
-	UInt clashes, clashesStart, bbClashes, bbClashesStart, chainNum = getNumChains(), plateau = 1000;
+	UInt clashes, clashesStart, bbClashes, bbClashesStart, chainNum = getNumChains(), plateau = 2000;
 	double Energy, pastEnergy = protEnergy(), deltaEnergy, sPhi, sPsi, nobetter = 0.0, KT = KB*Temperature();
 	//double rotX, rotY, rotZ, transX, transY, transZ;
 	vector < DouVec > currentSidechainConf, newSidechainConf; srand (time(NULL)); vector <double> backboneAngles(2);
@@ -3010,7 +3009,7 @@ void protein::protMin(bool _backbone, UInt chainIndex, UInt resIndex)
 	UInt clashes, clashesStart, bbClashes, bbClashesStart, plateau = 1000;
 	double Energy, pastEnergy = protEnergy(), deltaEnergy, sPhi, sPsi,nobetter = 0.0, KT = KB*Temperature();
 	double rotX, rotY, rotZ, transX, transY, transZ;
-	vector < DouVec > currentSidechainConf, newSidechainConf; srand (time(NULL)); vector <double> backboneAngles(2);
+	vector < DouVec > currentSidechainConf, newSidechainConf; vector <double> backboneAngles(2);
 	bool sidechainTest, backboneTest, revert, cofactorTest, energyTest, boltzmannAcceptance;
 	vector <dblVec> currentCoords;
 	//--Run optimizaiton loop to local minima defined by an RT plateau------------------------
@@ -3165,7 +3164,7 @@ void protein::protRelax(UIntVec _frozenResidues, UIntVec _activeChains)
 	if (pastProtClashes > 0)
 	{	
 		//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
-		UInt randchain, randres, randrestype, randrot, chainNum = _activeChains.size(), protClashes, resClashes, medResC, _plateau = 1000, nobetter = 0;
+		UInt randchain, randres, randrestype, randrot, chainNum = _activeChains.size(), protClashes, resClashes, medResC, _plateau = 2000, nobetter = 0;
 		vector < vector <double> > currentRot; vector <UIntVec> allowedRots; srand (time(NULL));
 		bool skip;
 		//--Run optimizaiton loop to relative minima, determined by _plateau----------------------------
@@ -3255,34 +3254,31 @@ void protein::cofactorRelax(UInt _plateau)
 
 void protein::protSampling(UInt iterations)
 {
-	//--Initialize variables for loop, calculate starting energy and build energy vectors-----
-	saveCurrentState();
-	UInt randchain, randres, resnum, changes = 0, backboneOrSidechain = 1;
+	// Sidechain and backslide sampling with a local dielectric scaling of electrostatics and corresponding Born/Gill implicit solvation energy
+	//--Initialize variables for loop, calculate starting energy and build energy vectors----
+	UInt randchain, randres, resnum, backboneOrSidechain = 1, changes = 0;
 	UInt clashes, clashesStart, bbClashes, bbClashesStart, chainNum = getNumChains();
-	double Energy, pastEnergy = protEnergy(), deltaEnergy, sPhi, sPsi;
-	vector < DouVec> currentSidechainConf, newSidechainConf; srand (time(NULL)); vector <double> backboneAngles(2);
-	bool sidechainTest, backboneTest, revert, energyTest, boltzmannAcceptance;
-	
-	//--Run sampling loop to number of iterations------------------------
-	do
-	{
+	double Energy, pastEnergy = protEnergy(), deltaEnergy, sPhi, sPsi, KT = KB*Temperature(), heat = 0.0;
+	vector < DouVec > currentSidechainConf, newSidechainConf; vector <double> backboneAngles(2);
+	bool sidechainTest, backboneTest, revert, energyTest;
+	vector <dblVec> currentCoords;
+	//--Run optimizaiton loop to local minima defined by an RT plateau------------------------
+	do{
 		//--choose random residue and set variables
 		randchain = rand() % chainNum, resnum = getNumResidues(randchain), randres = rand() % resnum;
-		clashesStart = getNumHardClashes(); backboneOrSidechain = rand() % 2;
+		clashesStart = getNumHardClashes();
 		backboneTest = false, sidechainTest = false, energyTest = false, revert = true;
-		
+	
 		//--Backbone conformation trial--------------------------------------------------------
+		backboneOrSidechain = rand() % 2;
 		if (randres > 0 && randres < resnum-2 && backboneOrSidechain == 0){
 			backboneTest = true; bbClashesStart = getNumHardBackboneClashes();
 			sPhi = getPhi(randchain,randres), sPsi = getPsi(randchain,randres);
 			backboneAngles = getRandConformationFromBackboneType(sPhi, sPsi);
 			setDihedral(randchain,randres,backboneAngles[0],0,0); setDihedral(randchain,randres,backboneAngles[1],1,0);
 			bbClashes = getNumHardBackboneClashes();
-			if (bbClashes <= bbClashesStart){
-				clashes = getNumHardClashes();
-				if (clashes <= clashesStart){
-					energyTest = true; revert = false;
-				}
+			if (bbClashes <= bbClashesStart+2){
+				energyTest = true; revert = false;
 			}
 		}
 		//--Sidechain conformation trial--------------------------------------------------------
@@ -3292,20 +3288,21 @@ void protein::protSampling(UInt iterations)
 			newSidechainConf = randContinuousSidechainConformation(randchain, randres);
 			setSidechainDihedralAngles(randchain, randres, newSidechainConf);
 			clashes = getNumHardClashes();
-			if (clashes <= clashesStart){
+			if (clashes <= clashesStart+2){
 				energyTest = true; revert = false;
 			}
 		}
+
 		//--Energy-Test-------------------------------------------------------------------------
 		if (energyTest){
+			changes++;
 			Energy = protEnergy();
 			deltaEnergy = Energy - pastEnergy;
-			boltzmannAcceptance = boltzmannEnergyCriteria(deltaEnergy);
-			if (boltzmannAcceptance){
-				pastEnergy = Energy; changes++;
-				cout << changes << " " << Energy << endl;
+			if (deltaEnergy <= KT+heat){
+				pastEnergy = Energy; heat = 0;
+				cout << Energy << endl;
 			}
-			else{revert = true;}
+			else{revert = true; heat++;}
 		}
 		//--Revert conformation-----------------------------------------------------------------
 		if (revert){
@@ -3317,7 +3314,7 @@ void protein::protSampling(UInt iterations)
 				setSidechainDihedralAngles(randchain, randres, currentSidechainConf);
 			}
 		}
-	} while(changes < iterations);
+	} while (changes < iterations);
 	return;
 }
 

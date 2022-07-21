@@ -33,14 +33,17 @@ int main (int argc, char* argv[])
 	residue::setPolarizableElec(true);
 	amberElec::setScaleFactor(1.0);
 	amberVDW::setScaleFactor(1.0);
-	residue::setTemperature(300);
+	residue::setEntropyFactor(1.0);
+	residue::setTemperature(293);
 
 	double complexE = prot->protEnergy();
 	double receptorE = prot->protEnergy(receptorChainID);
+	residue::setEntropyFactor(0.0); //assuming free ligand if molecule, peptide or small unfolded protein, is not conformationally restrained, if protein this should be commented out
 	double ligandE = prot->protEnergy(ligandChainID);
 	
 	// calculate binding energys
 	double bindingEnergy = complexE-(ligandE+receptorE);
 	cout << infile << " " << complexE << " " << bindingEnergy << endl;
+	pdbWriter(prot,infile);
 	return 0;
 }

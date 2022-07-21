@@ -18,7 +18,7 @@
 #include "PDBInterface.h"
 
 enum aminoAcid {A,R,N,D,Dh,C,Cx,Cf,Q,E,Eh,Hd,He,Hp,I,L,K,M,F,P,O,S,T,W,Y,V,G,dA,dR,dN,dD,dDh,dC,dCx,dCf,dQ,dE,dEh,dHd,dHe,dHp,dI,dL,dK,dM,dF,dP,dO,dS,dT,dW,dY,dV,SF4,HEM,NI2,CLN,CO2,MG2,OH,OXY,CLD,HIS};
-string aminoAcidString[] = {"A","R","N","D","Dh","C","Cx","Cf","Q","E","Eh","Hd","He","Hp","I","L","K","M","F","P","O","S","T","W","Y","V","G","dA","dR","dN","dD","dDh","dC","dCx","dCf","dQ","dE","dEh","dHd","dHe","dHp","dI","dL","dK","dM","dF","dP","dO","dS","dT","dW","dY","dV","SF4","HEM","NI2","CLN","CO2","MG2","OH-","OXY","CLD","HIS"};
+string aminoAcidString[] = {"A","R","N","D","D","C","C","C","Q","E","E","H","H","H","I","L","K","M","F","P","O","S","T","W","Y","V","G","A","R","N","D","D","C","C","C","Q","E","E","H","H","H","I","L","K","M","F","P","O","S","T","W","Y","V","A","R","N","D","D","C","C","C","Q","E","E","H","H","H","I","L","K","M","F","P","O","S","T","W","Y","V","G","A","R","N","D","D","C","C","C","Q","E","E","H","H","H","I","L","K","M","F","P","O","S","T","W","Y","V","A","R","N","D","D","C","C","C","Q","E","E","H","H","H","I","L","K","M","F","P","O","S","T","W","Y","V","G","A","R","N","D","D","C","C","C","Q","E","E","H","H","H","I","L","K","M","F","P","O","S","T","W","Y","V"};
 
 int main (int argc, char* argv[])
 {
@@ -35,14 +35,14 @@ int main (int argc, char* argv[])
 	protein* _prot = static_cast<protein*>(pMol);
 	string outFile;
 
-   // _prot->protEnergy();
-    cout << "chain" << " position" << " residue" << " dielectric" << " solvationEnergy" << endl;
+    _prot->protEnergy();
+    cout << " position" << " residue" << " dielectric" << endl;
     for (UInt i = 0; i < _prot->getNumChains(); i++)
     {
         for (UInt j = 0; j < _prot->getNumResidues(i); j++)
         {
             UInt restype = _prot->getTypeFromResNum(i,j);
-            cout << _prot->getResNum(i,j) << " " << aminoAcidString[restype] << " " << _prot->getResiduesPerTurn(i,j) << endl;
+            cout << _prot->getResNum(i,j) << " " << aminoAcidString[restype] << " " << _prot->getDielectric(i,j) << endl;
         }
     }
 
