@@ -3164,7 +3164,7 @@ void protein::protRelax(UIntVec _frozenResidues, UIntVec _activeChains)
 	if (pastProtClashes > 0)
 	{	
 		//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
-		UInt randchain, randres, randrestype, randrot, chainNum = _activeChains.size(), protClashes, resClashes, medResC, _plateau = 1000, nobetter = 0;
+		UInt randchain, randres, randrestype, randrot, chainNum = _activeChains.size(), protClashes, resClashes, medResC, _plateau = 2000, nobetter = 0;
 		vector < vector <double> > currentRot; vector <UIntVec> allowedRots; srand (time(NULL));
 		bool skip;
 		//--Run optimizaiton loop to relative minima, determined by _plateau----------------------------

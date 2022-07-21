@@ -169,7 +169,7 @@ double CMath::dihedral(const dblVec& _V_a, const dblVec& _V_b,
 	else
 	{
 		angle = 1000.00;
-		cout << "no dihedral" << endl;
+		//cout << "no dihedral" << endl;
 		return angle;
 	}
 

@@ -33,11 +33,11 @@ int main (int argc, char* argv[])
 	protein* prot = static_cast<protein*>(pMol);
 	
 	amberElec::setScaleFactor(1.0);
-	amberVDW::setScaleFactor(1.0);
-	residue::setElectroSolvationScaleFactor(1.0);
-	residue::setHydroSolvationScaleFactor(1.0);
-	residue::setPolarizableElec(true);
-	residue::setEntropyFactor(1.0);
+	amberVDW::setScaleFactor(0.0);
+	residue::setElectroSolvationScaleFactor(0.0);
+	residue::setHydroSolvationScaleFactor(0.0);
+	residue::setPolarizableElec(false);
+	residue::setEntropyFactor(0.0);
 	
 	double Energy = 0.0;
 	if (predictTM){
@@ -46,7 +46,7 @@ int main (int argc, char* argv[])
 		double temp;
 		bool notm = true;
 		residue::setTemperature(273);
-		for (UInt i=0; i < 100; i++)
+		for (UInt i=0; i < 200; i++)
 		{
 			Energy = prot->protEnergy();
 			temp = residue::getTemperature();
@@ -54,13 +54,14 @@ int main (int argc, char* argv[])
 			if (temp == 300){standardE = Energy;}
 			prot->setMoved(true,0);
 			residue::setTemperature(274+i);
+			cout << temp << " " << Energy << endl;
 		}
 		cout << infile << " " << standardE << " kcal/mol at 300K Predicted TM: " << tm << "C" << endl;
 	}
 	else{
 		residue::setTemperature(300);
 		cout << infile << " " << prot->protEnergy() << " kcal/mol at 300K" << endl;
-		pdbWriter(prot, infile);
+		//pdbWriter(prot, infile);
 	}
 	return 0;
 }

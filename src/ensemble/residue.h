@@ -112,17 +112,17 @@ public:
 	void makeResidueSilent();
 
 	// Residue Types
-	bool isL(unsigned int resType){if(resType >= 0 && resType < 26){return true;}else{return false;}}        // L amino acids
-	bool isG(unsigned int resType){if(resType == 26){return true;}else{return false;}}                       // Glycine
-	bool isD(unsigned int resType){if(resType > 26 && resType < 53){return true;}else{return false;}}        // D amino acids
-	bool isLNterm(unsigned int resType){if(resType >= 53 && resType < 79){return true;}else{return false;}}  // N terminal L amino acids
-	bool isGNterm(unsigned int resType){if(resType == 79){return true;}else{return false;}}                  // N terminal Glycine
-	bool isDNterm(unsigned int resType){if(resType > 79 && resType < 106){return true;}else{return false;}}  // N terminal D amino acids
-	bool isLCterm(unsigned int resType){if(resType >= 106 && resType < 132){return true;}else{return false;}}// C terminal L amino acids
-	bool isGCterm(unsigned int resType){if(resType == 132){return true;}else{return false;}}                 // C terminal Glycine
-	bool isDCterm(unsigned int resType){if(resType > 132 && resType < 159){return true;}else{return false;}} // C terminal D amino acids
-	bool isCofactor(unsigned int resType){if(resType >= 159){return true;}else{return false;}}               // Cofactor
-	bool isCofactor(){if(itsType >= 159){return true;}else{return false;}}   
+	bool isL(unsigned int resType){if(resType >= 0 && resType < 26){return true;}else{return false;}}           // L amino acids
+	bool isG(unsigned int resType){if(resType == 26){return true;}else{return false;}}                          // Glycine
+	bool isD(unsigned int resType){if(resType > 26 && resType < 53){return true;}else{return false;}}           // D amino acids
+	bool isLNterm(unsigned int resType){if(resType >= 53 && resType < 79){return true;}else{return false;}}     // N terminal L amino acids
+	bool isGNterm(unsigned int resType){if(resType == 79){return true;}else{return false;}}                     // N terminal Glycine
+	bool isDNterm(unsigned int resType){if(resType > 79 && resType < 106){return true;}else{return false;}}     // N terminal D amino acids
+	bool isLCterm(unsigned int resType){if(resType >= 106 && resType < 132){return true;}else{return false;}}   // C terminal L amino acids
+	bool isGCterm(unsigned int resType){if(resType == 132){return true;}else{return false;}}                    // C terminal Glycine
+	bool isDCterm(unsigned int resType){if(resType > 132 && resType < 159){return true;}else{return false;}}    // C terminal D amino acids
+	bool isCofactor(unsigned int resType){if(resType > 162){return true;}else{return false;}}					// Cofactor
+	bool isCofactor(){if(itsType > 162){return true;}else{return false;}}										// Cofactor
 
 // ***********************************************************************
 // ***********************************************************************

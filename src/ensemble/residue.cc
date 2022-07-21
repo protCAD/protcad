@@ -1552,7 +1552,6 @@ residue* residue::mutateNew(const UInt _newTypeIndex) // is generalized to suppo
 		if (pItsPrevRes){newAA->alignAmideProtonToBackbone();}
 	}
 	newAA->setMoved();
-
 	return newAA;
 }
 

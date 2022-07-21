@@ -114,7 +114,7 @@ int main (int argc, char* argv[])
 		prot->protRelax(1000, false);
 		stringstream convert; string countstr;
 		convert << i+1, countstr = convert.str();
-		string outFile = "cand" + countstr + "+AAKL.pdb";
+		string outFile = "test" + countstr + "+AAKL.pdb";
 		pdbWriter(prot, outFile);
 		delete thePDB;
 	}
