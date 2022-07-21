@@ -1,7 +1,7 @@
 ![background](https://raw.githubusercontent.com/protCAD/protcad/master/ui/images/splash.png)
 
 
-QSi's official protcad development tree
+Official protcad development tree
 ===================================================================================================
 
 protCAD is an implementation of the protein design software library that originated in the 
@@ -228,6 +228,6 @@ make install
 
  Issues
 ===================================================================================================
-Bugs and issues can be submitted into the issues section of http://www.github.com/quantumsi/protcad repo or a
-description of the issue and result can be emailed to Douglas Pike at dpike@quantum-si.com
+Bugs and issues can be submitted into the issues section of http://www.github.com/protcad/protcad repo or a
+description of the issue and result can be emailed to Douglas Pike at doughp11@gmail.com
 
