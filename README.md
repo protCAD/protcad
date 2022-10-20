@@ -18,6 +18,7 @@ Publications to date on protCAD's methods and implementaions are:
 -Empirical estimation of local dielectric constants: Toward atomistic design of collagen mimetic 
  peptides, Biopolymers - Peptide Science. Pike & Nanda 2015; 104(4): 360-70.
 
+
 Computational design of a sensitive, selective phase-changing sensor protein for the VX nerve agent. Science Advances McCann & Pike et al. 
 6 Jul 2022 Vol 8, Issue 27
 
