@@ -61,7 +61,7 @@ int main (int argc, char* argv[])
 	else{
 		residue::setTemperature(300);
 		cout << infile << " " << prot->protEnergy() << " kcal/mol at 300K" << endl;
-		//pdbWriter(prot, infile);
+		pdbWriter(prot, infile);
 	}
 	return 0;
 }

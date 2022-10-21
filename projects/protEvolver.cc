@@ -285,9 +285,15 @@ int main (int argc, char* argv[])
 		startEnergy = Energy;
 	
 		// calculate binding energy
-		double receptorE = prot->protEnergy(0);
-		double ligandE = prot->protEnergy(1);
-		double bindingEnergy = Energy-(ligandE+receptorE);
+		double bindingEnergy = 0;
+		double chainEnergy = 0;
+		if (prot->getNumChains() > 1) {
+			for (UInt b = 0; b < prot->getNumChains(); b++)
+			{
+				chainEnergy += prot->protEnergy(b);
+			}
+			bindingEnergy = Energy-chainEnergy;
+		}
 		
 		//-generate pdb output
 		sec = time(NULL); timeid = sec;
@@ -452,7 +458,7 @@ void createPossibleMutantsDatabase(protein* &_prot, UIntVec &_activeChains, UInt
 		}
 		aveDielectric = sumDielectric/counter;
 	}
-	fstream pm; double phi = -100.0; bool active;
+	fstream pm; bool active;
 	pm.open ("possiblemutants.out", fstream::in | fstream::out | fstream::app);
 	
 	for (UInt i = 0; i < _activeChains.size(); i++)
@@ -470,24 +476,17 @@ void createPossibleMutantsDatabase(protein* &_prot, UIntVec &_activeChains, UInt
 					if (polarityAssignment){
 						double dielectric = _prot->getDielectric(_activeChains[i],j);
 						if (dielectric < aveDielectric){
-							if (_allowedTypes[l] != A && _allowedTypes[l] != I && _allowedTypes[l] != L && _allowedTypes[l] != M && _allowedTypes[l] != F && _allowedTypes[l] != W && _allowedTypes[l] != Y && _allowedTypes[l] != V && _allowedTypes[l] != G &&
-								_allowedTypes[l] != dA && _allowedTypes[l] != dI && _allowedTypes[l] != dL && _allowedTypes[l] != dM && _allowedTypes[l] != dF && _allowedTypes[l] != dW && _allowedTypes[l] != dY && _allowedTypes[l] != dV){
+							if (_allowedTypes[l] != A && _allowedTypes[l] != I && _allowedTypes[l] != L && _allowedTypes[l] != M && _allowedTypes[l] != F && _allowedTypes[l] != W && _allowedTypes[l] != Y && _allowedTypes[l] != V && _allowedTypes[l] != G){
 									continue;
 							}
 						} 
 						else{
-							if (_allowedTypes[l] == A || _allowedTypes[l] == I || _allowedTypes[l] == L || _allowedTypes[l] == M || _allowedTypes[l] == F || _allowedTypes[l] == W || _allowedTypes[l] == Y || _allowedTypes[l] == V ||
-								_allowedTypes[l] == dA || _allowedTypes[l] == dI || _allowedTypes[l] == dL || _allowedTypes[l] == dM || _allowedTypes[l] == dF || _allowedTypes[l] == dW || _allowedTypes[l] == dY || _allowedTypes[l] == dV){
+							if (_allowedTypes[l] == A || _allowedTypes[l] == I || _allowedTypes[l] == L || _allowedTypes[l] == M || _allowedTypes[l] == F || _allowedTypes[l] == W || _allowedTypes[l] == Y || _allowedTypes[l] == V){
 									continue;
 							}
 						}
 					}
-					if(j > 0){
-						phi = _prot->getPhi(_activeChains[i], j);
-					}
-					if ((phi < 0 && _allowedTypes[l] < dA) || (phi > 0 && _allowedTypes[l] > V)){
-						pm << _allowedTypes[l] << ",";
-					}
+					pm << _allowedTypes[l] << ",";
 				}
 			}
 			else{pm << _prot->getTypeFromResNum(_activeChains[i],j) << ",";}
@@ -501,7 +500,7 @@ UInt convertAAStringtoInt(string AA, string aminoAcidString[], UInt size)
 	UInt index;
 	for (UInt i = 0; i < size; i++)
 	{
-		if (AA.compare(aminoAcidString[i]) == 0){index = i;}
+		if (AA.compare(aminoAcidString[i]) == 0){index = i; break;}
 	}
 	return index;
 }
