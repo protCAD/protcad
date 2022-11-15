@@ -2195,7 +2195,7 @@ double protein::getRMSD(protein* _other)
     if (first){maxsize = coord2.size();}else{maxsize = coord1.size();}
 	double rotmat[9]; double centroid1[3]; double centroid2[3]; double rmsd = 0; int ierr = 0;
 	int list1[maxsize]; int list2[maxsize]; int trials = 1; double bestRMSD= 1E10;
-	double newCoord1[maxsize*3]; double newCoord2[maxsize*3]; double newCoord3[maxsize*3];
+	double newCoord1[maxsize*3]; double newCoord2[maxsize*3]; double newCoord3[maxsize*3]; double rmsdat[maxsize];
 	
 	if (diff != 0){trials = diff;}
 	for (int h = 0; h < trials; h++)
@@ -2218,7 +2218,7 @@ double protein::getRMSD(protein* _other)
 		}
 		
 		// Calculate best fit of backbone atoms, rotation matrix and rmsd using fortran algorithm based on Machlachlan
-		bestfit_(newCoord1, &maxsize, newCoord2, &maxsize, &maxsize, newCoord3, list1, list2, &rmsd, &ierr, rotmat, centroid1, centroid2);
+		bestfit_(newCoord1, &maxsize, newCoord2, &maxsize, &maxsize, newCoord3, list1, list2, &rmsd, &ierr, rotmat, centroid1, centroid2, rmsdat);
 		if (rmsd < bestRMSD){
 			bestRMSD = rmsd;
 		}
@@ -2277,7 +2277,7 @@ void protein::alignToAxis(const axis _axis)
     int maxsize = coord2.size();
 	double rotmat[9]; double centroid1[3]; double centroid2[3]; double rmsd = 0; int ierr = 0;
 	int list1[maxsize]; int list2[maxsize];
-	double newCoord1[maxsize*3]; double newCoord2[maxsize*3]; double newCoord3[maxsize*3];
+	double newCoord1[maxsize*3]; double newCoord2[maxsize*3]; double newCoord3[maxsize*3]; double rmsdat[maxsize];
 	for (int i=0; i<maxsize; i++)
 	{	
 		for (int j=0; j<3; j++)
@@ -2288,7 +2288,7 @@ void protein::alignToAxis(const axis _axis)
 		list1[i] = i+1;
 		list2[i] = i+1;
 	}
-	bestfit_(newCoord1, &maxsize, newCoord2, &maxsize, &maxsize, newCoord3, list1, list2, &rmsd, &ierr, rotmat, centroid1, centroid2);
+	bestfit_(newCoord1, &maxsize, newCoord2, &maxsize, &maxsize, newCoord3, list1, list2, &rmsd, &ierr, rotmat, centroid1, centroid2, rmsdat);
 
 	// Load rotation vector into rotation matrix
 	dblMat rotMat(3,3,3);
@@ -3164,7 +3164,7 @@ void protein::protRelax(UIntVec _frozenResidues, UIntVec _activeChains)
 	if (pastProtClashes > 0)
 	{	
 		//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
-		UInt randchain, randres, randrestype, randrot, chainNum = _activeChains.size(), protClashes, resClashes, medResC, _plateau = 2000, nobetter = 0;
+		UInt randchain, randres, randrestype, randrot, chainNum = _activeChains.size(), protClashes, resClashes, medResC, _plateau = 500, nobetter = 0;
 		vector < vector <double> > currentRot; vector <UIntVec> allowedRots; srand (time(NULL));
 		bool skip;
 		//--Run optimizaiton loop to relative minima, determined by _plateau----------------------------

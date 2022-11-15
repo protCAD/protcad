@@ -89,6 +89,7 @@ void ruler::superimposeProteins ()
 	double rotmat[9];
 	double centroid1[3];
 	double centroid2[3];
+	double rmsdat[2000];
 	double rmsd = 0;
 	int ierr = 0;
 	//cout << "Reached waypoint 2" << endl;
@@ -105,7 +106,7 @@ void ruler::superimposeProteins ()
 	//cout << "Reached waypoint 4" << endl;
 	bestfit_(newCoord1, &numatm1, newCoord2,
 		&numatm2, &nat, newCoord3, list1, list2,
-		&rmsd, &ierr, rotmat, centroid1, centroid2);
+		&rmsd, &ierr, rotmat, centroid1, centroid2, rmsdat);
 
 	//cout << "Reached waypoint 5" << endl;
 

@@ -42,7 +42,7 @@ c
 c	All computations in double precision
 c
 	subroutine bestfit(coord1,nat1,coord2,nat2,nat,coord3,
-     1		list1,list2,rmsd,ierr,r,xc1,xc2)
+     1		list1,list2,rmsd,ierr,r,xc1,xc2,rmsdat)
 c
 	integer	i,j,k,nat1,nat2,nat,job,info,ierr,natmax1,natmax2
 	integer	list1(nat),list2(nat)
@@ -51,7 +51,7 @@ c
 	real*8	rmsd,sign,det,norm
 	real*8	a(3,3),u(3,3),v(3,3),r(3,3),d(3),work(3)
 	real*8	coord1(3,nat1),coord2(3,nat2)
-	real*8	coord3(3,nat2)
+	real*8	coord3(3,nat2),rmsdat(nat)
 	real*8	xc1(3),xc2(3),c(3)
 c
 	ierr = 0
@@ -191,11 +191,13 @@ c	Calculate rmsd
 c
 	rmsd = 0
 	do 2100 i = 1,nat
+        rmsdat(i) = 0
 		do 2000 j = 1,3
-			rmsd = rmsd + (coord3(j,list2(i)) -
+			rmsdat(i) = rmsdat(i) + (coord3(j,list2(i)) -
      1			coord1(j,list1(i)))**2
-2000		continue
-2100	continue
+2000	continue
+        rmsd = rmsd + rmsdat(i)
+2100    continue
 c
 	rmsd = sqrt(rmsd/nat)
 c

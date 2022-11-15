@@ -85,6 +85,7 @@ public:
 	UInt getNumChains() const {return itsChains.size();}
 	UInt getNumBpt(UInt restype) {return residue::getNumBpt(restype);}
 	int getResNum(UInt _chainIndex, UInt _resIndex) {return itsChains[_chainIndex]->getResNum(_resIndex);}
+	void setResNum(UInt _chainIndex, UInt _resIndex, const UInt _num) {itsChains[_chainIndex]->setResNum(_resIndex, _num);}
 	UInt getNumResidues(UInt _chainIndex) const;
 	UInt getTypeFromResNum(UInt _chainIndex, UInt _resNum) { return itsChains[_chainIndex]->getTypeFromResNum(_resNum);}
 	string getTypeStringFromAtomNum(UInt _chainIndex, UInt _resNum, UInt _atomNum) { return itsChains[_chainIndex]->getTypeStringFromAtomNum(_resNum, _atomNum);}

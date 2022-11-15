@@ -103,28 +103,13 @@ int main (int argc, char* argv[])
 	}*/
 	UInt count = 0;
 	string outFile, infile = argv[1];
-	for (UInt phi = 0; phi < 360; phi++)
-	{
-		for (UInt psi = 0; psi < 360; psi++)
-		{
-			count++;
-			PDBInterface* thePDB = new PDBInterface(infile);
-			ensemble* theEnsemble = thePDB->getEnsemblePointer();
-			molecule* pMol = theEnsemble->getMoleculePointer(0);
-			protein* prot = static_cast<protein*>(pMol);
-			for (UInt i = 1; i < 6; i ++)
-			{
-					prot->setDihedral(0, i, phi,0,0);
-					prot->setDihedral(0, i, psi,1,0);
-			}
-			stringstream convert; string countstr;
-			convert << count, countstr = convert.str();
-			outFile = countstr + ".rama.pdb";
-			cout << count << " " << phi << " " << psi << " " << prot->getNumHardBackboneClashes()<< " " << prot->getNumHardClashes() << endl;
-			pdbWriter(prot, outFile);
-			delete thePDB;
-		}
-	}
+	outFile = infile;
+	PDBInterface* thePDB = new PDBInterface(infile);
+	ensemble* theEnsemble = thePDB->getEnsemblePointer();
+	molecule* pMol = theEnsemble->getMoleculePointer(0);
+	protein* prot = static_cast<protein*>(pMol);
+	prot->setDihedral(2,0,-120,1,0);
+	pdbWriter(prot, outFile);
 	return 0;
 }
 

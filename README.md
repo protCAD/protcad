@@ -1,7 +1,7 @@
 ![background](https://raw.githubusercontent.com/protCAD/protcad/master/ui/images/splash.png)
 
 
-Official protcad development tree
+Official protCAD development tree
 ===================================================================================================
 
 protCAD is an implementation of the protein design software library that originated in the 
@@ -12,15 +12,14 @@ The source is maintained at: https://github.com/protCAD/protcad
 
 Publications to date on protCAD's methods and implementaions are:
 
--Computational Methods and their Applications for de novo Functional Protein Design and Membrane 
+-Computational Methods and their Applications for de novo Functional Protein Design and Memebrane 
  Protein Solubilization, Summa CM Thesis 2002
 
 -Empirical estimation of local dielectric constants: Toward atomistic design of collagen mimetic 
  peptides, Biopolymers - Peptide Science. Pike & Nanda 2015; 104(4): 360-70.
-
-
-Computational design of a sensitive, selective phase-changing sensor protein for the VX nerve agent. Science Advances McCann & Pike et al. 
-6 Jul 2022 Vol 8, Issue 27
+ 
+-Computational design of a sensitive, selective phase-changing sensor protein for the VX nerve agent. 
+ Science Advances McCann & Pike et al. 6 Jul 2022 Vol 8, Issue 27
 
 
  Installation
@@ -180,10 +179,11 @@ Input command: protMutator <inputfile>
 
 Input file format:
 Input PDB File,xyz.pdb,
-Active Chain,0,
-V57A,G23R,
+Active Chains,0,1,2,
+Active Positions,0,1,2,3,5,6,7,9,10,
+A,K,D,L,K,D,R,R,R,
 
-Output result: Minimized mutated model pdb of amino acid muations at positions in input file
+Output result: Minimized mutated model pdb of amino acid muations at positions in in input file
 
 
 --protOligamer
