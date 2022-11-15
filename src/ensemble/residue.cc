@@ -1522,8 +1522,8 @@ residue* residue::mutateNew(const UInt _newTypeIndex) // is generalized to suppo
 	}
 
 	// Calculate best fit of atoms to get rotation matrix and centroid from fortran algorithm based on Machlachlan
-	double rotmat[9]; double centroid1[3]; double centroid2[3]; double rmsd = 0; double coord3[maxsize*3]; int ierr = 0;
-	bestfit_(coord1, &maxsize, coord2, &maxsize, &maxsize, coord3, list1, list2, &rmsd, &ierr, rotmat, centroid1, centroid2);
+	double rotmat[9]; double centroid1[3]; double centroid2[3]; double rmsd = 0; double coord3[maxsize*3]; int ierr = 0; double rmsdat[maxsize];
+	bestfit_(coord1, &maxsize, coord2, &maxsize, &maxsize, coord3, list1, list2, &rmsd, &ierr, rotmat, centroid1, centroid2, rmsdat);
 
 	// Load rotation vector into rotation matrix and double array into double Vector
 	dblMat rotMat(3,3,3);

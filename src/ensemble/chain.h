@@ -59,6 +59,7 @@ public:
 	static UInt getHowMany() {return howMany; }
 	void setChainID(char _id) {itsChainID = _id;}
 	int getResNum(UInt _resIndex) {return itsResidues[_resIndex]->getResNum();}
+	void setResNum(UInt _resIndex, const UInt _num) {itsResidues[_resIndex]->setResNum(_num);}
 	char getChainID() {return itsChainID;}
 	residue* getResidue(UInt _resIndex) { return itsResidues[_resIndex]; }
 	UInt getTypeFromResNum(UInt _resNum) { return itsResidues[_resNum]->getTypeIndex(); }
