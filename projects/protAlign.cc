@@ -68,7 +68,7 @@ int main (int argc, char* argv[])
 		for (int j = 0; j < maxsize; j++){rmsdat[j]=0;}
 		double cutoff; int slide = 1;
 		
-		if (diff > 0){slide += diff+1;}
+		if (diff > 0){slide += diff;}
 		for (int g = 0; g < slide; g++)
 		{
 			for (int h = 0; h < 5; h++)
