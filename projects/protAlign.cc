@@ -71,6 +71,7 @@ int main (int argc, char* argv[])
 		if (diff > 0){slide += diff;}
 		for (int g = 0; g < slide; g++)
 		{
+			cutoff = 1E10;
 			for (int h = 0; h < 5; h++)
 			{
 				size = 0;
