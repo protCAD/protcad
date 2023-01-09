@@ -10,6 +10,11 @@ using namespace std;
 #ifndef TYPEDEF_H
 #define TYPEDEF_H
 
+// Check for CUDA lib
+#if __has_include("cuda_runtime.h")
+#define __CUDA__
+#endif
+
 //physical constants
 #define PI 3.1415926535 //Pi (Ratio of a circle's circumference to its diameter)
 #define KB 0.0019872041 //Boltzmann constant (kcal/mol K)

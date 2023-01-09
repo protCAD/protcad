@@ -23,10 +23,10 @@ double residue::temperature = 300.0;
 double residue::HsolvationFactor = 1.0;
 double residue::EsolvationFactor = 1.0;
 double residue::EntropyFactor = 1.0;
-double residue::cutoffDistance = 7.0;
+double residue::cutoffDistance = 99.0;
 double residue::cutoffDistanceSquared = residue::cutoffDistance*residue::cutoffDistance;
-double residue::cutoffCubeVolume = pow((residue::cutoffDistance*2),3);
-double residue::dielectricWidth = 2.8; // diameter of water
+double residue::waterRadius = 1.4;
+double residue::waterDiameter = 2.8;
 double residue::KT = KB*residue::getTemperature();
 
 void residue::setupDataBase()
@@ -110,7 +110,6 @@ residue::residue(const UInt _itsType, const bool _hFlag, const bool _hPFlag)
 {
 	hydrogensOn = _hFlag;
 	polarHydrogensOn = _hPFlag;
-
 	if(hydrogensOn && polarHydrogensOn)
 	{ cout << "error!! only one hFlag can be true.\n";
 	  cout << "Setting only polarHydrogensOn as true.\n";
@@ -2208,11 +2207,15 @@ vector< vector< double > > residue::randContinuousSidechainConformation()
 	for (UInt i=0; i<branchpoints; i++)
 	{
 		chis.clear();
-		UInt dihedrals = getNumDihedralAngles(itsType,i);
-		for (UInt j=0; j<dihedrals; j++)
+		int dihedrals = getNumDihedralAngles(itsType,i);
+		for (int j=0; j<dihedrals; j++)
 		{
+			// rotamer free sidechain flexibility
+			// scale angle change (-180:180) proportionally to how far dihedral is from branchpoint 
+			// assuming more flexibility futher down sidechain is more efficient sampling
 			current = itsSidechainDihedralAngles[i][j];
-			angle = current + ((rand() % 31)-15);
+			angle = current + (((rand() % 361)-180)/(j-dihedrals));
+			//cout << angle << endl;
 			chis.push_back(angle);
 		}
 		sideChainDihedralAngles.push_back(chis);
@@ -2748,7 +2751,7 @@ double residue::intraEnergy()
 	double vdwEnergy = 0.0;
 	double pmfEnergy = 0.0;
 	double amberElecEnergy = 0.0;
-    bool twoBonds;
+    bool threeBonds;
 
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
@@ -2760,7 +2763,7 @@ double residue::intraEnergy()
 				{
 					//distance = itsAtoms[i]->distance(itsAtoms[j]);
 					distanceSquared = itsAtoms[i]->distanceSquared(itsAtoms[j]);
-					twoBonds = isSeparatedByOneOrTwoBonds(i,j);
+					threeBonds = isSeparatedByFewBonds(i,j);
 					// ** intra AMBER vdW
 					if (residueTemplate::itsAmberVDW.getScaleFactor() != 0.0 )
 					{
@@ -2774,9 +2777,10 @@ double residue::intraEnergy()
 								index1 = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][1];
 								index2 = dataBase[itsType].itsAtomEnergyTypeDefinitions[j][1];
 						}
-						if (!twoBonds)
+						if (!threeBonds)
 						{
 							double tempvdwEnergy = residueTemplate::getVDWEnergySQ(index1,index2,distanceSquared);
+							//cout << tempvdwEnergy << endl;
 							vdwEnergy += tempvdwEnergy;
 						}
 					}
@@ -2784,7 +2788,7 @@ double residue::intraEnergy()
 					// ** intra AMBER Electrostatics
 					if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
 					{
-						if (!twoBonds)
+						if (!threeBonds)
 						{
 							UInt resType1 = itsType;
 							UInt atomType1 = i;
@@ -2804,10 +2808,10 @@ double residue::intraEnergy()
 	{
 		cout << "Extremely Low intraEnergy value of " << intraEnergy << endl;
 	}
-	if (aaBaseline::getScaleFactor() != 0.0)
+	/*if (aaBaseline::getScaleFactor() != 0.0)
 	{
 		intraEnergy += residueTemplate::getAABaselineEnergy(getType());
-	}
+	}*/
 	return intraEnergy;
 }
 
@@ -2961,7 +2965,7 @@ double residue::calculateSolvationEnergy(UInt _atomIndex)
 
 	// First estimate water occupancy around solute atom in solvent volume shells of total proximal solute atom excluded volume
 	int atomVDWtype = dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex][0];
-	double solvatedRadius = residueTemplate::getVDWRadius(atomVDWtype)+1.4; //atom radius + water radius
+	double solvatedRadius = residueTemplate::getVDWRadius(atomVDWtype)+waterRadius; //atom radius + water radius
 	int shellWaters = itsAtoms[_atomIndex]->getNumberofWaters();
 	if (shellWaters > 0){
 		// Polar solvation
@@ -3014,30 +3018,34 @@ double residue::getDielectric()
 
 void residue::polarizability()
 {
-	bool inCube;
+	bool cutoff;
 	int vdwIndexI, vdwIndexJ;
-	double solvatedRadius;
+	double solvatedRadiusI, solvatedRadiusJ;
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
 		if (!itsAtoms[i]->getSilentStatus())
 		{
 			//--inlude self volume
 			vdwIndexI = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][0];
-			solvatedRadius = residueTemplate::getVDWRadius(vdwIndexI)+dielectricWidth;
+			solvatedRadiusI = residueTemplate::getVDWRadius(vdwIndexI)+waterDiameter;
 			itsAtoms[i]->sumEnvVol(residueTemplate::getVolume(vdwIndexI)/2);
 			for(UInt j=i+1; j<itsAtoms.size(); j++)
 			{
 				if (!itsAtoms[j]->getSilentStatus())
 				{
-					inCube = itsAtoms[i]->inCube(itsAtoms[j], solvatedRadius);
-					if (inCube)
-					{
-						//i sum environment j
-						vdwIndexJ = dataBase[itsType].itsAtomEnergyTypeDefinitions[j][0];
-						itsAtoms[i]->sumEnvVol(residueTemplate::getVolume(vdwIndexJ)/2);
+					vdwIndexJ = dataBase[itsType].itsAtomEnergyTypeDefinitions[j][0];
+					solvatedRadiusJ = residueTemplate::getVDWRadius(vdwIndexJ)+waterDiameter;
+					
+					//i sum environment j
+					cutoff = itsAtoms[i]->inCutoff(itsAtoms[j], solvatedRadiusI);
+					if (cutoff){
+						itsAtoms[i]->sumEnvVol((4.188*pow(residueTemplate::getVDWRadius(vdwIndexJ),3))/2);
+					}
 
-						//j sum environment i
-						itsAtoms[j]->sumEnvVol(residueTemplate::getVolume(vdwIndexI)/2);
+					//j sum environment i
+					cutoff = itsAtoms[j]->inCutoff(itsAtoms[i], solvatedRadiusJ);
+					if (cutoff){
+						itsAtoms[j]->sumEnvVol((4.188*pow(residueTemplate::getVDWRadius(vdwIndexI),3))/2);
 					}
 				}
 			}
@@ -3047,31 +3055,32 @@ void residue::polarizability()
 
 void residue::polarizability(residue* _other)
 {
-	bool inCube, resI = getMoved(0), resJ = _other->getMoved(0);
+	bool cutoff, resI = getMoved(0), resJ = _other->getMoved(0);
 	int vdwIndexI, vdwIndexJ;
-	double solvatedRadius;
+	double solvatedRadiusI, solvatedRadiusJ;
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
 		if (!itsAtoms[i]->getSilentStatus())
 		{
 			vdwIndexI = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][0];
-			solvatedRadius = residueTemplate::getVDWRadius(vdwIndexI)+dielectricWidth;
+			solvatedRadiusI = residueTemplate::getVDWRadius(vdwIndexI)+waterDiameter;
 			for(UInt j=0; j<_other->itsAtoms.size(); j++)
 			{
 				if (!_other->itsAtoms[j]->getSilentStatus())
-				{
-					inCube = itsAtoms[i]->inCube(_other->itsAtoms[j], solvatedRadius);
-					if (inCube)
-					{
-						//i sum environment j
-						if (resI){
-							vdwIndexJ = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[j][0];
-							itsAtoms[i]->sumEnvVol(residueTemplate::getVolume(vdwIndexJ)/2);
-						}
-						//j sum environment i
-						if (resJ){
-							_other->itsAtoms[j]->sumEnvVol(residueTemplate::getVolume(vdwIndexI)/2);
-						}
+				{		
+					vdwIndexJ = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[j][0];
+					solvatedRadiusJ = residueTemplate::getVDWRadius(vdwIndexJ)+waterDiameter;
+
+					//i sum environment j
+					cutoff = itsAtoms[i]->inCutoff(_other->itsAtoms[j], solvatedRadiusI);
+					if (resI && cutoff){
+						itsAtoms[i]->sumEnvVol((4.188*pow(residueTemplate::getVDWRadius(vdwIndexJ),3))/2);
+					}
+
+					//j sum environment i
+					cutoff = _other->itsAtoms[j]->inCutoff(itsAtoms[i], solvatedRadiusJ);
+					if (resJ && cutoff){
+						_other->itsAtoms[j]->sumEnvVol((4.188*pow(residueTemplate::getVDWRadius(vdwIndexI),3))/2);
 					}
 				}
 			}
@@ -3082,8 +3091,8 @@ void residue::polarizability(residue* _other)
 void residue::calculateDielectrics()
 {
 	double envVol, totalWaterVol, dielectric, waters;
-	double waterPol = residueTemplate::getPolarizability(52);
-	double waterVol = residueTemplate::getVolume(52);
+	double waterPol = 1.0;   //polarizability of water 
+	double waterVol = 13.6057; //volume of water
 	double pol, vol, solvatedRadius;
 	UInt vdwIndexI;
 	for(UInt i=0; i<itsAtoms.size(); i++)
@@ -3092,16 +3101,16 @@ void residue::calculateDielectrics()
 		{
 			// calculate local dielectric for atom
 			vdwIndexI = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][0];
-			solvatedRadius = residueTemplate::getVDWRadius(vdwIndexI)+dielectricWidth;
-			vol = pow((solvatedRadius*2),3); pol=0.0; waters=0.0;
+			solvatedRadius = residueTemplate::getVDWRadius(vdwIndexI)+waterDiameter;
+			vol = 4.188*pow(solvatedRadius,3); pol=0.0; waters=0.0;
 			envVol = itsAtoms[i]->getEnvVol();
 			totalWaterVol = vol-envVol;
 			if (totalWaterVol > 0){
-				waters = (totalWaterVol/waterVol); pol = waters*waterPol;
+				waters = int(totalWaterVol/waterVol); pol = waters*waterPol;
 			}
-
 			// Solve for the effective dielectric with the Lorentz local field correction
-			dielectric =1+(8*PI/3)*(pol)/1-(4*PI/3)*(pol);
+			dielectric =2+(8*PI/3)*(pol)/1-(4*PI/3)*(pol);
+			//cout << vol << " " << envVol << " " << dielectric << endl;
 			itsAtoms[i]->setDielectric(dielectric);
 			itsAtoms[i]->setNumberofWaters(waters);
 		}
@@ -3119,7 +3128,7 @@ double residue::maxwellGarnettApproximation(UInt _atomIndex1, UInt _atomIndex2, 
 	{
 		//get dipole-dipole polarization
 		double pol = approximateDipoleDipolePolarization(_atomIndex1, _atomIndex2);
-		double vol = 4/3*PI*pow((sqrt(_distanceSquared)/2),3);
+		double vol = 4.188*pow((sqrt(_distanceSquared)/2),3);
 
 		//recalculate the dielectric using the Maxwell Garnett mixing formula to include the polarizability of the dipole inclusion over the volume of inclusion
 		double dielectric = _dielectric+4*PI*(pol/vol)/1-(4*PI/3*_dielectric)*(pol/vol);
@@ -3141,7 +3150,7 @@ double residue::maxwellGarnettApproximation(UInt _atomIndex1, residue* _other, U
 	{	
 		//get dipole-dipole polarization
 		double pol = approximateDipoleDipolePolarization(_atomIndex1, _other, _atomIndex2);
-		double vol = 4/3*PI*pow((sqrt(_distanceSquared)/2),3);
+		double vol = 4.188*pow((sqrt(_distanceSquared)/2),3);
 
 		//recalculate the dielectric using the Maxwell Garnett mixing formula to include the polarizability of the dipole inclusion over the volume of inclusion
 		double dielectric = _dielectric+4*PI*(pol/vol)/1-(4*PI/3*_dielectric)*(pol/vol);
@@ -3240,6 +3249,24 @@ void residue::updateMovedDependence(residue* _other, UInt _EorC)
 	}
 }
 
+double residue::getVDWRadius(UInt _atomIndex)
+{
+	int atomVDWtype = dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex][0];
+	double Radius = residueTemplate::getVDWRadius(atomVDWtype); //atom radius + water radius
+	return Radius;
+}
+double residue::getVDWEpsilon(UInt _atomIndex)
+{
+	int atomVDWtype = dataBase[itsType].itsAtomEnergyTypeDefinitions[_atomIndex][0];
+	double Radius = residueTemplate::getVDWEpsilon(atomVDWtype); //atom radius + water radius
+	return Radius;
+}
+double residue::getCharge(UInt _atomIndex)
+{
+	double charge = residueTemplate::itsAmberElec.getItsCharge(itsType, _atomIndex);
+	return charge;
+}
+
 // end protEnergy functions ---------------------------------------------------------------------
 
 void residue::listConnectivity()
@@ -3271,7 +3298,7 @@ double residue::interEnergy(residue* _other)
 	double pmfEnergy = 0.0;
 	double amberElecEnergy = 0.0;
 	bool threeBonds;
-	bool withinCutoff;
+	//bool withinCutoff;
 	for(UInt i=0; i<itsAtoms.size(); i++)
 	{
 		if (!itsAtoms[i]->getSilentStatus())
@@ -3280,11 +3307,11 @@ double residue::interEnergy(residue* _other)
 			{
 				if (!_other->itsAtoms[j]->getSilentStatus())
 				{
-					withinCutoff = itsAtoms[i]->inCutoffSQ(_other->itsAtoms[j], cutoffDistance, cutoffDistanceSquared);
-					if (withinCutoff)
-					{
+					//withinCutoff = itsAtoms[i]->inCutoffSQ(_other->itsAtoms[j], cutoffDistance, cutoffDistanceSquared);
+					//if (withinCutoff)
+					//{
 						distanceSquared = itsAtoms[i]->distanceSquared(_other->itsAtoms[j]);
-						threeBonds = isSeparatedByFewBonds(this,i,_other,j);
+						threeBonds = isSeparatedByThreeBackboneBonds(i,_other,j);
 
 						// ** inter AMBER Electrostatics
 						if (residueTemplate::itsAmberElec.getScaleFactor() != 0.0)
@@ -3313,13 +3340,14 @@ double residue::interEnergy(residue* _other)
 							if (!threeBonds)
 							{
 								double tempvdwEnergy = residueTemplate::getVDWEnergySQ(index1, index2, distanceSquared);
+								//cout << tempvdwEnergy << endl;
 								vdwEnergy += tempvdwEnergy;
 
 				//				cout << i << " " << j << " " << tempvdwEnergy << endl;
 
 							}
 						}
-					}
+					//}
 				}
 			}
 		}

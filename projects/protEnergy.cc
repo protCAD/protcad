@@ -34,7 +34,7 @@ int main (int argc, char* argv[])
 	residue::setHydroSolvationScaleFactor(1.0);
 	residue::setPolarizableElec(true);
 	residue::setEntropyFactor(1.0);
-  
+	
 	cout << infile << " " << prot->getNumHardClashes() << " clashes " << prot->protEnergy() << " kcal/mol at 300K" << endl;
 	//pdbWriter(prot, infile);
 	return 0;

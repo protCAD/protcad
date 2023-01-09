@@ -45,8 +45,8 @@ public:
         {return itsResidues[_resIndex]->getCoords(_atomIndex);}
     void setCoords(UInt _resIndex, UInt _atomIndex, dblVec _coords)
 	{ return itsResidues[_resIndex]->setCoords(_atomIndex, _coords);}
-    UInt getNumAtoms(const UInt _resIndex)
-        {return itsResidues[_resIndex]->getNumAtoms();}
+	UInt getNumAtoms();
+    UInt getNumAtoms(const UInt _resIndex) {return itsResidues[_resIndex]->getNumAtoms();}
     UInt getNumResidues() {return itsResidues.size();}
 	int mapResNumToChainPosition(const int _resNum);
 private:
@@ -80,7 +80,7 @@ public:
 	void randomizeSystem(ran& _ran);
 	void makeAllAlanine();
     void removeResidue(UInt _resNum);
-	bool isCofactor(UInt resIndex){return itsResidues[resIndex]->isCofactor();}   
+	bool isCofactor(UInt resIndex){return itsResidues[resIndex]->isCofactor();}  
 
 
 	// single modification buffers

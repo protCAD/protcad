@@ -1,9 +1,9 @@
 #include "amberElec.h"
 
 double amberElec::itsScaleFactor = 1.0;
-bool amberElec::distanceDependance = true;
+bool amberElec::distanceDependance = false;
 double amberElec::itsDielectricConstant = 12.0;
-bool amberElec::highEnergyCutOff = true;
+bool amberElec::highEnergyCutOff = false;
 amberElec::amberElec()
 {
 #ifdef AMBERELEC_DEBUG

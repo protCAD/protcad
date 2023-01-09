@@ -1,7 +1,7 @@
 ![background](https://raw.githubusercontent.com/protCAD/protcad/master/ui/images/splash.png)
 
 
-Official protCAD development tree
+Official protcad development tree
 ===================================================================================================
 
 protCAD is an implementation of the protein design software library that originated in the 
@@ -37,7 +37,11 @@ Then follow the Ubuntu Linux install dependency instructions and install below i
 
 In terminal:
 
-sudo apt-get install g++ gfortran git;
+sudo apt install g++ gfortran git
+
+For automatic cuda support you will also need:
+
+sudo apt install nvidia-cuda-toolkit
 
 --Mac:
 
@@ -121,7 +125,7 @@ Active Chains,0,1,2,
 Active Positions,0,1,2,3,5,6,7,9,10,
 Random Positions,0,2,5,6,10,
 Frozen Positions,4,8,
-Amino Acids,A,R,N,D,C,Q,E,He,I,L,K,M,F,P,S,T,W,Y,V,G,
+Amino Acids,A,R,N,D,C,Q,E,H,I,L,K,M,F,P,S,T,W,Y,V,G,
 Backbone Relaxation,false,
 
 Output result: Evolved model pdbs, sequences and energies written to results.out file

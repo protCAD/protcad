@@ -270,6 +270,9 @@ public:
 	double getSelfEnergy(residue* _other);
 	double calculateHCA_O_hBondEnergy(residue* _other);
 	double getVolume(UInt _method);
+	double getVDWRadius(UInt _index);
+	double getVDWEpsilon(UInt _index);
+	double getCharge(UInt _index);
     bool notHydrogen(UInt _atomIndex);
     double getTotalVolumeofBondedAtoms(UInt _atomIndex);
 
@@ -434,8 +437,8 @@ private:
 	static double EntropyFactor;
 	static double cutoffDistance;
 	static double cutoffDistanceSquared;
-	static double cutoffCubeVolume;
-	static double dielectricWidth;
+	static double waterRadius;
+	static double waterDiameter;
 	static double KT;
 };
 

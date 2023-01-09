@@ -1178,6 +1178,570 @@ double protein::getBackboneHBondEnergy(UInt donorChainIndex, UInt donorResIndex,
     return energy;
 }
 
+//**************CUDA related functions***************************************
+
+#ifdef __CUDA__
+
+void protein::loadDeviceMemEnergy()
+{
+	// Allocate host (CPU) memory for arrays to be passed to device (GPU)
+	int N = getNumAtoms();
+	int bondingSize = N * (N - 1) / 2;
+	cudaMallocHost(&x, N * sizeof(double));
+	cudaMallocHost(&y, N * sizeof(double));
+	cudaMallocHost(&z, N * sizeof(double));
+	cudaMallocHost(&rad, N * sizeof(double));
+	cudaMallocHost(&eps, N * sizeof(double));
+	cudaMallocHost(&chg, N * sizeof(double));
+	cudaMallocHost(&vol, N * sizeof(double));
+	cudaMallocHost(&bon, bondingSize * sizeof(int));
+
+	// Load arrays with xyz coords, vdw radius, epsilon and charge per atom, and also bonding flag per atom pair 
+	atomIterator aIter1(this); atom* pAtom1; UInt Ncounter = 0; UInt bonCounter = 0; double E=0;
+    for (; !(aIter1.last()); aIter1++)
+    {
+		// Load xyz coords, vdw rad, epsilon and charge
+		pAtom1 = aIter1.getAtomPointer(); 
+        dblVec coords = pAtom1->getCoords(); x[Ncounter] = coords[0]; y[Ncounter] = coords[1]; z[Ncounter] = coords[2];
+		residue* res1 = aIter1.getResiduePointer();
+		rad[Ncounter] = res1->getVDWRadius(aIter1.getAtomIndex()); eps[Ncounter] = res1->getVDWEpsilon(aIter1.getAtomIndex()); 
+		chg[Ncounter] = res1->getCharge(aIter1.getAtomIndex()); vol[Ncounter] = 0.0;
+
+		// Load bonding integer per non-redundant pair of atoms (1 for bonded within three bonds, 0 for not bonded)
+		atomIterator aIter2(aIter1); aIter2++;
+		for (; !(aIter2.last()); aIter2++)
+		{
+			bool bonded = false;
+			if (aIter1.getChainIndex() ==  aIter2.getChainIndex() && aIter1.getResidueIndex() ==  aIter2.getResidueIndex()){
+				bonded = res1->isSeparatedByFewBonds(aIter1.getAtomIndex(), aIter2.getAtomIndex());
+			}
+			else{
+				residue* res2 = aIter2.getResiduePointer();
+				bonded = res1->isSeparatedByThreeBackboneBonds(aIter1.getAtomIndex(), res2, aIter2.getAtomIndex());
+			}
+			if (bonded){bon[bonCounter] = 1;} else{bon[bonCounter] = 0;}
+			bonCounter++;
+		}
+		Ncounter++; 
+    }
+
+	// Transfer loaded arrays to GPU to prepare for Energy calculation
+	loadEnergyDeviceMem(x, y, z, rad, eps, chg, vol, bon, &E, N);
+	deviceMemLoadedEnergy = true;
+}
+
+void protein::loadDeviceMemClash()
+{
+	// Allocate host (CPU) memory for arrays to be passed to device (GPU)
+	int N = getNumAtoms();
+	int bondingSize = N * (N - 1) / 2;
+	cudaMallocHost(&x, N * sizeof(double));
+	cudaMallocHost(&y, N * sizeof(double));
+	cudaMallocHost(&z, N * sizeof(double));
+	cudaMallocHost(&rad, N * sizeof(double));
+	cudaMallocHost(&clash, N * sizeof(int));
+	cudaMallocHost(&bon, bondingSize * sizeof(int));
+
+	// Load arrays with xyz coords, vdw radius, epsilon and charge per atom, and also bonding flag per atom pair 
+	atomIterator aIter1(this); atom* pAtom1; UInt Ncounter = 0; UInt bonCounter = 0; 
+    for (; !(aIter1.last()); aIter1++)
+    {
+		// Load xyz coords, vdw rad, epsilon and charge
+		pAtom1 = aIter1.getAtomPointer(); 
+        dblVec coords = pAtom1->getCoords(); x[Ncounter] = coords[0]; y[Ncounter] = coords[1]; z[Ncounter] = coords[2];
+		residue* res1 = aIter1.getResiduePointer();
+		rad[Ncounter] = res1->getVDWRadius(aIter1.getAtomIndex());
+		clash[Ncounter] = 0;
+
+		// Load bonding integer per non-redundant pair of atoms (1 for bonded within three bonds, 0 for not bonded)
+		atomIterator aIter2(aIter1); aIter2++;
+		for (; !(aIter2.last()); aIter2++)
+		{
+			bool bonded = false;
+			if (aIter1.getChainIndex() ==  aIter2.getChainIndex() && aIter1.getResidueIndex() ==  aIter2.getResidueIndex()){
+				bonded = res1->isSeparatedByFewBonds(aIter1.getAtomIndex(), aIter2.getAtomIndex());
+			}
+			else{
+				residue* res2 = aIter2.getResiduePointer();
+				bonded = res1->isSeparatedByThreeBackboneBonds(aIter1.getAtomIndex(), res2, aIter2.getAtomIndex());
+			}
+			if (bonded){bon[bonCounter] = 1;} else{bon[bonCounter] = 0;}
+			bonCounter++;
+		}
+		Ncounter++; 
+    }
+
+	// Transfer loaded arrays to GPU to prepare for Energy calculation
+	loadClashDeviceMem(x, y, z, rad, bon, clash, N);
+	deviceMemLoadedClash = true;
+}
+
+void protein::loadDeviceMemAll()
+{
+	// Allocate host (CPU) memory for arrays to be passed to device (GPU)
+	int N = getNumAtoms();
+	int bondingSize = N * (N - 1) / 2;
+	cudaMallocHost(&x, N * sizeof(double));
+	cudaMallocHost(&y, N * sizeof(double));
+	cudaMallocHost(&z, N * sizeof(double));
+	cudaMallocHost(&rad, N * sizeof(double));
+	cudaMallocHost(&eps, N * sizeof(double));
+	cudaMallocHost(&chg, N * sizeof(double));
+	cudaMallocHost(&vol, N * sizeof(double));
+	cudaMallocHost(&clash, N * sizeof(int));
+	cudaMallocHost(&bon, bondingSize * sizeof(int));
+
+	// Load arrays with xyz coords, vdw radius, epsilon and charge per atom, and also bonding flag per atom pair 
+	atomIterator aIter1(this); atom* pAtom1; UInt Ncounter = 0; UInt bonCounter = 0; double E=0;
+    for (; !(aIter1.last()); aIter1++)
+    {
+		// Load xyz coords, vdw rad, epsilon and charge
+		pAtom1 = aIter1.getAtomPointer(); 
+        dblVec coords = pAtom1->getCoords(); x[Ncounter] = coords[0]; y[Ncounter] = coords[1]; z[Ncounter] = coords[2];
+		residue* res1 = aIter1.getResiduePointer();
+		rad[Ncounter] = res1->getVDWRadius(aIter1.getAtomIndex()); eps[Ncounter] = res1->getVDWEpsilon(aIter1.getAtomIndex()); 
+		chg[Ncounter] = res1->getCharge(aIter1.getAtomIndex()); vol[Ncounter] = 0.0; clash[Ncounter] = 0;
+
+		// Load bonding integer per non-redundant pair of atoms (1 for bonded within three bonds, 0 for not bonded)
+		atomIterator aIter2(aIter1); aIter2++;
+		for (; !(aIter2.last()); aIter2++)
+		{
+			bool bonded = false;
+			if (aIter1.getChainIndex() ==  aIter2.getChainIndex() && aIter1.getResidueIndex() ==  aIter2.getResidueIndex()){
+				bonded = res1->isSeparatedByFewBonds(aIter1.getAtomIndex(), aIter2.getAtomIndex());
+			}
+			else{
+				residue* res2 = aIter2.getResiduePointer();
+				bonded = res1->isSeparatedByThreeBackboneBonds(aIter1.getAtomIndex(), res2, aIter2.getAtomIndex());
+			}
+			if (bonded){bon[bonCounter] = 1;} else{bon[bonCounter] = 0;}
+			bonCounter++;
+		}
+		Ncounter++; 
+    }
+
+	// Transfer loaded arrays to GPU to prepare for Energy calculation
+	loadAllDeviceMem(x, y, z, rad, eps, chg, vol, clash, bon, &E, N);
+	deviceMemLoadedAll = true; deviceMemLoadedEnergy = true; deviceMemLoadedClash = true;
+}
+
+void protein::freeDeviceMemEnergy()
+{
+	// Free the GPU memory
+	freeEnergyDeviceMem();
+
+	// Free the CPU memory
+  	cudaFreeHost(x); cudaFreeHost(y); cudaFreeHost(z);
+  	cudaFreeHost(rad); cudaFreeHost(eps); cudaFreeHost(chg);
+  	cudaFreeHost(bon); cudaFreeHost(vol);
+	deviceMemLoadedEnergy = false;
+}
+
+void protein::freeDeviceMemClash()
+{
+	// Free the GPU memory
+	freeClashDeviceMem();
+
+	// Free the CPU memory
+	cudaFreeHost(x); cudaFreeHost(y); cudaFreeHost(z);
+  	cudaFreeHost(rad); cudaFreeHost(bon); cudaFreeHost(clash);
+	deviceMemLoadedClash = false;
+}
+
+void protein::freeDeviceMemAll()
+{
+	// Free the GPU memory
+	freeAllDeviceMem();
+
+	// Free the CPU memory
+  	cudaFreeHost(x); cudaFreeHost(y); cudaFreeHost(z);
+  	cudaFreeHost(rad); cudaFreeHost(eps); cudaFreeHost(chg);
+  	cudaFreeHost(bon); cudaFreeHost(vol); cudaFreeHost(clash);
+	deviceMemLoadedEnergy = false;
+	deviceMemLoadedClash = false;
+	deviceMemLoadedAll = false;
+}
+
+double protein::protEnergyCU()
+{
+	// Load device memory if need be
+	if (!deviceMemLoadedEnergy){loadDeviceMemEnergy();}
+
+    // update coordinates
+	atomIterator aIter(this);atom* pAtom; int Ncounter = 0; double E = 0;
+    for (;!(aIter.last());aIter++)
+    {
+		pAtom = aIter.getAtomPointer(); 
+        dblVec coords = pAtom->getCoords();
+		x[Ncounter] = coords[0]; 
+		y[Ncounter] = coords[1];
+		z[Ncounter] = coords[2];
+		Ncounter++;
+    }
+	calcEnergies(x, y, z, &E, Ncounter);
+	return E;
+}
+
+void protein::protRelaxCU(UInt _plateau, bool _backbone)
+{   
+	saveCurrentState();
+
+	// load data on GPU
+	if (!deviceMemLoadedClash){loadDeviceMemClash();}
+
+	UInt pastNumClashes = getNumClashes();
+	if (pastNumClashes > 0){
+		
+		//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
+		UInt randchain, randres, randrestype, resnum, randrot, chainNum = getNumChains(), nobetter = 0, numClashes;
+		vector < vector <double> > currentRot; vector <UIntVec> allowedRots; srand (time(NULL));
+
+		//--Run optimizaiton loop to relative minima, determined by _plateau----------------------------
+		do
+		{   
+			//--choose random residue
+			randchain = rand() % chainNum;
+			resnum = getNumResidues(randchain);
+			randres = rand() % resnum;
+			randrestype = getTypeFromResNum(randchain, randres);
+			nobetter++;
+
+			//--Rotamer optimization-----------------------------------------------------------------------
+			currentRot = getSidechainDihedrals(randchain, randres);
+			allowedRots = getAllowedRotamers(randchain, randres, randrestype);
+
+			//--Try a max of one rotamer per branchpoint and keep if an improvement, else revert
+			for (UInt b = 0; b < residue::getNumBpt(randrestype); b++)
+			{
+				if (allowedRots[b].size() > 0)
+				{
+					randrot = rand() % allowedRots[b].size();
+					setRotamerWBC(randchain, randres, b, allowedRots[b][randrot]);
+					numClashes = getNumClashes();
+					if (numClashes < pastNumClashes){
+						nobetter = 0;
+						pastNumClashes = numClashes; break;
+					}
+					else
+					{
+						setSidechainDihedralAngles(randchain, randres, currentRot);
+					}
+				}
+			}
+		} while (nobetter < _plateau);
+		
+	}
+	return;
+}
+
+void protein::protRelaxCU(UIntVec _frozenResidues, UIntVec _activeChains)
+{  
+	saveCurrentState();
+
+	// load data on GPU
+	if (!deviceMemLoadedClash){loadDeviceMemClash();}
+
+	UInt pastNumClashes = getNumClashes();
+	if (pastNumClashes > 0){
+
+		//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
+		UInt randchain, randres, randrestype, randrot, chainNum = _activeChains.size(), nobetter = 0, plateau = 500, numClashes;
+		vector < vector <double> > currentRot; vector <UIntVec> allowedRots; srand (time(NULL));
+		bool skip;
+
+		//--Run optimizaiton loop to relative minima, determined by _plateau----------------------------
+		do
+		{  
+			//--choose random residue not frozen of active chains
+			randchain = _activeChains[rand() % chainNum];
+			do{
+				skip = false;
+				randres = rand() % getNumResidues(randchain);
+				for (UInt i = 0; i < _frozenResidues.size(); i++)
+				{
+					if (randres == _frozenResidues[i]) {skip = true; break;}
+				}
+			} while (skip);
+			randrestype = getTypeFromResNum(randchain, randres);
+			nobetter++;
+
+			//--Rotamer optimization-----------------------------------------------------------------------
+			currentRot = getSidechainDihedrals(randchain, randres);
+			allowedRots = getAllowedRotamers(randchain, randres, randrestype);
+
+			//--Try a max of one rotamer per branchpoint and keep if an improvement, else revert
+			for (UInt b = 0; b < residue::getNumBpt(randrestype); b++)
+			{
+				if (allowedRots[b].size() > 0)
+				{
+					randrot = rand() % allowedRots[b].size();
+					setRotamerWBC(randchain, randres, b, allowedRots[b][randrot]);
+					numClashes = getNumClashes();
+					if (numClashes < pastNumClashes){
+						nobetter = 0;
+						pastNumClashes = numClashes; break;
+					}
+					else
+					{
+						setSidechainDihedralAngles(randchain, randres, currentRot);
+					}
+				}
+			}
+		} while (nobetter < plateau);
+	}
+	return;
+}
+
+void protein::protMinCU(bool _backbone, UIntVec _frozenResidues, UIntVec _activeChains)
+{
+	// Sidechain and backslide optimization with a local dielectric scaling of electrostatics and corresponding Born/Gill implicit solvation energy
+	saveCurrentState();
+	
+	// load data on GPU
+	if (!deviceMemLoadedAll){loadDeviceMemAll();}
+
+	//--Initialize variables for loop, calculate starting energy and build energy vectors-----
+	UInt randchain, randres, resnum, backboneOrSidechain = 1;
+	UInt clashes, clashesStart, chainNum = _activeChains.size(), plateau = 1000;
+	double Energy, pastEnergy = protEnergyCU(), deltaEnergy, sPhi, sPsi,nobetter = 0.0, KT = KB*Temperature();
+	//double rotX, rotY, rotZ, transX, transY, transZ;
+	vector < DouVec > currentSidechainConf, newSidechainConf; srand (time(NULL)); vector <double> backboneAngles(2);
+	bool sidechainTest, backboneTest, revert, cofactorTest, energyTest, skip, boltzmannAcceptance;
+	vector <dblVec> currentCoords;
+	//--Run optimizaiton loop to local minima defined by an RT plateau------------------------
+	do{
+		//--choose random residue not frozen of active chains
+			randchain = _activeChains[rand() % chainNum];
+			do{
+				skip = false;
+				randres = rand() % getNumResidues(randchain);
+				for (UInt i = 0; i < _frozenResidues.size(); i++)
+				{
+					if (randres == _frozenResidues[i]) {skip = true; break;}
+				}
+			} while (skip);
+		clashesStart = getNumClashes(); resnum = getNumResidues(randchain); nobetter++;
+		backboneTest = false, sidechainTest = false, cofactorTest = false, energyTest = false, revert = true;
+		
+		/*if (isCofactor(randchain, randres))
+		{
+			//--Rock and Roll cofactor in site
+			cofactorTest = true;
+			currentCoords.clear();
+			currentCoords = saveCoords(randchain, randres);
+			rotX = rand() % 2, rotY = rand() % 2, rotZ = rand() % 2;
+			transX = (rand() % 30)/100, transY = (rand() % 30)/100, transZ = (rand() % 30)/100;
+			rotateChainRelative(randchain,X_axis,rotX), rotateChainRelative(randchain,Y_axis,rotY), rotateChainRelative(randchain,Z_axis,rotZ);
+			translateChain(randchain, transX, transY, transZ);
+			clashes = getNumHardClashes();
+			if (clashes <= clashesStart){
+					energyTest = true; revert = false;
+			}
+		}
+		else{*/
+			//--Backbone conformation trial--------------------------------------------------------
+			if (_backbone) {backboneOrSidechain = rand() % 2;}
+			if (randres > 0 && randres < resnum-2 && backboneOrSidechain == 0){
+				backboneTest = true;
+				sPhi = getPhi(randchain,randres), sPsi = getPsi(randchain,randres);
+				backboneAngles = getRandConformationFromBackboneType(sPhi, sPsi);
+				setDihedral(randchain,randres,backboneAngles[0],0,0); setDihedral(randchain,randres,backboneAngles[1],1,0);
+				clashes = getNumClashes();
+				if (clashes <= clashesStart){
+					energyTest = true; revert = false;
+				}
+			}
+			//--Sidechain conformation trial--------------------------------------------------------
+			else{
+				sidechainTest = true;
+				currentSidechainConf = getSidechainDihedrals(randchain, randres);
+				newSidechainConf = randContinuousSidechainConformation(randchain, randres);
+				setSidechainDihedralAngles(randchain, randres, newSidechainConf);
+				clashes = getNumClashes();
+				if (clashes <= clashesStart){
+					energyTest = true; revert = false;
+				}
+			}
+		//}
+		//--Energy-Test-------------------------------------------------------------------------
+		if (energyTest){
+			Energy = protEnergyCU();
+			deltaEnergy = Energy - pastEnergy;
+			boltzmannAcceptance = boltzmannEnergyCriteria(deltaEnergy);
+			if (boltzmannAcceptance){
+				pastEnergy = Energy;
+				if (deltaEnergy < -KT){nobetter = 0;}
+			}
+			else{revert = true;}
+		}
+		//--Revert conformation-----------------------------------------------------------------
+		if (revert){
+			if(cofactorTest)
+			{
+				setAllCoords(randchain, randres, currentCoords);
+			}
+			if(backboneTest){
+				setDihedral(randchain,randres,sPhi,0,0);
+				setDihedral(randchain,randres,sPsi,1,0);
+			}
+			if(sidechainTest){
+				setSidechainDihedralAngles(randchain, randres, currentSidechainConf);
+			}
+		}
+	} while (nobetter < plateau);
+	return;
+}
+
+void protein::protMinCU(bool _backbone)
+{
+	// Sidechain and backslide optimization with a local dielectric scaling of electrostatics and corresponding Born/Gill implicit solvation energy
+	saveCurrentState();
+	
+	// load data on GPU
+	if (!deviceMemLoadedAll){loadDeviceMemAll();}
+
+	//--Initialize variables for loop, calculate starting energy and build energy vectors-----
+	UInt randchain, randres, resnum, backboneOrSidechain = 1;
+	UInt clashes, clashesStart, chainNum = getNumChains(), plateau = 1000;
+	double Energy, pastEnergy = protEnergyCU(), deltaEnergy, sPhi, sPsi,nobetter = 0.0, KT = KB*Temperature();
+	//double rotX, rotY, rotZ, transX, transY, transZ;
+	vector < DouVec > currentSidechainConf, newSidechainConf; srand (time(NULL)); vector <double> backboneAngles(2);
+	bool sidechainTest, backboneTest, revert, cofactorTest, energyTest, boltzmannAcceptance;
+	vector <dblVec> currentCoords;
+	//--Run optimizaiton loop to local minima defined by an RT plateau------------------------
+	do{
+		//--choose random residue not frozen of active chains
+		randchain = rand() % chainNum;
+		randres = rand() % getNumResidues(randchain);
+		clashesStart = getNumClashes(); resnum = getNumResidues(randchain); nobetter++;
+		backboneTest = false, sidechainTest = false, cofactorTest = false, energyTest = false, revert = true;
+		
+		/*if (isCofactor(randchain, randres))
+		{
+			//--Rock and Roll cofactor in site
+			cofactorTest = true;
+			currentCoords.clear();
+			currentCoords = saveCoords(randchain, randres);
+			rotX = rand() % 2, rotY = rand() % 2, rotZ = rand() % 2;
+			transX = (rand() % 30)/100, transY = (rand() % 30)/100, transZ = (rand() % 30)/100;
+			rotateChainRelative(randchain,X_axis,rotX), rotateChainRelative(randchain,Y_axis,rotY), rotateChainRelative(randchain,Z_axis,rotZ);
+			translateChain(randchain, transX, transY, transZ);
+			clashes = getNumHardClashes();
+			if (clashes <= clashesStart){
+					energyTest = true; revert = false;
+			}
+		}
+		else{*/
+			//--Backbone conformation trial--------------------------------------------------------
+			if (_backbone) {backboneOrSidechain = rand() % 2;}
+			if (randres > 0 && randres < resnum-2 && backboneOrSidechain == 0){
+				backboneTest = true;
+				sPhi = getPhi(randchain,randres), sPsi = getPsi(randchain,randres);
+				backboneAngles = getRandConformationFromBackboneType(sPhi, sPsi);
+				setDihedral(randchain,randres,backboneAngles[0],0,0); setDihedral(randchain,randres,backboneAngles[1],1,0);
+				clashes = getNumClashes();
+				if (clashes <= clashesStart){
+					energyTest = true; revert = false;
+				}
+			}
+			//--Sidechain conformation trial--------------------------------------------------------
+			else{
+				sidechainTest = true;
+				currentSidechainConf = getSidechainDihedrals(randchain, randres);
+				newSidechainConf = randContinuousSidechainConformation(randchain, randres);
+				setSidechainDihedralAngles(randchain, randres, newSidechainConf);
+				clashes = getNumClashes();
+				if (clashes <= clashesStart){
+					energyTest = true; revert = false;
+				}
+			}
+		//}
+		//--Energy-Test-------------------------------------------------------------------------
+		if (energyTest){
+			Energy = protEnergyCU();
+			deltaEnergy = Energy - pastEnergy;
+			boltzmannAcceptance = boltzmannEnergyCriteria(deltaEnergy);
+			if (boltzmannAcceptance){
+				pastEnergy = Energy;
+				if (deltaEnergy < -KT){nobetter = 0;}
+			}
+			else{revert = true;}
+		}
+		//--Revert conformation-----------------------------------------------------------------
+		if (revert){
+			if(cofactorTest)
+			{
+				setAllCoords(randchain, randres, currentCoords);
+			}
+			if(backboneTest){
+				setDihedral(randchain,randres,sPhi,0,0);
+				setDihedral(randchain,randres,sPsi,1,0);
+			}
+			if(sidechainTest){
+				setSidechainDihedralAngles(randchain, randres, currentSidechainConf);
+			}
+		}
+	} while (nobetter < plateau);
+	return;
+}
+
+void protein::updateClashesCU()
+{
+	// Load device memory if need be
+	if (!deviceMemLoadedClash){loadDeviceMemClash();}
+
+	// Clear current clash count
+	setMoved(true, 1);
+	
+    // update coordinates
+	atomIterator aIter(this);atom* pAtom; int Ncounter = 0;
+    for (;!(aIter.last());aIter++)
+    {
+		pAtom = aIter.getAtomPointer(); 
+        dblVec coords = pAtom->getCoords();
+		x[Ncounter] = coords[0]; 
+		y[Ncounter] = coords[1];
+		z[Ncounter] = coords[2];
+		clash[Ncounter] = 0;
+		Ncounter++;
+    }
+
+	//calculate Clashes with GPU kernel (no sqrt distance calc only)
+	calcClashes(x, y, z, clash, Ncounter);
+	
+	//load clashes into residue
+	atomIterator aIter2(this); residue* pRes; Ncounter = 0;
+    for (;!(aIter2.last());aIter2++)
+    {
+		pRes = aIter2.getResiduePointer();
+		pRes->sumClashes(clash[Ncounter]);
+		Ncounter++;
+	}
+}
+
+UInt protein::getNumClashes()
+{
+	updateClashesCU();
+	UInt clashes = 0;
+	for(UInt i=0; i<itsChains.size(); i++)
+	{
+		clashes += itsChains[i]->getClashes();
+	}
+	return clashes;
+}
+
+#endif
+
+//**************CUDA related functions end***************************************
+
+int protein::getNumAtoms()
+{
+	int N = 0;
+	for(UInt i=0; i<itsChains.size(); i++)
+	{N += itsChains[i]->getNumAtoms();}
+	return N;
+}
+
 //**************Default non-Redundant optimized Energy Function***************************************
 double protein::protEnergy()
 {

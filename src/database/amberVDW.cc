@@ -83,6 +83,11 @@ double amberVDW::getRadius(const UInt _type1)
     double radius  = (R_ref[_type1]) * itsRadiusScaleFactor;
     return radius;
 }
+double amberVDW::getEpsilon(const UInt _type1)
+{
+    double eps  = EPS[_type1];
+    return eps;
+}
 
 double amberVDW::getPolarizability(const UInt _type1)
 {
@@ -111,6 +116,7 @@ double amberVDW::getEnergySQ(const UInt _type1, const UInt _type2, const double 
     {
         if (_type2 < R_ref.size())
         {       
+			//cout << EPS[_type1] << " " << EPS[_type2] << " " << R_ref[_type1] << " " << R_ref[_type2] << endl;
 			R_ref_pair  = itsRadiusScaleFactor * (R_ref[_type1] + R_ref[_type2]);
             if (EPS[_type1] == EPS[_type2])
 				EPS_pair = EPS[_type1]; // save a sqrt operation
@@ -168,14 +174,14 @@ double amberVDW::getWaterEnergy(const UInt _type1) const
 {
     double energy = 0.0;
     double EPS_pair = 0.0;
-    UInt waterType = 52;
+    UInt waterType = 54;
     if (_type1 < EPS.size())
     {
         if (EPS[_type1] == EPS[waterType])
             EPS_pair = EPS[_type1];
         else
             EPS_pair = sqrt( EPS[_type1] * EPS[waterType]);
-        energy = EPS_pair * ( itsRepulsionScaleFactor - (2 * itsAttractionScaleFactor));
+        energy = EPS_pair * -1;
     }
     return energy;
 }

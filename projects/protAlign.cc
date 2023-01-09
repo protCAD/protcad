@@ -59,7 +59,7 @@ int main (int argc, char* argv[])
 			if (coord2.size() < coord1.size()){ diff = coord1.size()-coord2.size(); first = true;}
 			else{diff = coord2.size()-coord1.size(); first = false;}
 		}
-		int maxsize, size;
+		int maxsize, size, bestSize;
 		if (first){maxsize = coord2.size();}else{maxsize = coord1.size();}
 		double rotmat[9]; double centroid1[3]; double centroid2[3]; double rmsd; double rmsdat[maxsize]; int ierr = 0;
 		int list1[maxsize]; int list2[maxsize]; double bestRotMat[9]; double bestRmsd = 1E10;
@@ -99,6 +99,7 @@ int main (int argc, char* argv[])
 				bestfit_(newCoord1, &size, newCoord2, &size, &size, newCoord3, list1, list2, &rmsd, &ierr, rotmat, centroid1, centroid2, rmsdat);
 				if (rmsd < bestRmsd){
 					bestRmsd = rmsd;
+					bestSize = size;
 					for (int j = 0; j < 9; j++){bestRotMat[j]=rotmat[j];}
 					for (int j = 0; j < 3; j++){bestcent1[j]=centroid1[j]; bestcent2[j]=centroid2[j];}
 				}
@@ -135,7 +136,7 @@ int main (int argc, char* argv[])
 			_prot2->translateChain(i,bestcent1[0],bestcent1[1],bestcent1[2]);
 		}
 		pdbWriter(_prot2,infile2);
-		cout << "RMSD: " << bestRmsd << endl;
+		cout << "RMSD: " << bestRmsd << " Residues aligned: " << bestSize << endl;
 	}
 	return 0;
 }

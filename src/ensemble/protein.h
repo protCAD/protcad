@@ -1,7 +1,7 @@
 //*****************************************************************************************************
 //*****************************************************************************************************
-//******************************   ___  ____ ____ ___ ____ _ _  _  _  _  ******************************
-//******************************   |__] |__/ |  |  |  |___ | |\ |  |__|  ******************************
+//******************************  ___  ____ ____ ___ ____ _ _  _  _  _   ******************************
+//******************************  |__] |__/ |  |  |  |___ | |\ |  |__|   ******************************
 //******************************  |    |  \ |__|  |  |___ | | \| o|  |   ******************************
 //******************************                                         ******************************
 //******************************      class protein is defined           ******************************
@@ -19,6 +19,7 @@
 #include "molecule.h"
 #include "chain.h"
 #include "chainModBuffer.h"
+#include "residueTemplate.h"
 #ifndef PDBWRITER_H
 #include "pdbWriter.h"
 #endif
@@ -27,6 +28,9 @@ class atomIterator;
 #endif
 #ifndef RESIDUEITERATOR_H
 class residueIterator;
+#endif
+#ifndef ENERGY_H
+#include "energy.h"
 #endif
 #ifndef PROTEIN_H
 #define PROTEIN_H
@@ -53,6 +57,7 @@ public:
 		{ return itsChains[_chainIndex]->getCoords(_resIndex, _atomName);}
 	dblVec getCoords(const UInt _chainIndex, const UInt _resIndex, const UInt _atomIndex) 
 		{ return itsChains[_chainIndex]->getCoords(_resIndex, _atomIndex);}
+	int getNumAtoms();
 	UInt getNumAtoms(const UInt _chainIndex, const UInt _resIndex) 
 		{ return itsChains[_chainIndex]->getNumAtoms(_resIndex); }
 	void setCoords(UInt _chainIndex, UInt _resIndex, UInt _atomIndex, dblVec _coords)
@@ -212,6 +217,21 @@ public:
 	static void setTemperature( const double _temp ) { residue::setTemperature(_temp); }
 	static double Temperature() { return residue::getTemperature(); }
 
+	// --CUDA related functions
+	void loadDeviceMemEnergy();
+	void freeDeviceMemEnergy();
+	void loadDeviceMemClash();
+	void freeDeviceMemClash();
+	void loadDeviceMemAll();
+	void freeDeviceMemAll();
+	double protEnergyCU();
+	void updateClashesCU();
+	UInt getNumClashes();
+	void protRelaxCU(UInt _plateau, bool _backbone);
+	void protRelaxCU(UIntVec _frozenResidues, UIntVec _activeChains);
+	void protMinCU(bool _backbone, UIntVec _frozenResidues, UIntVec _activeChains);
+	void protMinCU(bool _backbone);
+
 	//--Transformation functions
 	double getBetaChi(UInt _chainIndex, UInt _residueIndex) {return itsChains[_chainIndex]->getBetaChi(_residueIndex); }
 	void setBetaChi(UInt _chainIndex, UInt _residueIndex, double _chi) {return itsChains[_chainIndex]->setBetaChi(_residueIndex, _chi); }
@@ -315,6 +335,21 @@ private:
 	vector <UInt> itsIndependentChainsMap;
 	vector<vector<int> > itsChainLinkageMap;
 	bool (protein::*itsModificationMethods[5])(ran& _ran);
+
+	//--CUDA variables
+	double* rad; 
+	double* eps; 
+	double* chg;
+	double* vol;
+	double* x; 
+	double* y; 
+	double* z;
+	double E;
+	int* bon; 
+	int* clash;
+	bool deviceMemLoadedEnergy = false;
+	bool deviceMemLoadedClash = false;
+	bool deviceMemLoadedAll = false;
 	
 	//--Buffering
 	int itsLastModifiedChain;

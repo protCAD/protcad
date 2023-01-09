@@ -238,9 +238,15 @@ int main (int argc, char* argv[])
 				randomPosition.clear();
 			}
 		}
+#ifdef __CUDA__
+		prot->loadDeviceMemAll();
+		prot->protRelaxCU(frozenResidues, activeChains);
+		Energy = prot->protEnergyCU();
+#else
 		prot->protRelax(frozenResidues, activeChains);
-		pdbWriter(prot, tempModel);
 		Energy = prot->protEnergy();
+#endif
+		pdbWriter(prot, tempModel);
 		pastEnergy = Energy;
 
 		//--Run through a single evolutionary path (ancestral line) till hitting plateau
@@ -254,8 +260,15 @@ int main (int argc, char* argv[])
 			prot->mutateWBC(mutantPosition[0], mutantPosition[1], mutant);
 
 			//--Energy test
+#ifdef __CUDA__
+			prot->freeDeviceMemAll();
+			prot->loadDeviceMemAll();
+			prot->protRelaxCU(frozenResidues, activeChains);
+			Energy = prot->protEnergyCU();
+#else
 			prot->protRelax(frozenResidues, activeChains);
 			Energy = prot->protEnergy();
+#endif
 			deltaEnergy = Energy-pastEnergy;
 			acceptance = prot->boltzmannEnergyCriteria(deltaEnergy);
 			if (acceptance){
@@ -269,7 +282,11 @@ int main (int argc, char* argv[])
 			else{prot->undoState();}
 			
 		}while (nobetter < plateau);
+#ifdef __CUDA__
+		prot->freeDeviceMemAll();
+#endif
 		delete thePDB;
+		
 
 		//--Print final energy and write a pdb file----------------------------------------------------
 		thePDB = new PDBInterface(tempModel);
@@ -278,21 +295,29 @@ int main (int argc, char* argv[])
 		prot = static_cast<protein*>(pMol);
 		
 		//-Determine probability of being accepted into pool
+#ifdef __CUDA__
+		prot->loadDeviceMemAll();
+		prot->protMinCU(backboneRelaxation, frozenResidues, activeChains);
+		Energy = prot->protEnergyCU();
+#else
 		prot->protMin(backboneRelaxation, frozenResidues, activeChains);
 		Energy = prot->protEnergy();
+#endif
 		deltaEnergy = Energy-startEnergy;
 		acceptance = prot->boltzmannEnergyCriteria(deltaEnergy);
 		startEnergy = Energy;
 	
 		// calculate binding energy
-		double bindingEnergy = 0;
-		double chainEnergy = 0;
+		double bindingEnergy = 0.0;
+		double chainEnergy = 0.0;
 		if (prot->getNumChains() > 1) {
+			prot->setMoved(true, 0); prot->setMoved(true, 1); prot->setMoved(true, 2);
+			double complexEnergy = prot->protEnergy();
 			for (UInt b = 0; b < prot->getNumChains(); b++)
 			{
 				chainEnergy += prot->protEnergy(b);
 			}
-			bindingEnergy = Energy-chainEnergy;
+			bindingEnergy = complexEnergy-chainEnergy;
 		}
 		
 		//-generate pdb output
@@ -331,6 +356,9 @@ int main (int argc, char* argv[])
 		fs.close(); finalline.close(); population.close();
 		
 		//-clear variables for next iteration
+#ifdef __CUDA__
+		prot->freeDeviceMemAll();
+#endif
 		delete thePDB;
 		sequencePool.clear(), mutantPosition.clear(), chainSequence.clear(), randomPosition.clear();
 		sequencePool.resize(0),  mutantPosition.resize(0), chainSequence.resize(0), randomPosition.resize(0);

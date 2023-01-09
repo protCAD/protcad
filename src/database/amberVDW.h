@@ -27,6 +27,7 @@ public:
 	int getIndexFromNameString(string _name);
 	bool isClash(const UInt _type1, const UInt _type2, const double _distance);
     double getRadius(const UInt _type1);
+	double getEpsilon(const UInt _type1);
     double getPolarizability(const UInt _type1);
 	double getPolarizabilityFlag(const UInt _type1);
     double getVolume(const UInt _type1);

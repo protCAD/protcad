@@ -1043,6 +1043,16 @@ void chain::undoLastRotamerRotation()
 #endif
 }
 
+UInt chain::getNumAtoms()
+{
+	UInt N = 0;
+	for (UInt i = 0; i < getNumResidues(); i++)
+	{
+		N += getNumAtoms(i);
+	}
+	return N;
+}
+
 vector <dblVec> chain::saveCoords(UInt resIndex)
 {
 	UInt nAtoms = getNumAtoms(resIndex);

@@ -101,7 +101,6 @@ int main (int argc, char* argv[])
 		pdbWriter(prot, outFile);
 		delete thePDB;
 	}*/
-	UInt count = 0;
 	string outFile, infile = argv[1];
 	outFile = infile;
 	PDBInterface* thePDB = new PDBInterface(infile);

@@ -367,6 +367,14 @@ double residueTemplate::getVDWRadius(const int _type1)
 	}
 	return 0.0;
 }
+double residueTemplate::getVDWEpsilon(const int _type1)
+{
+	if( _type1 >= 0)
+	{
+		return itsAmberVDW.getEpsilon(UInt(_type1));
+	}
+	return 0.0;
+}
 
 double residueTemplate::getPolarizability(const int _type1)
 {

@@ -14,22 +14,27 @@ ifeq ($(UNAME),Darwin)
 	export $(PATH)=$(PATH):$(PROTCADDIR):$(BINDIR):/usr/local/gfortran
 endif
 
+NVCC_RESULT := $(shell which nvcc 2> NULL)
+NVCC_TEST := $(notdir $(NVCC_RESULT))
 
 export CXX = g++
 export F77 = gfortran
+export CU = nvcc
 export MAKE = make
 
 SHELL = /bin/sh
 
 TARGETS = protDielectric protEvolver protDihedrals protOligamer protEnergy protMover protMutator protSequence protInverter protMin protAlign protShaper protBindingEnergy hammingdist protSampling protTest
 
-.SUFFIXES: .cc .o .h .a .f
+.SUFFIXES: .cc .o .h .a .f .cu
 
 LIB_TARGETS = lib
 
 LIB_CC_OBJECTS = ran.o point.o treeNode.o atom.o atomIterator.o residue.o chain.o residueTemplate.o allowedResidue.o secondaryStructure.o chainPosition.o residueIterator.o chainModBuffer.o molecule.o protein.o ensemble.o CMath.o generalio.o pdbData.o pdbReader.o pdbWriter.o amberVDW.o aaBaseline.o amberElec.o rotamer.o rotamerLib.o PDBAtomRecord.o PDBInterface.o ruler.o line.o lineSegment.o unitSphere.o helixPropensity.o parse.o ramachandranMap.o
 
 LIB_F77_OBJECTS = bestfit.o
+
+LIB_CU_OBJECTS = energy.o
 
 DEFS = -D__STL_USE_EXCEPTIONS
 
@@ -39,10 +44,18 @@ CFLAGS = $(FLAG_OPTMAX) $(DEFS)
 
 FFLAGS = -Wall -g -Wno-tabs -Wno-unused-dummy-argument -Wno-unused-variable
 
+CUFLAGS = -arch=sm_60
+
 INC_BASE = -I$(SRCDIR)/ensemble -I$(SRCDIR)/io \
 -I$(SRCDIR)/math -I$(SRCDIR)/database -I$(TNTINCLUDE)
 
-LIB_BASE = -L$(OBJDIR) -lprotcad  -lc -lm -lstdc++
+ifeq ($(NVCC_TEST),nvcc)
+	LIB_BASE = -L$(OBJDIR) -lprotcad -lc -lm -lstdc++ -lcuda -lcudart
+	LIBS = $(LIB_CC_OBJECTS) $(LIB_F77_OBJECTS) $(LIB_CU_OBJECTS)
+else
+	LIB_BASE = -L$(OBJDIR) -lprotcad -lc -lm -lstdc++
+	LIBS = $(LIB_CC_OBJECTS) $(LIB_F77_OBJECTS)
+endif
 
 vpath %.h $(SRCDIR)/ensemble:$(SRCDIR)/database:\
 	$(SRCDIR)/ensemble:$(SRCDIR)/io:\
@@ -53,6 +66,8 @@ vpath %.cc $(SRCDIR)/ensemble:$(SRCDIR)/database:\
 	$(SRCDIR)/math:$(PROJDIR):
 
 vpath %.f $(SRCDIR)/math
+
+vpath %.cu $(SRCDIR)/ensemble
 
 vpath %.a $(OBJDIR)
 
@@ -70,11 +85,9 @@ endif
 
 all : $(LIB_TARGETS) $(TARGETS)
 
-headless : $(LIB_TARGETS) $(TARGETS)
-
 lib : libprotcad.a
 
-libprotcad.a : $(LIB_CC_OBJECTS) $(LIB_F77_OBJECTS)
+libprotcad.a : $(LIBS)
 	cd $(OBJDIR) && ar rv libprotcad.a $?
 	cd $(OBJDIR) && ranlib libprotcad.a
 
@@ -152,6 +165,10 @@ $(LIB_CC_OBJECTS): %.o: %.cc %.h
 
 $(LIB_F77_OBJECTS): %.o: %.f
 	$(F77) -c $(FFLAGS) $< -o $@
+	mv $@ $(OBJDIR)
+
+$(LIB_CU_OBJECTS): %.o: %.cu
+	$(CU) -c $(CUFLAGS) $< -o $@
 	mv $@ $(OBJDIR)
 
 protcad:
