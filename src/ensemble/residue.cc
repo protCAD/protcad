@@ -26,7 +26,7 @@ double residue::EntropyFactor = 1.0;
 double residue::cutoffDistance = 99.0;
 double residue::cutoffDistanceSquared = residue::cutoffDistance*residue::cutoffDistance;
 double residue::waterRadius = 1.4;
-double residue::waterDiameter = 2.8;
+double residue::effectiveWaterDiameter = 4.35; //(R*2+1.55(average dist between waters))
 double residue::KT = KB*residue::getTemperature();
 
 void residue::setupDataBase()
@@ -3027,14 +3027,14 @@ void residue::polarizability()
 		{
 			//--inlude self volume
 			vdwIndexI = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][0];
-			solvatedRadiusI = residueTemplate::getVDWRadius(vdwIndexI)+waterDiameter;
+			solvatedRadiusI = residueTemplate::getVDWRadius(vdwIndexI)+effectiveWaterDiameter;
 			itsAtoms[i]->sumEnvVol(residueTemplate::getVolume(vdwIndexI)/2);
 			for(UInt j=i+1; j<itsAtoms.size(); j++)
 			{
 				if (!itsAtoms[j]->getSilentStatus())
 				{
 					vdwIndexJ = dataBase[itsType].itsAtomEnergyTypeDefinitions[j][0];
-					solvatedRadiusJ = residueTemplate::getVDWRadius(vdwIndexJ)+waterDiameter;
+					solvatedRadiusJ = residueTemplate::getVDWRadius(vdwIndexJ)+effectiveWaterDiameter;
 					
 					//i sum environment j
 					cutoff = itsAtoms[i]->inCutoff(itsAtoms[j], solvatedRadiusI);
@@ -3063,13 +3063,13 @@ void residue::polarizability(residue* _other)
 		if (!itsAtoms[i]->getSilentStatus())
 		{
 			vdwIndexI = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][0];
-			solvatedRadiusI = residueTemplate::getVDWRadius(vdwIndexI)+waterDiameter;
+			solvatedRadiusI = residueTemplate::getVDWRadius(vdwIndexI)+effectiveWaterDiameter;
 			for(UInt j=0; j<_other->itsAtoms.size(); j++)
 			{
 				if (!_other->itsAtoms[j]->getSilentStatus())
 				{		
 					vdwIndexJ = dataBase[_other->itsType].itsAtomEnergyTypeDefinitions[j][0];
-					solvatedRadiusJ = residueTemplate::getVDWRadius(vdwIndexJ)+waterDiameter;
+					solvatedRadiusJ = residueTemplate::getVDWRadius(vdwIndexJ)+effectiveWaterDiameter;
 
 					//i sum environment j
 					cutoff = itsAtoms[i]->inCutoff(_other->itsAtoms[j], solvatedRadiusI);
@@ -3091,8 +3091,8 @@ void residue::polarizability(residue* _other)
 void residue::calculateDielectrics()
 {
 	double envVol, totalWaterVol, dielectric, waters;
-	double waterPol = 1.0;   //polarizability of water 
-	double waterVol = 13.6057; //volume of water
+	double waterPol = 1.47;   //polarizability of water (Murphy WF. J. Chem. Phys. 1977;67:5877–5882)
+	double waterVol = 107.31; //effective volume of water (4/3*pi*effectiveWaterDiameter^3)
 	double pol, vol, solvatedRadius;
 	UInt vdwIndexI;
 	for(UInt i=0; i<itsAtoms.size(); i++)
@@ -3101,7 +3101,7 @@ void residue::calculateDielectrics()
 		{
 			// calculate local dielectric for atom
 			vdwIndexI = dataBase[itsType].itsAtomEnergyTypeDefinitions[i][0];
-			solvatedRadius = residueTemplate::getVDWRadius(vdwIndexI)+waterDiameter;
+			solvatedRadius = residueTemplate::getVDWRadius(vdwIndexI)+effectiveWaterDiameter;
 			vol = 4.188*pow(solvatedRadius,3); pol=0.0; waters=0.0;
 			envVol = itsAtoms[i]->getEnvVol();
 			totalWaterVol = vol-envVol;

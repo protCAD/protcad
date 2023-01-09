@@ -15,9 +15,9 @@ double* E_d;
 
 // Constants on device
 __constant__ double watRad = 1.4; 
-__constant__ double watDia = 2.8; 
-__constant__ double watVol = 13.6057; 
-__constant__ double watPol = 1.0; 
+__constant__ double watDia = 4.35; //effective diameter between water molecules
+__constant__ double watVol = 107.31; // vol of effective diameter
+__constant__ double watPol = 1.47; // water polarization (Murphy WF. J. Chem. Phys. 1977;67:5877–5882)
 __constant__ double watEps = 0.15200; 
 __constant__ double pi = 3.1415926535;
 __constant__ double kc = 332.0636;
