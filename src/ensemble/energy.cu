@@ -255,7 +255,7 @@ void calcEnergies(double* x_h, double* y_h, double* z_h, double *E_h, int N)
   check(cudaMemcpy(E_d, E_h, sizeof(double), cudaMemcpyHostToDevice));
   
   // Bound and invoke the distance kernel
-  int tC = N * (N-1);
+  int tC = N * (N-1) / 2;
   int blocks = (tC+threads_per_block-1)/threads_per_block;
   calcDistance <<< blocks, threads_per_block >>> (x_d,y_d,z_d,rad_d,vol_d,dis_d,N);
   calcEnergy <<< blocks, threads_per_block >>> (rad_d,eps_d,chg_d,vol_d,dis_d,bon_d,E_d,N);
@@ -275,7 +275,7 @@ void calcClashes(double* x_h, double* y_h, double* z_h, int* clash_h, int N)
   check(cudaMemcpy(clash_d, clash_h, N * sizeof(int), cudaMemcpyHostToDevice));
   
   // Bound and invoke the distance kernel
-  int tC = N * (N-1);
+  int tC = N * (N-1) / 2;
   int blocks = (tC+threads_per_block-1)/threads_per_block;
   calcClash <<< blocks, threads_per_block >>> (x_d,y_d,z_d,rad_d,bon_d,clash_d,N);
   //check(cudaPeekAtLastError());
