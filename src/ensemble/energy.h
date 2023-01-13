@@ -18,7 +18,7 @@ void freeClashDeviceMem();
 void freeAllDeviceMem();
 
 //////////Functions///////////////////////////////////////////////////////////////////
-void calcEnergies(double* x_h, double* y_h, double* z_h, double* E_h, int N);
+void calcEnergies(double* x_h, double* y_h, double* z_h, double* vol_h, double* E_h, int N);
 void calcClashes(double* x_h, double* y_h, double* z_h, int* clash_h, int N);
 
 //////////Utils//////////////////////////////////////////////////////////////////////

@@ -438,7 +438,8 @@ private:
 	static double cutoffDistance;
 	static double cutoffDistanceSquared;
 	static double waterRadius;
-	static double waterDiameter;
+	static double effectiveWaterDiameter;
+	static double waterWaterDist;
 	static double KT;
 };
 

@@ -30,20 +30,20 @@ int main (int argc, char* argv[])
 
 	residue::setElectroSolvationScaleFactor(1.0);
 	residue::setHydroSolvationScaleFactor(1.0);
-	residue::setPolarizableElec(true);
+	residue::setPolarizableElec(false);
 	amberElec::setScaleFactor(1.0);
 	amberVDW::setScaleFactor(1.0);
-	residue::setEntropyFactor(1.0);
-	residue::setTemperature(293);
+	residue::setEntropyFactor(0.0);
+	residue::setTemperature(300);
 
 	double complexE = prot->protEnergy();
 	double receptorE = prot->protEnergy(receptorChainID);
-	residue::setEntropyFactor(0.0); //assuming free ligand if molecule, peptide or small unfolded protein, is not conformationally restrained, if protein this should be commented out
+	//residue::setEntropyFactor(0.0); //assuming free ligand if molecule, peptide or small unfolded protein, is not conformationally restrained, if protein this should be commented out
 	double ligandE = prot->protEnergy(ligandChainID);
 	
 	// calculate binding energys
 	double bindingEnergy = complexE-(ligandE+receptorE);
 	cout << infile << " " << complexE << " " << bindingEnergy << endl;
-	pdbWriter(prot,infile);
+	//pdbWriter(prot,infile);
 	return 0;
 }

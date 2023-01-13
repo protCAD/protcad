@@ -32,10 +32,15 @@ int main (int argc, char* argv[])
 	amberVDW::setScaleFactor(1.0);
 	residue::setElectroSolvationScaleFactor(1.0);
 	residue::setHydroSolvationScaleFactor(1.0);
-	residue::setPolarizableElec(true);
-	residue::setEntropyFactor(1.0);
+	residue::setPolarizableElec(false);
+	residue::setEntropyFactor(0.0);
 	
+#ifdef __CUDA__
+	prot->loadDeviceMemAll();
+	cout << infile << " " << prot->getNumClashesCU() << " clashes " << prot->protEnergyCU() << " kcal/mol at 300K" << endl;
+#else
 	cout << infile << " " << prot->getNumHardClashes() << " clashes " << prot->protEnergy() << " kcal/mol at 300K" << endl;
+#endif
 	//pdbWriter(prot, infile);
 	return 0;
 }

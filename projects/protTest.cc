@@ -25,32 +25,33 @@ int main (int argc, char* argv[])
 
 	
 #ifdef __CUDA__
-	clock_t start = clock();
+	
 	PDBInterface* thePDB = new PDBInterface(infile);
 	ensemble* theEnsemble = thePDB->getEnsemblePointer();
 	molecule* pMol = theEnsemble->getMoleculePointer(0);
 	protein* prot = static_cast<protein*>(pMol);
-	
-	prot->protMinCU(false);
+	prot->loadDeviceMemClash();
+	clock_t start = clock();
+	double Energy = prot->getNumClashesCU();
 	clock_t end = clock();
 	double GPUtime = double(end - start)/CLOCKS_PER_SEC;
-	cout << "GPU - Energy: " << prot->protEnergyCU() << " Time(s): " << GPUtime << endl;
+	cout << "GPU - Energy: " << Energy << " Time(s): " << GPUtime << endl;
 #endif
 
-	clock_t start2 = clock();
 	PDBInterface* thePDB2 = new PDBInterface(infile);
 	ensemble* theEnsemble2 = thePDB2->getEnsemblePointer();
 	molecule* pMol2 = theEnsemble2->getMoleculePointer(0);
 	protein* prot2 = static_cast<protein*>(pMol2);
 
-	prot2->protMin(false);
+	clock_t start2 = clock();
+	Energy = prot2->getNumHardClashes();
 	clock_t end2 = clock();	
 
 	double CPUtime = double(end2 - start2)/CLOCKS_PER_SEC;
-	cout << "CPU - Energy: " << prot2->protEnergy() << " Time(s): " << CPUtime << endl;
-	//cout << "GPU  Speedup: " << int(CPUtime/GPUtime) << "x" << endl;
-	//string outpdb = "testout.pdb";
-	//pdbWriter(prot, outpdb);
+	cout << "CPU - Energy: " << Energy << " Time(s): " << CPUtime << endl;
+	cout << "GPU  Speedup: " << int(CPUtime/GPUtime) << "x" << endl;
+	string outpdb = "testout.pdb";
+	pdbWriter(prot2, outpdb);
 	/*string aminoAcidString[] = {"A","R","N","D","D","C","C","C","Q","E","E","H","H","H","I","L","K","M","F","P","O","S","T","W","Y","V","G","A","R","N","D","D","C","C","C","Q","E","E","H","H","H","I","L","K","M","F","P","O","S","T","W","Y","V","A","R","N","D","D","C","C","C","Q","E","E","H","H","H","I","L","K","M","F","P","O","S","T","W","Y","V","G","A","R","N","D","D","C","C","C","Q","E","E","H","H","H","I","L","K","M","F","P","O","S","T","W","Y","V","A","R","N","D","D","C","C","C","Q","E","E","H","H","H","I","L","K","M","F","P","O","S","T","W","Y","V","G","A","R","N","D","D","C","C","C","Q","E","E","H","H","H","I","L","K","M","F","P","O","S","T","W","Y","V"};
 	fstream aa;
 	aa.open ("bests.faa", fstream::in | fstream::out | fstream::app);

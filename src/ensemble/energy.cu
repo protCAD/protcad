@@ -79,8 +79,7 @@ __global__ void calcClash(double* x, double* y, double* z, double* rad, int* bon
 
       //count clashes between i and j
       if (distanceSq < (rad[i]+rad[j])*(rad[i]+rad[j])) {
-        //printf("%d\n",clash[i]);
-        atomicAdd(&clash[i],1); atomicAdd(&clash[j],1);
+        atomicAdd(clash,1); 
       }
     }
   }
@@ -100,32 +99,34 @@ __global__ void calcEnergy(double* rad, double* eps, double* chg, double* vol, d
 
   if (j > i){
     if (bon[index] == 0){
-      //Calculate VDW Energies
-      double vdw = (sqrt(eps[i]*eps[j])) * (pow(((rad[i]+rad[j])/dist[index]),12) - (2*pow(((rad[i]+rad[j])/dist[index]),6)));
-      atomicAdd(E, vdw);
+      if(dist[index] < 12){
+        //Calculate VDW Energies
+        double vdw = (sqrt(eps[i]*eps[j])) * (pow(((rad[i]+rad[j])/dist[index]),12) - (2*pow(((rad[i]+rad[j])/dist[index]),6)));
+        atomicAdd(E, vdw);
 
-      // Estimate the number of waters occupying remaining shell volume of i to be used for local dielectric
-      double polI=0.0; double watersI = 0.0;
-      double shellVolI = v*pow((rad[i]+watDia),3);
-      double envVolI = (vol[i]+(v*pow(rad[i],3)))/2;
-      double waterVolI = shellVolI-envVolI;
-      if (waterVolI > 0){watersI = int(waterVolI/watVol); polI = watersI*watPol;}
+        // Estimate the number of waters occupying remaining shell volume of i to be used for local dielectric
+        double polI=0.0; double watersI = 0.0;
+        double shellVolI = v*pow((rad[i]+watDia),3);
+        double envVolI = (vol[i]+(v*pow(rad[i],3)))/2;
+        double waterVolI = shellVolI-envVolI;
+        if (waterVolI > 0){watersI = int(waterVolI/watVol); polI = watersI*watPol;}
 
-      // Estimate the number of waters occupying remaining shell volume of j to be used for local dielectric
-      double polJ=0.0; double watersJ = 0.0;
-      double shellVolJ = v*pow((rad[j]+watDia),3);
-      double envVolJ = (vol[j]+(v*pow(rad[j],3)))/2;
-      double waterVolJ = shellVolJ-envVolJ;
-      if (waterVolJ > 0){watersJ = int(waterVolJ/watVol); polJ = watersJ*watPol;}
+        // Estimate the number of waters occupying remaining shell volume of j to be used for local dielectric
+        double polJ=0.0; double watersJ = 0.0;
+        double shellVolJ = v*pow((rad[j]+watDia),3);
+        double envVolJ = (vol[j]+(v*pow(rad[j],3)))/2;
+        double waterVolJ = shellVolJ-envVolJ;
+        if (waterVolJ > 0){watersJ = int(waterVolJ/watVol); polJ = watersJ*watPol;}
 
-      //Calculate the effective dielectric with the Lorentz local field correction
-      double dielectricI =2+(8*pi/3)*(polI)/1-(4*pi/3)*(polI);
-      double dielectricJ =2+(8*pi/3)*(polJ)/1-(4*pi/3)*(polJ);
-      double dielectric = (dielectricI+dielectricJ)/2;
-      
-      //Calculate Electrostatic Energies
-      double ele = (kc * (chg[i] * chg[j]) / dist[index]) / dielectric;
-      atomicAdd(E, ele);
+        //Calculate the effective dielectric with the Lorentz local field correction
+        double dielectricI =2+(8*pi/3)*(polI)/1-(4*pi/3)*(polI);
+        double dielectricJ =2+(8*pi/3)*(polJ)/1-(4*pi/3)*(polJ);
+        double dielectric = (dielectricI+dielectricJ)/2;
+        
+        //Calculate Electrostatic Energies
+        double ele = (kc * (chg[i] * chg[j]) / dist[index]) / dielectric;
+        atomicAdd(E, ele);
+      }
     }
   }
   // Calculate solvation energy of each atom (i)
@@ -186,14 +187,14 @@ void loadClashDeviceMem(double* x_h, double* y_h, double* z_h, double* rad_h, in
   // Allocate memory on the GPU for the arrays
   int bondingSize = N * (N - 1) / 2;
   check(cudaMalloc(&x_d,   N * sizeof(double))); check(cudaMalloc(&y_d,   N * sizeof(double))); check(cudaMalloc(&z_d,   N * sizeof(double)));
-  check(cudaMalloc(&rad_d, N * sizeof(double))); check(cudaMalloc(&clash_d, N * sizeof(int))); check(cudaMalloc(&bon_d, bondingSize * sizeof(int))); 
+  check(cudaMalloc(&rad_d, N * sizeof(double))); check(cudaMalloc(&clash_d, sizeof(int))); check(cudaMalloc(&bon_d, bondingSize * sizeof(int))); 
   
   // Copy the coordinates, radius, epsilon, charge and bonding from the host (CPU) to the device (GPU)
   check(cudaMemcpy(x_d, x_h,     N * sizeof(double), cudaMemcpyHostToDevice));
   check(cudaMemcpy(y_d, y_h,     N * sizeof(double), cudaMemcpyHostToDevice));
   check(cudaMemcpy(z_d, z_h,     N * sizeof(double), cudaMemcpyHostToDevice));
   check(cudaMemcpy(rad_d, rad_h, N * sizeof(double), cudaMemcpyHostToDevice));
-  check(cudaMemcpy(clash_d, clash_h, N * sizeof(int), cudaMemcpyHostToDevice));
+  check(cudaMemcpy(clash_d, clash_h, sizeof(int), cudaMemcpyHostToDevice));
   check(cudaMemcpy(bon_d, bon_h, bondingSize * sizeof(int), cudaMemcpyHostToDevice));
 }
 
@@ -203,7 +204,7 @@ void loadAllDeviceMem(double* x_h, double* y_h, double* z_h, double* rad_h, doub
   int bondingSize = N * (N - 1) / 2;
   check(cudaMalloc(&x_d,   N * sizeof(double))); check(cudaMalloc(&y_d,   N * sizeof(double))); check(cudaMalloc(&z_d,   N * sizeof(double)));
   check(cudaMalloc(&rad_d, N * sizeof(double))); check(cudaMalloc(&eps_d, N * sizeof(double))); check(cudaMalloc(&chg_d, N * sizeof(double)));
-  check(cudaMalloc(&vol_d, N * sizeof(double))); check(cudaMalloc(&clash_d, N * sizeof(int))); check(cudaMalloc(&bon_d, bondingSize * sizeof(int))); 
+  check(cudaMalloc(&vol_d, N * sizeof(double))); check(cudaMalloc(&clash_d, sizeof(int))); check(cudaMalloc(&bon_d, bondingSize * sizeof(int))); 
   check(cudaMalloc(&dis_d, bondingSize * sizeof(double))); check(cudaMalloc(&E_d, sizeof(double)));
   
   // Copy the coordinates, radius, epsilon, charge and bonding from the host (CPU) to the device (GPU)
@@ -214,7 +215,7 @@ void loadAllDeviceMem(double* x_h, double* y_h, double* z_h, double* rad_h, doub
   check(cudaMemcpy(eps_d, eps_h, N * sizeof(double), cudaMemcpyHostToDevice));
   check(cudaMemcpy(chg_d, chg_h, N * sizeof(double), cudaMemcpyHostToDevice));
   check(cudaMemcpy(vol_d, vol_h, N * sizeof(double), cudaMemcpyHostToDevice));
-  check(cudaMemcpy(clash_d, clash_h, N * sizeof(int), cudaMemcpyHostToDevice));
+  check(cudaMemcpy(clash_d, clash_h, sizeof(int), cudaMemcpyHostToDevice));
   check(cudaMemcpy(bon_d, bon_h, bondingSize * sizeof(int), cudaMemcpyHostToDevice));
   check(cudaMemcpy(E_d, E_h, sizeof(double), cudaMemcpyHostToDevice));
 }
@@ -246,16 +247,17 @@ void freeAllDeviceMem()
 
 //////////Functions///////////////////////////////////////////////////////////////////
 
-void calcEnergies(double* x_h, double* y_h, double* z_h, double *E_h, int N)
+void calcEnergies(double* x_h, double* y_h, double* z_h, double* vol_h, double *E_h, int N)
 {
   // Update the coordinates and starting energy from the host to the GPU
   check(cudaMemcpy(x_d, x_h,     N * sizeof(double), cudaMemcpyHostToDevice));
   check(cudaMemcpy(y_d, y_h,     N * sizeof(double), cudaMemcpyHostToDevice));
   check(cudaMemcpy(z_d, z_h,     N * sizeof(double), cudaMemcpyHostToDevice));
+  check(cudaMemcpy(vol_d, vol_h,     N * sizeof(double), cudaMemcpyHostToDevice));
   check(cudaMemcpy(E_d, E_h, sizeof(double), cudaMemcpyHostToDevice));
   
   // Bound and invoke the distance kernel
-  int tC = N * (N-1);
+  int tC = N * (N - 1);
   int blocks = (tC+threads_per_block-1)/threads_per_block;
   calcDistance <<< blocks, threads_per_block >>> (x_d,y_d,z_d,rad_d,vol_d,dis_d,N);
   calcEnergy <<< blocks, threads_per_block >>> (rad_d,eps_d,chg_d,vol_d,dis_d,bon_d,E_d,N);
@@ -272,17 +274,17 @@ void calcClashes(double* x_h, double* y_h, double* z_h, int* clash_h, int N)
   check(cudaMemcpy(x_d, x_h,     N * sizeof(double), cudaMemcpyHostToDevice));
   check(cudaMemcpy(y_d, y_h,     N * sizeof(double), cudaMemcpyHostToDevice));
   check(cudaMemcpy(z_d, z_h,     N * sizeof(double), cudaMemcpyHostToDevice));
-  check(cudaMemcpy(clash_d, clash_h, N * sizeof(int), cudaMemcpyHostToDevice));
+  check(cudaMemcpy(clash_d, clash_h, sizeof(int), cudaMemcpyHostToDevice));
   
   // Bound and invoke the distance kernel
-  int tC = N * (N-1);
+  int tC = N * (N - 1);
   int blocks = (tC+threads_per_block-1)/threads_per_block;
   calcClash <<< blocks, threads_per_block >>> (x_d,y_d,z_d,rad_d,bon_d,clash_d,N);
   //check(cudaPeekAtLastError());
   check(cudaDeviceSynchronize());
   
   // Copy the final energy back to the host
-  check(cudaMemcpy(clash_h, clash_d, N * sizeof(int), cudaMemcpyDeviceToHost));
+  check(cudaMemcpy(clash_h, clash_d, sizeof(int), cudaMemcpyDeviceToHost));
 }
 
 //////////Functions end///////////////////////////////////////////////////////////////

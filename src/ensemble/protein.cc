@@ -1239,11 +1239,10 @@ void protein::loadDeviceMemClash()
 	cudaMallocHost(&y, N * sizeof(double));
 	cudaMallocHost(&z, N * sizeof(double));
 	cudaMallocHost(&rad, N * sizeof(double));
-	cudaMallocHost(&clash, N * sizeof(int));
 	cudaMallocHost(&bon, bondingSize * sizeof(int));
 
 	// Load arrays with xyz coords, vdw radius, epsilon and charge per atom, and also bonding flag per atom pair 
-	atomIterator aIter1(this); atom* pAtom1; UInt Ncounter = 0; UInt bonCounter = 0; 
+	atomIterator aIter1(this); atom* pAtom1; UInt Ncounter = 0; UInt bonCounter = 0;
     for (; !(aIter1.last()); aIter1++)
     {
 		// Load xyz coords, vdw rad, epsilon and charge
@@ -1251,7 +1250,6 @@ void protein::loadDeviceMemClash()
         dblVec coords = pAtom1->getCoords(); x[Ncounter] = coords[0]; y[Ncounter] = coords[1]; z[Ncounter] = coords[2];
 		residue* res1 = aIter1.getResiduePointer();
 		rad[Ncounter] = res1->getVDWRadius(aIter1.getAtomIndex());
-		clash[Ncounter] = 0;
 
 		// Load bonding integer per non-redundant pair of atoms (1 for bonded within three bonds, 0 for not bonded)
 		atomIterator aIter2(aIter1); aIter2++;
@@ -1272,7 +1270,7 @@ void protein::loadDeviceMemClash()
     }
 
 	// Transfer loaded arrays to GPU to prepare for Energy calculation
-	loadClashDeviceMem(x, y, z, rad, bon, clash, N);
+	loadClashDeviceMem(x, y, z, rad, bon, &clash, N);
 	deviceMemLoadedClash = true;
 }
 
@@ -1288,11 +1286,10 @@ void protein::loadDeviceMemAll()
 	cudaMallocHost(&eps, N * sizeof(double));
 	cudaMallocHost(&chg, N * sizeof(double));
 	cudaMallocHost(&vol, N * sizeof(double));
-	cudaMallocHost(&clash, N * sizeof(int));
 	cudaMallocHost(&bon, bondingSize * sizeof(int));
 
 	// Load arrays with xyz coords, vdw radius, epsilon and charge per atom, and also bonding flag per atom pair 
-	atomIterator aIter1(this); atom* pAtom1; UInt Ncounter = 0; UInt bonCounter = 0; double E=0;
+	atomIterator aIter1(this); atom* pAtom1; UInt Ncounter = 0; UInt bonCounter = 0; E=0.0; clash=0; 
     for (; !(aIter1.last()); aIter1++)
     {
 		// Load xyz coords, vdw rad, epsilon and charge
@@ -1300,7 +1297,7 @@ void protein::loadDeviceMemAll()
         dblVec coords = pAtom1->getCoords(); x[Ncounter] = coords[0]; y[Ncounter] = coords[1]; z[Ncounter] = coords[2];
 		residue* res1 = aIter1.getResiduePointer();
 		rad[Ncounter] = res1->getVDWRadius(aIter1.getAtomIndex()); eps[Ncounter] = res1->getVDWEpsilon(aIter1.getAtomIndex()); 
-		chg[Ncounter] = res1->getCharge(aIter1.getAtomIndex()); vol[Ncounter] = 0.0; clash[Ncounter] = 0;
+		chg[Ncounter] = res1->getCharge(aIter1.getAtomIndex()); vol[Ncounter] = 0.0;
 
 		// Load bonding integer per non-redundant pair of atoms (1 for bonded within three bonds, 0 for not bonded)
 		atomIterator aIter2(aIter1); aIter2++;
@@ -1321,7 +1318,7 @@ void protein::loadDeviceMemAll()
     }
 
 	// Transfer loaded arrays to GPU to prepare for Energy calculation
-	loadAllDeviceMem(x, y, z, rad, eps, chg, vol, clash, bon, &E, N);
+	loadAllDeviceMem(x, y, z, rad, eps, chg, vol, &clash, bon, &E, N);
 	deviceMemLoadedAll = true; deviceMemLoadedEnergy = true; deviceMemLoadedClash = true;
 }
 
@@ -1344,7 +1341,7 @@ void protein::freeDeviceMemClash()
 
 	// Free the CPU memory
 	cudaFreeHost(x); cudaFreeHost(y); cudaFreeHost(z);
-  	cudaFreeHost(rad); cudaFreeHost(bon); cudaFreeHost(clash);
+  	cudaFreeHost(rad); cudaFreeHost(bon);
 	deviceMemLoadedClash = false;
 }
 
@@ -1356,7 +1353,7 @@ void protein::freeDeviceMemAll()
 	// Free the CPU memory
   	cudaFreeHost(x); cudaFreeHost(y); cudaFreeHost(z);
   	cudaFreeHost(rad); cudaFreeHost(eps); cudaFreeHost(chg);
-  	cudaFreeHost(bon); cudaFreeHost(vol); cudaFreeHost(clash);
+  	cudaFreeHost(bon); cudaFreeHost(vol);
 	deviceMemLoadedEnergy = false;
 	deviceMemLoadedClash = false;
 	deviceMemLoadedAll = false;
@@ -1376,10 +1373,32 @@ double protein::protEnergyCU()
 		x[Ncounter] = coords[0]; 
 		y[Ncounter] = coords[1];
 		z[Ncounter] = coords[2];
+		vol[Ncounter] = 0.0;
 		Ncounter++;
     }
-	calcEnergies(x, y, z, &E, Ncounter);
+	calcEnergies(x, y, z, vol, &E, Ncounter);
 	return E;
+}
+int protein::getNumClashesCU()
+{
+	// Load device memory if need be
+	if (!deviceMemLoadedClash){loadDeviceMemClash();}
+
+    // update coordinates
+	atomIterator aIter(this);atom* pAtom; int Ncounter = 0; clash = 0;
+    for (;!(aIter.last());aIter++)
+    {
+		pAtom = aIter.getAtomPointer(); 
+        dblVec coords = pAtom->getCoords();
+		x[Ncounter] = coords[0]; 
+		y[Ncounter] = coords[1];
+		z[Ncounter] = coords[2];
+		Ncounter++;
+    }
+
+	//calculate Clashes with GPU kernel (no sqrt distance calc only)
+	calcClashes(x, y, z, &clash, Ncounter);
+	return clash;
 }
 
 void protein::protRelaxCU(UInt _plateau, bool _backbone)
@@ -1389,7 +1408,7 @@ void protein::protRelaxCU(UInt _plateau, bool _backbone)
 	// load data on GPU
 	if (!deviceMemLoadedClash){loadDeviceMemClash();}
 
-	UInt pastNumClashes = getNumClashes();
+	UInt pastNumClashes = getNumClashesCU();
 	if (pastNumClashes > 0){
 		
 		//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
@@ -1417,7 +1436,7 @@ void protein::protRelaxCU(UInt _plateau, bool _backbone)
 				{
 					randrot = rand() % allowedRots[b].size();
 					setRotamerWBC(randchain, randres, b, allowedRots[b][randrot]);
-					numClashes = getNumClashes();
+					numClashes = getNumClashesCU();
 					if (numClashes < pastNumClashes){
 						nobetter = 0;
 						pastNumClashes = numClashes; break;
@@ -1441,7 +1460,7 @@ void protein::protRelaxCU(UIntVec _frozenResidues, UIntVec _activeChains)
 	// load data on GPU
 	if (!deviceMemLoadedClash){loadDeviceMemClash();}
 
-	UInt pastNumClashes = getNumClashes();
+	UInt pastNumClashes = getNumClashesCU();
 	if (pastNumClashes > 0){
 
 		//--Initialize variables for loop, calculate starting energy and build energy vectors---------------
@@ -1476,7 +1495,7 @@ void protein::protRelaxCU(UIntVec _frozenResidues, UIntVec _activeChains)
 				{
 					randrot = rand() % allowedRots[b].size();
 					setRotamerWBC(randchain, randres, b, allowedRots[b][randrot]);
-					numClashes = getNumClashes();
+					numClashes = getNumClashesCU();
 					if (numClashes < pastNumClashes){
 						nobetter = 0;
 						pastNumClashes = numClashes; break;
@@ -1520,7 +1539,7 @@ void protein::protMinCU(bool _backbone, UIntVec _frozenResidues, UIntVec _active
 					if (randres == _frozenResidues[i]) {skip = true; break;}
 				}
 			} while (skip);
-		clashesStart = getNumClashes(); resnum = getNumResidues(randchain); nobetter++;
+		clashesStart = getNumClashesCU(); resnum = getNumResidues(randchain); nobetter++;
 		backboneTest = false, sidechainTest = false, cofactorTest = false, energyTest = false, revert = true;
 		
 		/*if (isCofactor(randchain, randres))
@@ -1546,7 +1565,7 @@ void protein::protMinCU(bool _backbone, UIntVec _frozenResidues, UIntVec _active
 				sPhi = getPhi(randchain,randres), sPsi = getPsi(randchain,randres);
 				backboneAngles = getRandConformationFromBackboneType(sPhi, sPsi);
 				setDihedral(randchain,randres,backboneAngles[0],0,0); setDihedral(randchain,randres,backboneAngles[1],1,0);
-				clashes = getNumClashes();
+				clashes = getNumClashesCU();
 				if (clashes <= clashesStart){
 					energyTest = true; revert = false;
 				}
@@ -1557,7 +1576,7 @@ void protein::protMinCU(bool _backbone, UIntVec _frozenResidues, UIntVec _active
 				currentSidechainConf = getSidechainDihedrals(randchain, randres);
 				newSidechainConf = randContinuousSidechainConformation(randchain, randres);
 				setSidechainDihedralAngles(randchain, randres, newSidechainConf);
-				clashes = getNumClashes();
+				clashes = getNumClashesCU();
 				if (clashes <= clashesStart){
 					energyTest = true; revert = false;
 				}
@@ -1613,7 +1632,7 @@ void protein::protMinCU(bool _backbone)
 		//--choose random residue not frozen of active chains
 		randchain = rand() % chainNum;
 		randres = rand() % getNumResidues(randchain);
-		clashesStart = getNumClashes(); resnum = getNumResidues(randchain); nobetter++;
+		clashesStart = getNumClashesCU(); resnum = getNumResidues(randchain); nobetter++;
 		backboneTest = false, sidechainTest = false, cofactorTest = false, energyTest = false, revert = true;
 		
 		/*if (isCofactor(randchain, randres))
@@ -1639,7 +1658,7 @@ void protein::protMinCU(bool _backbone)
 				sPhi = getPhi(randchain,randres), sPsi = getPsi(randchain,randres);
 				backboneAngles = getRandConformationFromBackboneType(sPhi, sPsi);
 				setDihedral(randchain,randres,backboneAngles[0],0,0); setDihedral(randchain,randres,backboneAngles[1],1,0);
-				clashes = getNumClashes();
+				clashes = getNumClashesCU();
 				if (clashes <= clashesStart){
 					energyTest = true; revert = false;
 				}
@@ -1650,7 +1669,7 @@ void protein::protMinCU(bool _backbone)
 				currentSidechainConf = getSidechainDihedrals(randchain, randres);
 				newSidechainConf = randContinuousSidechainConformation(randchain, randres);
 				setSidechainDihedralAngles(randchain, randres, newSidechainConf);
-				clashes = getNumClashes();
+				clashes = getNumClashesCU();
 				if (clashes <= clashesStart){
 					energyTest = true; revert = false;
 				}
@@ -1683,51 +1702,6 @@ void protein::protMinCU(bool _backbone)
 		}
 	} while (nobetter < plateau);
 	return;
-}
-
-void protein::updateClashesCU()
-{
-	// Load device memory if need be
-	if (!deviceMemLoadedClash){loadDeviceMemClash();}
-
-	// Clear current clash count
-	setMoved(true, 1);
-	
-    // update coordinates
-	atomIterator aIter(this);atom* pAtom; int Ncounter = 0;
-    for (;!(aIter.last());aIter++)
-    {
-		pAtom = aIter.getAtomPointer(); 
-        dblVec coords = pAtom->getCoords();
-		x[Ncounter] = coords[0]; 
-		y[Ncounter] = coords[1];
-		z[Ncounter] = coords[2];
-		clash[Ncounter] = 0;
-		Ncounter++;
-    }
-
-	//calculate Clashes with GPU kernel (no sqrt distance calc only)
-	calcClashes(x, y, z, clash, Ncounter);
-	
-	//load clashes into residue
-	atomIterator aIter2(this); residue* pRes; Ncounter = 0;
-    for (;!(aIter2.last());aIter2++)
-    {
-		pRes = aIter2.getResiduePointer();
-		pRes->sumClashes(clash[Ncounter]);
-		Ncounter++;
-	}
-}
-
-UInt protein::getNumClashes()
-{
-	updateClashesCU();
-	UInt clashes = 0;
-	for(UInt i=0; i<itsChains.size(); i++)
-	{
-		clashes += itsChains[i]->getClashes();
-	}
-	return clashes;
 }
 
 #endif

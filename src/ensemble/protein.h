@@ -225,8 +225,7 @@ public:
 	void loadDeviceMemAll();
 	void freeDeviceMemAll();
 	double protEnergyCU();
-	void updateClashesCU();
-	UInt getNumClashes();
+	int getNumClashesCU();
 	void protRelaxCU(UInt _plateau, bool _backbone);
 	void protRelaxCU(UIntVec _frozenResidues, UIntVec _activeChains);
 	void protMinCU(bool _backbone, UIntVec _frozenResidues, UIntVec _activeChains);
@@ -344,9 +343,9 @@ private:
 	double* x; 
 	double* y; 
 	double* z;
-	double E;
 	int* bon; 
-	int* clash;
+	double E;
+	int clash;
 	bool deviceMemLoadedEnergy = false;
 	bool deviceMemLoadedClash = false;
 	bool deviceMemLoadedAll = false;

@@ -1,7 +1,7 @@
 ![background](https://raw.githubusercontent.com/protCAD/protcad/master/ui/images/splash.png)
 
 
-Official protcad development tree
+Official protCAD development tree
 ===================================================================================================
 
 protCAD is an implementation of the protein design software library that originated in the 

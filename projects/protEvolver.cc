@@ -35,23 +35,23 @@ int main (int argc, char* argv[])
 	//--Running parameters
 	if (argc !=2)
 	{
-		cout << "Error: Required input file not given, should be run with input file." << endl;
-		cout << "Command: protEvolver <inputfile>" << endl;
-		cout << "Input file format as listed below:" << endl;
-		cout << "Input PDB File,xyz.pdb," << endl;
-		cout << "Active Chains,0,1,2," << endl;
-		cout << "Active Positions,0,1,2,3,5,6,7,9,10," << endl;
-		cout << "Random Positions,0,2,5,6,10," << endl;
-		cout << "Frozen Positions,4,8," << endl;
-		cout << "Amino Acids,A,R,N,D,C,Q,E,He,I,L,K,M,F,P,S,T,W,Y,V,G," << endl;
-		cout << "Backbone Relaxation,false," << endl;
-		cout << "Polarity Assignment,true," << endl;
+		fstream inf;
+		inf.open ("evolver.in", fstream::in | fstream::out | fstream::app);
+		inf << "Input PDB File,xyz.pdb," << endl;
+		inf << "Active Chains,0,1,2," << endl;
+		inf << "Active Positions,0,1,2,3,5,6,7,9,10," << endl;
+		inf << "Random Positions,0,2,5,6,10," << endl;
+		inf << "Frozen Positions,4,8," << endl;
+		inf << "Amino Acids,A,R,N,D,C,Q,E,He,I,L,K,M,F,P,S,T,W,Y,V,G," << endl;
+		inf << "Backbone Relaxation,false," << endl;
+		inf << "Polarity Assignment,true," << endl;
+		cout << "Error: Required input file doesn't exist." << endl << "Template input file has been generated, please fill it out and rerun." << endl;
 		exit(1);
 	}
 	
 	//--read input file
 	UIntVec activeChains, allowedTypes, activeResidues, randomResidues, frozenResidues;
-	bool backboneRelaxation, polarityAssignment;
+	bool backboneRelaxation = false, polarityAssignment = false;
 	string inputfile = argv[1];
 	string infile;
 	ifstream file(inputfile);
@@ -97,16 +97,14 @@ int main (int argc, char* argv[])
 						allowedTypes.push_back(index);
 					}
 					if (linecounter == 6){
-						if (item.compare("false") == 0){
-							backboneRelaxation = false;
+						if (item.compare("true") == 0){
+							backboneRelaxation = true;
 						}
-						else{backboneRelaxation = true;}
 					}
 					if (linecounter == 7){
-						if (item.compare("false") == 0){
-							polarityAssignment = false;
+						if (item.compare("true") == 0){
+							polarityAssignment = true;
 						}
-						else{polarityAssignment = true;}
 					}
 				}
 				delimitercounter++;
@@ -133,9 +131,10 @@ int main (int argc, char* argv[])
 	//--Energy parameters
 	residue::setElectroSolvationScaleFactor(1.0);
 	residue::setHydroSolvationScaleFactor(1.0);
-	residue::setPolarizableElec(true);
+	residue::setPolarizableElec(false);
 	amberElec::setScaleFactor(1.0);
 	amberVDW::setScaleFactor(1.0);
+	residue::setEntropyFactor(0.0);
 	residue::setTemperature(300);
 
 	//--set initial variables
