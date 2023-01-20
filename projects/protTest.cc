@@ -23,7 +23,7 @@ int main (int argc, char* argv[])
 	}
 	string infile = argv[1];
 
-	
+	double Energy;
 #ifdef __CUDA__
 	
 	PDBInterface* thePDB = new PDBInterface(infile);
@@ -32,7 +32,7 @@ int main (int argc, char* argv[])
 	protein* prot = static_cast<protein*>(pMol);
 	prot->loadDeviceMemClash();
 	clock_t start = clock();
-	double Energy = prot->getNumClashesCU();
+	Energy = prot->getNumClashesCU();
 	clock_t end = clock();
 	double GPUtime = double(end - start)/CLOCKS_PER_SEC;
 	cout << "GPU - Energy: " << Energy << " Time(s): " << GPUtime << endl;
@@ -49,7 +49,9 @@ int main (int argc, char* argv[])
 
 	double CPUtime = double(end2 - start2)/CLOCKS_PER_SEC;
 	cout << "CPU - Energy: " << Energy << " Time(s): " << CPUtime << endl;
+#ifdef __CUDA__
 	cout << "GPU  Speedup: " << int(CPUtime/GPUtime) << "x" << endl;
+#endif
 	string outpdb = "testout.pdb";
 	pdbWriter(prot2, outpdb);
 	/*string aminoAcidString[] = {"A","R","N","D","D","C","C","C","Q","E","E","H","H","H","I","L","K","M","F","P","O","S","T","W","Y","V","G","A","R","N","D","D","C","C","C","Q","E","E","H","H","H","I","L","K","M","F","P","O","S","T","W","Y","V","A","R","N","D","D","C","C","C","Q","E","E","H","H","H","I","L","K","M","F","P","O","S","T","W","Y","V","G","A","R","N","D","D","C","C","C","Q","E","E","H","H","H","I","L","K","M","F","P","O","S","T","W","Y","V","A","R","N","D","D","C","C","C","Q","E","E","H","H","H","I","L","K","M","F","P","O","S","T","W","Y","V","G","A","R","N","D","D","C","C","C","Q","E","E","H","H","H","I","L","K","M","F","P","O","S","T","W","Y","V"};
